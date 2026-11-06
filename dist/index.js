@@ -187,7 +187,10 @@ function registerAdvisor(pi, advisor) {
 
 // src/integration/pi/command.ts
 function modelRefs(context) {
-  const models = context.scopedModels.length > 0 ? context.scopedModels.map((entry) => entry.model) : context.modelRegistry.getAvailable();
+  let models = context.modelRegistry.getAvailable();
+  if (context.scopedModels.length > 0) {
+    models = context.scopedModels.map((entry) => entry.model);
+  }
   return models.map((model) => `${model.provider}/${model.id}`);
 }
 function registerCommand(pi, advisor) {
@@ -231,12 +234,21 @@ function registerCommand(pi, advisor) {
       if (input) {
         const terms = input.toLowerCase().split(/\s+/);
         const exact = models.find((model) => model.toLowerCase() === input.toLowerCase());
-        const matches = exact ? [exact] : models.filter((model) => terms.every((term) => model.toLowerCase().includes(term)));
+        let matches = models.filter(
+          (model) => terms.every((term) => model.toLowerCase().includes(term))
+        );
+        if (exact) {
+          matches = [exact];
+        }
         if (matches.length === 0) {
           context.ui.notify(`Nenhum modelo casa com '${input}'`, "error");
           return;
         }
-        chosen = matches.length === 1 ? matches[0] : context.hasUI ? await context.ui.select("Modelo advisor", matches.slice(0, 100)) : void 0;
+        if (matches.length === 1) {
+          chosen = matches[0];
+        } else if (context.hasUI) {
+          chosen = await context.ui.select("Modelo advisor", matches.slice(0, 100));
+        }
       } else if (context.hasUI) {
         chosen = await context.ui.select("Modelo advisor", ["(sem advisor)", ...models]);
         if (chosen === "(sem advisor)") {

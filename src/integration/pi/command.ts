@@ -3,10 +3,11 @@ import { syncAdvisor } from "@/integration";
 import { type Advisor, THINKING_LEVELS } from "@/modules";
 
 function modelRefs(context: ExtensionContext): string[] {
-  const models =
-    context.scopedModels.length > 0
-      ? context.scopedModels.map((entry) => entry.model)
-      : context.modelRegistry.getAvailable();
+  let models = context.modelRegistry.getAvailable();
+
+  if (context.scopedModels.length > 0) {
+    models = context.scopedModels.map((entry) => entry.model);
+  }
 
   return models.map((model) => `${model.provider}/${model.id}`);
 }
@@ -64,21 +65,24 @@ export function registerCommand(pi: ExtensionAPI, advisor: Advisor): void {
       if (input) {
         const terms = input.toLowerCase().split(/\s+/);
         const exact = models.find((model) => model.toLowerCase() === input.toLowerCase());
-        const matches = exact
-          ? [exact]
-          : models.filter((model) => terms.every((term) => model.toLowerCase().includes(term)));
+        let matches = models.filter((model) =>
+          terms.every((term) => model.toLowerCase().includes(term)),
+        );
+
+        if (exact) {
+          matches = [exact];
+        }
 
         if (matches.length === 0) {
           context.ui.notify(`Nenhum modelo casa com '${input}'`, "error");
           return;
         }
 
-        chosen =
-          matches.length === 1
-            ? matches[0]
-            : context.hasUI
-              ? await context.ui.select("Modelo advisor", matches.slice(0, 100))
-              : undefined;
+        if (matches.length === 1) {
+          chosen = matches[0];
+        } else if (context.hasUI) {
+          chosen = await context.ui.select("Modelo advisor", matches.slice(0, 100));
+        }
       } else if (context.hasUI) {
         chosen = await context.ui.select("Modelo advisor", ["(sem advisor)", ...models]);
         if (chosen === "(sem advisor)") {
