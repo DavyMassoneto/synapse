@@ -61,42 +61,7 @@ var FileConfig = class {
   }
 };
 
-// src/modules/advisor/internal/reminder/counter.ts
-var REMIND_EVERY = 5;
-var ReminderCounter = class {
-  turns = 0;
-  reset() {
-    this.turns = 0;
-  }
-  advance(event) {
-    if (!event.completed) {
-      return false;
-    }
-    this.turns += 1;
-    if (this.turns < REMIND_EVERY || !event.usedTools) {
-      return false;
-    }
-    this.reset();
-    return true;
-  }
-};
-
-// src/modules/advisor/internal/format/instructions.ts
-var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
-
-Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
-
-Also call advisor:
-- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
-- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
-- When considering a change of approach.
-
-On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
-
-Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
-
-If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
-var REMINDER = "<system-reminder>\nJ\xE1 se passaram " + REMIND_EVERY + " turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:\n- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?\n- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?\n- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?\nSe alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.\n</system-reminder>";
+// src/modules/advisor/internal/format/advisor-system.ts
 var ADVISOR_SYSTEM = `You are the advisor: a stronger model that a faster executor model consults in the middle of a task.
 You have no tools and cannot act. Below you get the executor's system prompt and its full transcript so far (user messages, the executor's text, every tool call and tool result), ending at the moment it called advisor(). Earlier advisor results appear in the transcript too.
 
@@ -130,6 +95,45 @@ function preparePrompt(input, contextWindow) {
   const transcript = buildTranscript(input.messages, transcriptBudget);
   return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
 }
+
+// src/modules/advisor/internal/reminder/counter.ts
+var REMIND_EVERY = 5;
+var ReminderCounter = class {
+  turns = 0;
+  reset() {
+    this.turns = 0;
+  }
+  advance(event) {
+    if (!event.completed) {
+      return false;
+    }
+    this.turns += 1;
+    if (this.turns < REMIND_EVERY || !event.usedTools) {
+      return false;
+    }
+    this.reset();
+    return true;
+  }
+};
+
+// src/modules/advisor/internal/format/reminder-text.ts
+var REMINDER = "<system-reminder>\nJ\xE1 se passaram " + REMIND_EVERY + " turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:\n- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?\n- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?\n- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?\nSe alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.\n</system-reminder>";
+
+// src/modules/advisor/internal/format/timing.ts
+var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
+
+Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
+
+Also call advisor:
+- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
+- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
+- When considering a change of approach.
+
+On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
+
+Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
+
+If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
 
 // src/modules/advisor/internal/format/transcript.ts
 var TOOL_RESULT_LIMIT = 12e3;
@@ -393,10 +397,39 @@ function registerAdvisor(pi, advisor, signal, shutdown) {
   registerCommand(pi, advisor);
 }
 
+// src/integration/pi/advisor/presentation/messages.ts
+var ADVISOR_MESSAGES = {
+  title: "Modelo advisor",
+  disabledOption: "(sem advisor)",
+  disabled: "Advisor desligado",
+  progress: "Consultando advisor...",
+  cancelled: "Consulta ao advisor cancelada.",
+  invalidReference: "Refer\xEAncia de modelo advisor inv\xE1lida.",
+  modelNotResolved: "Modelo advisor n\xE3o resolvido.",
+  description: "Consulte um modelo revisor para orienta\xE7\xE3o estrat\xE9gica. A conversa ativa \xE9 enviada ao provedor configurado, sujeita aos limites de contexto; imagens s\xE3o omitidas.",
+  snippet: "Consultar um modelo revisor com a conversa, sem par\xE2metros"
+};
+
+// src/integration/pi/advisor/presentation/rendering-constants.ts
+var PREVIEW_LINES = 8;
+var RENDER_TEXT = {
+  pending: "consultando...",
+  success: "\u2713 conselho",
+  title: "advisor "
+};
+var RENDER_STYLE = {
+  title: "toolTitle",
+  pending: "warning",
+  error: "error",
+  success: "success",
+  muted: "muted",
+  additional: "dim"
+};
+
 // src/integration/pi/advisor/command.ts
 var COMPLETION_LIMIT = 40;
 var MODEL_SELECTION_LIMIT = 100;
-var DISABLED_OPTION = "(sem advisor)";
+var DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
 var AdvisorCommand = class {
   constructor(pi, advisor) {
     this.pi = pi;
@@ -476,24 +509,38 @@ var AdvisorCommand = class {
   }
   async chooseModel(context, models, input) {
     if (!input) {
-      return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
+      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [DISABLED_OPTION, ...models]);
+      if (choice === void 0) {
+        return { kind: "cancelled" };
+      }
+      if (choice === DISABLED_OPTION) {
+        return { kind: "disabled" };
+      }
+      return { kind: "selected", model: choice };
     }
     const matches = this.matchModels(models, input);
     if (matches.length === 0) {
       context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
-      return void 0;
+      return { kind: "cancelled" };
     }
     if (matches.length === 1) {
-      return matches[0];
+      return { kind: "selected", model: matches[0] };
     }
     if (context.hasUI) {
-      return context.ui.select("Modelo advisor", matches.slice(0, MODEL_SELECTION_LIMIT));
+      const choice = await context.ui.select(
+        ADVISOR_MESSAGES.title,
+        matches.slice(0, MODEL_SELECTION_LIMIT)
+      );
+      if (choice !== void 0) {
+        return { kind: "selected", model: choice };
+      }
+      return { kind: "cancelled" };
     }
     context.ui.notify(
       "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
       "warning"
     );
-    return void 0;
+    return { kind: "cancelled" };
   }
   async handle(args, context) {
     this.models = this.modelRefs(context);
@@ -504,7 +551,7 @@ var AdvisorCommand = class {
       return;
     }
     if (input === "off") {
-      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
+      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
       return;
     }
     const [command, ...argumentsList] = input.split(/\s+/);
@@ -520,10 +567,14 @@ var AdvisorCommand = class {
       return;
     }
     const chosen = await this.chooseModel(context, this.modelRefs(context), input);
-    if (chosen === DISABLED_OPTION) {
-      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
-    } else if (chosen) {
-      this.notifyStatus(context, this.advisor.selectModel(chosen), `Advisor: ${chosen}`);
+    if (chosen.kind === "disabled") {
+      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+    } else if (chosen.kind === "selected") {
+      this.notifyStatus(
+        context,
+        this.advisor.selectModel(chosen.model),
+        `Advisor: ${chosen.model}`
+      );
     }
   }
 };
@@ -632,16 +683,16 @@ var AdvisorModel = class {
     signal?.throwIfAborted();
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
-      throw new Error("invalid advisor model reference");
+      throw new Error(ADVISOR_MESSAGES.invalidReference);
     }
     const provider = reference.slice(0, separator);
     const modelId = reference.slice(separator + 1);
     const model = this.context.modelRegistry.find(provider, modelId);
     if (!model) {
-      throw new Error(`advisor model not found: ${reference}`);
+      throw new Error(`Modelo advisor n\xE3o encontrado: ${reference}`);
     }
     if (!this.context.modelRegistry.hasConfiguredAuth(model)) {
-      throw new Error(`no credentials for ${reference}`);
+      throw new Error(`Credenciais ausentes para ${reference}`);
     }
     this.model = model;
     return model.contextWindow;
@@ -649,7 +700,7 @@ var AdvisorModel = class {
   async consult(request) {
     const model = this.model;
     if (!model) {
-      throw new Error("advisor model not resolved");
+      throw new Error(ADVISOR_MESSAGES.modelNotResolved);
     }
     const reasoning = request.thinking !== "off" && model.reasoning ? request.thinking : void 0;
     const reply = await this.context.modelRegistry.streamSimple(
@@ -765,22 +816,6 @@ function createRenderers() {
   };
 }
 
-// src/integration/pi/advisor/rendering-constants.ts
-var PREVIEW_LINES = 8;
-var RENDER_TEXT = {
-  pending: "consultando...",
-  success: "\u2713 conselho",
-  title: "advisor "
-};
-var RENDER_STYLE = {
-  title: "toolTitle",
-  pending: "warning",
-  error: "error",
-  success: "success",
-  muted: "muted",
-  additional: "dim"
-};
-
 // src/integration/pi/advisor/tool.ts
 var AdvisorToolHandler = class {
   constructor(advisor, lifetime) {
@@ -793,13 +828,13 @@ var AdvisorToolHandler = class {
     const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
     if (callSignal.aborted) {
       return {
-        content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+        content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
         details: {},
         isError: true
       };
     }
     try {
-      onUpdate?.({ content: [{ type: "text", text: "Consultando advisor..." }], details: {} });
+      onUpdate?.({ content: [{ type: "text", text: ADVISOR_MESSAGES.progress }], details: {} });
       const advisorModel = new AdvisorModel(context);
       const result = await this.advisor.consult(
         {
@@ -811,7 +846,7 @@ var AdvisorToolHandler = class {
       );
       if (result.kind === "cancelled") {
         return {
-          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
           details: {},
           isError: true
         };
@@ -827,7 +862,7 @@ var AdvisorToolHandler = class {
     } catch (error) {
       if (callSignal.aborted) {
         return {
-          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
           details: {},
           isError: true
         };
@@ -837,7 +872,7 @@ var AdvisorToolHandler = class {
         content: [
           {
             type: "text",
-            text: `Advisor unavailable: ${message}. Continue without advice.`
+            text: `Advisor indispon\xEDvel: ${message}.`
           }
         ],
         details: {},
@@ -853,8 +888,8 @@ function registerTool(pi, advisor, lifetime) {
     label: "Advisor",
     executionMode: "sequential",
     parameters: advisorParameters,
-    description: "Consult a stronger advisor for strategic guidance. No parameters. The active conversation is sent to the configured provider, subject to context limits; images are omitted.",
-    promptSnippet: "Consult a stronger advisor model with the conversation (no parameters)",
+    description: ADVISOR_MESSAGES.description,
+    promptSnippet: ADVISOR_MESSAGES.snippet,
     ...createRenderers(),
     execute: handler.execute.bind(handler)
   });

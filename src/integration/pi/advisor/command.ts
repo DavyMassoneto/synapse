@@ -5,12 +5,13 @@ import {
   type SessionStartEvent,
 } from "@earendil-works/pi-coding-agent";
 import { type AutocompleteItem } from "@earendil-works/pi-tui";
-import { syncAdvisor } from "@/integration";
+import { type ModelSelection, syncAdvisor } from "@/integration";
+import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { type Advisor, type AdvisorResult, THINKING_LEVELS } from "@/modules";
 
 const COMPLETION_LIMIT = 40;
 const MODEL_SELECTION_LIMIT = 100;
-const DISABLED_OPTION = "(sem advisor)";
+const DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
 
 class AdvisorCommand {
   private models: string[] = [];
@@ -109,27 +110,41 @@ class AdvisorCommand {
     context: ExtensionCommandContext,
     models: string[],
     input: string,
-  ): Promise<string | undefined> {
+  ): Promise<ModelSelection> {
     if (!input) {
-      return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
+      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [DISABLED_OPTION, ...models]);
+      if (choice === undefined) {
+        return { kind: "cancelled" };
+      }
+      if (choice === DISABLED_OPTION) {
+        return { kind: "disabled" };
+      }
+      return { kind: "selected", model: choice };
     }
 
     const matches = this.matchModels(models, input);
     if (matches.length === 0) {
       context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
-      return undefined;
+      return { kind: "cancelled" };
     }
     if (matches.length === 1) {
-      return matches[0];
+      return { kind: "selected", model: matches[0] };
     }
     if (context.hasUI) {
-      return context.ui.select("Modelo advisor", matches.slice(0, MODEL_SELECTION_LIMIT));
+      const choice = await context.ui.select(
+        ADVISOR_MESSAGES.title,
+        matches.slice(0, MODEL_SELECTION_LIMIT),
+      );
+      if (choice !== undefined) {
+        return { kind: "selected", model: choice };
+      }
+      return { kind: "cancelled" };
     }
     context.ui.notify(
       "Mais de um modelo corresponde; informe uma referência mais específica.",
       "warning",
     );
-    return undefined;
+    return { kind: "cancelled" };
   }
 
   async handle(args: string, context: ExtensionCommandContext): Promise<void> {
@@ -143,7 +158,7 @@ class AdvisorCommand {
     }
 
     if (input === "off") {
-      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
+      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
       return;
     }
     const [command, ...argumentsList] = input.split(/\s+/);
@@ -160,10 +175,14 @@ class AdvisorCommand {
     }
 
     const chosen = await this.chooseModel(context, this.modelRefs(context), input);
-    if (chosen === DISABLED_OPTION) {
-      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
-    } else if (chosen) {
-      this.notifyStatus(context, this.advisor.selectModel(chosen), `Advisor: ${chosen}`);
+    if (chosen.kind === "disabled") {
+      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+    } else if (chosen.kind === "selected") {
+      this.notifyStatus(
+        context,
+        this.advisor.selectModel(chosen.model),
+        `Advisor: ${chosen.model}`,
+      );
     }
   }
 }

@@ -35,6 +35,7 @@
     ]
   },
   "imports": {
-    "#build-options": "./scripts/build-options.mjs"
+    "#build-options": "./scripts/build-options.mjs",
+    "#advisor-test-host": "./tests/fixtures/advisor-host.mjs"
   }
 }

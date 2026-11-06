@@ -1,5 +1,6 @@
 import { type Api, type Model } from "@earendil-works/pi-ai";
 import { type ExtensionToolContext } from "@earendil-works/pi-coding-agent";
+import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { type ModelRequest, type ModelResponse } from "@/modules";
 
 export class AdvisorModel {
@@ -11,17 +12,17 @@ export class AdvisorModel {
     signal?.throwIfAborted();
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
-      throw new Error("invalid advisor model reference");
+      throw new Error(ADVISOR_MESSAGES.invalidReference);
     }
 
     const provider = reference.slice(0, separator);
     const modelId = reference.slice(separator + 1);
     const model = this.context.modelRegistry.find(provider, modelId);
     if (!model) {
-      throw new Error(`advisor model not found: ${reference}`);
+      throw new Error(`Modelo advisor não encontrado: ${reference}`);
     }
     if (!this.context.modelRegistry.hasConfiguredAuth(model)) {
-      throw new Error(`no credentials for ${reference}`);
+      throw new Error(`Credenciais ausentes para ${reference}`);
     }
 
     this.model = model;
@@ -31,7 +32,7 @@ export class AdvisorModel {
   async consult(request: ModelRequest): Promise<ModelResponse> {
     const model = this.model;
     if (!model) {
-      throw new Error("advisor model not resolved");
+      throw new Error(ADVISOR_MESSAGES.modelNotResolved);
     }
     const reasoning = request.thinking !== "off" && model.reasoning ? request.thinking : undefined;
     const reply = await this.context.modelRegistry

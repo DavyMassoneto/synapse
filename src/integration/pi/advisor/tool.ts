@@ -12,6 +12,7 @@ import {
   captureTranscript,
   createRenderers,
 } from "@/integration";
+import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { type Advisor } from "@/modules";
 
 class AdvisorToolHandler {
@@ -30,14 +31,14 @@ class AdvisorToolHandler {
     const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
     if (callSignal.aborted) {
       return {
-        content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+        content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
         details: {},
         isError: true,
       };
     }
 
     try {
-      onUpdate?.({ content: [{ type: "text", text: "Consultando advisor..." }], details: {} });
+      onUpdate?.({ content: [{ type: "text", text: ADVISOR_MESSAGES.progress }], details: {} });
 
       const advisorModel = new AdvisorModel(context);
       const result = await this.advisor.consult(
@@ -51,7 +52,7 @@ class AdvisorToolHandler {
 
       if (result.kind === "cancelled") {
         return {
-          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
           details: {},
           isError: true,
         };
@@ -67,7 +68,7 @@ class AdvisorToolHandler {
     } catch (error) {
       if (callSignal.aborted) {
         return {
-          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
           details: {},
           isError: true,
         };
@@ -77,7 +78,7 @@ class AdvisorToolHandler {
         content: [
           {
             type: "text",
-            text: `Advisor unavailable: ${message}. Continue without advice.`,
+            text: `Advisor indisponível: ${message}.`,
           },
         ],
         details: {},
@@ -94,9 +95,8 @@ export function registerTool(pi: ExtensionAPI, advisor: Advisor, lifetime: Abort
     label: "Advisor",
     executionMode: "sequential",
     parameters: advisorParameters,
-    description:
-      "Consult a stronger advisor for strategic guidance. No parameters. The active conversation is sent to the configured provider, subject to context limits; images are omitted.",
-    promptSnippet: "Consult a stronger advisor model with the conversation (no parameters)",
+    description: ADVISOR_MESSAGES.description,
+    promptSnippet: ADVISOR_MESSAGES.snippet,
     ...createRenderers(),
     execute: handler.execute.bind(handler),
   });

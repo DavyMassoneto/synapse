@@ -6,10 +6,8 @@ import {
   type AdvisorRenderers,
   type AdvisorRenderResultContext,
   type AdvisorRenderResultValue,
-  PREVIEW_LINES,
-  RENDER_STYLE,
-  RENDER_TEXT,
 } from "@/integration";
+import { PREVIEW_LINES, RENDER_STYLE, RENDER_TEXT } from "@/integration/pi/advisor/presentation";
 
 class AdvisorRendering {
   renderCall(
