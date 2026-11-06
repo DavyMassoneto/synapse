@@ -8,7 +8,7 @@ const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
 const { ReminderCounter, REMIND_EVERY } = await jiti.import(
   "../../src/modules/advisor/internal/reminder/counter.ts",
 );
-const { REMINDER } = await jiti.import("../../src/modules/advisor/internal/instructions.ts");
+const { REMINDER } = await jiti.import("../../src/modules/advisor/internal/format/instructions.ts");
 
 test("lembrete respeita cadência e estado isolado", () => {
   const first = new ReminderCounter();

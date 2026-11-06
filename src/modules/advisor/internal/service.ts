@@ -1,21 +1,19 @@
+import { AdvisorConfiguration, type ConfigPort } from "@/modules/advisor/internal/config";
 import {
   ADVISOR_SYSTEM,
   buildTranscript,
   clip,
   REMINDER,
   TIMING,
-} from "@/modules/advisor/internal";
-import { AdvisorConfiguration, type ConfigPort } from "@/modules/advisor/internal/config";
+} from "@/modules/advisor/internal/format";
 import { ReminderCounter } from "@/modules/advisor/internal/reminder";
+import { type AdvisorResult, type ThinkingLevel } from "@/modules/advisor/public/config";
 import {
-  type Advisor,
-  type AdvisorResult,
   type Consultation,
   type ConsultationResult,
   type ModelPort,
-  type ReminderTurn,
-  type ThinkingLevel,
-} from "@/modules/advisor/public";
+} from "@/modules/advisor/public/consultation";
+import { type Advisor, type ReminderTurn } from "@/modules/advisor/public/types";
 
 export class AdvisorService implements Advisor {
   readonly timing = TIMING;

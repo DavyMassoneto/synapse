@@ -1,4 +1,4 @@
-import { type Config } from "@/modules/advisor/public";
+import { type Config } from "@/modules/advisor/public/config";
 
 export interface ConfigPort {
   load(): ConfigLoadResult;

@@ -1,11 +1,11 @@
 import { Value } from "typebox/value";
-import { type ConfigPort } from "@/modules/advisor/internal/config";
+import { type ConfigPort } from "@/modules/advisor/internal/config/ports";
 import {
   type AdvisorResult,
   type AdvisorStatus,
   type ThinkingLevel,
-} from "@/modules/advisor/public";
-import { thinkingSchema } from "@/modules/advisor/public/config";
+  thinkingSchema,
+} from "@/modules/advisor/public/config";
 
 export class AdvisorConfiguration {
   private current: AdvisorResult;

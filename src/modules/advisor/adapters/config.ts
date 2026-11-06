@@ -1,9 +1,9 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
-import { configSchema } from "@/modules/advisor/adapters";
+import { configSchema } from "@/modules/advisor/adapters/schema";
 import { type ConfigLoadResult } from "@/modules/advisor/internal/config";
-import { type Config } from "@/modules/advisor/public";
+import { type Config } from "@/modules/advisor/public/config";
 
 export class FileConfig {
   constructor(private readonly path: string) {}

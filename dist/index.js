@@ -20,6 +20,15 @@ var thinkingSchema = Type.Union([
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
+
+// src/modules/advisor/adapters/schema/config-schema.ts
+import { Type as Type2 } from "typebox";
+var configSchema = Type2.Object({
+  model: Type2.Optional(Type2.String()),
+  thinking: Type2.Optional(thinkingSchema)
+});
+
+// src/modules/advisor/adapters/config.ts
 var FileConfig = class {
   constructor(path) {
     this.path = path;
@@ -52,13 +61,6 @@ var FileConfig = class {
   }
 };
 
-// src/modules/advisor/adapters/config-schema.ts
-import { Type as Type2 } from "typebox";
-var configSchema = Type2.Object({
-  model: Type2.Optional(Type2.String()),
-  thinking: Type2.Optional(thinkingSchema)
-});
-
 // src/modules/advisor/internal/reminder/counter.ts
 var REMIND_EVERY = 5;
 var ReminderCounter = class {
@@ -79,7 +81,7 @@ var ReminderCounter = class {
   }
 };
 
-// src/modules/advisor/internal/instructions.ts
+// src/modules/advisor/internal/format/instructions.ts
 var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
 
 Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
@@ -108,6 +110,68 @@ Rules:
 - Do not rewrite the whole solution, do not repeat the transcript, do not pad. If the executor is on track, say so in a line.
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
+
+// src/modules/advisor/internal/format/transcript.ts
+var TOOL_RESULT_LIMIT = 12e3;
+var HEAD_FRACTION = 0.6;
+var SEPARATOR = "\n\n";
+function clip(text, limit) {
+  if (limit <= 0) {
+    return "";
+  }
+  if (text.length <= limit) {
+    return text;
+  }
+  const marker = "\n[... conte\xFAdo omitido ...]\n";
+  if (limit <= marker.length) {
+    return text.slice(0, limit);
+  }
+  const available = limit - marker.length;
+  const head = Math.floor(available * HEAD_FRACTION);
+  const tail = available - head;
+  return text.slice(0, head) + marker + text.slice(-tail);
+}
+function renderMessage(message, limit) {
+  if (message.kind === "shell" && message.hidden) {
+    return "";
+  }
+  let label = `[${message.kind}]`;
+  if (message.kind === "toolResult") {
+    label = `[tool_result ${message.name ?? ""}${message.error ? " (error)" : ""}]`;
+  } else if (message.kind === "shell") {
+    label = `[user ran shell] $ ${message.name ?? ""}`;
+  } else if (message.kind === "custom") {
+    label = `[context:${message.name ?? ""}]`;
+  } else if (message.kind === "summary") {
+    label = "[summary of earlier conversation]";
+  }
+  const parts = [label];
+  for (const block of message.blocks) {
+    if (block.kind === "image") {
+      parts.push("[image omitted]");
+    } else if (block.kind === "call") {
+      parts.push(`[tool_call ${block.name}] ${clip(block.arguments, limit)}`);
+    } else if (message.kind === "toolResult" || message.kind === "shell" || message.kind === "custom") {
+      parts.push(clip(block.text, limit));
+    } else {
+      parts.push(block.text);
+    }
+  }
+  return parts.join("\n");
+}
+function buildTranscript(messages, budget) {
+  if (budget <= 0) {
+    return "";
+  }
+  const blocks = [];
+  for (const message of messages) {
+    const text = renderMessage(message, TOOL_RESULT_LIMIT);
+    if (text) {
+      blocks.push(text);
+    }
+  }
+  return clip(blocks.join(SEPARATOR), budget);
+}
 
 // src/modules/advisor/internal/config/state.ts
 import { Value as Value2 } from "typebox/value";
@@ -256,68 +320,6 @@ var AdvisorService = class {
     }
   }
 };
-
-// src/modules/advisor/internal/transcript.ts
-var TOOL_RESULT_LIMIT = 12e3;
-var HEAD_FRACTION = 0.6;
-var SEPARATOR = "\n\n";
-function clip(text, limit) {
-  if (limit <= 0) {
-    return "";
-  }
-  if (text.length <= limit) {
-    return text;
-  }
-  const marker = "\n[... conte\xFAdo omitido ...]\n";
-  if (limit <= marker.length) {
-    return text.slice(0, limit);
-  }
-  const available = limit - marker.length;
-  const head = Math.floor(available * HEAD_FRACTION);
-  const tail = available - head;
-  return text.slice(0, head) + marker + text.slice(-tail);
-}
-function renderMessage(message, limit) {
-  if (message.kind === "shell" && message.hidden) {
-    return "";
-  }
-  let label = `[${message.kind}]`;
-  if (message.kind === "toolResult") {
-    label = `[tool_result ${message.name ?? ""}${message.error ? " (error)" : ""}]`;
-  } else if (message.kind === "shell") {
-    label = `[user ran shell] $ ${message.name ?? ""}`;
-  } else if (message.kind === "custom") {
-    label = `[context:${message.name ?? ""}]`;
-  } else if (message.kind === "summary") {
-    label = "[summary of earlier conversation]";
-  }
-  const parts = [label];
-  for (const block of message.blocks) {
-    if (block.kind === "image") {
-      parts.push("[image omitted]");
-    } else if (block.kind === "call") {
-      parts.push(`[tool_call ${block.name}] ${clip(block.arguments, limit)}`);
-    } else if (message.kind === "toolResult" || message.kind === "shell" || message.kind === "custom") {
-      parts.push(clip(block.text, limit));
-    } else {
-      parts.push(block.text);
-    }
-  }
-  return parts.join("\n");
-}
-function buildTranscript(messages, budget) {
-  if (budget <= 0) {
-    return "";
-  }
-  const blocks = [];
-  for (const message of messages) {
-    const text = renderMessage(message, TOOL_RESULT_LIMIT);
-    if (text) {
-      blocks.push(text);
-    }
-  }
-  return clip(blocks.join(SEPARATOR), budget);
-}
 
 // src/modules/advisor/public/create-advisor.ts
 function createAdvisor(path) {

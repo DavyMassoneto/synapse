@@ -1,11 +1,5 @@
-import { type AdvisorResult, type ReminderTurn } from "@/modules/advisor/public";
 import { type ThinkingLevel } from "@/modules/advisor/public/config";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
-
-export interface Config {
-  model?: string;
-  thinking: ThinkingLevel;
-}
 
 export interface UsageCost {
   input: number;
@@ -63,15 +57,4 @@ export interface Consultation {
   system: string;
   messages: TranscriptMessage[];
   signal?: AbortSignal;
-}
-
-export interface Advisor {
-  status(): AdvisorResult;
-  selectModel(model: string): AdvisorResult;
-  disable(): AdvisorResult;
-  setThinking(level: ThinkingLevel): AdvisorResult;
-  timing: string;
-  reset(): void;
-  turn(event: ReminderTurn): string | undefined;
-  consult(input: Consultation, model: ModelPort): Promise<ConsultationResult>;
 }
