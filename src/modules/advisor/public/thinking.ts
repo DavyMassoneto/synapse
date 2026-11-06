@@ -1,4 +1,4 @@
-import type { ThinkingLevel } from "@/modules/advisor/public/contracts.ts";
+import type { ThinkingLevel } from "@/modules";
 
 export const THINKING_LEVELS: readonly ThinkingLevel[] = [
   "off",

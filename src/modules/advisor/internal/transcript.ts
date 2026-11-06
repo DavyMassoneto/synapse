@@ -1,4 +1,4 @@
-import type { TranscriptMessage } from "@/modules/advisor/public/contracts.ts";
+import type { TranscriptMessage } from "@/modules";
 
 const TOOL_RESULT_LIMIT = 12_000;
 

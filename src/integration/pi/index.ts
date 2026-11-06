@@ -1,7 +1,9 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
-import { compose } from "@/composition/index.ts";
-import { registerAdvisor } from "@/integration/pi/advisor.ts";
-
-export default function registerSynapse(pi: ExtensionAPI): void {
-  registerAdvisor(pi, compose());
-}
+export * from "@/integration/pi/advisor.ts";
+export * from "@/integration/pi/command.ts";
+export * from "@/integration/pi/events.ts";
+export { default as registerSynapse } from "@/integration/pi/extension.ts";
+export * from "@/integration/pi/rendering.ts";
+export * from "@/integration/pi/rendering-types.ts";
+export * from "@/integration/pi/tool.ts";
+export * from "@/integration/pi/tool-schema.ts";
+export * from "@/integration/pi/transcript.ts";

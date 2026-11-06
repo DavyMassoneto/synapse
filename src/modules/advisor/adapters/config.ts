@@ -2,8 +2,8 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { Value } from "typebox/value";
-import { configSchema } from "@/modules/advisor/adapters/config-schema.ts";
-import type { Config } from "@/modules/advisor/public/contracts.ts";
+import type { Config } from "@/modules";
+import { configSchema } from "@/modules/advisor/adapters";
 
 const CONFIG_PATH = join(homedir(), ".pi", "agent", "advisor.json");
 const DEFAULT_MODEL = "omniroute/cc/claude-opus-5-5";

@@ -1,6 +1,6 @@
 import { Text } from "@earendil-works/pi-tui";
-import type { AdvisorRenderers } from "@/integration/pi/rendering-types.ts";
-import type { Advisor } from "@/modules/advisor/public/contracts.ts";
+import type { AdvisorRenderers } from "@/integration";
+import type { Advisor } from "@/modules";
 
 export function createRenderers(advisor: Advisor): AdvisorRenderers {
   return {

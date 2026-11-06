@@ -1,7 +1,7 @@
 import type { AgentMessage } from "@earendil-works/pi-agent-core";
 import type { ImageContent, TextContent } from "@earendil-works/pi-ai";
 import type { ExtensionContext } from "@earendil-works/pi-coding-agent";
-import type { TranscriptMessage } from "@/modules/advisor/public/contracts.ts";
+import type { TranscriptMessage } from "@/modules";
 
 function renderContent(content: string | (TextContent | ImageContent)[]): string {
   if (typeof content === "string") {

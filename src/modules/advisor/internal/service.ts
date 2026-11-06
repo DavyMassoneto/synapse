@@ -1,6 +1,11 @@
-import { ADVISOR_SYSTEM, REMINDER, TIMING } from "@/modules/advisor/internal/instructions.ts";
-import { buildTranscript, clip } from "@/modules/advisor/internal/transcript.ts";
-import type { Advisor, ConfigPort } from "@/modules/advisor/public/contracts.ts";
+import type { Advisor, ConfigPort } from "@/modules";
+import {
+  ADVISOR_SYSTEM,
+  buildTranscript,
+  clip,
+  REMINDER,
+  TIMING,
+} from "@/modules/advisor/internal";
 
 export function createService(config: ConfigPort): Advisor {
   let turns = 0;

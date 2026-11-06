@@ -1,5 +1,5 @@
 import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
-import type { Advisor } from "@/modules/advisor/public/contracts.ts";
+import type { Advisor } from "@/modules";
 
 export function syncAdvisor(pi: ExtensionAPI, advisor: Advisor, context: ExtensionContext): void {
   const model = advisor.config.load().model;

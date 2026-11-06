@@ -5,6 +5,21 @@ import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
 import { Value } from "typebox/value";
+var CONFIG_PATH = join(homedir(), ".pi", "agent", "advisor.json");
+var DEFAULT_MODEL = "omniroute/cc/claude-opus-5-5";
+function loadConfig() {
+  try {
+    const config = Value.Parse(configSchema, JSON.parse(readFileSync(CONFIG_PATH, "utf8")));
+    return { model: config.model || void 0, thinking: config.thinking ?? "high" };
+  } catch {
+    return { model: DEFAULT_MODEL, thinking: "high" };
+  }
+}
+function saveConfig(config) {
+  mkdirSync(dirname(CONFIG_PATH), { recursive: true });
+  writeFileSync(CONFIG_PATH, `${JSON.stringify(config, null, 2)}
+`);
+}
 
 // src/modules/advisor/adapters/config-schema.ts
 import { Type } from "typebox";
@@ -22,23 +37,6 @@ var configSchema = Type.Object({
     ])
   )
 });
-
-// src/modules/advisor/adapters/config.ts
-var CONFIG_PATH = join(homedir(), ".pi", "agent", "advisor.json");
-var DEFAULT_MODEL = "omniroute/cc/claude-opus-5-5";
-function loadConfig() {
-  try {
-    const config = Value.Parse(configSchema, JSON.parse(readFileSync(CONFIG_PATH, "utf8")));
-    return { model: config.model || void 0, thinking: config.thinking ?? "high" };
-  } catch {
-    return { model: DEFAULT_MODEL, thinking: "high" };
-  }
-}
-function saveConfig(config) {
-  mkdirSync(dirname(CONFIG_PATH), { recursive: true });
-  writeFileSync(CONFIG_PATH, `${JSON.stringify(config, null, 2)}
-`);
-}
 
 // src/modules/advisor/internal/instructions.ts
 var REMIND_EVERY = 5;
@@ -70,44 +68,6 @@ Rules:
 - Do not rewrite the whole solution, do not repeat the transcript, do not pad. If the executor is on track, say so in a line.
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
-
-// src/modules/advisor/internal/transcript.ts
-var TOOL_RESULT_LIMIT = 12e3;
-function clip(text, limit) {
-  if (text.length <= limit) {
-    return text;
-  }
-  const head = Math.floor(limit * 0.6);
-  const omitted = text.length - limit;
-  return text.slice(0, head) + "\n[... " + omitted + " chars omitted ...]\n" + text.slice(-(limit - head));
-}
-function buildTranscript(messages, budget) {
-  let blocks = [];
-  for (const limit of [TOOL_RESULT_LIMIT, 4e3, 1500, 500]) {
-    blocks = messages.map(
-      (message) => message.parts.map((part) => part.clip ? clip(part.text, limit) : part.text).join("\n")
-    );
-    if (blocks.join("\n\n").length <= budget) {
-      return blocks.join("\n\n");
-    }
-  }
-  const first = blocks[0] ?? "";
-  const tail = [];
-  let used = first.length + 200;
-  for (let index = blocks.length - 1; index > 0; index--) {
-    if (used + blocks[index].length + 2 > budget) {
-      break;
-    }
-    tail.unshift(blocks[index]);
-    used += blocks[index].length + 2;
-  }
-  const omitted = blocks.length - 1 - tail.length;
-  return [
-    first,
-    `[... ${omitted} earlier messages omitted to fit the advisor context window ...]`,
-    ...tail
-  ].join("\n\n");
-}
 
 // src/modules/advisor/internal/service.ts
 function createService(config) {
@@ -158,7 +118,50 @@ function createService(config) {
   };
 }
 
-// src/modules/advisor/internal/thinking.ts
+// src/modules/advisor/internal/transcript.ts
+var TOOL_RESULT_LIMIT = 12e3;
+function clip(text, limit) {
+  if (text.length <= limit) {
+    return text;
+  }
+  const head = Math.floor(limit * 0.6);
+  const omitted = text.length - limit;
+  return text.slice(0, head) + "\n[... " + omitted + " chars omitted ...]\n" + text.slice(-(limit - head));
+}
+function buildTranscript(messages, budget) {
+  let blocks = [];
+  for (const limit of [TOOL_RESULT_LIMIT, 4e3, 1500, 500]) {
+    blocks = messages.map(
+      (message) => message.parts.map((part) => part.clip ? clip(part.text, limit) : part.text).join("\n")
+    );
+    if (blocks.join("\n\n").length <= budget) {
+      return blocks.join("\n\n");
+    }
+  }
+  const first = blocks[0] ?? "";
+  const tail = [];
+  let used = first.length + 200;
+  for (let index = blocks.length - 1; index > 0; index--) {
+    if (used + blocks[index].length + 2 > budget) {
+      break;
+    }
+    tail.unshift(blocks[index]);
+    used += blocks[index].length + 2;
+  }
+  const omitted = blocks.length - 1 - tail.length;
+  return [
+    first,
+    `[... ${omitted} earlier messages omitted to fit the advisor context window ...]`,
+    ...tail
+  ].join("\n\n");
+}
+
+// src/modules/advisor/public/create-advisor.ts
+function createAdvisor() {
+  return createService({ load: loadConfig, save: saveConfig });
+}
+
+// src/modules/advisor/public/thinking.ts
 var THINKING_LEVELS = [
   "off",
   "minimal",
@@ -169,64 +172,17 @@ var THINKING_LEVELS = [
   "max"
 ];
 
-// src/modules/advisor/public/index.ts
-function createAdvisor() {
-  return createService({ load: loadConfig, save: saveConfig });
-}
-
-// src/composition/index.ts
+// src/composition/compose.ts
 function compose() {
   return createAdvisor();
 }
 
-// src/integration/pi/events.ts
-function syncAdvisor(pi, advisor, context) {
-  const model = advisor.config.load().model;
-  const active = pi.getActiveTools();
-  if (model && !active.includes("advisor")) {
-    pi.setActiveTools([...active, "advisor"]);
-  } else if (!model && active.includes("advisor")) {
-    pi.setActiveTools(active.filter((name) => name !== "advisor"));
-  }
-  if (context.hasUI) {
-    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
-  }
-}
-function registerEvents(pi, advisor, lifetime) {
-  pi.on("session_start", (_event, context) => {
-    advisor.reset();
-    syncAdvisor(pi, advisor, context);
-  });
-  pi.on("session_shutdown", () => lifetime.abort());
-  pi.on("before_agent_start", (event, context) => {
-    syncAdvisor(pi, advisor, context);
-    if (advisor.config.load().model) {
-      event.systemPromptOptions.sections.advisor = advisor.timing;
-    } else {
-      delete event.systemPromptOptions.sections.advisor;
-    }
-  });
-  pi.on("tool_result", (event) => {
-    if (event.toolName === "advisor") {
-      advisor.reset();
-    }
-  });
-  pi.on("turn_end", (event) => {
-    const reminder = advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
-    if (reminder) {
-      return {
-        entries: [
-          ...event.entries,
-          {
-            type: "custom_message",
-            customType: "advisor-lembrete",
-            content: reminder,
-            display: false
-          }
-        ]
-      };
-    }
-  });
+// src/integration/pi/advisor.ts
+function registerAdvisor(pi, advisor) {
+  const lifetime = new AbortController();
+  registerEvents(pi, advisor, lifetime);
+  registerTool(pi, advisor, lifetime);
+  registerCommand(pi, advisor);
 }
 
 // src/integration/pi/command.ts
@@ -303,6 +259,56 @@ function registerCommand(pi, advisor) {
   });
 }
 
+// src/integration/pi/events.ts
+function syncAdvisor(pi, advisor, context) {
+  const model = advisor.config.load().model;
+  const active = pi.getActiveTools();
+  if (model && !active.includes("advisor")) {
+    pi.setActiveTools([...active, "advisor"]);
+  } else if (!model && active.includes("advisor")) {
+    pi.setActiveTools(active.filter((name) => name !== "advisor"));
+  }
+  if (context.hasUI) {
+    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
+  }
+}
+function registerEvents(pi, advisor, lifetime) {
+  pi.on("session_start", (_event, context) => {
+    advisor.reset();
+    syncAdvisor(pi, advisor, context);
+  });
+  pi.on("session_shutdown", () => lifetime.abort());
+  pi.on("before_agent_start", (event, context) => {
+    syncAdvisor(pi, advisor, context);
+    if (advisor.config.load().model) {
+      event.systemPromptOptions.sections.advisor = advisor.timing;
+    } else {
+      delete event.systemPromptOptions.sections.advisor;
+    }
+  });
+  pi.on("tool_result", (event) => {
+    if (event.toolName === "advisor") {
+      advisor.reset();
+    }
+  });
+  pi.on("turn_end", (event) => {
+    const reminder = advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
+    if (reminder) {
+      return {
+        entries: [
+          ...event.entries,
+          {
+            type: "custom_message",
+            customType: "advisor-lembrete",
+            content: reminder,
+            display: false
+          }
+        ]
+      };
+    }
+  });
+}
+
 // src/integration/pi/rendering.ts
 import { Text } from "@earendil-works/pi-tui";
 function createRenderers(advisor) {
@@ -335,93 +341,6 @@ ${shown.join("\n")}${suffix}`);
       return text;
     }
   };
-}
-
-// src/integration/pi/tool-schema.ts
-import { Type as Type2 } from "typebox";
-var advisorParameters = Type2.Object({});
-
-// src/integration/pi/transcript.ts
-function renderContent(content) {
-  if (typeof content === "string") {
-    return content;
-  }
-  return content.map((block) => block.type === "text" ? block.text : "[image omitted]").join("\n");
-}
-function convertMessage(message) {
-  switch (message.role) {
-    case "user":
-      return {
-        role: message.role,
-        parts: [{ text: `[user]
-${renderContent(message.content)}`, clip: false }]
-      };
-    case "assistant": {
-      const parts = message.content.flatMap((block) => {
-        if (block.type === "text") {
-          return [{ text: block.text, clip: false }];
-        }
-        if (block.type === "toolCall") {
-          return [
-            {
-              text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
-              clip: true
-            }
-          ];
-        }
-        return [];
-      });
-      return { role: message.role, parts: [{ text: "[assistant]", clip: false }, ...parts] };
-    }
-    case "toolResult":
-      return {
-        role: message.role,
-        parts: [
-          {
-            text: "[tool_result " + message.toolName + (message.isError ? " (error)" : "") + "]\n" + renderContent(message.content),
-            clip: true
-          }
-        ]
-      };
-    case "bashExecution":
-      if (message.excludeFromContext) {
-        return void 0;
-      }
-      return {
-        role: message.role,
-        parts: [{ text: `[user ran shell] $ ${message.command}
-${message.output}`, clip: true }]
-      };
-    case "custom":
-      return {
-        role: message.role,
-        parts: [
-          {
-            text: `[context:${message.customType}]
-${renderContent(message.content)}`,
-            clip: true
-          }
-        ]
-      };
-    case "branchSummary":
-    case "compactionSummary":
-      return {
-        role: message.role,
-        parts: [{ text: `[summary of earlier conversation]
-${message.summary}`, clip: false }]
-      };
-    default:
-      return void 0;
-  }
-}
-function captureTranscript(context) {
-  let messages;
-  try {
-    messages = context.sessionManager.buildSessionProjection().messages;
-  } catch {
-    messages = context.sessionManager.buildContextEntries().filter((entry) => entry.type === "message").map((entry) => entry.message);
-  }
-  return messages.map(convertMessage).filter((message) => message !== void 0);
 }
 
 // src/integration/pi/tool.ts
@@ -513,15 +432,94 @@ function registerTool(pi, advisor, lifetime) {
   });
 }
 
-// src/integration/pi/advisor.ts
-function registerAdvisor(pi, advisor) {
-  const lifetime = new AbortController();
-  registerEvents(pi, advisor, lifetime);
-  registerTool(pi, advisor, lifetime);
-  registerCommand(pi, advisor);
+// src/integration/pi/tool-schema.ts
+import { Type as Type2 } from "typebox";
+var advisorParameters = Type2.Object({});
+
+// src/integration/pi/transcript.ts
+function renderContent(content) {
+  if (typeof content === "string") {
+    return content;
+  }
+  return content.map((block) => block.type === "text" ? block.text : "[image omitted]").join("\n");
+}
+function convertMessage(message) {
+  switch (message.role) {
+    case "user":
+      return {
+        role: message.role,
+        parts: [{ text: `[user]
+${renderContent(message.content)}`, clip: false }]
+      };
+    case "assistant": {
+      const parts = message.content.flatMap((block) => {
+        if (block.type === "text") {
+          return [{ text: block.text, clip: false }];
+        }
+        if (block.type === "toolCall") {
+          return [
+            {
+              text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
+              clip: true
+            }
+          ];
+        }
+        return [];
+      });
+      return { role: message.role, parts: [{ text: "[assistant]", clip: false }, ...parts] };
+    }
+    case "toolResult":
+      return {
+        role: message.role,
+        parts: [
+          {
+            text: "[tool_result " + message.toolName + (message.isError ? " (error)" : "") + "]\n" + renderContent(message.content),
+            clip: true
+          }
+        ]
+      };
+    case "bashExecution":
+      if (message.excludeFromContext) {
+        return void 0;
+      }
+      return {
+        role: message.role,
+        parts: [{ text: `[user ran shell] $ ${message.command}
+${message.output}`, clip: true }]
+      };
+    case "custom":
+      return {
+        role: message.role,
+        parts: [
+          {
+            text: `[context:${message.customType}]
+${renderContent(message.content)}`,
+            clip: true
+          }
+        ]
+      };
+    case "branchSummary":
+    case "compactionSummary":
+      return {
+        role: message.role,
+        parts: [{ text: `[summary of earlier conversation]
+${message.summary}`, clip: false }]
+      };
+    default:
+      return void 0;
+  }
+}
+function captureTranscript(context) {
+  let messages;
+  try {
+    messages = context.sessionManager.buildSessionProjection().messages;
+  } catch {
+    messages = context.sessionManager.buildContextEntries().filter((entry) => entry.type === "message").map((entry) => entry.message);
+  }
+  return messages.map(convertMessage).filter((message) => message !== void 0);
 }
 
-// src/integration/pi/index.ts
+// src/integration/pi/extension.ts
 function registerSynapse(pi) {
   registerAdvisor(pi, compose());
 }
