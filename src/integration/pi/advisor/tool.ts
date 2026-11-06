@@ -28,53 +28,33 @@ class AdvisorToolHandler {
     context: ExtensionToolContext,
   ): AdvisorToolResult {
     try {
-      const status = this.advisor.status();
-      if (status.kind === "failure") {
-        throw new Error(status.message);
-      }
-      const config = status.status;
-      if (!config.model) {
-        throw new Error("no advisor model configured");
-      }
-
-      const slash = config.model.indexOf("/");
-      if (slash <= 0 || slash === config.model.length - 1) {
-        throw new Error(`invalid advisor model: ${config.model}`);
-      }
-
-      const provider = config.model.slice(0, slash);
-      const modelId = config.model.slice(slash + 1);
-      const model = context.modelRegistry.find(provider, modelId);
-
-      if (!model) {
-        throw new Error(`advisor model not found: ${config.model}`);
-      }
-      if (!context.modelRegistry.hasConfiguredAuth(model)) {
-        throw new Error(`no credentials for ${config.model}`);
-      }
-
-      onUpdate?.({
-        content: [{ type: "text", text: `Consulting ${config.model}...` }],
-        details: {},
-      });
+      onUpdate?.({ content: [{ type: "text", text: "Consultando advisor..." }], details: {} });
       const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
-      callSignal.throwIfAborted();
 
-      const advisorModel = new AdvisorModel(context, model);
+      const advisorModel = new AdvisorModel(context);
       const result = await this.advisor.consult(
         {
           system: context.getSystemPrompt(),
           messages: captureTranscript(context),
-          contextWindow: model.contextWindow,
           signal: callSignal,
         },
-        advisorModel.consult.bind(advisorModel),
+        advisorModel,
       );
 
+      if (result.kind === "cancelled") {
+        return {
+          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          details: {},
+          isError: true,
+        };
+      }
+      if (result.kind === "failure") {
+        return { content: [{ type: "text", text: result.message }], details: {}, isError: true };
+      }
       return {
-        content: [{ type: "text", text: result.text }],
-        details: { model: config.model },
-        usage: result.usage,
+        content: [{ type: "text", text: result.response.text }],
+        details: { model: result.model },
+        usage: result.response.usage,
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

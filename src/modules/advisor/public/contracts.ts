@@ -46,12 +46,31 @@ export interface ModelResponse {
   usage?: Usage;
 }
 
-export type ModelPort = (request: ModelRequest) => Promise<ModelResponse>;
+export interface ModelPort {
+  contextWindow(model: string, signal?: AbortSignal): Promise<number>;
+  consult(request: ModelRequest): Promise<ModelResponse>;
+}
+
+export interface ConsultationSuccess {
+  kind: "success";
+  model: string;
+  response: ModelResponse;
+}
+
+export interface ConsultationFailure {
+  kind: "failure";
+  message: string;
+}
+
+export interface ConsultationCancelled {
+  kind: "cancelled";
+}
+
+export type ConsultationResult = ConsultationSuccess | ConsultationFailure | ConsultationCancelled;
 
 export interface Consultation {
   system: string;
   messages: TranscriptMessage[];
-  contextWindow: number;
   signal?: AbortSignal;
 }
 
@@ -63,5 +82,5 @@ export interface Advisor {
   timing: string;
   reset(): void;
   turn(completed: boolean, hasTools: boolean): string | undefined;
-  consult(input: Consultation, model: ModelPort): Promise<ModelResponse>;
+  consult(input: Consultation, model: ModelPort): Promise<ConsultationResult>;
 }

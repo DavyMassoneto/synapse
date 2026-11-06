@@ -162,34 +162,53 @@ var AdvisorService = class {
     return REMINDER;
   }
   async consult(input, model) {
+    if (input.signal?.aborted) {
+      return { kind: "cancelled" };
+    }
     if (this.current.kind === "failure") {
-      throw new Error(this.current.message);
+      return { kind: "failure", message: this.current.message };
     }
     const configuration = this.current.status;
     if (!configuration.model) {
-      throw new Error("no advisor model configured");
+      return { kind: "failure", message: "no advisor model configured" };
     }
-    const system = clip(input.system, 4e4);
-    const budget = Math.max(2e4, (input.contextWindow - 26e3) * 3 - system.length);
-    const transcript = buildTranscript(input.messages, budget);
-    const prompt = [
-      "<executor_system_prompt>",
-      system,
-      "</executor_system_prompt>",
-      "",
-      "<transcript>",
-      transcript,
-      "</transcript>",
-      "",
-      "The executor just called advisor(). Give your guidance now."
-    ].join("\n");
-    return model({
-      system: ADVISOR_SYSTEM,
-      prompt,
-      model: configuration.model,
-      thinking: configuration.thinking,
-      signal: input.signal
-    });
+    try {
+      const contextWindow = await model.contextWindow(configuration.model, input.signal);
+      if (input.signal?.aborted) {
+        return { kind: "cancelled" };
+      }
+      const system = clip(input.system, 4e4);
+      const budget = Math.max(2e4, (contextWindow - 26e3) * 3 - system.length);
+      const transcript = buildTranscript(input.messages, budget);
+      const prompt = [
+        "<executor_system_prompt>",
+        system,
+        "</executor_system_prompt>",
+        "",
+        "<transcript>",
+        transcript,
+        "</transcript>",
+        "",
+        "The executor just called advisor(). Give your guidance now."
+      ].join("\n");
+      const response = await model.consult({
+        system: ADVISOR_SYSTEM,
+        prompt,
+        model: configuration.model,
+        thinking: configuration.thinking,
+        signal: input.signal
+      });
+      if (input.signal?.aborted) {
+        return { kind: "cancelled" };
+      }
+      return { kind: "success", model: configuration.model, response };
+    } catch (error) {
+      if (input.signal?.aborted) {
+        return { kind: "cancelled" };
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      return { kind: "failure", message };
+    }
   }
 };
 
@@ -489,16 +508,37 @@ function registerEvents(pi, advisor, shutdownCallback) {
 
 // src/integration/pi/advisor/model.ts
 var AdvisorModel = class {
-  constructor(context, model) {
+  constructor(context) {
     this.context = context;
-    this.model = model;
   }
   context;
   model;
+  async contextWindow(reference, signal) {
+    signal?.throwIfAborted();
+    const separator = reference.indexOf("/");
+    if (separator <= 0 || separator === reference.length - 1) {
+      throw new Error("invalid advisor model reference");
+    }
+    const provider = reference.slice(0, separator);
+    const modelId = reference.slice(separator + 1);
+    const model = this.context.modelRegistry.find(provider, modelId);
+    if (!model) {
+      throw new Error(`advisor model not found: ${reference}`);
+    }
+    if (!this.context.modelRegistry.hasConfiguredAuth(model)) {
+      throw new Error(`no credentials for ${reference}`);
+    }
+    this.model = model;
+    return model.contextWindow;
+  }
   async consult(request) {
-    const reasoning = request.thinking !== "off" && this.model.reasoning ? request.thinking : void 0;
+    const model = this.model;
+    if (!model) {
+      throw new Error("advisor model not resolved");
+    }
+    const reasoning = request.thinking !== "off" && model.reasoning ? request.thinking : void 0;
     const reply = await this.context.modelRegistry.streamSimple(
-      this.model,
+      model,
       {
         systemPrompt: request.system,
         messages: [
@@ -514,14 +554,13 @@ var AdvisorModel = class {
     if (reply.stopReason === "error" || reply.stopReason === "aborted") {
       throw new Error(reply.errorMessage ?? reply.stopReason);
     }
-    let text = "";
+    const parts = [];
     for (const block of reply.content) {
       if (block.type === "text") {
-        text += `${block.text}
-`;
+        parts.push(block.text);
       }
     }
-    text = text.trim();
+    const text = parts.join("\n").trim();
     if (!text) {
       throw new Error("advisor returned no text");
     }
@@ -604,47 +643,31 @@ var AdvisorToolHandler = class {
   lifetime;
   async execute(_id, _params, signal, onUpdate, context) {
     try {
-      const status = this.advisor.status();
-      if (status.kind === "failure") {
-        throw new Error(status.message);
-      }
-      const config = status.status;
-      if (!config.model) {
-        throw new Error("no advisor model configured");
-      }
-      const slash = config.model.indexOf("/");
-      if (slash <= 0 || slash === config.model.length - 1) {
-        throw new Error(`invalid advisor model: ${config.model}`);
-      }
-      const provider = config.model.slice(0, slash);
-      const modelId = config.model.slice(slash + 1);
-      const model = context.modelRegistry.find(provider, modelId);
-      if (!model) {
-        throw new Error(`advisor model not found: ${config.model}`);
-      }
-      if (!context.modelRegistry.hasConfiguredAuth(model)) {
-        throw new Error(`no credentials for ${config.model}`);
-      }
-      onUpdate?.({
-        content: [{ type: "text", text: `Consulting ${config.model}...` }],
-        details: {}
-      });
+      onUpdate?.({ content: [{ type: "text", text: "Consultando advisor..." }], details: {} });
       const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
-      callSignal.throwIfAborted();
-      const advisorModel = new AdvisorModel(context, model);
+      const advisorModel = new AdvisorModel(context);
       const result = await this.advisor.consult(
         {
           system: context.getSystemPrompt(),
           messages: captureTranscript(context),
-          contextWindow: model.contextWindow,
           signal: callSignal
         },
-        advisorModel.consult.bind(advisorModel)
+        advisorModel
       );
+      if (result.kind === "cancelled") {
+        return {
+          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          details: {},
+          isError: true
+        };
+      }
+      if (result.kind === "failure") {
+        return { content: [{ type: "text", text: result.message }], details: {}, isError: true };
+      }
       return {
-        content: [{ type: "text", text: result.text }],
-        details: { model: config.model },
-        usage: result.usage
+        content: [{ type: "text", text: result.response.text }],
+        details: { model: result.model },
+        usage: result.response.usage
       };
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);

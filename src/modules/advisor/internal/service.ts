@@ -11,8 +11,8 @@ import {
   type AdvisorResult,
   type AdvisorStatus,
   type Consultation,
+  type ConsultationResult,
   type ModelPort,
-  type ModelResponse,
   type ThinkingLevel,
 } from "@/modules/advisor/public";
 
@@ -94,34 +94,53 @@ export class AdvisorService implements Advisor {
     return REMINDER;
   }
 
-  async consult(input: Consultation, model: ModelPort): Promise<ModelResponse> {
+  async consult(input: Consultation, model: ModelPort): Promise<ConsultationResult> {
+    if (input.signal?.aborted) {
+      return { kind: "cancelled" };
+    }
     if (this.current.kind === "failure") {
-      throw new Error(this.current.message);
+      return { kind: "failure", message: this.current.message };
     }
     const configuration = this.current.status;
     if (!configuration.model) {
-      throw new Error("no advisor model configured");
+      return { kind: "failure", message: "no advisor model configured" };
     }
-    const system = clip(input.system, 40_000);
-    const budget = Math.max(20_000, (input.contextWindow - 26_000) * 3 - system.length);
-    const transcript = buildTranscript(input.messages, budget);
-    const prompt = [
-      "<executor_system_prompt>",
-      system,
-      "</executor_system_prompt>",
-      "",
-      "<transcript>",
-      transcript,
-      "</transcript>",
-      "",
-      "The executor just called advisor(). Give your guidance now.",
-    ].join("\n");
-    return model({
-      system: ADVISOR_SYSTEM,
-      prompt,
-      model: configuration.model,
-      thinking: configuration.thinking,
-      signal: input.signal,
-    });
+    try {
+      const contextWindow = await model.contextWindow(configuration.model, input.signal);
+      if (input.signal?.aborted) {
+        return { kind: "cancelled" };
+      }
+      const system = clip(input.system, 40_000);
+      const budget = Math.max(20_000, (contextWindow - 26_000) * 3 - system.length);
+      const transcript = buildTranscript(input.messages, budget);
+      const prompt = [
+        "<executor_system_prompt>",
+        system,
+        "</executor_system_prompt>",
+        "",
+        "<transcript>",
+        transcript,
+        "</transcript>",
+        "",
+        "The executor just called advisor(). Give your guidance now.",
+      ].join("\n");
+      const response = await model.consult({
+        system: ADVISOR_SYSTEM,
+        prompt,
+        model: configuration.model,
+        thinking: configuration.thinking,
+        signal: input.signal,
+      });
+      if (input.signal?.aborted) {
+        return { kind: "cancelled" };
+      }
+      return { kind: "success", model: configuration.model, response };
+    } catch (error) {
+      if (input.signal?.aborted) {
+        return { kind: "cancelled" };
+      }
+      const message = error instanceof Error ? error.message : String(error);
+      return { kind: "failure", message };
+    }
   }
 }
