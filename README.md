@@ -4,6 +4,8 @@ Synapse é um monólito modular de capacidades para o [pi](https://github.com/ba
 
 ## Capacidades
 
+- **iPhone:** automação iOS via Appium e XCUITest. Veja [configuração e limitações](src/modules/iphone/README.md).
+
 - **Memória:** observações do histórico (Observational Memory), consolidação em um vault Markdown e recuperação de conhecimento com proveniência. O núcleo independe do host.
 - **pi-web:** interface para apresentar e operar o runtime do host pi.
 - **Navegador:** operações de navegação, ações e verificação de resultados.
@@ -12,9 +14,7 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 
 ## Estado do projeto
 
-O repositório contém documentação, sem código de produto, manifesto, toolchain ou testes. As capacidades descritas são contratos de construção, não funcionalidades disponíveis. Ainda não existem comandos de instalação, execução, build ou teste.
-
-A primeira base precisa definir runtime, versão suportada do pi e ferramentas de desenvolvimento.
+O módulo iPhone está disponível; memória, pi-web e navegador continuam como contratos de construção. A integração foi verificada com pi 1.5.0. Instale localmente com `pi install ./`; não carregue simultaneamente outra extensão iphone.
 
 ## Documentação
 
