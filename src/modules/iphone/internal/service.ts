@@ -1,6 +1,7 @@
 import { center, findByText, formatElements, parseSource, type El } from "./tree.ts";
 import { buildDragActions, createHome, type Driver } from "./homescreen.ts";
 import type { Dependencies, SessionPort } from "../public/contracts.ts";
+const unsupported = (error: unknown) => typeof error === "object" && error !== null && "code" in error && ["unsupported operation", "unknown command"].includes(String(error.code));
 const json = (o: unknown) => JSON.stringify(o);
 type Out = { content: Array<{ type: "text"; text: string } | { type: "image"; data: string; mimeType: string }>; details: Record<string, unknown> };
 const text = (t: string, details: Record<string, unknown> = {}): Out => ({ content: [{ type: "text", text: t }], details });
@@ -200,8 +201,9 @@ export function createService(deps: Dependencies) {
 					await s.exec("tap", { x: t.x, y: t.y });
 					await new Promise((r) => setTimeout(r, 400));
 				}
-				await s.exec("keys", { keys: [...(a.text_input as string)] }).catch(async () => {
+				await s.exec("keys", { keys: [...(a.text_input as string)] }).catch(async (error) => {
 					currentSignal?.throwIfAborted();
+					if (!unsupported(error)) throw error;
 					// Fallback: W3C actions on the active element
 					const act = await s.req("GET", "/element/active");
 					const id = act["element-6066-11e4-a52e-4f735466cecf"] ?? Object.values(act)[0];
@@ -285,7 +287,7 @@ export function createService(deps: Dependencies) {
 				// scroll(dir) moves content in `dir` => finger moves the opposite way.
 				const swipeDir = action === "scroll" ? ({ up: "down", down: "up", left: "right", right: "left" } as Record<string, string>)[dir] : dir;
 				if (t?.el?.type && action === "scroll" && t.el) {
-					const r = await s.exec("scroll", { direction: dir, x: t.x, y: t.y }).then(() => true).catch(() => { currentSignal?.throwIfAborted(); return false; });
+					const r = await s.exec("scroll", { direction: dir, x: t.x, y: t.y }).then(() => true).catch((error) => { currentSignal?.throwIfAborted(); if (!unsupported(error)) throw error; return false; });
 					if (r) return after(`scrolled ${dir}`);
 				}
 				const cx = t?.x ?? Math.round(viewport.w / 2);
@@ -327,7 +329,7 @@ export function createService(deps: Dependencies) {
 			}
 			case "url": {
 				if (!a.url) throw new Error("url required");
-				await s.exec("deepLink", { url: a.url, bundleId: a.bundle_id ?? "com.apple.mobilesafari" }).catch(() => { currentSignal?.throwIfAborted(); return s.req("POST", "/url", { url: a.url }); });
+				await s.exec("deepLink", { url: a.url, bundleId: a.bundle_id ?? "com.apple.mobilesafari" }).catch((error) => { currentSignal?.throwIfAborted(); if (!unsupported(error)) throw error; return s.req("POST", "/url", { url: a.url }); });
 				return after(`opened ${a.url}`);
 			}
 			case "info": {
