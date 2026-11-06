@@ -1,12 +1,15 @@
+import { type Api, type Model } from "@earendil-works/pi-ai";
 import { type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { syncAdvisor } from "@/integration";
 import { type Advisor, THINKING_LEVELS } from "@/modules";
 
 function modelRefs(context: ExtensionContext): string[] {
-  let models = context.modelRegistry.getAvailable();
+  let models: Model<Api>[];
 
   if (context.scopedModels.length > 0) {
     models = context.scopedModels.map((entry) => entry.model);
+  } else {
+    models = context.modelRegistry.getAvailable();
   }
 
   return models.map((model) => `${model.provider}/${model.id}`);
@@ -65,12 +68,14 @@ export function registerCommand(pi: ExtensionAPI, advisor: Advisor): void {
       if (input) {
         const terms = input.toLowerCase().split(/\s+/);
         const exact = models.find((model) => model.toLowerCase() === input.toLowerCase());
-        let matches = models.filter((model) =>
-          terms.every((term) => model.toLowerCase().includes(term)),
-        );
+        let matches: string[];
 
         if (exact) {
           matches = [exact];
+        } else {
+          matches = models.filter((model) =>
+            terms.every((term) => model.toLowerCase().includes(term)),
+          );
         }
 
         if (matches.length === 0) {

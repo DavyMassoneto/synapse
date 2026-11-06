@@ -187,9 +187,11 @@ function registerAdvisor(pi, advisor) {
 
 // src/integration/pi/command.ts
 function modelRefs(context) {
-  let models = context.modelRegistry.getAvailable();
+  let models;
   if (context.scopedModels.length > 0) {
     models = context.scopedModels.map((entry) => entry.model);
+  } else {
+    models = context.modelRegistry.getAvailable();
   }
   return models.map((model) => `${model.provider}/${model.id}`);
 }
@@ -234,11 +236,13 @@ function registerCommand(pi, advisor) {
       if (input) {
         const terms = input.toLowerCase().split(/\s+/);
         const exact = models.find((model) => model.toLowerCase() === input.toLowerCase());
-        let matches = models.filter(
-          (model) => terms.every((term) => model.toLowerCase().includes(term))
-        );
+        let matches;
         if (exact) {
           matches = [exact];
+        } else {
+          matches = models.filter(
+            (model) => terms.every((term) => model.toLowerCase().includes(term))
+          );
         }
         if (matches.length === 0) {
           context.ui.notify(`Nenhum modelo casa com '${input}'`, "error");
