@@ -1,4 +1,4 @@
-import type { TranscriptMessage } from "@/modules";
+import { type TranscriptMessage } from "@/modules";
 
 const TOOL_RESULT_LIMIT = 12_000;
 

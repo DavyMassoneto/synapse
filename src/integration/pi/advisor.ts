@@ -1,6 +1,6 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { registerCommand, registerEvents, registerTool } from "@/integration";
-import type { Advisor } from "@/modules";
+import { type Advisor } from "@/modules";
 
 export function registerAdvisor(pi: ExtensionAPI, advisor: Advisor): void {
   const lifetime = new AbortController();

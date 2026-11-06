@@ -22,6 +22,7 @@
       },
       "style": {
         "noNonNullAssertion": "error",
+        "useImportType": { "level": "error", "options": { "style": "inlineType" } },
         "noRestrictedImports": {
           "level": "error",
           "options": {

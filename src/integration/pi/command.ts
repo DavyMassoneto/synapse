@@ -1,7 +1,6 @@
-import type { ExtensionAPI, ExtensionContext } from "@earendil-works/pi-coding-agent";
+import { type ExtensionAPI, type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { syncAdvisor } from "@/integration";
-import type { Advisor } from "@/modules";
-import { THINKING_LEVELS } from "@/modules";
+import { type Advisor, THINKING_LEVELS } from "@/modules";
 
 function modelRefs(context: ExtensionContext): string[] {
   const models =

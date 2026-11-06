@@ -1,4 +1,4 @@
-import type { Advisor, ConfigPort } from "@/modules";
+import { type Advisor, type ConfigPort } from "@/modules";
 import {
   ADVISOR_SYSTEM,
   buildTranscript,

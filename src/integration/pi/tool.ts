@@ -1,6 +1,6 @@
-import type { ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { advisorParameters, captureTranscript, createRenderers } from "@/integration";
-import type { Advisor } from "@/modules";
+import { type Advisor } from "@/modules";
 
 export function registerTool(pi: ExtensionAPI, advisor: Advisor, lifetime: AbortController): void {
   pi.registerTool({

@@ -1,5 +1,4 @@
-import type { Advisor } from "@/modules";
-import { createAdvisor } from "@/modules";
+import { type Advisor, createAdvisor } from "@/modules";
 
 export function compose(): Advisor {
   return createAdvisor();

@@ -4,6 +4,7 @@
 - Follow SRP, DRY, YAGNI and Clean Code; keep code readable and consistently spaced.
 - Keep type declarations separate from implementation.
 - Use `@/` aliases for internal imports; import from the highest applicable barrel while respecting module boundaries.
+- Combine type and value imports from the same module into one declaration using inline `type`.
 - Every source directory must contain one barrel named `index.ts`, containing only `export * from` or `export { default as Name } from` declarations.
 - Do not use `any`, `unknown`, type assertions or casts.
 - Avoid unnecessary functions, including redundant type guards.
