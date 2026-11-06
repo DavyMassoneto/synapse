@@ -36,6 +36,7 @@
   },
   "imports": {
     "#build-options": "./scripts/build-options.mjs",
-    "#advisor-test-host": "./tests/fixtures/advisor-host.mjs"
+    "#advisor-test-host": "./tests/fixtures/advisor-host.mjs",
+    "#advisor-test-module": "./src/modules/advisor/tests/fixtures.mjs"
   }
 }

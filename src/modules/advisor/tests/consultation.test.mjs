@@ -1,71 +1,40 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
 import { test } from "node:test";
+import { AdvisorService, TestModel, TestStorage } from "#advisor-test-module";
 
-const require = createRequire(import.meta.url);
-const { createJiti } = require("jiti");
-const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
-const { AdvisorService } = await jiti.import("../internal/service.ts");
-
-function createAdvisor() {
-  return new AdvisorService({
-    load() {
-      return { kind: "loaded", config: { model: "provider/first", thinking: "low" } };
-    },
-    save() {},
-  });
-}
-
-test("a consulta preserva o snapshot durante alterações de configuração", async () => {
-  const advisor = createAdvisor();
-  let release;
-  const waiting = new Promise((resolve) => {
-    release = resolve;
-  });
-  let captured;
-  const port = {
-    async contextWindow(reference) {
-      assert.equal(reference, "provider/first");
-      await waiting;
-      return 30_000;
-    },
-    async consult(request) {
-      captured = request;
-      return { kind: "success", text: "advice" };
-    },
-  };
+async function snapshotIsStable() {
+  const advisor = new AdvisorService(new TestStorage("provider/first"));
+  const port = new TestModel();
+  const gate = Promise.withResolvers();
+  port.gate = gate.promise;
   const pending = advisor.consult({ system: "", messages: [] }, port);
   advisor.selectModel("provider/second");
   advisor.setThinking("high");
-  release();
+  gate.resolve();
   const result = await pending;
   assert.equal(result.kind, "success");
   assert.equal(result.model, "provider/first");
-  assert.equal(captured.model, "provider/first");
-  assert.equal(captured.thinking, "low");
-});
+  assert.equal(port.resolvedReference, "provider/first");
+  assert.equal(port.captured.model, "provider/first");
+  assert.equal(port.captured.thinking, "low");
+}
 
-test("cancelamento e falha são resultados distintos", async () => {
-  const advisor = createAdvisor();
-  const aborted = new AbortController();
-  aborted.abort();
-  let calls = 0;
-  const port = {
-    async contextWindow() {
-      calls += 1;
-      return 30_000;
-    },
-    async consult() {
-      throw new Error("provider error");
-    },
-  };
+async function cancellationAndFailure() {
+  const advisor = new AdvisorService(new TestStorage());
+  const controller = new AbortController();
+  controller.abort();
+  const port = new TestModel();
+  port.failure = true;
   assert.deepEqual(
-    await advisor.consult({ system: "", messages: [], signal: aborted.signal }, port),
+    await advisor.consult({ system: "", messages: [], signal: controller.signal }, port),
     { kind: "cancelled" },
   );
-  assert.equal(calls, 0);
+  assert.equal(port.calls, 0);
   assert.deepEqual(await advisor.consult({ system: "", messages: [] }, port), {
     kind: "failure",
     message: "provider error",
   });
-});
+}
+
+test("a consulta preserva o snapshot durante alterações de configuração", snapshotIsStable);
+test("cancelamento e falha são resultados distintos", cancellationAndFailure);

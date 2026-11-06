@@ -6,9 +6,10 @@ const require = createRequire(import.meta.url);
 const { createJiti } = require("jiti");
 const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
 const { buildTranscript } = await jiti.import("../internal/format/transcript.ts");
-const { AdvisorService } = await jiti.import("../internal/service.ts");
 
-test("a transcrição trata conteúdo como dados e respeita o orçamento", () => {
+import { AdvisorService, TestModel, TestStorage } from "#advisor-test-module";
+
+function transcriptRespectsBudget() {
   const messages = [
     { kind: "user", blocks: [{ kind: "text", text: "á".repeat(30_000) }] },
     { kind: "shell", hidden: true, name: "secret", blocks: [{ kind: "text", text: "hidden" }] },
@@ -33,28 +34,16 @@ test("a transcrição trata conteúdo como dados e respeita o orçamento", () =>
   const oversizedLast = { kind: "user", blocks: [{ kind: "text", text: "last".repeat(1000) }] };
   const bounded = buildTranscript([beginning, oversizedLast], 200);
   assert.ok(bounded.length <= 200);
-});
+}
 
-test("janela muito pequena retorna falha antes de chamar o modelo", async () => {
-  const advisor = new AdvisorService({
-    load() {
-      return { kind: "loaded", config: { model: "provider/model", thinking: "low" } };
-    },
-    save() {},
-  });
-  let called = false;
-  const result = await advisor.consult(
-    { system: "", messages: [] },
-    {
-      async contextWindow() {
-        return 100;
-      },
-      async consult() {
-        called = true;
-        return { kind: "success", text: "unused" };
-      },
-    },
-  );
+async function smallContextFails() {
+  const advisor = new AdvisorService(new TestStorage());
+  const model = new TestModel();
+  model.window = 100;
+  const result = await advisor.consult({ system: "", messages: [] }, model);
   assert.equal(result.kind, "failure");
-  assert.equal(called, false);
-});
+  assert.equal(model.captured, undefined);
+}
+
+test("a transcrição trata conteúdo como dados e respeita o orçamento", transcriptRespectsBudget);
+test("janela muito pequena retorna falha antes de chamar o modelo", smallContextFails);

@@ -15,9 +15,13 @@ const theme = {
   },
 };
 
-test("renderização usa o modelo histórico e reaproveita o componente", () => {
+function verifyRendering() {
   const renderers = createRenderers();
-  const content = Array.from({ length: 10 }, (_, index) => `line${index}`).join("\n");
+  const lines = [];
+  for (let index = 0; index < 10; index++) {
+    lines.push(`line${index}`);
+  }
+  const content = lines.join("\n");
   const result = {
     content: [{ type: "text", text: content }],
     details: { model: "provider/original" },
@@ -36,4 +40,6 @@ test("renderização usa o modelo histórico e reaproveita o componente", () => 
     isError: true,
   });
   assert.match(error.render(100).join(""), /line0/);
-});
+}
+
+test("renderização usa o modelo histórico e reaproveita o componente", verifyRendering);

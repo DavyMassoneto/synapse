@@ -2,29 +2,33 @@ import assert from "node:assert/strict";
 import { test } from "node:test";
 import { AdvisorHarness } from "#advisor-test-host";
 
+class SelectionUI {
+  selected = undefined;
+
+  notify() {}
+  setStatus() {}
+  async select() {
+    return this.selected;
+  }
+}
+
 async function selectionAndCancellation() {
   const harness = new AdvisorHarness("stop");
   try {
-    let selected;
+    const ui = new SelectionUI();
     harness.context.hasUI = true;
-    harness.context.ui = {
-      notify() {},
-      setStatus() {},
-      async select() {
-        return selected;
-      },
-    };
+    harness.context.ui = ui;
     harness.registry.getAvailable = getAvailable;
 
-    selected = "provider/other";
+    ui.selected = "provider/other";
     await harness.command.handler("", harness.context);
     assert.equal(harness.advisor.status().status.model, "provider/other");
 
-    selected = undefined;
+    ui.selected = undefined;
     await harness.command.handler("", harness.context);
     assert.equal(harness.advisor.status().status.model, "provider/other");
 
-    selected = "(sem advisor)";
+    ui.selected = "(sem advisor)";
     await harness.command.handler("", harness.context);
     assert.equal(harness.advisor.status().status.model, undefined);
   } finally {

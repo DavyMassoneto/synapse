@@ -32,7 +32,7 @@ const CASES = [
   },
 ];
 
-test("a distribuição preserva configuração e informa estados inválidos", () => {
+function verifyDistribution() {
   const home = mkdtempSync(join(tmpdir(), "synapse-config-"));
   const directory = join(home, ".pi", "agent");
   const file = join(directory, "advisor.json");
@@ -68,4 +68,6 @@ test("a distribuição preserva configuração e informa estados inválidos", ()
   } finally {
     rmSync(home, { recursive: true, force: true });
   }
-});
+}
+
+test("a distribuição preserva configuração e informa estados inválidos", verifyDistribution);

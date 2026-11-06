@@ -8,7 +8,7 @@ const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
 const { ReminderCounter, REMIND_EVERY } = await jiti.import("../internal/reminder/counter.ts");
 const { REMINDER } = await jiti.import("../internal/format/reminder-text.ts");
 
-test("lembrete respeita cadência e estado isolado", () => {
+function verifyReminder() {
   const first = new ReminderCounter();
   const second = new ReminderCounter();
   for (let index = 1; index < REMIND_EVERY; index++) {
@@ -21,4 +21,6 @@ test("lembrete respeita cadência e estado isolado", () => {
   second.reset();
   assert.equal(second.advance({ completed: true, usedTools: true }), false);
   assert.ok(REMINDER.includes(String(REMIND_EVERY)));
-});
+}
+
+test("lembrete respeita cadência e estado isolado", verifyReminder);
