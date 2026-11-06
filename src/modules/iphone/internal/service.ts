@@ -61,18 +61,22 @@ export function createService(deps: Dependencies) {
 		currentSignal?.throwIfAborted();
 		if (session) {
 			try {
-				await session.req("GET", "/window/rect", undefined, 8000);
+				await session.req("GET", "/window/rect", undefined, 8000, currentSignal);
 				return session;
 			} catch {
+				currentSignal?.throwIfAborted();
 				session = null;
 			}
 		}
 		await server.start();
-		session = await Session.create(cfg(), await buildCaps(), currentSignal);
+		currentSignal?.throwIfAborted();
+		const caps = await buildCaps();
+		currentSignal?.throwIfAborted();
+		session = await Session.create(cfg(), caps, currentSignal);
 		try {
-			const r = await session.req("GET", "/window/rect");
+			const r = await session.req("GET", "/window/rect", undefined, 120000, currentSignal);
 			viewport = { w: r.width, h: r.height };
-		} catch {}
+		} catch { currentSignal?.throwIfAborted(); }
 		return session;
 	}
 
@@ -342,6 +346,7 @@ export function createService(deps: Dependencies) {
 	}
 
 
+	let shutdownPromise: Promise<void> | undefined;
 	const command = (args: string) => serialize(async () => {
 		const [sub = "status", ...rest] = args.trim().split(/\s+/);
 		const m = deps.management;
@@ -352,5 +357,5 @@ export function createService(deps: Dependencies) {
 		if (sub === "config") { const c: Record<string, any> = m.load(); const pairs = rest.filter(x => x.includes("=")); for (const pair of pairs) { const [key, ...parts] = pair.split("="); c[key] = key === "port" ? Number(parts.join("=")) : parts.join("="); } if (pairs.length) m.save(c); return { text: m.configPath + String.fromCharCode(10) + JSON.stringify(c, null, 2), level: "info" as const }; }
 		return { text: "usage: /iphone status | doctor | config [k=v] | start | stop | reset | log", level: "warning" as const };
 	});
-	return { command, execute: (params: any, supportsImages: boolean, signal?: AbortSignal) => serialize(() => { signal?.throwIfAborted(); currentSignal = signal; return dispatch(params, { input: supportsImages ? ["image"] : [] }).then(result => { signal?.throwIfAborted(); return result; }).finally(() => { currentSignal = undefined; }); }), stop: () => serialize(async () => { await session?.close(); session = null; await server.stop(); }), reset: () => serialize(async () => { await session?.close(); session = null; }), start: () => serialize(() => server.start()), shutdown: async () => { closed = true; await chain; try { await session?.close(); } finally { session = null; await server.stop(); } } };
+	return { command, execute: (params: any, supportsImages: boolean, signal?: AbortSignal) => serialize(() => { signal?.throwIfAborted(); currentSignal = signal; return dispatch(params, { input: supportsImages ? ["image"] : [] }).then(result => { signal?.throwIfAborted(); return result; }).finally(() => { currentSignal = undefined; }); }), stop: () => serialize(async () => { try { await session?.close(); } finally { session = null; await server.stop(); } }), reset: () => serialize(async () => { await session?.close(); session = null; }), start: () => serialize(() => server.start()), shutdown: () => { closed = true; return shutdownPromise ??= (async () => { await chain; try { await session?.close(); } finally { session = null; await server.stop(); } })(); } };
 }
