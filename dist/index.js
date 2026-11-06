@@ -70,53 +70,54 @@ Rules:
 - Answer in the language the user is using.`;
 
 // src/modules/advisor/internal/service.ts
-function createService(config) {
-  let turns = 0;
-  return {
-    config,
-    timing: TIMING,
-    reset() {
-      turns = 0;
-    },
-    turn(completed, hasTools) {
-      if (!completed || !config.load().model) {
-        return void 0;
-      }
-      turns += 1;
-      if (turns < 5 || !hasTools) {
-        return void 0;
-      }
-      turns = 0;
-      return REMINDER;
-    },
-    async consult(input, model) {
-      if (!input.config.model) {
-        throw new Error("no advisor model configured");
-      }
-      const system = clip(input.system, 4e4);
-      const budget = Math.max(2e4, (input.contextWindow - 26e3) * 3 - system.length);
-      const transcript = buildTranscript(input.messages, budget);
-      const prompt = [
-        "<executor_system_prompt>",
-        system,
-        "</executor_system_prompt>",
-        "",
-        "<transcript>",
-        transcript,
-        "</transcript>",
-        "",
-        "The executor just called advisor(). Give your guidance now."
-      ].join("\n");
-      return model({
-        system: ADVISOR_SYSTEM,
-        prompt,
-        model: input.config.model,
-        thinking: input.config.thinking,
-        signal: input.signal
-      });
+var AdvisorService = class {
+  constructor(config) {
+    this.config = config;
+  }
+  config;
+  timing = TIMING;
+  turns = 0;
+  reset() {
+    this.turns = 0;
+  }
+  turn(completed, hasTools) {
+    if (!completed || !this.config.load().model) {
+      return void 0;
     }
-  };
-}
+    this.turns += 1;
+    if (this.turns < 5 || !hasTools) {
+      return void 0;
+    }
+    this.turns = 0;
+    return REMINDER;
+  }
+  async consult(input, model) {
+    if (!input.config.model) {
+      throw new Error("no advisor model configured");
+    }
+    const system = clip(input.system, 4e4);
+    const budget = Math.max(2e4, (input.contextWindow - 26e3) * 3 - system.length);
+    const transcript = buildTranscript(input.messages, budget);
+    const prompt = [
+      "<executor_system_prompt>",
+      system,
+      "</executor_system_prompt>",
+      "",
+      "<transcript>",
+      transcript,
+      "</transcript>",
+      "",
+      "The executor just called advisor(). Give your guidance now."
+    ].join("\n");
+    return model({
+      system: ADVISOR_SYSTEM,
+      prompt,
+      model: input.config.model,
+      thinking: input.config.thinking,
+      signal: input.signal
+    });
+  }
+};
 
 // src/modules/advisor/internal/transcript.ts
 var TOOL_RESULT_LIMIT = 12e3;
@@ -131,9 +132,14 @@ function clip(text, limit) {
 function buildTranscript(messages, budget) {
   let blocks = [];
   for (const limit of [TOOL_RESULT_LIMIT, 4e3, 1500, 500]) {
-    blocks = messages.map(
-      (message) => message.parts.map((part) => part.clip ? clip(part.text, limit) : part.text).join("\n")
-    );
+    blocks = [];
+    for (const message of messages) {
+      const parts = [];
+      for (const part of message.parts) {
+        parts.push(part.clip ? clip(part.text, limit) : part.text);
+      }
+      blocks.push(parts.join("\n"));
+    }
     if (blocks.join("\n\n").length <= budget) {
       return blocks.join("\n\n");
     }
@@ -158,7 +164,7 @@ function buildTranscript(messages, budget) {
 
 // src/modules/advisor/public/create-advisor.ts
 function createAdvisor() {
-  return createService({ load: loadConfig, save: saveConfig });
+  return new AdvisorService({ load: loadConfig, save: saveConfig });
 }
 
 // src/modules/advisor/public/thinking.ts
@@ -186,92 +192,115 @@ function registerAdvisor(pi, advisor) {
 }
 
 // src/integration/pi/command.ts
-function modelRefs(context) {
-  let models;
-  if (context.scopedModels.length > 0) {
-    models = context.scopedModels.map((entry) => entry.model);
-  } else {
-    models = context.modelRegistry.getAvailable();
+var AdvisorCommand = class {
+  constructor(pi, advisor) {
+    this.pi = pi;
+    this.advisor = advisor;
   }
-  return models.map((model) => `${model.provider}/${model.id}`);
-}
+  pi;
+  advisor;
+  lastContext;
+  start(_event, context) {
+    this.lastContext = context;
+  }
+  modelRefs(context) {
+    const refs = [];
+    if (context.scopedModels.length > 0) {
+      for (const entry of context.scopedModels)
+        refs.push(`${entry.model.provider}/${entry.model.id}`);
+    } else {
+      for (const model of context.modelRegistry.getAvailable())
+        refs.push(`${model.provider}/${model.id}`);
+    }
+    return refs;
+  }
+  completions(prefix) {
+    const models = this.lastContext ? this.modelRefs(this.lastContext) : [];
+    const items = [];
+    for (const value of ["off", "thinking", ...models]) {
+      if (value.toLowerCase().startsWith(prefix.toLowerCase())) items.push({ value, label: value });
+      if (items.length === 40) break;
+    }
+    return items;
+  }
+  commit(context, config, message) {
+    this.advisor.config.save(config);
+    syncAdvisor(this.pi, this.advisor, context);
+    context.ui.notify(message, "info");
+  }
+  async handle(args, context) {
+    this.lastContext = context;
+    const config = this.advisor.config.load();
+    const input = args.trim();
+    if (input === "off") {
+      config.model = void 0;
+      this.commit(context, config, "Advisor desligado");
+      return;
+    }
+    if (input.startsWith("thinking")) {
+      const requested = input.slice(8).trim();
+      for (const level of THINKING_LEVELS) {
+        if (level === requested) {
+          config.thinking = level;
+          this.commit(context, config, `Advisor thinking: ${level}`);
+          return;
+        }
+      }
+      context.ui.notify(`N\xEDveis: ${THINKING_LEVELS.join(", ")}`, "error");
+      return;
+    }
+    const models = this.modelRefs(context);
+    let chosen;
+    if (input) {
+      const search = input.toLowerCase();
+      const terms = search.split(/\s+/);
+      const matches = [];
+      for (const model of models) {
+        if (model.toLowerCase() === search) {
+          matches.length = 0;
+          matches.push(model);
+          break;
+        }
+        let matchesAll = true;
+        for (const term of terms) {
+          if (!model.toLowerCase().includes(term)) matchesAll = false;
+        }
+        if (matchesAll) matches.push(model);
+      }
+      if (matches.length === 0) {
+        context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
+        return;
+      }
+      if (matches.length === 1) chosen = matches[0];
+      else if (context.hasUI)
+        chosen = await context.ui.select("Modelo advisor", matches.slice(0, 100));
+    } else if (context.hasUI) {
+      chosen = await context.ui.select("Modelo advisor", ["(sem advisor)", ...models]);
+      if (chosen === "(sem advisor)") {
+        config.model = void 0;
+        this.commit(context, config, "Advisor desligado");
+        return;
+      }
+    } else {
+      context.ui.notify(
+        `Advisor: ${config.model ?? "desligado"}, thinking ${config.thinking}`,
+        "info"
+      );
+      return;
+    }
+    if (chosen) {
+      config.model = chosen;
+      this.commit(context, config, `Advisor: ${chosen}`);
+    }
+  }
+};
 function registerCommand(pi, advisor) {
-  let lastContext;
-  pi.on("session_start", (_event, context) => {
-    lastContext = context;
-  });
+  const command = new AdvisorCommand(pi, advisor);
+  pi.on("session_start", command.start.bind(command));
   pi.registerCommand("advisor", {
     description: "Escolhe o modelo advisor ou o n\xEDvel de racioc\xEDnio",
-    getArgumentCompletions(prefix) {
-      const models = lastContext ? modelRefs(lastContext) : [];
-      return ["off", "thinking", ...models].filter((value) => value.toLowerCase().startsWith(prefix.toLowerCase())).slice(0, 40).map((value) => ({ value, label: value }));
-    },
-    async handler(args, context) {
-      lastContext = context;
-      const config = advisor.config.load();
-      const input = args.trim();
-      const commit = (message) => {
-        advisor.config.save(config);
-        syncAdvisor(pi, advisor, context);
-        context.ui.notify(message, "info");
-      };
-      if (input === "off") {
-        config.model = void 0;
-        commit("Advisor desligado");
-        return;
-      }
-      if (input.startsWith("thinking")) {
-        const requestedLevel = input.slice(8).trim();
-        const level = THINKING_LEVELS.find((candidate) => candidate === requestedLevel);
-        if (level === void 0) {
-          context.ui.notify(`N\xEDveis: ${THINKING_LEVELS.join(", ")}`, "error");
-          return;
-        }
-        config.thinking = level;
-        commit(`Advisor thinking: ${level}`);
-        return;
-      }
-      const models = modelRefs(context);
-      let chosen;
-      if (input) {
-        const terms = input.toLowerCase().split(/\s+/);
-        const exact = models.find((model) => model.toLowerCase() === input.toLowerCase());
-        let matches;
-        if (exact) {
-          matches = [exact];
-        } else {
-          matches = models.filter(
-            (model) => terms.every((term) => model.toLowerCase().includes(term))
-          );
-        }
-        if (matches.length === 0) {
-          context.ui.notify(`Nenhum modelo casa com '${input}'`, "error");
-          return;
-        }
-        if (matches.length === 1) {
-          chosen = matches[0];
-        } else if (context.hasUI) {
-          chosen = await context.ui.select("Modelo advisor", matches.slice(0, 100));
-        }
-      } else if (context.hasUI) {
-        chosen = await context.ui.select("Modelo advisor", ["(sem advisor)", ...models]);
-        if (chosen === "(sem advisor)") {
-          config.model = void 0;
-          commit("Advisor desligado");
-          return;
-        }
-      } else {
-        context.ui.notify(
-          `Advisor: ${config.model ?? "desligado"}, thinking ${config.thinking}`,
-          "info"
-        );
-        return;
-      }
-      if (chosen) {
-        config.model = chosen;
-        commit(`Advisor: ${chosen}`);
-      }
-    }
+    getArgumentCompletions: command.completions.bind(command),
+    handler: command.handle.bind(command)
   });
 }
 
@@ -282,85 +311,224 @@ function syncAdvisor(pi, advisor, context) {
   if (model && !active.includes("advisor")) {
     pi.setActiveTools([...active, "advisor"]);
   } else if (!model && active.includes("advisor")) {
-    pi.setActiveTools(active.filter((name) => name !== "advisor"));
+    const remaining = [];
+    for (const name of active) {
+      if (name !== "advisor") remaining.push(name);
+    }
+    pi.setActiveTools(remaining);
   }
   if (context.hasUI) {
     context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
   }
 }
-function registerEvents(pi, advisor, lifetime) {
-  pi.on("session_start", (_event, context) => {
-    advisor.reset();
-    syncAdvisor(pi, advisor, context);
-  });
-  pi.on("session_shutdown", () => lifetime.abort());
-  pi.on("before_agent_start", (event, context) => {
-    syncAdvisor(pi, advisor, context);
-    if (advisor.config.load().model) {
-      event.systemPromptOptions.sections.advisor = advisor.timing;
+var AdvisorEvents = class {
+  constructor(pi, advisor, lifetime) {
+    this.pi = pi;
+    this.advisor = advisor;
+    this.lifetime = lifetime;
+  }
+  pi;
+  advisor;
+  lifetime;
+  start(_event, context) {
+    this.advisor.reset();
+    syncAdvisor(this.pi, this.advisor, context);
+  }
+  shutdown() {
+    this.lifetime.abort();
+  }
+  beforeStart(event, context) {
+    syncAdvisor(this.pi, this.advisor, context);
+    if (this.advisor.config.load().model) {
+      event.systemPromptOptions.sections.advisor = this.advisor.timing;
     } else {
       delete event.systemPromptOptions.sections.advisor;
     }
-  });
-  pi.on("tool_result", (event) => {
-    if (event.toolName === "advisor") {
-      advisor.reset();
-    }
-  });
-  pi.on("turn_end", (event) => {
-    const reminder = advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
-    if (reminder) {
-      return {
-        entries: [
-          ...event.entries,
+  }
+  toolResult(event) {
+    if (event.toolName === "advisor") this.advisor.reset();
+  }
+  turnEnd(event) {
+    const reminder = this.advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
+    if (!reminder) return void 0;
+    return {
+      entries: [
+        ...event.entries,
+        {
+          type: "custom_message",
+          customType: "advisor-lembrete",
+          content: reminder,
+          display: false
+        }
+      ]
+    };
+  }
+};
+function registerEvents(pi, advisor, lifetime) {
+  const handlers = new AdvisorEvents(pi, advisor, lifetime);
+  pi.on("session_start", handlers.start.bind(handlers));
+  pi.on("session_shutdown", handlers.shutdown.bind(handlers));
+  pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
+  pi.on("tool_result", handlers.toolResult.bind(handlers));
+  pi.on("turn_end", handlers.turnEnd.bind(handlers));
+}
+
+// src/integration/pi/model.ts
+var AdvisorModel = class {
+  constructor(context, model) {
+    this.context = context;
+    this.model = model;
+  }
+  context;
+  model;
+  async consult(request) {
+    const reasoning = request.thinking !== "off" && this.model.reasoning ? request.thinking : void 0;
+    const reply = await this.context.modelRegistry.streamSimple(
+      this.model,
+      {
+        systemPrompt: request.system,
+        messages: [
           {
-            type: "custom_message",
-            customType: "advisor-lembrete",
-            content: reminder,
-            display: false
+            role: "user",
+            content: [{ type: "text", text: request.prompt }],
+            timestamp: Date.now()
           }
         ]
-      };
+      },
+      { signal: request.signal, reasoning }
+    ).result();
+    if (reply.stopReason === "error" || reply.stopReason === "aborted") {
+      throw new Error(reply.errorMessage ?? reply.stopReason);
     }
-  });
-}
+    let text = "";
+    for (const block of reply.content) {
+      if (block.type === "text") {
+        text += `${block.text}
+`;
+      }
+    }
+    text = text.trim();
+    if (!text) {
+      throw new Error("advisor returned no text");
+    }
+    return { text, usage: reply.usage };
+  }
+};
 
 // src/integration/pi/rendering.ts
 import { Text } from "@earendil-works/pi-tui";
-function createRenderers(advisor) {
-  return {
-    renderCall(_args, theme, context) {
-      const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
-      text.setText(
-        theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", advisor.config.load().model ?? "")
-      );
-      return text;
-    },
-    renderResult(result, options, theme, context) {
-      const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
-      if (options.isPartial) {
-        text.setText(theme.fg("warning", "consultando..."));
-        return text;
-      }
-      const body = result.content.map((block) => block.type === "text" ? block.text : "").join("\n");
-      if (context.isError) {
-        text.setText(theme.fg("error", body));
-        return text;
-      }
-      const lines = body.split("\n");
-      const shown = options.expanded ? lines : lines.slice(0, 8);
-      const remaining = lines.length - shown.length;
-      const suffix = !options.expanded && remaining > 0 ? `
-${theme.fg("dim", `... (${remaining} linhas a mais)`)}` : "";
-      text.setText(`${theme.fg("success", "\u2713 conselho")}
-${shown.join("\n")}${suffix}`);
+var AdvisorRendering = class {
+  constructor(advisor) {
+    this.advisor = advisor;
+  }
+  advisor;
+  renderCall(...args) {
+    const [_input, theme, context] = args;
+    const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
+    text.setText(
+      theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", this.advisor.config.load().model ?? "")
+    );
+    return text;
+  }
+  renderResult(...args) {
+    const [result, options, theme, context] = args;
+    const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
+    if (options.isPartial) {
+      text.setText(theme.fg("warning", "consultando..."));
       return text;
     }
+    const content = [];
+    for (const block of result.content) {
+      if (block.type === "text") content.push(block.text);
+    }
+    const body = content.join("\n");
+    if (context.isError) {
+      text.setText(theme.fg("error", body));
+      return text;
+    }
+    const lines = body.split("\n");
+    const shown = options.expanded ? lines : lines.slice(0, 8);
+    const remaining = lines.length - shown.length;
+    let suffix = "";
+    if (!options.expanded && remaining > 0) {
+      suffix = `
+${theme.fg("dim", `... (${remaining} linhas a mais)`)}`;
+    }
+    text.setText(`${theme.fg("success", "\u2713 conselho")}
+${shown.join("\n")}${suffix}`);
+    return text;
+  }
+};
+function createRenderers(advisor) {
+  const rendering = new AdvisorRendering(advisor);
+  return {
+    renderCall: rendering.renderCall.bind(rendering),
+    renderResult: rendering.renderResult.bind(rendering)
   };
 }
 
 // src/integration/pi/tool.ts
+var AdvisorToolHandler = class {
+  constructor(advisor, lifetime) {
+    this.advisor = advisor;
+    this.lifetime = lifetime;
+  }
+  advisor;
+  lifetime;
+  async execute(...args) {
+    const [_id, _params, signal, onUpdate, context] = args;
+    try {
+      const config = this.advisor.config.load();
+      if (!config.model) {
+        throw new Error("no advisor model configured");
+      }
+      const slash = config.model.indexOf("/");
+      const model = slash > 0 ? context.modelRegistry.find(config.model.slice(0, slash), config.model.slice(slash + 1)) : void 0;
+      if (!model) {
+        throw new Error(`advisor model not found: ${config.model}`);
+      }
+      if (!context.modelRegistry.hasConfiguredAuth(model)) {
+        throw new Error(`no credentials for ${config.model}`);
+      }
+      onUpdate?.({
+        content: [{ type: "text", text: `Consulting ${config.model}...` }],
+        details: {}
+      });
+      const callSignal = signal ? AbortSignal.any([signal, this.lifetime.signal]) : this.lifetime.signal;
+      callSignal.throwIfAborted();
+      const advisorModel = new AdvisorModel(context, model);
+      const result = await this.advisor.consult(
+        {
+          config,
+          system: context.getSystemPrompt(),
+          messages: captureTranscript(context),
+          contextWindow: model.contextWindow,
+          signal: callSignal
+        },
+        advisorModel.consult.bind(advisorModel)
+      );
+      return {
+        content: [{ type: "text", text: result.text }],
+        details: { model: config.model },
+        usage: result.usage
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Advisor unavailable: ${message}. Continue without advice.`
+          }
+        ],
+        details: {},
+        isError: true
+      };
+    }
+  }
+};
 function registerTool(pi, advisor, lifetime) {
+  const handler = new AdvisorToolHandler(advisor, lifetime);
   pi.registerTool({
     name: "advisor",
     label: "Advisor",
@@ -369,82 +537,7 @@ function registerTool(pi, advisor, lifetime) {
     description: "Consult a stronger advisor for strategic guidance. No parameters. The active conversation is sent to the configured provider, subject to context limits; images are omitted.",
     promptSnippet: "Consult a stronger advisor model with the conversation (no parameters)",
     ...createRenderers(advisor),
-    async execute(_id, _params, signal, onUpdate, context) {
-      try {
-        const config = advisor.config.load();
-        if (!config.model) {
-          throw new Error("no advisor model configured");
-        }
-        const slash = config.model.indexOf("/");
-        const model = slash > 0 ? context.modelRegistry.find(
-          config.model.slice(0, slash),
-          config.model.slice(slash + 1)
-        ) : void 0;
-        if (!model) {
-          throw new Error(`advisor model not found: ${config.model}`);
-        }
-        if (!context.modelRegistry.hasConfiguredAuth(model)) {
-          throw new Error(`no credentials for ${config.model}`);
-        }
-        onUpdate?.({
-          content: [{ type: "text", text: `Consulting ${config.model}...` }],
-          details: {}
-        });
-        const callSignal = signal ? AbortSignal.any([signal, lifetime.signal]) : lifetime.signal;
-        callSignal.throwIfAborted();
-        const result = await advisor.consult(
-          {
-            config,
-            system: context.getSystemPrompt(),
-            messages: captureTranscript(context),
-            contextWindow: model.contextWindow,
-            signal: callSignal
-          },
-          async (request) => {
-            const reasoning = request.thinking !== "off" && model.reasoning ? request.thinking : void 0;
-            const reply = await context.modelRegistry.streamSimple(
-              model,
-              {
-                systemPrompt: request.system,
-                messages: [
-                  {
-                    role: "user",
-                    content: [{ type: "text", text: request.prompt }],
-                    timestamp: Date.now()
-                  }
-                ]
-              },
-              { signal: request.signal, reasoning }
-            ).result();
-            if (reply.stopReason === "error" || reply.stopReason === "aborted") {
-              throw new Error(reply.errorMessage ?? reply.stopReason);
-            }
-            const text = reply.content.filter((block) => block.type === "text").map((block) => block.text).join("\n").trim();
-            if (!text) {
-              throw new Error("advisor returned no text");
-            }
-            return { text, usage: reply.usage };
-          }
-        );
-        return {
-          content: [{ type: "text", text: result.text }],
-          details: { model: config.model },
-          usage: result.usage
-        };
-      } catch (error) {
-        const message = error instanceof Error ? error.message : String(error);
-        return {
-          content: [
-            {
-              type: "text",
-              text: `Advisor unavailable: ${message}. Continue without advice.`
-            }
-          ],
-          details: {},
-          isError: true
-        };
-      }
-    }
+    execute: handler.execute.bind(handler)
   });
 }
 
@@ -457,7 +550,11 @@ function renderContent(content) {
   if (typeof content === "string") {
     return content;
   }
-  return content.map((block) => block.type === "text" ? block.text : "[image omitted]").join("\n");
+  const parts = [];
+  for (const block of content) {
+    parts.push(block.type === "text" ? block.text : "[image omitted]");
+  }
+  return parts.join("\n");
 }
 function convertMessage(message) {
   switch (message.role) {
@@ -468,20 +565,17 @@ function convertMessage(message) {
 ${renderContent(message.content)}`, clip: false }]
       };
     case "assistant": {
-      const parts = message.content.flatMap((block) => {
+      const parts = [];
+      for (const block of message.content) {
         if (block.type === "text") {
-          return [{ text: block.text, clip: false }];
+          parts.push({ text: block.text, clip: false });
+        } else if (block.type === "toolCall") {
+          parts.push({
+            text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
+            clip: true
+          });
         }
-        if (block.type === "toolCall") {
-          return [
-            {
-              text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
-              clip: true
-            }
-          ];
-        }
-        return [];
-      });
+      }
       return { role: message.role, parts: [{ text: "[assistant]", clip: false }, ...parts] };
     }
     case "toolResult":
@@ -530,9 +624,17 @@ function captureTranscript(context) {
   try {
     messages = context.sessionManager.buildSessionProjection().messages;
   } catch {
-    messages = context.sessionManager.buildContextEntries().filter((entry) => entry.type === "message").map((entry) => entry.message);
+    messages = [];
+    for (const entry of context.sessionManager.buildContextEntries()) {
+      if (entry.type === "message") messages.push(entry.message);
+    }
   }
-  return messages.map(convertMessage).filter((message) => message !== void 0);
+  const transcript = [];
+  for (const message of messages) {
+    const converted = convertMessage(message);
+    if (converted !== void 0) transcript.push(converted);
+  }
+  return transcript;
 }
 
 // src/integration/pi/extension.ts

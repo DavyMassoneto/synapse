@@ -1,16 +1,18 @@
 import { type AgentMessage } from "@earendil-works/pi-agent-core";
 import { type ImageContent, type TextContent } from "@earendil-works/pi-ai";
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { type TranscriptMessage } from "@/modules";
+import { type TranscriptMessage, type TranscriptPart } from "@/modules";
 
 function renderContent(content: string | (TextContent | ImageContent)[]): string {
   if (typeof content === "string") {
     return content;
   }
 
-  return content
-    .map((block) => (block.type === "text" ? block.text : "[image omitted]"))
-    .join("\n");
+  const parts: string[] = [];
+  for (const block of content) {
+    parts.push(block.type === "text" ? block.text : "[image omitted]");
+  }
+  return parts.join("\n");
 }
 
 function convertMessage(message: AgentMessage): TranscriptMessage | undefined {
@@ -21,20 +23,17 @@ function convertMessage(message: AgentMessage): TranscriptMessage | undefined {
         parts: [{ text: `[user]\n${renderContent(message.content)}`, clip: false }],
       };
     case "assistant": {
-      const parts = message.content.flatMap((block) => {
+      const parts: TranscriptPart[] = [];
+      for (const block of message.content) {
         if (block.type === "text") {
-          return [{ text: block.text, clip: false }];
+          parts.push({ text: block.text, clip: false });
+        } else if (block.type === "toolCall") {
+          parts.push({
+            text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
+            clip: true,
+          });
         }
-        if (block.type === "toolCall") {
-          return [
-            {
-              text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
-              clip: true,
-            },
-          ];
-        }
-        return [];
-      });
+      }
       return { role: message.role, parts: [{ text: "[assistant]", clip: false }, ...parts] };
     }
     case "toolResult":
@@ -87,11 +86,16 @@ export function captureTranscript(context: ExtensionContext): TranscriptMessage[
   try {
     messages = context.sessionManager.buildSessionProjection().messages;
   } catch {
-    messages = context.sessionManager
-      .buildContextEntries()
-      .filter((entry) => entry.type === "message")
-      .map((entry) => entry.message);
+    messages = [];
+    for (const entry of context.sessionManager.buildContextEntries()) {
+      if (entry.type === "message") messages.push(entry.message);
+    }
   }
 
-  return messages.map(convertMessage).filter((message) => message !== undefined);
+  const transcript: TranscriptMessage[] = [];
+  for (const message of messages) {
+    const converted = convertMessage(message);
+    if (converted !== undefined) transcript.push(converted);
+  }
+  return transcript;
 }

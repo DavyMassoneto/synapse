@@ -1,4 +1,10 @@
-import { type Advisor, type ConfigPort } from "@/modules";
+import {
+  type Advisor,
+  type ConfigPort,
+  type Consultation,
+  type ModelPort,
+  type ModelResponse,
+} from "@/modules";
 import {
   ADVISOR_SYSTEM,
   buildTranscript,
@@ -7,58 +13,56 @@ import {
   TIMING,
 } from "@/modules/advisor/internal";
 
-export function createService(config: ConfigPort): Advisor {
-  let turns = 0;
+export class AdvisorService implements Advisor {
+  readonly timing = TIMING;
+  private turns = 0;
 
-  return {
-    config,
-    timing: TIMING,
+  constructor(readonly config: ConfigPort) {}
 
-    reset() {
-      turns = 0;
-    },
+  reset(): void {
+    this.turns = 0;
+  }
 
-    turn(completed, hasTools) {
-      if (!completed || !config.load().model) {
-        return undefined;
-      }
+  turn(completed: boolean, hasTools: boolean): string | undefined {
+    if (!completed || !this.config.load().model) {
+      return undefined;
+    }
 
-      turns += 1;
-      if (turns < 5 || !hasTools) {
-        return undefined;
-      }
+    this.turns += 1;
+    if (this.turns < 5 || !hasTools) {
+      return undefined;
+    }
 
-      turns = 0;
-      return REMINDER;
-    },
+    this.turns = 0;
+    return REMINDER;
+  }
 
-    async consult(input, model) {
-      if (!input.config.model) {
-        throw new Error("no advisor model configured");
-      }
+  async consult(input: Consultation, model: ModelPort): Promise<ModelResponse> {
+    if (!input.config.model) {
+      throw new Error("no advisor model configured");
+    }
 
-      const system = clip(input.system, 40_000);
-      const budget = Math.max(20_000, (input.contextWindow - 26_000) * 3 - system.length);
-      const transcript = buildTranscript(input.messages, budget);
-      const prompt = [
-        "<executor_system_prompt>",
-        system,
-        "</executor_system_prompt>",
-        "",
-        "<transcript>",
-        transcript,
-        "</transcript>",
-        "",
-        "The executor just called advisor(). Give your guidance now.",
-      ].join("\n");
+    const system = clip(input.system, 40_000);
+    const budget = Math.max(20_000, (input.contextWindow - 26_000) * 3 - system.length);
+    const transcript = buildTranscript(input.messages, budget);
+    const prompt = [
+      "<executor_system_prompt>",
+      system,
+      "</executor_system_prompt>",
+      "",
+      "<transcript>",
+      transcript,
+      "</transcript>",
+      "",
+      "The executor just called advisor(). Give your guidance now.",
+    ].join("\n");
 
-      return model({
-        system: ADVISOR_SYSTEM,
-        prompt,
-        model: input.config.model,
-        thinking: input.config.thinking,
-        signal: input.signal,
-      });
-    },
-  };
+    return model({
+      system: ADVISOR_SYSTEM,
+      prompt,
+      model: input.config.model,
+      thinking: input.config.thinking,
+      signal: input.signal,
+    });
+  }
 }

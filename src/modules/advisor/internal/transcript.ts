@@ -22,9 +22,14 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
   let blocks: string[] = [];
 
   for (const limit of [TOOL_RESULT_LIMIT, 4_000, 1_500, 500]) {
-    blocks = messages.map((message) =>
-      message.parts.map((part) => (part.clip ? clip(part.text, limit) : part.text)).join("\n"),
-    );
+    blocks = [];
+    for (const message of messages) {
+      const parts: string[] = [];
+      for (const part of message.parts) {
+        parts.push(part.clip ? clip(part.text, limit) : part.text);
+      }
+      blocks.push(parts.join("\n"));
+    }
 
     if (blocks.join("\n\n").length <= budget) {
       return blocks.join("\n\n");
