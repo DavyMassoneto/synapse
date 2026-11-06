@@ -1,12 +1,13 @@
-import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
+import {
+  type AgentToolUpdateCallback,
+  type ExtensionAPI,
+  type ExtensionToolContext,
+} from "@earendil-works/pi-coding-agent";
 import {
   AdvisorModel,
-  type AdvisorToolCallId,
-  type AdvisorToolContext,
+  type AdvisorToolDetails,
   type AdvisorToolInput,
   type AdvisorToolResult,
-  type AdvisorToolSignal,
-  type AdvisorToolUpdate,
   advisorParameters,
   captureTranscript,
   createRenderers,
@@ -20,11 +21,11 @@ class AdvisorToolHandler {
   ) {}
 
   async execute(
-    _id: AdvisorToolCallId,
+    _id: string,
     _params: AdvisorToolInput,
-    signal: AdvisorToolSignal,
-    onUpdate: AdvisorToolUpdate,
-    context: AdvisorToolContext,
+    signal: AbortSignal | undefined,
+    onUpdate: AgentToolUpdateCallback<AdvisorToolDetails> | undefined,
+    context: ExtensionToolContext,
   ): AdvisorToolResult {
     try {
       const config = this.advisor.config.load();

@@ -21,9 +21,11 @@ class AdvisorRendering {
     theme: AdvisorRenderCallTheme,
     context: AdvisorRenderCallContext,
   ): AdvisorRenderCallResult {
-    let text = new Text("", 0, 0);
+    let text: Text;
     if (context.lastComponent instanceof Text) {
       text = context.lastComponent;
+    } else {
+      text = new Text("", 0, 0);
     }
 
     text.setText(
@@ -39,9 +41,11 @@ class AdvisorRendering {
     theme: AdvisorRenderResultTheme,
     context: AdvisorRenderResultContext,
   ): AdvisorRenderResultResult {
-    let text = new Text("", 0, 0);
+    let text: Text;
     if (context.lastComponent instanceof Text) {
       text = context.lastComponent;
+    } else {
+      text = new Text("", 0, 0);
     }
 
     if (options.isPartial) {

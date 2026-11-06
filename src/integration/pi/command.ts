@@ -109,10 +109,7 @@ class AdvisorCommand {
     input: string,
   ): Promise<string | undefined> {
     if (!input) {
-      if (context.hasUI) {
-        return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
-      }
-      return undefined;
+      return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
     }
 
     const matches = this.matchModels(models, input);

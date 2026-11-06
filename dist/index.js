@@ -272,10 +272,7 @@ var AdvisorCommand = class {
   }
   async chooseModel(context, models, input) {
     if (!input) {
-      if (context.hasUI) {
-        return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
-      }
-      return void 0;
+      return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
     }
     const matches = this.matchModels(models, input);
     if (matches.length === 0) {
@@ -455,9 +452,11 @@ var AdvisorRendering = class {
   }
   advisor;
   renderCall(_input, theme, context) {
-    let text = new Text("", 0, 0);
+    let text;
     if (context.lastComponent instanceof Text) {
       text = context.lastComponent;
+    } else {
+      text = new Text("", 0, 0);
     }
     text.setText(
       theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", this.advisor.config.load().model ?? "")
@@ -465,9 +464,11 @@ var AdvisorRendering = class {
     return text;
   }
   renderResult(result, options, theme, context) {
-    let text = new Text("", 0, 0);
+    let text;
     if (context.lastComponent instanceof Text) {
       text = context.lastComponent;
+    } else {
+      text = new Text("", 0, 0);
     }
     if (options.isPartial) {
       text.setText(theme.fg("warning", "consultando..."));
