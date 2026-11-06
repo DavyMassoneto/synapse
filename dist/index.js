@@ -682,7 +682,25 @@ var AdvisorModel = class {
     if (!text) {
       throw new Error("advisor returned no text");
     }
-    return { kind: "success", text, usage: reply.usage };
+    const usage = reply.usage;
+    return {
+      kind: "success",
+      text,
+      usage: {
+        input: usage.input,
+        output: usage.output,
+        cacheRead: usage.cacheRead,
+        cacheWrite: usage.cacheWrite,
+        totalTokens: usage.totalTokens,
+        cost: {
+          input: usage.cost.input,
+          output: usage.cost.output,
+          cacheRead: usage.cost.cacheRead,
+          cacheWrite: usage.cost.cacheWrite,
+          total: usage.cost.total
+        }
+      }
+    };
   }
 };
 

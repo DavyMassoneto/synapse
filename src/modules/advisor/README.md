@@ -4,4 +4,4 @@ O advisor consulta um modelo revisor sem ferramentas. Sem configuração, ele fi
 
 A configuração fica em `~/.pi/agent/advisor.json`. Se o arquivo for inválido, o erro é informado e o conteúdo não é substituído automaticamente.
 
-O histórico do ramo ativo e o prompt são enviados ao provedor escolhido. Para caber na janela estimada, mensagens ou resultados podem ser omitidos; imagens não são enviadas. Não carregue simultaneamente outra extensão advisor.
+O histórico do ramo ativo e o prompt são enviados ao provedor escolhido. O orçamento usa uma estimativa por caracteres, não uma contagem exata de tokens. Para caber na janela estimada, mensagens ou resultados podem ser omitidos; imagens não são enviadas. Não carregue simultaneamente outra extensão advisor.

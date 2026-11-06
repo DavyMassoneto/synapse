@@ -19,7 +19,7 @@ A composição e a integração são infraestrutura de montagem, não um módulo
 | Memória | Conhecimento persistido e seu controle de processamento, armazenamento e índices | Recebe conteúdo identificado e consultas com escopo; devolve resultados de memória com origem e estado da operação |
 | pi-web | Interface, estado de apresentação e conexão com o runtime | Envia intenções por uma porta de runtime; recebe resultados e eventos para apresentação |
 | Navegador | Contextos de navegação, execução de ações e artefatos associados | Recebe operação e identidade do alvo; devolve resultado, efeitos conhecidos e evidências |
-| Advisor | Política de consulta e configuração do revisor | Recebe transcrição e devolve conselho ou falha |
+| Advisor | Configuração, política de lembretes e consulta ao revisor | Expõe operações de configuração e consulta; distingue sucesso, falha e cancelamento |
 
 Nenhum módulo lê ou escreve arquivos, tabelas, caches ou estado mutável privado de outro. Configuração é entregue separadamente a cada módulo; não existe acesso à configuração privada de um vizinho. Compartilhar o processo não torna esses dados públicos.
 
