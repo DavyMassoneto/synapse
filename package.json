@@ -7,7 +7,7 @@
     "pi-package"
   ],
   "scripts": {
-    "build": "esbuild src/integration/pi/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.js",
+    "build": "esbuild src/integration/pi/index.ts --bundle --platform=node --format=esm --packages=external --outfile=dist/index.js --banner:js='/* ARQUIVO AUTOGERADO — NÃO EDITE DIRETAMENTE. Altere src/ e execute npm run build. */'",
     "typecheck": "tsc --noEmit",
     "check": "biome check .",
     "check:fix": "biome check --write .",

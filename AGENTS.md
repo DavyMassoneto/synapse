@@ -6,4 +6,5 @@
 - Use `@/` aliases for internal imports.
 - Do not use `any`, `unknown`, type assertions or casts.
 - Avoid unnecessary functions, including redundant type guards.
+- Do not edit generated files directly; change their sources or generation configuration and regenerate them.
 - Before delivery, run `npm run validate` (Biome, TypeScript and build). Use `npm run check:fix` for safe formatting fixes; `npm run check`, `npm run typecheck` and `npm run build` are also available individually.
