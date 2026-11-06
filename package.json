@@ -16,11 +16,11 @@
     "check:build": "node scripts/check-build.mjs"
   },
   "peerDependencies": {
-    "@earendil-works/pi-agent-core": "*",
-    "@earendil-works/pi-ai": "*",
-    "@earendil-works/pi-coding-agent": "*",
-    "@earendil-works/pi-tui": "*",
-    "typebox": "*"
+    "@earendil-works/pi-agent-core": "~1.5.0",
+    "@earendil-works/pi-ai": "~1.5.0",
+    "@earendil-works/pi-coding-agent": "~1.5.0",
+    "@earendil-works/pi-tui": "~1.5.0",
+    "typebox": "^1.3.27"
   },
   "devDependencies": {
     "@biomejs/biome": "2.6.6",
@@ -33,5 +33,8 @@
     "extensions": [
       "./dist/index.js"
     ]
+  },
+  "imports": {
+    "#build-options": "./scripts/build-options.mjs"
   }
 }

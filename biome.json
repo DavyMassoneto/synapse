@@ -23,7 +23,12 @@
       "style": {
         "noNonNullAssertion": "error",
         "useBlockStatements": "error",
-        "useImportType": { "level": "error", "options": { "style": "inlineType" } },
+        "useImportType": {
+          "level": "error",
+          "options": {
+            "style": "inlineType"
+          }
+        },
         "noRestrictedImports": {
           "level": "error",
           "options": {
@@ -48,5 +53,66 @@
       }
     }
   },
-  "plugins": ["./biome-rules/no-unknown.grit", "./biome-rules/no-const-assertion.grit"]
+  "plugins": ["./biome-rules/no-unknown.grit", "./biome-rules/no-const-assertion.grit"],
+  "overrides": [
+    {
+      "includes": ["src/modules/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["./**", "../**"],
+                    "message": "Use o alias @/"
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "@/composition",
+                      "@/integration",
+                      "@/integration/**",
+                      "@/modules"
+                    ],
+                    "message": "Depend\u00eancia fora da fronteira do m\u00f3dulo"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/integration/**", "src/composition/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["./**", "../**"],
+                    "message": "Use o alias @/"
+                  },
+                  {
+                    "group": [
+                      "@/modules/*/internal",
+                      "@/modules/*/internal/**",
+                      "@/modules/*/adapters",
+                      "@/modules/*/adapters/**"
+                    ],
+                    "message": "Acesso a \u00e1rea privada do m\u00f3dulo"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
 }
