@@ -192,6 +192,9 @@ function registerAdvisor(pi, advisor) {
 }
 
 // src/integration/pi/command.ts
+var COMPLETION_LIMIT = 40;
+var MODEL_SELECTION_LIMIT = 100;
+var DISABLED_OPTION = "(sem advisor)";
 var AdvisorCommand = class {
   constructor(pi, advisor) {
     this.pi = pi;
@@ -206,20 +209,27 @@ var AdvisorCommand = class {
   modelRefs(context) {
     const refs = [];
     if (context.scopedModels.length > 0) {
-      for (const entry of context.scopedModels)
+      for (const entry of context.scopedModels) {
         refs.push(`${entry.model.provider}/${entry.model.id}`);
+      }
     } else {
-      for (const model of context.modelRegistry.getAvailable())
+      for (const model of context.modelRegistry.getAvailable()) {
         refs.push(`${model.provider}/${model.id}`);
+      }
     }
     return refs;
   }
   completions(prefix) {
     const models = this.lastContext ? this.modelRefs(this.lastContext) : [];
+    const normalizedPrefix = prefix.toLowerCase();
     const items = [];
     for (const value of ["off", "thinking", ...models]) {
-      if (value.toLowerCase().startsWith(prefix.toLowerCase())) items.push({ value, label: value });
-      if (items.length === 40) break;
+      if (value.toLowerCase().startsWith(normalizedPrefix)) {
+        items.push({ value, label: value });
+      }
+      if (items.length === COMPLETION_LIMIT) {
+        break;
+      }
     }
     return items;
   }
@@ -227,6 +237,58 @@ var AdvisorCommand = class {
     this.advisor.config.save(config);
     syncAdvisor(this.pi, this.advisor, context);
     context.ui.notify(message, "info");
+  }
+  changeThinking(context, config, requested) {
+    for (const level of THINKING_LEVELS) {
+      if (level === requested) {
+        config.thinking = level;
+        this.commit(context, config, `Advisor thinking: ${level}`);
+        return;
+      }
+    }
+    context.ui.notify(`N\xEDveis: ${THINKING_LEVELS.join(", ")}`, "error");
+  }
+  matchModels(models, input) {
+    const search = input.toLowerCase();
+    const terms = search.split(/\s+/);
+    const matches = [];
+    for (const model of models) {
+      const normalizedModel = model.toLowerCase();
+      if (normalizedModel === search) {
+        return [model];
+      }
+      let matchesAll = true;
+      for (const term of terms) {
+        if (!normalizedModel.includes(term)) {
+          matchesAll = false;
+          break;
+        }
+      }
+      if (matchesAll) {
+        matches.push(model);
+      }
+    }
+    return matches;
+  }
+  async chooseModel(context, models, input) {
+    if (!input) {
+      if (context.hasUI) {
+        return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
+      }
+      return void 0;
+    }
+    const matches = this.matchModels(models, input);
+    if (matches.length === 0) {
+      context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
+      return void 0;
+    }
+    if (matches.length === 1) {
+      return matches[0];
+    }
+    if (context.hasUI) {
+      return context.ui.select("Modelo advisor", matches.slice(0, MODEL_SELECTION_LIMIT));
+    }
+    return void 0;
   }
   async handle(args, context) {
     this.lastContext = context;
@@ -238,57 +300,21 @@ var AdvisorCommand = class {
       return;
     }
     if (input.startsWith("thinking")) {
-      const requested = input.slice(8).trim();
-      for (const level of THINKING_LEVELS) {
-        if (level === requested) {
-          config.thinking = level;
-          this.commit(context, config, `Advisor thinking: ${level}`);
-          return;
-        }
-      }
-      context.ui.notify(`N\xEDveis: ${THINKING_LEVELS.join(", ")}`, "error");
+      this.changeThinking(context, config, input.slice(8).trim());
       return;
     }
-    const models = this.modelRefs(context);
-    let chosen;
-    if (input) {
-      const search = input.toLowerCase();
-      const terms = search.split(/\s+/);
-      const matches = [];
-      for (const model of models) {
-        if (model.toLowerCase() === search) {
-          matches.length = 0;
-          matches.push(model);
-          break;
-        }
-        let matchesAll = true;
-        for (const term of terms) {
-          if (!model.toLowerCase().includes(term)) matchesAll = false;
-        }
-        if (matchesAll) matches.push(model);
-      }
-      if (matches.length === 0) {
-        context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
-        return;
-      }
-      if (matches.length === 1) chosen = matches[0];
-      else if (context.hasUI)
-        chosen = await context.ui.select("Modelo advisor", matches.slice(0, 100));
-    } else if (context.hasUI) {
-      chosen = await context.ui.select("Modelo advisor", ["(sem advisor)", ...models]);
-      if (chosen === "(sem advisor)") {
-        config.model = void 0;
-        this.commit(context, config, "Advisor desligado");
-        return;
-      }
-    } else {
+    if (!input && !context.hasUI) {
       context.ui.notify(
         `Advisor: ${config.model ?? "desligado"}, thinking ${config.thinking}`,
         "info"
       );
       return;
     }
-    if (chosen) {
+    const chosen = await this.chooseModel(context, this.modelRefs(context), input);
+    if (chosen === DISABLED_OPTION) {
+      config.model = void 0;
+      this.commit(context, config, "Advisor desligado");
+    } else if (chosen) {
       config.model = chosen;
       this.commit(context, config, `Advisor: ${chosen}`);
     }
@@ -313,7 +339,9 @@ function syncAdvisor(pi, advisor, context) {
   } else if (!model && active.includes("advisor")) {
     const remaining = [];
     for (const name of active) {
-      if (name !== "advisor") remaining.push(name);
+      if (name !== "advisor") {
+        remaining.push(name);
+      }
     }
     pi.setActiveTools(remaining);
   }
@@ -346,11 +374,15 @@ var AdvisorEvents = class {
     }
   }
   toolResult(event) {
-    if (event.toolName === "advisor") this.advisor.reset();
+    if (event.toolName === "advisor") {
+      this.advisor.reset();
+    }
   }
   turnEnd(event) {
     const reminder = this.advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
-    if (!reminder) return void 0;
+    if (!reminder) {
+      return void 0;
+    }
     return {
       entries: [
         ...event.entries,
@@ -422,24 +454,30 @@ var AdvisorRendering = class {
     this.advisor = advisor;
   }
   advisor;
-  renderCall(...args) {
-    const [_input, theme, context] = args;
-    const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
+  renderCall(_input, theme, context) {
+    let text = new Text("", 0, 0);
+    if (context.lastComponent instanceof Text) {
+      text = context.lastComponent;
+    }
     text.setText(
       theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", this.advisor.config.load().model ?? "")
     );
     return text;
   }
-  renderResult(...args) {
-    const [result, options, theme, context] = args;
-    const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
+  renderResult(result, options, theme, context) {
+    let text = new Text("", 0, 0);
+    if (context.lastComponent instanceof Text) {
+      text = context.lastComponent;
+    }
     if (options.isPartial) {
       text.setText(theme.fg("warning", "consultando..."));
       return text;
     }
     const content = [];
     for (const block of result.content) {
-      if (block.type === "text") content.push(block.text);
+      if (block.type === "text") {
+        content.push(block.text);
+      }
     }
     const body = content.join("\n");
     if (context.isError) {
@@ -447,7 +485,10 @@ var AdvisorRendering = class {
       return text;
     }
     const lines = body.split("\n");
-    const shown = options.expanded ? lines : lines.slice(0, 8);
+    let shown = lines;
+    if (!options.expanded) {
+      shown = lines.slice(0, 8);
+    }
     const remaining = lines.length - shown.length;
     let suffix = "";
     if (!options.expanded && remaining > 0) {
@@ -475,15 +516,19 @@ var AdvisorToolHandler = class {
   }
   advisor;
   lifetime;
-  async execute(...args) {
-    const [_id, _params, signal, onUpdate, context] = args;
+  async execute(_id, _params, signal, onUpdate, context) {
     try {
       const config = this.advisor.config.load();
       if (!config.model) {
         throw new Error("no advisor model configured");
       }
       const slash = config.model.indexOf("/");
-      const model = slash > 0 ? context.modelRegistry.find(config.model.slice(0, slash), config.model.slice(slash + 1)) : void 0;
+      if (slash <= 0 || slash === config.model.length - 1) {
+        throw new Error(`invalid advisor model: ${config.model}`);
+      }
+      const provider = config.model.slice(0, slash);
+      const modelId = config.model.slice(slash + 1);
+      const model = context.modelRegistry.find(provider, modelId);
       if (!model) {
         throw new Error(`advisor model not found: ${config.model}`);
       }
@@ -626,13 +671,17 @@ function captureTranscript(context) {
   } catch {
     messages = [];
     for (const entry of context.sessionManager.buildContextEntries()) {
-      if (entry.type === "message") messages.push(entry.message);
+      if (entry.type === "message") {
+        messages.push(entry.message);
+      }
     }
   }
   const transcript = [];
   for (const message of messages) {
     const converted = convertMessage(message);
-    if (converted !== void 0) transcript.push(converted);
+    if (converted !== void 0) {
+      transcript.push(converted);
+    }
   }
   return transcript;
 }

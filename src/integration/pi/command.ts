@@ -4,8 +4,13 @@ import {
   type ExtensionContext,
   type SessionStartEvent,
 } from "@earendil-works/pi-coding-agent";
+import { type AutocompleteItem } from "@earendil-works/pi-tui";
 import { syncAdvisor } from "@/integration";
 import { type Advisor, type Config, THINKING_LEVELS } from "@/modules";
+
+const COMPLETION_LIMIT = 40;
+const MODEL_SELECTION_LIMIT = 100;
+const DISABLED_OPTION = "(sem advisor)";
 
 class AdvisorCommand {
   private lastContext: ExtensionContext | undefined;
@@ -19,96 +24,138 @@ class AdvisorCommand {
     this.lastContext = context;
   }
 
-  modelRefs(context: ExtensionContext): string[] {
+  private modelRefs(context: ExtensionContext): string[] {
     const refs: string[] = [];
+
     if (context.scopedModels.length > 0) {
-      for (const entry of context.scopedModels)
+      for (const entry of context.scopedModels) {
         refs.push(`${entry.model.provider}/${entry.model.id}`);
+      }
     } else {
-      for (const model of context.modelRegistry.getAvailable())
+      for (const model of context.modelRegistry.getAvailable()) {
         refs.push(`${model.provider}/${model.id}`);
+      }
     }
+
     return refs;
   }
 
-  completions(prefix: string): { value: string; label: string }[] {
+  completions(prefix: string): AutocompleteItem[] {
     const models = this.lastContext ? this.modelRefs(this.lastContext) : [];
-    const items: { value: string; label: string }[] = [];
+    const normalizedPrefix = prefix.toLowerCase();
+    const items: AutocompleteItem[] = [];
+
     for (const value of ["off", "thinking", ...models]) {
-      if (value.toLowerCase().startsWith(prefix.toLowerCase())) items.push({ value, label: value });
-      if (items.length === 40) break;
+      if (value.toLowerCase().startsWith(normalizedPrefix)) {
+        items.push({ value, label: value });
+      }
+
+      if (items.length === COMPLETION_LIMIT) {
+        break;
+      }
     }
+
     return items;
   }
 
-  commit(context: ExtensionContext, config: Config, message: string): void {
+  private commit(context: ExtensionContext, config: Config, message: string): void {
     this.advisor.config.save(config);
     syncAdvisor(this.pi, this.advisor, context);
     context.ui.notify(message, "info");
+  }
+
+  private changeThinking(context: ExtensionContext, config: Config, requested: string): void {
+    for (const level of THINKING_LEVELS) {
+      if (level === requested) {
+        config.thinking = level;
+        this.commit(context, config, `Advisor thinking: ${level}`);
+        return;
+      }
+    }
+
+    context.ui.notify(`Níveis: ${THINKING_LEVELS.join(", ")}`, "error");
+  }
+
+  private matchModels(models: string[], input: string): string[] {
+    const search = input.toLowerCase();
+    const terms = search.split(/\s+/);
+    const matches: string[] = [];
+
+    for (const model of models) {
+      const normalizedModel = model.toLowerCase();
+      if (normalizedModel === search) {
+        return [model];
+      }
+
+      let matchesAll = true;
+      for (const term of terms) {
+        if (!normalizedModel.includes(term)) {
+          matchesAll = false;
+          break;
+        }
+      }
+
+      if (matchesAll) {
+        matches.push(model);
+      }
+    }
+
+    return matches;
+  }
+
+  private async chooseModel(
+    context: ExtensionCommandContext,
+    models: string[],
+    input: string,
+  ): Promise<string | undefined> {
+    if (!input) {
+      if (context.hasUI) {
+        return context.ui.select("Modelo advisor", [DISABLED_OPTION, ...models]);
+      }
+      return undefined;
+    }
+
+    const matches = this.matchModels(models, input);
+    if (matches.length === 0) {
+      context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
+      return undefined;
+    }
+    if (matches.length === 1) {
+      return matches[0];
+    }
+    if (context.hasUI) {
+      return context.ui.select("Modelo advisor", matches.slice(0, MODEL_SELECTION_LIMIT));
+    }
+    return undefined;
   }
 
   async handle(args: string, context: ExtensionCommandContext): Promise<void> {
     this.lastContext = context;
     const config = this.advisor.config.load();
     const input = args.trim();
+
     if (input === "off") {
       config.model = undefined;
       this.commit(context, config, "Advisor desligado");
       return;
     }
     if (input.startsWith("thinking")) {
-      const requested = input.slice(8).trim();
-      for (const level of THINKING_LEVELS) {
-        if (level === requested) {
-          config.thinking = level;
-          this.commit(context, config, `Advisor thinking: ${level}`);
-          return;
-        }
-      }
-      context.ui.notify(`Níveis: ${THINKING_LEVELS.join(", ")}`, "error");
+      this.changeThinking(context, config, input.slice(8).trim());
       return;
     }
-
-    const models = this.modelRefs(context);
-    let chosen: string | undefined;
-    if (input) {
-      const search = input.toLowerCase();
-      const terms = search.split(/\s+/);
-      const matches: string[] = [];
-      for (const model of models) {
-        if (model.toLowerCase() === search) {
-          matches.length = 0;
-          matches.push(model);
-          break;
-        }
-        let matchesAll = true;
-        for (const term of terms) {
-          if (!model.toLowerCase().includes(term)) matchesAll = false;
-        }
-        if (matchesAll) matches.push(model);
-      }
-      if (matches.length === 0) {
-        context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
-        return;
-      }
-      if (matches.length === 1) chosen = matches[0];
-      else if (context.hasUI)
-        chosen = await context.ui.select("Modelo advisor", matches.slice(0, 100));
-    } else if (context.hasUI) {
-      chosen = await context.ui.select("Modelo advisor", ["(sem advisor)", ...models]);
-      if (chosen === "(sem advisor)") {
-        config.model = undefined;
-        this.commit(context, config, "Advisor desligado");
-        return;
-      }
-    } else {
+    if (!input && !context.hasUI) {
       context.ui.notify(
         `Advisor: ${config.model ?? "desligado"}, thinking ${config.thinking}`,
         "info",
       );
       return;
     }
-    if (chosen) {
+
+    const chosen = await this.chooseModel(context, this.modelRefs(context), input);
+    if (chosen === DISABLED_OPTION) {
+      config.model = undefined;
+      this.commit(context, config, "Advisor desligado");
+    } else if (chosen) {
       config.model = chosen;
       this.commit(context, config, `Advisor: ${chosen}`);
     }

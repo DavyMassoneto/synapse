@@ -1,15 +1,31 @@
 import { Text } from "@earendil-works/pi-tui";
-import { type AdvisorRenderers, type AdvisorTool } from "@/integration";
+import {
+  type AdvisorRenderCallContext,
+  type AdvisorRenderCallInput,
+  type AdvisorRenderCallResult,
+  type AdvisorRenderCallTheme,
+  type AdvisorRenderers,
+  type AdvisorRenderResultContext,
+  type AdvisorRenderResultOptions,
+  type AdvisorRenderResultResult,
+  type AdvisorRenderResultTheme,
+  type AdvisorRenderResultValue,
+} from "@/integration";
 import { type Advisor } from "@/modules";
 
 class AdvisorRendering {
   constructor(private readonly advisor: Advisor) {}
 
   renderCall(
-    ...args: Parameters<NonNullable<AdvisorTool["renderCall"]>>
-  ): ReturnType<NonNullable<AdvisorTool["renderCall"]>> {
-    const [_input, theme, context] = args;
-    const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
+    _input: AdvisorRenderCallInput,
+    theme: AdvisorRenderCallTheme,
+    context: AdvisorRenderCallContext,
+  ): AdvisorRenderCallResult {
+    let text = new Text("", 0, 0);
+    if (context.lastComponent instanceof Text) {
+      text = context.lastComponent;
+    }
+
     text.setText(
       theme.fg("toolTitle", theme.bold("advisor ")) +
         theme.fg("muted", this.advisor.config.load().model ?? ""),
@@ -18,10 +34,16 @@ class AdvisorRendering {
   }
 
   renderResult(
-    ...args: Parameters<NonNullable<AdvisorTool["renderResult"]>>
-  ): ReturnType<NonNullable<AdvisorTool["renderResult"]>> {
-    const [result, options, theme, context] = args;
-    const text = context.lastComponent instanceof Text ? context.lastComponent : new Text("", 0, 0);
+    result: AdvisorRenderResultValue,
+    options: AdvisorRenderResultOptions,
+    theme: AdvisorRenderResultTheme,
+    context: AdvisorRenderResultContext,
+  ): AdvisorRenderResultResult {
+    let text = new Text("", 0, 0);
+    if (context.lastComponent instanceof Text) {
+      text = context.lastComponent;
+    }
+
     if (options.isPartial) {
       text.setText(theme.fg("warning", "consultando..."));
       return text;
@@ -29,7 +51,9 @@ class AdvisorRendering {
 
     const content: string[] = [];
     for (const block of result.content) {
-      if (block.type === "text") content.push(block.text);
+      if (block.type === "text") {
+        content.push(block.text);
+      }
     }
     const body = content.join("\n");
     if (context.isError) {
@@ -38,7 +62,10 @@ class AdvisorRendering {
     }
 
     const lines = body.split("\n");
-    const shown = options.expanded ? lines : lines.slice(0, 8);
+    let shown = lines;
+    if (!options.expanded) {
+      shown = lines.slice(0, 8);
+    }
     const remaining = lines.length - shown.length;
     let suffix = "";
     if (!options.expanded && remaining > 0) {

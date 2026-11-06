@@ -88,14 +88,18 @@ export function captureTranscript(context: ExtensionContext): TranscriptMessage[
   } catch {
     messages = [];
     for (const entry of context.sessionManager.buildContextEntries()) {
-      if (entry.type === "message") messages.push(entry.message);
+      if (entry.type === "message") {
+        messages.push(entry.message);
+      }
     }
   }
 
   const transcript: TranscriptMessage[] = [];
   for (const message of messages) {
     const converted = convertMessage(message);
-    if (converted !== undefined) transcript.push(converted);
+    if (converted !== undefined) {
+      transcript.push(converted);
+    }
   }
   return transcript;
 }

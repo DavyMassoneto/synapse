@@ -18,7 +18,9 @@ export function syncAdvisor(pi: ExtensionAPI, advisor: Advisor, context: Extensi
   } else if (!model && active.includes("advisor")) {
     const remaining: string[] = [];
     for (const name of active) {
-      if (name !== "advisor") remaining.push(name);
+      if (name !== "advisor") {
+        remaining.push(name);
+      }
     }
     pi.setActiveTools(remaining);
   }
@@ -54,12 +56,16 @@ class AdvisorEvents {
   }
 
   toolResult(event: ToolResultEvent): void {
-    if (event.toolName === "advisor") this.advisor.reset();
+    if (event.toolName === "advisor") {
+      this.advisor.reset();
+    }
   }
 
   turnEnd(event: TurnEndEvent): TurnEndEventResult | undefined {
     const reminder = this.advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
-    if (!reminder) return undefined;
+    if (!reminder) {
+      return undefined;
+    }
     return {
       entries: [
         ...event.entries,

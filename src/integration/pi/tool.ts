@@ -1,7 +1,12 @@
 import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import {
   AdvisorModel,
-  type AdvisorTool,
+  type AdvisorToolCallId,
+  type AdvisorToolContext,
+  type AdvisorToolInput,
+  type AdvisorToolResult,
+  type AdvisorToolSignal,
+  type AdvisorToolUpdate,
   advisorParameters,
   captureTranscript,
   createRenderers,
@@ -14,8 +19,13 @@ class AdvisorToolHandler {
     private readonly lifetime: AbortController,
   ) {}
 
-  async execute(...args: Parameters<AdvisorTool["execute"]>): ReturnType<AdvisorTool["execute"]> {
-    const [_id, _params, signal, onUpdate, context] = args;
+  async execute(
+    _id: AdvisorToolCallId,
+    _params: AdvisorToolInput,
+    signal: AdvisorToolSignal,
+    onUpdate: AdvisorToolUpdate,
+    context: AdvisorToolContext,
+  ): AdvisorToolResult {
     try {
       const config = this.advisor.config.load();
       if (!config.model) {
@@ -23,10 +33,13 @@ class AdvisorToolHandler {
       }
 
       const slash = config.model.indexOf("/");
-      const model =
-        slash > 0
-          ? context.modelRegistry.find(config.model.slice(0, slash), config.model.slice(slash + 1))
-          : undefined;
+      if (slash <= 0 || slash === config.model.length - 1) {
+        throw new Error(`invalid advisor model: ${config.model}`);
+      }
+
+      const provider = config.model.slice(0, slash);
+      const modelId = config.model.slice(slash + 1);
+      const model = context.modelRegistry.find(provider, modelId);
 
       if (!model) {
         throw new Error(`advisor model not found: ${config.model}`);
