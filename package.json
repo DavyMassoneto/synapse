@@ -11,8 +11,9 @@
     "typecheck": "tsc --noEmit",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "validate": "npm run check && npm run typecheck && npm run build && npm test",
-    "test": "node --test tests/integration/*.test.mjs"
+    "validate": "npm run check && npm run typecheck && npm run check:build && npm test",
+    "test": "node --test tests/integration/*.test.mjs src/modules/advisor/tests/*.test.mjs",
+    "check:build": "node scripts/check-build.mjs"
   },
   "peerDependencies": {
     "@earendil-works/pi-agent-core": "*",

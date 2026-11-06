@@ -5,7 +5,7 @@ import { test } from "node:test";
 const require = createRequire(import.meta.url);
 const { createJiti } = require("jiti");
 const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
-const { AdvisorService } = await jiti.import("../../src/modules/advisor/internal/service.ts");
+const { AdvisorService } = await jiti.import("../internal/service.ts");
 
 test("falha de persistência preserva a configuração anterior", () => {
   const storage = {

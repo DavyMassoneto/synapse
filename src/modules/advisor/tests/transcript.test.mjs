@@ -5,10 +5,8 @@ import { test } from "node:test";
 const require = createRequire(import.meta.url);
 const { createJiti } = require("jiti");
 const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
-const { buildTranscript } = await jiti.import(
-  "../../src/modules/advisor/internal/format/transcript.ts",
-);
-const { AdvisorService } = await jiti.import("../../src/modules/advisor/internal/service.ts");
+const { buildTranscript } = await jiti.import("../internal/format/transcript.ts");
+const { AdvisorService } = await jiti.import("../internal/service.ts");
 
 test("a transcrição trata conteúdo como dados e respeita o orçamento", () => {
   const messages = [
@@ -31,6 +29,10 @@ test("a transcrição trata conteúdo como dados e respeita o orçamento", () =>
   assert.ok(trimmed.includes("FIRST_MESSAGE"));
   assert.ok(trimmed.includes("LAST_MESSAGE"));
   assert.ok(trimmed.length <= 200);
+
+  const oversizedLast = { kind: "user", blocks: [{ kind: "text", text: "last".repeat(1000) }] };
+  const bounded = buildTranscript([beginning, oversizedLast], 200);
+  assert.ok(bounded.length <= 200);
 });
 
 test("janela muito pequena retorna falha antes de chamar o modelo", async () => {

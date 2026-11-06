@@ -211,7 +211,9 @@ function buildTranscript(messages, budget) {
     }
     if (block.length > available) {
       if (selected.length === 0) {
-        selected.unshift(clip(block, available));
+        const clipped = clip(block, available);
+        selected.unshift(clipped);
+        remaining -= clipped.length + SEPARATOR.length;
       }
       break;
     }

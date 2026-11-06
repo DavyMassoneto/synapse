@@ -5,10 +5,8 @@ import { test } from "node:test";
 const require = createRequire(import.meta.url);
 const { createJiti } = require("jiti");
 const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
-const { ReminderCounter, REMIND_EVERY } = await jiti.import(
-  "../../src/modules/advisor/internal/reminder/counter.ts",
-);
-const { REMINDER } = await jiti.import("../../src/modules/advisor/internal/format/instructions.ts");
+const { ReminderCounter, REMIND_EVERY } = await jiti.import("../internal/reminder/counter.ts");
+const { REMINDER } = await jiti.import("../internal/format/instructions.ts");
 
 test("lembrete respeita cadência e estado isolado", () => {
   const first = new ReminderCounter();
