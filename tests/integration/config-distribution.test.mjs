@@ -1,32 +1,69 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
-import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-const SCRIPT = [
-  "import register from './dist/index.js';",
-  "let command; const pi={on(){},registerTool(){},registerCommand(_name,value){command=value},getActiveTools(){return []},setActiveTools(){}};",
-  "const ctx={hasUI:false,scopedModels:[],modelRegistry:{getAvailable(){return []}},ui:{notify(message){console.log(message)},setStatus(){}}};",
-  "register(pi); await command.handler('',ctx);",
-].join(String.fromCharCode(10));
+const CASES = [
+  { name: "ausente", expected: /Advisor: desligado, thinking high/ },
+  {
+    name: "válida",
+    content: JSON.stringify({ model: "openai/gpt-x", thinking: "low" }),
+    expected: /Advisor: openai\/gpt-x, thinking low/,
+  },
+  {
+    name: "nível inválido",
+    content: JSON.stringify({ model: "openai/gpt-x", thinking: "banana" }),
+    expected: /Configuração do advisor inválida/,
+    invalid: true,
+  },
+  {
+    name: "nível numérico",
+    content: JSON.stringify({ model: "openai/gpt-x", thinking: 42 }),
+    expected: /Configuração do advisor inválida/,
+    invalid: true,
+  },
+  {
+    name: "JSON malformado",
+    content: "{broken",
+    expected: /Configuração do advisor inválida/,
+    invalid: true,
+  },
+];
 
-test("a distribuição rejeita níveis inválidos sem substituir o modelo", () => {
+test("a distribuição preserva configuração e informa estados inválidos", () => {
   const home = mkdtempSync(join(tmpdir(), "synapse-config-"));
+  const directory = join(home, ".pi", "agent");
+  const file = join(directory, "advisor.json");
+  mkdirSync(directory, { recursive: true });
+
   try {
-    const directory = join(home, ".pi", "agent");
-    mkdirSync(directory, { recursive: true });
-    for (const thinking of ["banana", 42]) {
-      writeFileSync(join(directory, "advisor.json"), JSON.stringify({ model: "openai/gpt-x", thinking }));
-      const result = spawnSync(process.execPath, ["--input-type=module", "-e", SCRIPT], {
+    for (const example of CASES) {
+      if (example.content === undefined) {
+        rmSync(file, { force: true });
+      } else {
+        writeFileSync(file, example.content);
+      }
+
+      const processResult = spawnSync(process.execPath, ["tests/fixtures/config-host.mjs"], {
         cwd: process.cwd(),
         env: { ...process.env, HOME: home, USERPROFILE: home },
         encoding: "utf8",
       });
-      assert.equal(result.status, 0, result.stderr);
-      assert.doesNotMatch(result.stdout, /thinking (banana|42)/);
-      assert.doesNotMatch(result.stdout, /omniroute/);
+
+      assert.equal(processResult.status, 0, example.name + processResult.stderr);
+      const result = JSON.parse(processResult.stdout);
+      assert.match(result.notifications.join(" "), example.expected, example.name);
+      if (example.content === undefined) {
+        assert.equal(existsSync(file), false);
+      } else {
+        assert.equal(readFileSync(file, "utf8"), example.content);
+      }
+      if (example.invalid) {
+        assert.equal(result.modelLookups, 0);
+        assert.equal(result.result.isError, true);
+      }
     }
   } finally {
     rmSync(home, { recursive: true, force: true });

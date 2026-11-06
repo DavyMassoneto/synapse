@@ -1,13 +1,9 @@
-export type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max";
+import { type AdvisorResult } from "@/modules/advisor/public";
+import { type ThinkingLevel } from "@/modules/advisor/public/config";
 
 export interface Config {
   model?: string;
   thinking: ThinkingLevel;
-}
-
-export interface ConfigPort {
-  load(): Config;
-  save(config: Config): void;
 }
 
 export interface TranscriptPart {
@@ -53,7 +49,6 @@ export interface ModelResponse {
 export type ModelPort = (request: ModelRequest) => Promise<ModelResponse>;
 
 export interface Consultation {
-  config: Config;
   system: string;
   messages: TranscriptMessage[];
   contextWindow: number;
@@ -61,7 +56,10 @@ export interface Consultation {
 }
 
 export interface Advisor {
-  config: ConfigPort;
+  status(): AdvisorResult;
+  selectModel(model: string): AdvisorResult;
+  disable(): AdvisorResult;
+  setThinking(level: ThinkingLevel): AdvisorResult;
   timing: string;
   reset(): void;
   turn(completed: boolean, hasTools: boolean): string | undefined;

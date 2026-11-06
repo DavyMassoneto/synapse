@@ -10,7 +10,8 @@ import {
 import { type Advisor } from "@/modules";
 
 export function syncAdvisor(pi: ExtensionAPI, advisor: Advisor, context: ExtensionContext): void {
-  const model = advisor.config.load().model;
+  const result = advisor.status();
+  const model = result.kind === "success" ? result.status.model : undefined;
   const active = pi.getActiveTools();
 
   if (model && !active.includes("advisor")) {
@@ -34,21 +35,26 @@ class AdvisorEvents {
   constructor(
     private readonly pi: ExtensionAPI,
     private readonly advisor: Advisor,
-    private readonly lifetime: AbortController,
+    private readonly shutdownCallback: () => void,
   ) {}
 
   start(_event: SessionStartEvent, context: ExtensionContext): void {
     this.advisor.reset();
     syncAdvisor(this.pi, this.advisor, context);
+    const status = this.advisor.status();
+    if (status.kind === "failure" && context.hasUI) {
+      context.ui.notify(status.message, "error");
+    }
   }
 
   shutdown(): void {
-    this.lifetime.abort();
+    this.shutdownCallback();
   }
 
   beforeStart(event: BeforeAgentStartEvent, context: ExtensionContext): void {
     syncAdvisor(this.pi, this.advisor, context);
-    if (this.advisor.config.load().model) {
+    const result = this.advisor.status();
+    if (result.kind === "success" && result.status.model) {
       event.systemPromptOptions.sections.advisor = this.advisor.timing;
     } else {
       delete event.systemPromptOptions.sections.advisor;
@@ -83,9 +89,9 @@ class AdvisorEvents {
 export function registerEvents(
   pi: ExtensionAPI,
   advisor: Advisor,
-  lifetime: AbortController,
+  shutdownCallback: () => void,
 ): void {
-  const handlers = new AdvisorEvents(pi, advisor, lifetime);
+  const handlers = new AdvisorEvents(pi, advisor, shutdownCallback);
   pi.on("session_start", handlers.start.bind(handlers));
   pi.on("session_shutdown", handlers.shutdown.bind(handlers));
   pi.on("before_agent_start", handlers.beforeStart.bind(handlers));

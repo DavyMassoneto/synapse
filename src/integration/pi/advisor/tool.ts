@@ -17,7 +17,7 @@ import { type Advisor } from "@/modules";
 class AdvisorToolHandler {
   constructor(
     private readonly advisor: Advisor,
-    private readonly lifetime: AbortController,
+    private readonly lifetime: AbortSignal,
   ) {}
 
   async execute(
@@ -28,7 +28,11 @@ class AdvisorToolHandler {
     context: ExtensionToolContext,
   ): AdvisorToolResult {
     try {
-      const config = this.advisor.config.load();
+      const status = this.advisor.status();
+      if (status.kind === "failure") {
+        throw new Error(status.message);
+      }
+      const config = status.status;
       if (!config.model) {
         throw new Error("no advisor model configured");
       }
@@ -53,15 +57,12 @@ class AdvisorToolHandler {
         content: [{ type: "text", text: `Consulting ${config.model}...` }],
         details: {},
       });
-      const callSignal = signal
-        ? AbortSignal.any([signal, this.lifetime.signal])
-        : this.lifetime.signal;
+      const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
       callSignal.throwIfAborted();
 
       const advisorModel = new AdvisorModel(context, model);
       const result = await this.advisor.consult(
         {
-          config,
           system: context.getSystemPrompt(),
           messages: captureTranscript(context),
           contextWindow: model.contextWindow,
@@ -91,7 +92,7 @@ class AdvisorToolHandler {
   }
 }
 
-export function registerTool(pi: ExtensionAPI, advisor: Advisor, lifetime: AbortController): void {
+export function registerTool(pi: ExtensionAPI, advisor: Advisor, lifetime: AbortSignal): void {
   const handler = new AdvisorToolHandler(advisor, lifetime);
   pi.registerTool({
     name: "advisor",

@@ -1,11 +1,7 @@
-import { type ThinkingLevel } from "@/modules";
+import { type ThinkingLevel, thinkingSchema } from "@/modules/advisor/public/config";
 
-export const THINKING_LEVELS: readonly ThinkingLevel[] = [
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max",
-];
+export const THINKING_LEVELS: readonly ThinkingLevel[] = thinkingSchema.anyOf.map(getThinkingValue);
+
+function getThinkingValue(schema: (typeof thinkingSchema.anyOf)[number]): ThinkingLevel {
+  return schema.const;
+}

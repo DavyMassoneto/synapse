@@ -24,10 +24,9 @@ class AdvisorRendering {
       text = new Text("", 0, 0);
     }
 
-    text.setText(
-      theme.fg("toolTitle", theme.bold("advisor ")) +
-        theme.fg("muted", this.advisor.config.load().model ?? ""),
-    );
+    const status = this.advisor.status();
+    const model = status.kind === "success" ? status.status.model : undefined;
+    text.setText(theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", model ?? ""));
     return text;
   }
 

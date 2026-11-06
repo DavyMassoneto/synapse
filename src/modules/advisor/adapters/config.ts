@@ -1,23 +1,37 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { Value } from "typebox/value";
-import { type Config } from "@/modules";
 import { configSchema } from "@/modules/advisor/adapters";
+import { type ConfigLoadResult } from "@/modules/advisor/internal/config";
+import { type Config } from "@/modules/advisor/public";
 
-const CONFIG_PATH = join(homedir(), ".pi", "agent", "advisor.json");
-const DEFAULT_MODEL = "omniroute/cc/claude-opus-5-5";
+export class FileConfig {
+  constructor(private readonly path: string) {}
 
-export function loadConfig(): Config {
-  try {
-    const config = Value.Parse(configSchema, JSON.parse(readFileSync(CONFIG_PATH, "utf8")));
-    return { model: config.model || undefined, thinking: config.thinking ?? "high" };
-  } catch {
-    return { model: DEFAULT_MODEL, thinking: "high" };
+  load(): ConfigLoadResult {
+    let content: string;
+    try {
+      content = readFileSync(this.path, "utf8");
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        return { kind: "missing" };
+      }
+      return { kind: "invalid", message: "Não foi possível ler a configuração do advisor." };
+    }
+
+    try {
+      const config = Value.Parse(configSchema, JSON.parse(content));
+      return {
+        kind: "loaded",
+        config: { model: config.model || undefined, thinking: config.thinking ?? "high" },
+      };
+    } catch {
+      return { kind: "invalid", message: "Configuração do advisor inválida; revise advisor.json." };
+    }
   }
-}
 
-export function saveConfig(config: Config): void {
-  mkdirSync(dirname(CONFIG_PATH), { recursive: true });
-  writeFileSync(CONFIG_PATH, `${JSON.stringify(config, null, 2)}\n`);
+  save(config: Config): void {
+    mkdirSync(dirname(this.path), { recursive: true });
+    writeFileSync(this.path, `${JSON.stringify(config, null, 2)}\n`);
+  }
 }

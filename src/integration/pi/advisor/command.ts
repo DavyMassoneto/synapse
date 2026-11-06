@@ -6,7 +6,7 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { type AutocompleteItem } from "@earendil-works/pi-tui";
 import { syncAdvisor } from "@/integration";
-import { type Advisor, type Config, THINKING_LEVELS } from "@/modules";
+import { type Advisor, type AdvisorResult, THINKING_LEVELS } from "@/modules";
 
 const COMPLETION_LIMIT = 40;
 const MODEL_SELECTION_LIMIT = 100;
@@ -58,17 +58,20 @@ class AdvisorCommand {
     return items;
   }
 
-  private commit(context: ExtensionContext, config: Config, message: string): void {
-    this.advisor.config.save(config);
+  private notifyStatus(context: ExtensionContext, status: AdvisorResult, message: string): void {
+    if (status.kind === "failure") {
+      context.ui.notify(status.message, "error");
+      return;
+    }
     syncAdvisor(this.pi, this.advisor, context);
     context.ui.notify(message, "info");
   }
 
-  private changeThinking(context: ExtensionContext, config: Config, requested: string): void {
+  private changeThinking(context: ExtensionContext, requested: string): void {
     for (const level of THINKING_LEVELS) {
       if (level === requested) {
-        config.thinking = level;
-        this.commit(context, config, `Advisor thinking: ${level}`);
+        const status = this.advisor.setThinking(level);
+        this.notifyStatus(context, status, `Advisor thinking: ${level}`);
         return;
       }
     }
@@ -123,26 +126,35 @@ class AdvisorCommand {
     if (context.hasUI) {
       return context.ui.select("Modelo advisor", matches.slice(0, MODEL_SELECTION_LIMIT));
     }
+    context.ui.notify(
+      "Mais de um modelo corresponde; informe uma referência mais específica.",
+      "warning",
+    );
     return undefined;
   }
 
   async handle(args: string, context: ExtensionCommandContext): Promise<void> {
     this.lastContext = context;
-    const config = this.advisor.config.load();
+    const status = this.advisor.status();
     const input = args.trim();
 
-    if (input === "off") {
-      config.model = undefined;
-      this.commit(context, config, "Advisor desligado");
+    if (status.kind === "failure") {
+      context.ui.notify(status.message, "error");
       return;
     }
-    if (input.startsWith("thinking")) {
-      this.changeThinking(context, config, input.slice(8).trim());
+
+    if (input === "off") {
+      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
+      return;
+    }
+    const [command, ...argumentsList] = input.split(/\s+/);
+    if (command === "thinking") {
+      this.changeThinking(context, argumentsList.join(" "));
       return;
     }
     if (!input && !context.hasUI) {
       context.ui.notify(
-        `Advisor: ${config.model ?? "desligado"}, thinking ${config.thinking}`,
+        `Advisor: ${status.status.model ?? "desligado"}, thinking ${status.status.thinking}`,
         "info",
       );
       return;
@@ -150,11 +162,9 @@ class AdvisorCommand {
 
     const chosen = await this.chooseModel(context, this.modelRefs(context), input);
     if (chosen === DISABLED_OPTION) {
-      config.model = undefined;
-      this.commit(context, config, "Advisor desligado");
+      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
     } else if (chosen) {
-      config.model = chosen;
-      this.commit(context, config, `Advisor: ${chosen}`);
+      this.notifyStatus(context, this.advisor.selectModel(chosen), `Advisor: ${chosen}`);
     }
   }
 }

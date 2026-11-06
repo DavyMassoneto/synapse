@@ -1,31 +1,62 @@
 /* ARQUIVO AUTOGERADO — NÃO EDITE DIRETAMENTE. Altere src/ e execute npm run build. */
 
+// src/entry.ts
+import { homedir } from "node:os";
+import { join } from "node:path";
+
+// src/modules/advisor/public/config/schema.ts
+import { Type } from "typebox";
+var thinkingSchema = Type.Union([
+  Type.Literal("off"),
+  Type.Literal("minimal"),
+  Type.Literal("low"),
+  Type.Literal("medium"),
+  Type.Literal("high"),
+  Type.Literal("xhigh"),
+  Type.Literal("max")
+]);
+
 // src/modules/advisor/adapters/config.ts
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { homedir } from "node:os";
-import { dirname, join } from "node:path";
+import { dirname } from "node:path";
 import { Value } from "typebox/value";
-var CONFIG_PATH = join(homedir(), ".pi", "agent", "advisor.json");
-var DEFAULT_MODEL = "omniroute/cc/claude-opus-5-5";
-function loadConfig() {
-  try {
-    const config = Value.Parse(configSchema, JSON.parse(readFileSync(CONFIG_PATH, "utf8")));
-    return { model: config.model || void 0, thinking: config.thinking ?? "high" };
-  } catch {
-    return { model: DEFAULT_MODEL, thinking: "high" };
+var FileConfig = class {
+  constructor(path) {
+    this.path = path;
   }
-}
-function saveConfig(config) {
-  mkdirSync(dirname(CONFIG_PATH), { recursive: true });
-  writeFileSync(CONFIG_PATH, `${JSON.stringify(config, null, 2)}
+  path;
+  load() {
+    let content;
+    try {
+      content = readFileSync(this.path, "utf8");
+    } catch (error) {
+      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+        return { kind: "missing" };
+      }
+      return { kind: "invalid", message: "N\xE3o foi poss\xEDvel ler a configura\xE7\xE3o do advisor." };
+    }
+    try {
+      const config = Value.Parse(configSchema, JSON.parse(content));
+      return {
+        kind: "loaded",
+        config: { model: config.model || void 0, thinking: config.thinking ?? "high" }
+      };
+    } catch {
+      return { kind: "invalid", message: "Configura\xE7\xE3o do advisor inv\xE1lida; revise advisor.json." };
+    }
+  }
+  save(config) {
+    mkdirSync(dirname(this.path), { recursive: true });
+    writeFileSync(this.path, `${JSON.stringify(config, null, 2)}
 `);
-}
+  }
+};
 
 // src/modules/advisor/adapters/config-schema.ts
-import { Type } from "typebox";
-var configSchema = Type.Object({
-  model: Type.Optional(Type.String()),
-  thinking: Type.Optional(Type.Enum(THINKING_LEVELS))
+import { Type as Type2 } from "typebox";
+var configSchema = Type2.Object({
+  model: Type2.Optional(Type2.String()),
+  thinking: Type2.Optional(thinkingSchema)
 });
 
 // src/modules/advisor/internal/instructions.ts
@@ -63,15 +94,64 @@ Rules:
 var AdvisorService = class {
   constructor(config) {
     this.config = config;
+    const loaded = config.load();
+    if (loaded.kind === "invalid") {
+      this.current = { kind: "failure", message: loaded.message };
+    } else if (loaded.kind === "loaded") {
+      this.current = { kind: "success", status: loaded.config };
+    } else {
+      this.current = { kind: "success", status: { thinking: "high" } };
+    }
   }
   config;
   timing = TIMING;
   turns = 0;
+  current;
+  status() {
+    if (this.current.kind === "failure") {
+      return { ...this.current };
+    }
+    return { kind: "success", status: { ...this.current.status } };
+  }
+  persist(status) {
+    if (this.current.kind === "failure") {
+      return this.status();
+    }
+    try {
+      this.config.save(status);
+      this.current = { kind: "success", status };
+      return this.status();
+    } catch {
+      return { kind: "failure", message: "N\xE3o foi poss\xEDvel salvar a configura\xE7\xE3o do advisor." };
+    }
+  }
+  selectModel(model) {
+    const separator = model.indexOf("/");
+    if (separator <= 0 || separator === model.length - 1) {
+      return { kind: "failure", message: "O modelo deve usar o formato provedor/id." };
+    }
+    if (this.current.kind === "failure") {
+      return this.status();
+    }
+    return this.persist({ model, thinking: this.current.status.thinking });
+  }
+  disable() {
+    if (this.current.kind === "failure") {
+      return this.status();
+    }
+    return this.persist({ thinking: this.current.status.thinking });
+  }
+  setThinking(thinking) {
+    if (this.current.kind === "failure") {
+      return this.status();
+    }
+    return this.persist({ model: this.current.status.model, thinking });
+  }
   reset() {
     this.turns = 0;
   }
   turn(completed, hasTools) {
-    if (!completed || !this.config.load().model) {
+    if (!completed || this.current.kind === "failure" || !this.current.status.model) {
       return void 0;
     }
     this.turns += 1;
@@ -82,7 +162,11 @@ var AdvisorService = class {
     return REMINDER;
   }
   async consult(input, model) {
-    if (!input.config.model) {
+    if (this.current.kind === "failure") {
+      throw new Error(this.current.message);
+    }
+    const configuration = this.current.status;
+    if (!configuration.model) {
       throw new Error("no advisor model configured");
     }
     const system = clip(input.system, 4e4);
@@ -102,8 +186,8 @@ var AdvisorService = class {
     return model({
       system: ADVISOR_SYSTEM,
       prompt,
-      model: input.config.model,
-      thinking: input.config.thinking,
+      model: configuration.model,
+      thinking: configuration.thinking,
       signal: input.signal
     });
   }
@@ -153,35 +237,31 @@ function buildTranscript(messages, budget) {
 }
 
 // src/modules/advisor/public/create-advisor.ts
-function createAdvisor() {
-  return new AdvisorService({ load: loadConfig, save: saveConfig });
+function createAdvisor(path) {
+  return new AdvisorService(new FileConfig(path));
 }
 
 // src/modules/advisor/public/thinking.ts
-var THINKING_LEVELS = [
-  "off",
-  "minimal",
-  "low",
-  "medium",
-  "high",
-  "xhigh",
-  "max"
-];
-
-// src/composition/compose.ts
-function compose() {
-  return createAdvisor();
+var THINKING_LEVELS = thinkingSchema.anyOf.map(getThinkingValue);
+function getThinkingValue(schema) {
+  return schema.const;
 }
 
-// src/integration/pi/advisor.ts
-function registerAdvisor(pi, advisor) {
+// src/composition/compose.ts
+function compose(host, configPath) {
   const lifetime = new AbortController();
-  registerEvents(pi, advisor, lifetime);
-  registerTool(pi, advisor, lifetime);
+  const advisor = createAdvisor(configPath);
+  host.register(advisor, lifetime.signal, lifetime.abort.bind(lifetime));
+}
+
+// src/integration/pi/advisor/advisor.ts
+function registerAdvisor(pi, advisor, signal, shutdown) {
+  registerEvents(pi, advisor, shutdown);
+  registerTool(pi, advisor, signal);
   registerCommand(pi, advisor);
 }
 
-// src/integration/pi/command.ts
+// src/integration/pi/advisor/command.ts
 var COMPLETION_LIMIT = 40;
 var MODEL_SELECTION_LIMIT = 100;
 var DISABLED_OPTION = "(sem advisor)";
@@ -223,16 +303,19 @@ var AdvisorCommand = class {
     }
     return items;
   }
-  commit(context, config, message) {
-    this.advisor.config.save(config);
+  notifyStatus(context, status, message) {
+    if (status.kind === "failure") {
+      context.ui.notify(status.message, "error");
+      return;
+    }
     syncAdvisor(this.pi, this.advisor, context);
     context.ui.notify(message, "info");
   }
-  changeThinking(context, config, requested) {
+  changeThinking(context, requested) {
     for (const level of THINKING_LEVELS) {
       if (level === requested) {
-        config.thinking = level;
-        this.commit(context, config, `Advisor thinking: ${level}`);
+        const status = this.advisor.setThinking(level);
+        this.notifyStatus(context, status, `Advisor thinking: ${level}`);
         return;
       }
     }
@@ -275,35 +358,41 @@ var AdvisorCommand = class {
     if (context.hasUI) {
       return context.ui.select("Modelo advisor", matches.slice(0, MODEL_SELECTION_LIMIT));
     }
+    context.ui.notify(
+      "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
+      "warning"
+    );
     return void 0;
   }
   async handle(args, context) {
     this.lastContext = context;
-    const config = this.advisor.config.load();
+    const status = this.advisor.status();
     const input = args.trim();
-    if (input === "off") {
-      config.model = void 0;
-      this.commit(context, config, "Advisor desligado");
+    if (status.kind === "failure") {
+      context.ui.notify(status.message, "error");
       return;
     }
-    if (input.startsWith("thinking")) {
-      this.changeThinking(context, config, input.slice(8).trim());
+    if (input === "off") {
+      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
+      return;
+    }
+    const [command, ...argumentsList] = input.split(/\s+/);
+    if (command === "thinking") {
+      this.changeThinking(context, argumentsList.join(" "));
       return;
     }
     if (!input && !context.hasUI) {
       context.ui.notify(
-        `Advisor: ${config.model ?? "desligado"}, thinking ${config.thinking}`,
+        `Advisor: ${status.status.model ?? "desligado"}, thinking ${status.status.thinking}`,
         "info"
       );
       return;
     }
     const chosen = await this.chooseModel(context, this.modelRefs(context), input);
     if (chosen === DISABLED_OPTION) {
-      config.model = void 0;
-      this.commit(context, config, "Advisor desligado");
+      this.notifyStatus(context, this.advisor.disable(), "Advisor desligado");
     } else if (chosen) {
-      config.model = chosen;
-      this.commit(context, config, `Advisor: ${chosen}`);
+      this.notifyStatus(context, this.advisor.selectModel(chosen), `Advisor: ${chosen}`);
     }
   }
 };
@@ -317,9 +406,10 @@ function registerCommand(pi, advisor) {
   });
 }
 
-// src/integration/pi/events.ts
+// src/integration/pi/advisor/events.ts
 function syncAdvisor(pi, advisor, context) {
-  const model = advisor.config.load().model;
+  const result = advisor.status();
+  const model = result.kind === "success" ? result.status.model : void 0;
   const active = pi.getActiveTools();
   if (model && !active.includes("advisor")) {
     pi.setActiveTools([...active, "advisor"]);
@@ -337,24 +427,29 @@ function syncAdvisor(pi, advisor, context) {
   }
 }
 var AdvisorEvents = class {
-  constructor(pi, advisor, lifetime) {
+  constructor(pi, advisor, shutdownCallback) {
     this.pi = pi;
     this.advisor = advisor;
-    this.lifetime = lifetime;
+    this.shutdownCallback = shutdownCallback;
   }
   pi;
   advisor;
-  lifetime;
+  shutdownCallback;
   start(_event, context) {
     this.advisor.reset();
     syncAdvisor(this.pi, this.advisor, context);
+    const status = this.advisor.status();
+    if (status.kind === "failure" && context.hasUI) {
+      context.ui.notify(status.message, "error");
+    }
   }
   shutdown() {
-    this.lifetime.abort();
+    this.shutdownCallback();
   }
   beforeStart(event, context) {
     syncAdvisor(this.pi, this.advisor, context);
-    if (this.advisor.config.load().model) {
+    const result = this.advisor.status();
+    if (result.kind === "success" && result.status.model) {
       event.systemPromptOptions.sections.advisor = this.advisor.timing;
     } else {
       delete event.systemPromptOptions.sections.advisor;
@@ -383,8 +478,8 @@ var AdvisorEvents = class {
     };
   }
 };
-function registerEvents(pi, advisor, lifetime) {
-  const handlers = new AdvisorEvents(pi, advisor, lifetime);
+function registerEvents(pi, advisor, shutdownCallback) {
+  const handlers = new AdvisorEvents(pi, advisor, shutdownCallback);
   pi.on("session_start", handlers.start.bind(handlers));
   pi.on("session_shutdown", handlers.shutdown.bind(handlers));
   pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
@@ -392,7 +487,7 @@ function registerEvents(pi, advisor, lifetime) {
   pi.on("turn_end", handlers.turnEnd.bind(handlers));
 }
 
-// src/integration/pi/model.ts
+// src/integration/pi/advisor/model.ts
 var AdvisorModel = class {
   constructor(context, model) {
     this.context = context;
@@ -434,7 +529,7 @@ var AdvisorModel = class {
   }
 };
 
-// src/integration/pi/rendering.ts
+// src/integration/pi/advisor/rendering.ts
 import { Text } from "@earendil-works/pi-tui";
 var AdvisorRendering = class {
   constructor(advisor) {
@@ -448,9 +543,9 @@ var AdvisorRendering = class {
     } else {
       text = new Text("", 0, 0);
     }
-    text.setText(
-      theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", this.advisor.config.load().model ?? "")
-    );
+    const status = this.advisor.status();
+    const model = status.kind === "success" ? status.status.model : void 0;
+    text.setText(theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", model ?? ""));
     return text;
   }
   renderResult(result, options, theme, context) {
@@ -499,7 +594,7 @@ function createRenderers(advisor) {
   };
 }
 
-// src/integration/pi/tool.ts
+// src/integration/pi/advisor/tool.ts
 var AdvisorToolHandler = class {
   constructor(advisor, lifetime) {
     this.advisor = advisor;
@@ -509,7 +604,11 @@ var AdvisorToolHandler = class {
   lifetime;
   async execute(_id, _params, signal, onUpdate, context) {
     try {
-      const config = this.advisor.config.load();
+      const status = this.advisor.status();
+      if (status.kind === "failure") {
+        throw new Error(status.message);
+      }
+      const config = status.status;
       if (!config.model) {
         throw new Error("no advisor model configured");
       }
@@ -530,12 +629,11 @@ var AdvisorToolHandler = class {
         content: [{ type: "text", text: `Consulting ${config.model}...` }],
         details: {}
       });
-      const callSignal = signal ? AbortSignal.any([signal, this.lifetime.signal]) : this.lifetime.signal;
+      const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
       callSignal.throwIfAborted();
       const advisorModel = new AdvisorModel(context, model);
       const result = await this.advisor.consult(
         {
-          config,
           system: context.getSystemPrompt(),
           messages: captureTranscript(context),
           contextWindow: model.contextWindow,
@@ -577,11 +675,11 @@ function registerTool(pi, advisor, lifetime) {
   });
 }
 
-// src/integration/pi/tool-schema.ts
-import { Type as Type2 } from "typebox";
-var advisorParameters = Type2.Object({});
+// src/integration/pi/advisor/tool-schema.ts
+import { Type as Type3 } from "typebox";
+var advisorParameters = Type3.Object({});
 
-// src/integration/pi/transcript.ts
+// src/integration/pi/advisor/transcript.ts
 function renderContent(content) {
   if (typeof content === "string") {
     return content;
@@ -678,8 +776,19 @@ function captureTranscript(context) {
 }
 
 // src/integration/pi/extension.ts
+var PiHost = class {
+  constructor(pi) {
+    this.pi = pi;
+  }
+  pi;
+  register(advisor, signal, shutdown) {
+    registerAdvisor(this.pi, advisor, signal, shutdown);
+  }
+};
+
+// src/entry.ts
 function registerSynapse(pi) {
-  registerAdvisor(pi, compose());
+  compose(new PiHost(pi), join(homedir(), ".pi", "agent", "advisor.json"));
 }
 export {
   registerSynapse as default

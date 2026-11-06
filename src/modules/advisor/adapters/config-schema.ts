@@ -1,7 +1,7 @@
 import { Type } from "typebox";
-import { THINKING_LEVELS } from "@/modules";
+import { thinkingSchema } from "@/modules/advisor/public/config";
 
 export const configSchema = Type.Object({
   model: Type.Optional(Type.String()),
-  thinking: Type.Optional(Type.Enum(THINKING_LEVELS)),
+  thinking: Type.Optional(thinkingSchema),
 });

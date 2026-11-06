@@ -1,7 +1,7 @@
-import { type Advisor } from "@/modules";
-import { loadConfig, saveConfig } from "@/modules/advisor/adapters";
+import { FileConfig } from "@/modules/advisor/adapters";
 import { AdvisorService } from "@/modules/advisor/internal";
+import { type Advisor } from "@/modules/advisor/public";
 
-export function createAdvisor(): Advisor {
-  return new AdvisorService({ load: loadConfig, save: saveConfig });
+export function createAdvisor(path: string): Advisor {
+  return new AdvisorService(new FileConfig(path));
 }
