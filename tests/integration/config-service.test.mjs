@@ -18,6 +18,11 @@ test("falha de persistência preserva a configuração anterior", () => {
   };
 
   const advisor = new AdvisorService(storage);
+  const invalidModel = advisor.selectModel("invalid");
+  assert.equal(invalidModel.kind, "failure");
+  const invalidThinking = advisor.setThinking("invalid");
+  assert.equal(invalidThinking.kind, "failure");
+
   const result = advisor.selectModel("provider/novo");
   assert.equal(result.kind, "failure");
   assert.deepEqual(advisor.status(), {

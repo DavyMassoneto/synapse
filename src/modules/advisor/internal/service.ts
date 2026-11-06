@@ -5,103 +5,62 @@ import {
   REMINDER,
   TIMING,
 } from "@/modules/advisor/internal";
-import { type ConfigPort } from "@/modules/advisor/internal/config";
+import { AdvisorConfiguration, type ConfigPort } from "@/modules/advisor/internal/config";
+import { ReminderCounter } from "@/modules/advisor/internal/reminder";
 import {
   type Advisor,
   type AdvisorResult,
-  type AdvisorStatus,
   type Consultation,
   type ConsultationResult,
   type ModelPort,
+  type ReminderTurn,
   type ThinkingLevel,
 } from "@/modules/advisor/public";
 
 export class AdvisorService implements Advisor {
   readonly timing = TIMING;
-  private turns = 0;
-  private current: AdvisorResult;
+  private readonly configuration: AdvisorConfiguration;
+  private readonly reminder = new ReminderCounter();
 
-  constructor(private readonly config: ConfigPort) {
-    const loaded = config.load();
-    if (loaded.kind === "invalid") {
-      this.current = { kind: "failure", message: loaded.message };
-    } else if (loaded.kind === "loaded") {
-      this.current = { kind: "success", status: loaded.config };
-    } else {
-      this.current = { kind: "success", status: { thinking: "high" } };
-    }
+  constructor(config: ConfigPort) {
+    this.configuration = new AdvisorConfiguration(config);
   }
 
   status(): AdvisorResult {
-    if (this.current.kind === "failure") {
-      return { ...this.current };
-    }
-    return { kind: "success", status: { ...this.current.status } };
+    return this.configuration.status();
   }
-
-  private persist(status: AdvisorStatus): AdvisorResult {
-    if (this.current.kind === "failure") {
-      return this.status();
-    }
-    try {
-      this.config.save(status);
-      this.current = { kind: "success", status };
-      return this.status();
-    } catch {
-      return { kind: "failure", message: "Não foi possível salvar a configuração do advisor." };
-    }
-  }
-
   selectModel(model: string): AdvisorResult {
-    const separator = model.indexOf("/");
-    if (separator <= 0 || separator === model.length - 1) {
-      return { kind: "failure", message: "O modelo deve usar o formato provedor/id." };
-    }
-
-    if (this.current.kind === "failure") {
-      return this.status();
-    }
-    return this.persist({ model, thinking: this.current.status.thinking });
+    return this.configuration.selectModel(model);
   }
-
   disable(): AdvisorResult {
-    if (this.current.kind === "failure") {
-      return this.status();
-    }
-    return this.persist({ thinking: this.current.status.thinking });
+    return this.configuration.disable();
   }
-
   setThinking(thinking: ThinkingLevel): AdvisorResult {
-    if (this.current.kind === "failure") {
-      return this.status();
-    }
-    return this.persist({ model: this.current.status.model, thinking });
+    return this.configuration.setThinking(thinking);
   }
-
   reset(): void {
-    this.turns = 0;
+    this.reminder.reset();
   }
-
-  turn(completed: boolean, hasTools: boolean): string | undefined {
-    if (!completed || this.current.kind === "failure" || !this.current.status.model) {
+  turn(event: ReminderTurn): string | undefined {
+    const status = this.configuration.status();
+    if (status.kind === "failure" || !status.status.model) {
       return undefined;
     }
-    this.turns += 1;
-    if (this.turns < 5 || !hasTools) {
-      return undefined;
+    if (this.reminder.advance(event)) {
+      return REMINDER;
     }
-    this.turns = 0;
-    return REMINDER;
+    return undefined;
   }
 
   async consult(input: Consultation, model: ModelPort): Promise<ConsultationResult> {
     if (input.signal?.aborted) {
       return { kind: "cancelled" };
     }
-    if (this.current.kind === "failure") {
-      return { kind: "failure", message: this.current.message };
+    const status = this.configuration.status();
+    if (status.kind === "failure") {
+      return status;
     }
-    const configuration = this.current.status;
+    const configuration = status.status;
     if (!configuration.model) {
       return { kind: "failure", message: "no advisor model configured" };
     }
@@ -110,20 +69,23 @@ export class AdvisorService implements Advisor {
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
-      const system = clip(input.system, 40_000);
-      const budget = Math.max(20_000, (contextWindow - 26_000) * 3 - system.length);
-      const transcript = buildTranscript(input.messages, budget);
-      const prompt = [
-        "<executor_system_prompt>",
-        system,
-        "</executor_system_prompt>",
-        "",
-        "<transcript>",
-        transcript,
-        "</transcript>",
-        "",
-        "The executor just called advisor(). Give your guidance now.",
-      ].join("\n");
+      const available = contextWindow * 3 - ADVISOR_SYSTEM.length - 2_048;
+      const promptPrefix = "<executor_system_prompt>\n";
+      const transcriptPrefix = "\n</executor_system_prompt>\n\n<transcript>\n";
+      const promptSuffix =
+        "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
+      const fixedLength = promptPrefix.length + transcriptPrefix.length + promptSuffix.length;
+      if (available <= fixedLength) {
+        return {
+          kind: "failure",
+          message: "A janela do advisor é pequena demais para a consulta.",
+        };
+      }
+      const systemLimit = Math.min(40_000, Math.floor((available - fixedLength) / 2));
+      const system = clip(input.system, systemLimit);
+      const transcriptBudget = available - fixedLength - system.length;
+      const transcript = buildTranscript(input.messages, transcriptBudget);
+      const prompt = promptPrefix + system + transcriptPrefix + transcript + promptSuffix;
       const response = await model.consult({
         system: ADVISOR_SYSTEM,
         prompt,

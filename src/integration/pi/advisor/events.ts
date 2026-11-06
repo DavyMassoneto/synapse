@@ -68,7 +68,10 @@ class AdvisorEvents {
   }
 
   turnEnd(event: TurnEndEvent): TurnEndEventResult | undefined {
-    const reminder = this.advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
+    const reminder = this.advisor.turn({
+      completed: event.outcome === "completed",
+      usedTools: event.toolResults.length > 0,
+    });
     if (!reminder) {
       return undefined;
     }

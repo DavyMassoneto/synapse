@@ -59,8 +59,27 @@ var configSchema = Type2.Object({
   thinking: Type2.Optional(thinkingSchema)
 });
 
-// src/modules/advisor/internal/instructions.ts
+// src/modules/advisor/internal/reminder/counter.ts
 var REMIND_EVERY = 5;
+var ReminderCounter = class {
+  turns = 0;
+  reset() {
+    this.turns = 0;
+  }
+  advance(event) {
+    if (!event.completed) {
+      return false;
+    }
+    this.turns += 1;
+    if (this.turns < REMIND_EVERY || !event.usedTools) {
+      return false;
+    }
+    this.reset();
+    return true;
+  }
+};
+
+// src/modules/advisor/internal/instructions.ts
 var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
 
 Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
@@ -90,8 +109,9 @@ Rules:
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
 
-// src/modules/advisor/internal/service.ts
-var AdvisorService = class {
+// src/modules/advisor/internal/config/state.ts
+import { Value as Value2 } from "typebox/value";
+var AdvisorConfiguration = class {
   constructor(config) {
     this.config = config;
     const loaded = config.load();
@@ -104,8 +124,6 @@ var AdvisorService = class {
     }
   }
   config;
-  timing = TIMING;
-  turns = 0;
   current;
   status() {
     if (this.current.kind === "failure") {
@@ -142,33 +160,58 @@ var AdvisorService = class {
     return this.persist({ thinking: this.current.status.thinking });
   }
   setThinking(thinking) {
+    if (!Value2.Check(thinkingSchema, thinking)) {
+      return { kind: "failure", message: "N\xEDvel de racioc\xEDnio inv\xE1lido." };
+    }
     if (this.current.kind === "failure") {
       return this.status();
     }
     return this.persist({ model: this.current.status.model, thinking });
   }
-  reset() {
-    this.turns = 0;
+};
+
+// src/modules/advisor/internal/service.ts
+var AdvisorService = class {
+  timing = TIMING;
+  configuration;
+  reminder = new ReminderCounter();
+  constructor(config) {
+    this.configuration = new AdvisorConfiguration(config);
   }
-  turn(completed, hasTools) {
-    if (!completed || this.current.kind === "failure" || !this.current.status.model) {
+  status() {
+    return this.configuration.status();
+  }
+  selectModel(model) {
+    return this.configuration.selectModel(model);
+  }
+  disable() {
+    return this.configuration.disable();
+  }
+  setThinking(thinking) {
+    return this.configuration.setThinking(thinking);
+  }
+  reset() {
+    this.reminder.reset();
+  }
+  turn(event) {
+    const status = this.configuration.status();
+    if (status.kind === "failure" || !status.status.model) {
       return void 0;
     }
-    this.turns += 1;
-    if (this.turns < 5 || !hasTools) {
-      return void 0;
+    if (this.reminder.advance(event)) {
+      return REMINDER;
     }
-    this.turns = 0;
-    return REMINDER;
+    return void 0;
   }
   async consult(input, model) {
     if (input.signal?.aborted) {
       return { kind: "cancelled" };
     }
-    if (this.current.kind === "failure") {
-      return { kind: "failure", message: this.current.message };
+    const status = this.configuration.status();
+    if (status.kind === "failure") {
+      return status;
     }
-    const configuration = this.current.status;
+    const configuration = status.status;
     if (!configuration.model) {
       return { kind: "failure", message: "no advisor model configured" };
     }
@@ -177,20 +220,22 @@ var AdvisorService = class {
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
-      const system = clip(input.system, 4e4);
-      const budget = Math.max(2e4, (contextWindow - 26e3) * 3 - system.length);
-      const transcript = buildTranscript(input.messages, budget);
-      const prompt = [
-        "<executor_system_prompt>",
-        system,
-        "</executor_system_prompt>",
-        "",
-        "<transcript>",
-        transcript,
-        "</transcript>",
-        "",
-        "The executor just called advisor(). Give your guidance now."
-      ].join("\n");
+      const available = contextWindow * 3 - ADVISOR_SYSTEM.length - 2048;
+      const promptPrefix = "<executor_system_prompt>\n";
+      const transcriptPrefix = "\n</executor_system_prompt>\n\n<transcript>\n";
+      const promptSuffix = "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
+      const fixedLength = promptPrefix.length + transcriptPrefix.length + promptSuffix.length;
+      if (available <= fixedLength) {
+        return {
+          kind: "failure",
+          message: "A janela do advisor \xE9 pequena demais para a consulta."
+        };
+      }
+      const systemLimit = Math.min(4e4, Math.floor((available - fixedLength) / 2));
+      const system = clip(input.system, systemLimit);
+      const transcriptBudget = available - fixedLength - system.length;
+      const transcript = buildTranscript(input.messages, transcriptBudget);
+      const prompt = promptPrefix + system + transcriptPrefix + transcript + promptSuffix;
       const response = await model.consult({
         system: ADVISOR_SYSTEM,
         prompt,
@@ -214,45 +259,64 @@ var AdvisorService = class {
 
 // src/modules/advisor/internal/transcript.ts
 var TOOL_RESULT_LIMIT = 12e3;
+var HEAD_FRACTION = 0.6;
+var SEPARATOR = "\n\n";
 function clip(text, limit) {
+  if (limit <= 0) {
+    return "";
+  }
   if (text.length <= limit) {
     return text;
   }
-  const head = Math.floor(limit * 0.6);
-  const omitted = text.length - limit;
-  return text.slice(0, head) + "\n[... " + omitted + " chars omitted ...]\n" + text.slice(-(limit - head));
+  const marker = "\n[... conte\xFAdo omitido ...]\n";
+  if (limit <= marker.length) {
+    return text.slice(0, limit);
+  }
+  const available = limit - marker.length;
+  const head = Math.floor(available * HEAD_FRACTION);
+  const tail = available - head;
+  return text.slice(0, head) + marker + text.slice(-tail);
+}
+function renderMessage(message, limit) {
+  if (message.kind === "shell" && message.hidden) {
+    return "";
+  }
+  let label = `[${message.kind}]`;
+  if (message.kind === "toolResult") {
+    label = `[tool_result ${message.name ?? ""}${message.error ? " (error)" : ""}]`;
+  } else if (message.kind === "shell") {
+    label = `[user ran shell] $ ${message.name ?? ""}`;
+  } else if (message.kind === "custom") {
+    label = `[context:${message.name ?? ""}]`;
+  } else if (message.kind === "summary") {
+    label = "[summary of earlier conversation]";
+  }
+  const parts = [label];
+  for (const block of message.blocks) {
+    if (block.kind === "image") {
+      parts.push("[image omitted]");
+    } else if (block.kind === "call") {
+      parts.push(`[tool_call ${block.name}] ${clip(block.arguments, limit)}`);
+    } else if (message.kind === "toolResult" || message.kind === "shell" || message.kind === "custom") {
+      parts.push(clip(block.text, limit));
+    } else {
+      parts.push(block.text);
+    }
+  }
+  return parts.join("\n");
 }
 function buildTranscript(messages, budget) {
-  let blocks = [];
-  for (const limit of [TOOL_RESULT_LIMIT, 4e3, 1500, 500]) {
-    blocks = [];
-    for (const message of messages) {
-      const parts = [];
-      for (const part of message.parts) {
-        parts.push(part.clip ? clip(part.text, limit) : part.text);
-      }
-      blocks.push(parts.join("\n"));
-    }
-    if (blocks.join("\n\n").length <= budget) {
-      return blocks.join("\n\n");
+  if (budget <= 0) {
+    return "";
+  }
+  const blocks = [];
+  for (const message of messages) {
+    const text = renderMessage(message, TOOL_RESULT_LIMIT);
+    if (text) {
+      blocks.push(text);
     }
   }
-  const first = blocks[0] ?? "";
-  const tail = [];
-  let used = first.length + 200;
-  for (let index = blocks.length - 1; index > 0; index--) {
-    if (used + blocks[index].length + 2 > budget) {
-      break;
-    }
-    tail.unshift(blocks[index]);
-    used += blocks[index].length + 2;
-  }
-  const omitted = blocks.length - 1 - tail.length;
-  return [
-    first,
-    `[... ${omitted} earlier messages omitted to fit the advisor context window ...]`,
-    ...tail
-  ].join("\n\n");
+  return clip(blocks.join(SEPARATOR), budget);
 }
 
 // src/modules/advisor/public/create-advisor.ts
@@ -480,7 +544,10 @@ var AdvisorEvents = class {
     }
   }
   turnEnd(event) {
-    const reminder = this.advisor.turn(event.outcome === "completed", event.toolResults.length > 0);
+    const reminder = this.advisor.turn({
+      completed: event.outcome === "completed",
+      usedTools: event.toolResults.length > 0
+    });
     if (!reminder) {
       return void 0;
     }
@@ -703,91 +770,64 @@ import { Type as Type3 } from "typebox";
 var advisorParameters = Type3.Object({});
 
 // src/integration/pi/advisor/transcript.ts
-function renderContent(content) {
+function convertContent(content) {
   if (typeof content === "string") {
-    return content;
+    return [{ kind: "text", text: content }];
   }
-  const parts = [];
+  const blocks = [];
   for (const block of content) {
-    parts.push(block.type === "text" ? block.text : "[image omitted]");
+    if (block.type === "text") {
+      blocks.push({ kind: "text", text: block.text });
+    } else {
+      blocks.push({ kind: "image" });
+    }
   }
-  return parts.join("\n");
+  return blocks;
 }
 function convertMessage(message) {
   switch (message.role) {
     case "user":
-      return {
-        role: message.role,
-        parts: [{ text: `[user]
-${renderContent(message.content)}`, clip: false }]
-      };
+      return { kind: "user", blocks: convertContent(message.content) };
     case "assistant": {
-      const parts = [];
+      const blocks = [];
       for (const block of message.content) {
         if (block.type === "text") {
-          parts.push({ text: block.text, clip: false });
+          blocks.push({ kind: "text", text: block.text });
         } else if (block.type === "toolCall") {
-          parts.push({
-            text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
-            clip: true
+          blocks.push({
+            kind: "call",
+            name: block.name,
+            arguments: JSON.stringify(block.arguments)
           });
         }
       }
-      return { role: message.role, parts: [{ text: "[assistant]", clip: false }, ...parts] };
+      return { kind: "assistant", blocks };
     }
     case "toolResult":
       return {
-        role: message.role,
-        parts: [
-          {
-            text: "[tool_result " + message.toolName + (message.isError ? " (error)" : "") + "]\n" + renderContent(message.content),
-            clip: true
-          }
-        ]
+        kind: "toolResult",
+        name: message.toolName,
+        error: message.isError,
+        blocks: convertContent(message.content)
       };
     case "bashExecution":
-      if (message.excludeFromContext) {
-        return void 0;
-      }
       return {
-        role: message.role,
-        parts: [{ text: `[user ran shell] $ ${message.command}
-${message.output}`, clip: true }]
+        kind: "shell",
+        name: message.command,
+        hidden: message.excludeFromContext,
+        blocks: [{ kind: "text", text: message.output }]
       };
     case "custom":
-      return {
-        role: message.role,
-        parts: [
-          {
-            text: `[context:${message.customType}]
-${renderContent(message.content)}`,
-            clip: true
-          }
-        ]
-      };
+      return { kind: "custom", name: message.customType, blocks: convertContent(message.content) };
     case "branchSummary":
     case "compactionSummary":
-      return {
-        role: message.role,
-        parts: [{ text: `[summary of earlier conversation]
-${message.summary}`, clip: false }]
-      };
+      return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] };
     default:
       return void 0;
   }
 }
 function captureTranscript(context) {
-  let messages;
-  try {
-    messages = context.sessionManager.buildSessionProjection().messages;
-  } catch {
-    messages = [];
-    for (const entry of context.sessionManager.buildContextEntries()) {
-      if (entry.type === "message") {
-        messages.push(entry.message);
-      }
-    }
-  }
+  const messages = context.sessionManager.buildSessionProjection().messages;
   const transcript = [];
   for (const message of messages) {
     const converted = convertMessage(message);

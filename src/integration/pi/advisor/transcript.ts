@@ -1,100 +1,71 @@
 import { type AgentMessage } from "@earendil-works/pi-agent-core";
 import { type ImageContent, type TextContent } from "@earendil-works/pi-ai";
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent";
-import { type TranscriptMessage, type TranscriptPart } from "@/modules";
+import { type TranscriptBlock, type TranscriptMessage } from "@/modules";
 
-function renderContent(content: string | (TextContent | ImageContent)[]): string {
+function convertContent(content: string | (TextContent | ImageContent)[]): TranscriptBlock[] {
   if (typeof content === "string") {
-    return content;
+    return [{ kind: "text", text: content }];
   }
 
-  const parts: string[] = [];
+  const blocks: TranscriptBlock[] = [];
   for (const block of content) {
-    parts.push(block.type === "text" ? block.text : "[image omitted]");
+    if (block.type === "text") {
+      blocks.push({ kind: "text", text: block.text });
+    } else {
+      blocks.push({ kind: "image" });
+    }
   }
-  return parts.join("\n");
+  return blocks;
 }
 
 function convertMessage(message: AgentMessage): TranscriptMessage | undefined {
   switch (message.role) {
     case "user":
-      return {
-        role: message.role,
-        parts: [{ text: `[user]\n${renderContent(message.content)}`, clip: false }],
-      };
+      return { kind: "user", blocks: convertContent(message.content) };
     case "assistant": {
-      const parts: TranscriptPart[] = [];
+      const blocks: TranscriptBlock[] = [];
       for (const block of message.content) {
         if (block.type === "text") {
-          parts.push({ text: block.text, clip: false });
+          blocks.push({ kind: "text", text: block.text });
         } else if (block.type === "toolCall") {
-          parts.push({
-            text: `[tool_call ${block.name}] ${JSON.stringify(block.arguments)}`,
-            clip: true,
+          blocks.push({
+            kind: "call",
+            name: block.name,
+            arguments: JSON.stringify(block.arguments),
           });
         }
       }
-      return { role: message.role, parts: [{ text: "[assistant]", clip: false }, ...parts] };
+      return { kind: "assistant", blocks };
     }
     case "toolResult":
       return {
-        role: message.role,
-        parts: [
-          {
-            text:
-              "[tool_result " +
-              message.toolName +
-              (message.isError ? " (error)" : "") +
-              "]\n" +
-              renderContent(message.content),
-            clip: true,
-          },
-        ],
+        kind: "toolResult",
+        name: message.toolName,
+        error: message.isError,
+        blocks: convertContent(message.content),
       };
     case "bashExecution":
-      if (message.excludeFromContext) {
-        return undefined;
-      }
       return {
-        role: message.role,
-        parts: [{ text: `[user ran shell] $ ${message.command}\n${message.output}`, clip: true }],
+        kind: "shell",
+        name: message.command,
+        hidden: message.excludeFromContext,
+        blocks: [{ kind: "text", text: message.output }],
       };
     case "custom":
-      return {
-        role: message.role,
-        parts: [
-          {
-            text: `[context:${message.customType}]\n${renderContent(message.content)}`,
-            clip: true,
-          },
-        ],
-      };
+      return { kind: "custom", name: message.customType, blocks: convertContent(message.content) };
     case "branchSummary":
     case "compactionSummary":
-      return {
-        role: message.role,
-        parts: [{ text: `[summary of earlier conversation]\n${message.summary}`, clip: false }],
-      };
+      return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] };
     default:
       return undefined;
   }
 }
 
 export function captureTranscript(context: ExtensionContext): TranscriptMessage[] {
-  let messages: AgentMessage[];
-
-  try {
-    messages = context.sessionManager.buildSessionProjection().messages;
-  } catch {
-    messages = [];
-    for (const entry of context.sessionManager.buildContextEntries()) {
-      if (entry.type === "message") {
-        messages.push(entry.message);
-      }
-    }
-  }
-
+  const messages = context.sessionManager.buildSessionProjection().messages;
   const transcript: TranscriptMessage[] = [];
+
   for (const message of messages) {
     const converted = convertMessage(message);
     if (converted !== undefined) {
