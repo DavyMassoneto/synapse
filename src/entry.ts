@@ -1,9 +1,8 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { type ExtensionAPI } from "@earendil-works/pi-coding-agent";
 import { compose } from "@/composition";
-import { PiHost } from "@/integration";
+import { PiHost, type PiInstance } from "@/integration";
 
-export default function registerSynapse(pi: ExtensionAPI): void {
+export default function registerSynapse(pi: PiInstance): void {
   compose(new PiHost(pi), join(homedir(), ".pi", "agent", "advisor.json"));
 }

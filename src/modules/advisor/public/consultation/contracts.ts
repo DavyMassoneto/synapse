@@ -26,10 +26,17 @@ export interface ModelRequest {
   signal?: AbortSignal;
 }
 
-export interface ModelResponse {
+export interface ModelSuccess {
+  kind: "success";
   text: string;
   usage?: Usage;
 }
+
+export interface ModelCancelled {
+  kind: "cancelled";
+}
+
+export type ModelResponse = ModelSuccess | ModelCancelled;
 
 export interface ModelPort {
   contextWindow(model: string, signal?: AbortSignal): Promise<number>;
@@ -39,7 +46,7 @@ export interface ModelPort {
 export interface ConsultationSuccess {
   kind: "success";
   model: string;
-  response: ModelResponse;
+  response: ModelSuccess;
 }
 
 export interface ConsultationFailure {

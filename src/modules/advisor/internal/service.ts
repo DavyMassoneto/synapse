@@ -1,11 +1,5 @@
 import { AdvisorConfiguration, type ConfigPort } from "@/modules/advisor/internal/config";
-import {
-  ADVISOR_SYSTEM,
-  buildTranscript,
-  clip,
-  REMINDER,
-  TIMING,
-} from "@/modules/advisor/internal/format";
+import { ADVISOR_SYSTEM, preparePrompt, REMINDER, TIMING } from "@/modules/advisor/internal/format";
 import { ReminderCounter } from "@/modules/advisor/internal/reminder";
 import { type AdvisorResult, type ThinkingLevel } from "@/modules/advisor/public/config";
 import {
@@ -67,23 +61,13 @@ export class AdvisorService implements Advisor {
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
-      const available = contextWindow * 3 - ADVISOR_SYSTEM.length - 2_048;
-      const promptPrefix = "<executor_system_prompt>\n";
-      const transcriptPrefix = "\n</executor_system_prompt>\n\n<transcript>\n";
-      const promptSuffix =
-        "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
-      const fixedLength = promptPrefix.length + transcriptPrefix.length + promptSuffix.length;
-      if (available <= fixedLength) {
+      const prompt = preparePrompt(input, contextWindow);
+      if (prompt === undefined) {
         return {
           kind: "failure",
           message: "A janela do advisor é pequena demais para a consulta.",
         };
       }
-      const systemLimit = Math.min(40_000, Math.floor((available - fixedLength) / 2));
-      const system = clip(input.system, systemLimit);
-      const transcriptBudget = available - fixedLength - system.length;
-      const transcript = buildTranscript(input.messages, transcriptBudget);
-      const prompt = promptPrefix + system + transcriptPrefix + transcript + promptSuffix;
       const response = await model.consult({
         system: ADVISOR_SYSTEM,
         prompt,
@@ -91,7 +75,7 @@ export class AdvisorService implements Advisor {
         thinking: configuration.thinking,
         signal: input.signal,
       });
-      if (input.signal?.aborted) {
+      if (input.signal?.aborted || response.kind === "cancelled") {
         return { kind: "cancelled" };
       }
       return { kind: "success", model: configuration.model, response };

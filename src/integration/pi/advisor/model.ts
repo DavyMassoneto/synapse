@@ -51,7 +51,10 @@ export class AdvisorModel {
       )
       .result();
 
-    if (reply.stopReason === "error" || reply.stopReason === "aborted") {
+    if (reply.stopReason === "aborted") {
+      return { kind: "cancelled" };
+    }
+    if (reply.stopReason === "error") {
       throw new Error(reply.errorMessage ?? reply.stopReason);
     }
 
@@ -66,6 +69,6 @@ export class AdvisorModel {
       throw new Error("advisor returned no text");
     }
 
-    return { text, usage: reply.usage };
+    return { kind: "success", text, usage: reply.usage };
   }
 }

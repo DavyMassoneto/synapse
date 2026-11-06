@@ -6,12 +6,12 @@ import {
   type AdvisorRenderers,
   type AdvisorRenderResultContext,
   type AdvisorRenderResultValue,
+  PREVIEW_LINES,
+  RENDER_STYLE,
+  RENDER_TEXT,
 } from "@/integration";
-import { type Advisor } from "@/modules";
 
 class AdvisorRendering {
-  constructor(private readonly advisor: Advisor) {}
-
   renderCall(
     _input: AdvisorRenderCallInput,
     theme: Theme,
@@ -24,9 +24,7 @@ class AdvisorRendering {
       text = new Text("", 0, 0);
     }
 
-    const status = this.advisor.status();
-    const model = status.kind === "success" ? status.status.model : undefined;
-    text.setText(theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", model ?? ""));
+    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(RENDER_TEXT.title)));
     return text;
   }
 
@@ -44,7 +42,7 @@ class AdvisorRendering {
     }
 
     if (options.isPartial) {
-      text.setText(theme.fg("warning", "consultando..."));
+      text.setText(theme.fg(RENDER_STYLE.pending, RENDER_TEXT.pending));
       return text;
     }
 
@@ -56,27 +54,29 @@ class AdvisorRendering {
     }
     const body = content.join("\n");
     if (context.isError) {
-      text.setText(theme.fg("error", body));
+      text.setText(theme.fg(RENDER_STYLE.error, body));
       return text;
     }
 
     const lines = body.split("\n");
     let shown = lines;
     if (!options.expanded) {
-      shown = lines.slice(0, 8);
+      shown = lines.slice(0, PREVIEW_LINES);
     }
     const remaining = lines.length - shown.length;
     let suffix = "";
     if (!options.expanded && remaining > 0) {
-      suffix = `\n${theme.fg("dim", `... (${remaining} linhas a mais)`)}`;
+      suffix = `\n${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
     }
-    text.setText(`${theme.fg("success", "✓ conselho")}\n${shown.join("\n")}${suffix}`);
+    const model = result.details?.model;
+    const title = model ? `${RENDER_TEXT.success} (${model})` : RENDER_TEXT.success;
+    text.setText(`${theme.fg(RENDER_STYLE.success, title)}\n${shown.join("\n")}${suffix}`);
     return text;
   }
 }
 
-export function createRenderers(advisor: Advisor): AdvisorRenderers {
-  const rendering = new AdvisorRendering(advisor);
+export function createRenderers(): AdvisorRenderers {
+  const rendering = new AdvisorRendering();
   return {
     renderCall: rendering.renderCall.bind(rendering),
     renderResult: rendering.renderResult.bind(rendering),

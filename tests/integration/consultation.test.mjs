@@ -31,7 +31,7 @@ test("a consulta preserva o snapshot durante alterações de configuração", as
     },
     async consult(request) {
       captured = request;
-      return { text: "advice" };
+      return { kind: "success", text: "advice" };
     },
   };
   const pending = advisor.consult({ system: "", messages: [] }, port);

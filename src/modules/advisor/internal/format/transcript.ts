@@ -63,13 +63,50 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
     return "";
   }
 
-  const blocks: string[] = [];
-  for (const message of messages) {
-    const text = renderMessage(message, TOOL_RESULT_LIMIT);
-    if (text) {
-      blocks.push(text);
+  let blocks: string[] = [];
+  for (const limit of [TOOL_RESULT_LIMIT, 4_000, 1_500, 500]) {
+    blocks = [];
+    for (const message of messages) {
+      const text = renderMessage(message, limit);
+      if (text) {
+        blocks.push(text);
+      }
+    }
+    const full = blocks.join(SEPARATOR);
+    if (full.length <= budget) {
+      return full;
     }
   }
 
-  return clip(blocks.join(SEPARATOR), budget);
+  const marker = "[... mensagens anteriores omitidas ...]";
+  if (budget <= marker.length) {
+    return clip(blocks[blocks.length - 1] ?? "", budget);
+  }
+
+  const selected: string[] = [];
+  let remaining = budget - marker.length;
+  for (let index = blocks.length - 1; index >= 0; index--) {
+    const block = blocks[index];
+    const available = remaining - SEPARATOR.length;
+    if (available <= 0) {
+      break;
+    }
+    if (block.length > available) {
+      if (selected.length === 0) {
+        selected.unshift(clip(block, available));
+      }
+      break;
+    }
+    selected.unshift(block);
+    remaining -= block.length + SEPARATOR.length;
+  }
+
+  if (selected.length > 0 && blocks.length > selected.length) {
+    const available = remaining - SEPARATOR.length;
+    if (available > 0) {
+      selected.unshift(clip(blocks[0], available));
+    }
+  }
+
+  return [marker, ...selected].join(SEPARATOR);
 }

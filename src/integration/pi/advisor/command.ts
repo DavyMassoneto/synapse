@@ -13,7 +13,7 @@ const MODEL_SELECTION_LIMIT = 100;
 const DISABLED_OPTION = "(sem advisor)";
 
 class AdvisorCommand {
-  private lastContext: ExtensionContext | undefined;
+  private models: string[] = [];
 
   constructor(
     private readonly pi: ExtensionAPI,
@@ -21,7 +21,7 @@ class AdvisorCommand {
   ) {}
 
   start(_event: SessionStartEvent, context: ExtensionContext): void {
-    this.lastContext = context;
+    this.models = this.modelRefs(context);
   }
 
   private modelRefs(context: ExtensionContext): string[] {
@@ -41,11 +41,10 @@ class AdvisorCommand {
   }
 
   completions(prefix: string): AutocompleteItem[] {
-    const models = this.lastContext ? this.modelRefs(this.lastContext) : [];
     const normalizedPrefix = prefix.toLowerCase();
     const items: AutocompleteItem[] = [];
 
-    for (const value of ["off", "thinking", ...models]) {
+    for (const value of ["off", "thinking", ...this.models]) {
       if (value.toLowerCase().startsWith(normalizedPrefix)) {
         items.push({ value, label: value });
       }
@@ -134,7 +133,7 @@ class AdvisorCommand {
   }
 
   async handle(args: string, context: ExtensionCommandContext): Promise<void> {
-    this.lastContext = context;
+    this.models = this.modelRefs(context);
     const status = this.advisor.status();
     const input = args.trim();
 

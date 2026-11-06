@@ -111,6 +111,26 @@ Rules:
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
 
+// src/modules/advisor/internal/format/prompt.ts
+var ESTIMATED_CHARACTERS_PER_TOKEN = 3;
+var RESPONSE_RESERVE_CHARACTERS = 2048;
+var MAX_SYSTEM_CHARACTERS = 4e4;
+var PROMPT_PREFIX = "<executor_system_prompt>\n";
+var TRANSCRIPT_PREFIX = "\n</executor_system_prompt>\n\n<transcript>\n";
+var PROMPT_SUFFIX = "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
+function preparePrompt(input, contextWindow) {
+  const available = contextWindow * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length - RESPONSE_RESERVE_CHARACTERS;
+  const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length;
+  if (available <= fixedLength) {
+    return void 0;
+  }
+  const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor((available - fixedLength) / 2));
+  const system = clip(input.system, systemLimit);
+  const transcriptBudget = available - fixedLength - system.length;
+  const transcript = buildTranscript(input.messages, transcriptBudget);
+  return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
+}
+
 // src/modules/advisor/internal/format/transcript.ts
 var TOOL_RESULT_LIMIT = 12e3;
 var HEAD_FRACTION = 0.6;
@@ -163,14 +183,48 @@ function buildTranscript(messages, budget) {
   if (budget <= 0) {
     return "";
   }
-  const blocks = [];
-  for (const message of messages) {
-    const text = renderMessage(message, TOOL_RESULT_LIMIT);
-    if (text) {
-      blocks.push(text);
+  let blocks = [];
+  for (const limit of [TOOL_RESULT_LIMIT, 4e3, 1500, 500]) {
+    blocks = [];
+    for (const message of messages) {
+      const text = renderMessage(message, limit);
+      if (text) {
+        blocks.push(text);
+      }
+    }
+    const full = blocks.join(SEPARATOR);
+    if (full.length <= budget) {
+      return full;
     }
   }
-  return clip(blocks.join(SEPARATOR), budget);
+  const marker = "[... mensagens anteriores omitidas ...]";
+  if (budget <= marker.length) {
+    return clip(blocks[blocks.length - 1] ?? "", budget);
+  }
+  const selected = [];
+  let remaining = budget - marker.length;
+  for (let index = blocks.length - 1; index >= 0; index--) {
+    const block = blocks[index];
+    const available = remaining - SEPARATOR.length;
+    if (available <= 0) {
+      break;
+    }
+    if (block.length > available) {
+      if (selected.length === 0) {
+        selected.unshift(clip(block, available));
+      }
+      break;
+    }
+    selected.unshift(block);
+    remaining -= block.length + SEPARATOR.length;
+  }
+  if (selected.length > 0 && blocks.length > selected.length) {
+    const available = remaining - SEPARATOR.length;
+    if (available > 0) {
+      selected.unshift(clip(blocks[0], available));
+    }
+  }
+  return [marker, ...selected].join(SEPARATOR);
 }
 
 // src/modules/advisor/internal/config/state.ts
@@ -284,22 +338,13 @@ var AdvisorService = class {
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
-      const available = contextWindow * 3 - ADVISOR_SYSTEM.length - 2048;
-      const promptPrefix = "<executor_system_prompt>\n";
-      const transcriptPrefix = "\n</executor_system_prompt>\n\n<transcript>\n";
-      const promptSuffix = "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
-      const fixedLength = promptPrefix.length + transcriptPrefix.length + promptSuffix.length;
-      if (available <= fixedLength) {
+      const prompt = preparePrompt(input, contextWindow);
+      if (prompt === void 0) {
         return {
           kind: "failure",
           message: "A janela do advisor \xE9 pequena demais para a consulta."
         };
       }
-      const systemLimit = Math.min(4e4, Math.floor((available - fixedLength) / 2));
-      const system = clip(input.system, systemLimit);
-      const transcriptBudget = available - fixedLength - system.length;
-      const transcript = buildTranscript(input.messages, transcriptBudget);
-      const prompt = promptPrefix + system + transcriptPrefix + transcript + promptSuffix;
       const response = await model.consult({
         system: ADVISOR_SYSTEM,
         prompt,
@@ -307,7 +352,7 @@ var AdvisorService = class {
         thinking: configuration.thinking,
         signal: input.signal
       });
-      if (input.signal?.aborted) {
+      if (input.signal?.aborted || response.kind === "cancelled") {
         return { kind: "cancelled" };
       }
       return { kind: "success", model: configuration.model, response };
@@ -357,9 +402,9 @@ var AdvisorCommand = class {
   }
   pi;
   advisor;
-  lastContext;
+  models = [];
   start(_event, context) {
-    this.lastContext = context;
+    this.models = this.modelRefs(context);
   }
   modelRefs(context) {
     const refs = [];
@@ -375,10 +420,9 @@ var AdvisorCommand = class {
     return refs;
   }
   completions(prefix) {
-    const models = this.lastContext ? this.modelRefs(this.lastContext) : [];
     const normalizedPrefix = prefix.toLowerCase();
     const items = [];
-    for (const value of ["off", "thinking", ...models]) {
+    for (const value of ["off", "thinking", ...this.models]) {
       if (value.toLowerCase().startsWith(normalizedPrefix)) {
         items.push({ value, label: value });
       }
@@ -450,7 +494,7 @@ var AdvisorCommand = class {
     return void 0;
   }
   async handle(args, context) {
-    this.lastContext = context;
+    this.models = this.modelRefs(context);
     const status = this.advisor.status();
     const input = args.trim();
     if (status.kind === "failure") {
@@ -620,7 +664,10 @@ var AdvisorModel = class {
       },
       { signal: request.signal, reasoning }
     ).result();
-    if (reply.stopReason === "error" || reply.stopReason === "aborted") {
+    if (reply.stopReason === "aborted") {
+      return { kind: "cancelled" };
+    }
+    if (reply.stopReason === "error") {
       throw new Error(reply.errorMessage ?? reply.stopReason);
     }
     const parts = [];
@@ -633,17 +680,13 @@ var AdvisorModel = class {
     if (!text) {
       throw new Error("advisor returned no text");
     }
-    return { text, usage: reply.usage };
+    return { kind: "success", text, usage: reply.usage };
   }
 };
 
 // src/integration/pi/advisor/rendering.ts
 import { Text } from "@earendil-works/pi-tui";
 var AdvisorRendering = class {
-  constructor(advisor) {
-    this.advisor = advisor;
-  }
-  advisor;
   renderCall(_input, theme, context) {
     let text;
     if (context.lastComponent instanceof Text) {
@@ -651,9 +694,7 @@ var AdvisorRendering = class {
     } else {
       text = new Text("", 0, 0);
     }
-    const status = this.advisor.status();
-    const model = status.kind === "success" ? status.status.model : void 0;
-    text.setText(theme.fg("toolTitle", theme.bold("advisor ")) + theme.fg("muted", model ?? ""));
+    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(RENDER_TEXT.title)));
     return text;
   }
   renderResult(result, options, theme, context) {
@@ -664,7 +705,7 @@ var AdvisorRendering = class {
       text = new Text("", 0, 0);
     }
     if (options.isPartial) {
-      text.setText(theme.fg("warning", "consultando..."));
+      text.setText(theme.fg(RENDER_STYLE.pending, RENDER_TEXT.pending));
       return text;
     }
     const content = [];
@@ -675,32 +716,50 @@ var AdvisorRendering = class {
     }
     const body = content.join("\n");
     if (context.isError) {
-      text.setText(theme.fg("error", body));
+      text.setText(theme.fg(RENDER_STYLE.error, body));
       return text;
     }
     const lines = body.split("\n");
     let shown = lines;
     if (!options.expanded) {
-      shown = lines.slice(0, 8);
+      shown = lines.slice(0, PREVIEW_LINES);
     }
     const remaining = lines.length - shown.length;
     let suffix = "";
     if (!options.expanded && remaining > 0) {
       suffix = `
-${theme.fg("dim", `... (${remaining} linhas a mais)`)}`;
+${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
     }
-    text.setText(`${theme.fg("success", "\u2713 conselho")}
+    const model = result.details?.model;
+    const title = model ? `${RENDER_TEXT.success} (${model})` : RENDER_TEXT.success;
+    text.setText(`${theme.fg(RENDER_STYLE.success, title)}
 ${shown.join("\n")}${suffix}`);
     return text;
   }
 };
-function createRenderers(advisor) {
-  const rendering = new AdvisorRendering(advisor);
+function createRenderers() {
+  const rendering = new AdvisorRendering();
   return {
     renderCall: rendering.renderCall.bind(rendering),
     renderResult: rendering.renderResult.bind(rendering)
   };
 }
+
+// src/integration/pi/advisor/rendering-constants.ts
+var PREVIEW_LINES = 8;
+var RENDER_TEXT = {
+  pending: "consultando...",
+  success: "\u2713 conselho",
+  title: "advisor "
+};
+var RENDER_STYLE = {
+  title: "toolTitle",
+  pending: "warning",
+  error: "error",
+  success: "success",
+  muted: "muted",
+  additional: "dim"
+};
 
 // src/integration/pi/advisor/tool.ts
 var AdvisorToolHandler = class {
@@ -762,7 +821,7 @@ function registerTool(pi, advisor, lifetime) {
     parameters: advisorParameters,
     description: "Consult a stronger advisor for strategic guidance. No parameters. The active conversation is sent to the configured provider, subject to context limits; images are omitted.",
     promptSnippet: "Consult a stronger advisor model with the conversation (no parameters)",
-    ...createRenderers(advisor),
+    ...createRenderers(),
     execute: handler.execute.bind(handler)
   });
 }

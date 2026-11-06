@@ -82,7 +82,7 @@ export function registerTool(pi: ExtensionAPI, advisor: Advisor, lifetime: Abort
     description:
       "Consult a stronger advisor for strategic guidance. No parameters. The active conversation is sent to the configured provider, subject to context limits; images are omitted.",
     promptSnippet: "Consult a stronger advisor model with the conversation (no parameters)",
-    ...createRenderers(advisor),
+    ...createRenderers(),
     execute: handler.execute.bind(handler),
   });
 }

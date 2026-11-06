@@ -1,17 +1,8 @@
-import { type ToolDefinition } from "@earendil-works/pi-coding-agent";
-import { type advisorParameters } from "@/integration";
+import { type AdvisorTool } from "@/integration";
 
-export interface AdvisorToolDetails {
-  model?: string;
-}
-
-export type AdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, object>;
 export type AdvisorRenderers = Pick<AdvisorTool, "renderCall" | "renderResult">;
-export type AdvisorToolArguments = Parameters<AdvisorTool["execute"]>;
-export type AdvisorToolResult = ReturnType<AdvisorTool["execute"]>;
 export type AdvisorRenderCallArguments = Parameters<NonNullable<AdvisorTool["renderCall"]>>;
 export type AdvisorRenderResultArguments = Parameters<NonNullable<AdvisorTool["renderResult"]>>;
-export type AdvisorToolInput = AdvisorToolArguments[1];
 export type AdvisorRenderCallInput = AdvisorRenderCallArguments[0];
 export type AdvisorRenderCallContext = AdvisorRenderCallArguments[2];
 export type AdvisorRenderResultValue = AdvisorRenderResultArguments[0];
