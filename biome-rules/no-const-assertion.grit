@@ -1,0 +1,3 @@
+`$value as const` as $assertion where {
+  register_diagnostic(span=$assertion, message="Assertions são proibidas")
+}

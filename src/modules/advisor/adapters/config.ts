@@ -1,22 +1,23 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { dirname, join } from "node:path";
+import { Value } from "typebox/value";
+import { configSchema } from "@/modules/advisor/adapters/config-schema.ts";
+import type { Config } from "@/modules/advisor/public/contracts.ts";
+
 const CONFIG_PATH = join(homedir(), ".pi", "agent", "advisor.json");
-import { THINKING, type Config } from "../public/contracts.ts";
+const DEFAULT_MODEL = "omniroute/cc/claude-opus-5-5";
 
 export function loadConfig(): Config {
-	try {
-		if (existsSync(CONFIG_PATH)) {
-			const c = JSON.parse(readFileSync(CONFIG_PATH, "utf8"));
-			return { model: c.model || undefined, thinking: THINKING.includes(c.thinking) ? c.thinking : "high" };
-		}
-	} catch {
-		/* arquivo inválido: usa o padrão */
-	}
-	return { model: "omniroute/cc/claude-opus-5-5", thinking: "high" };
+  try {
+    const config = Value.Parse(configSchema, JSON.parse(readFileSync(CONFIG_PATH, "utf8")));
+    return { model: config.model || undefined, thinking: config.thinking ?? "high" };
+  } catch {
+    return { model: DEFAULT_MODEL, thinking: "high" };
+  }
 }
 
-export function saveConfig(cfg: Config) {
-	mkdirSync(dirname(CONFIG_PATH), { recursive: true });
-	writeFileSync(CONFIG_PATH, JSON.stringify(cfg, null, 2) + "\n");
+export function saveConfig(config: Config): void {
+  mkdirSync(dirname(CONFIG_PATH), { recursive: true });
+  writeFileSync(CONFIG_PATH, `${JSON.stringify(config, null, 2)}\n`);
 }

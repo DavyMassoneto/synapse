@@ -1,3 +1,9 @@
 # RULES
 
 - Always follow docs/architecture.md
+- Follow SRP, DRY, YAGNI and Clean Code; keep code readable and consistently spaced.
+- Keep type declarations separate from implementation.
+- Use `@/` aliases for internal imports.
+- Do not use `any`, `unknown`, type assertions or casts.
+- Avoid unnecessary functions, including redundant type guards.
+- Before delivery, run `npm run validate` (Biome, TypeScript and build). Use `npm run check:fix` for safe formatting fixes; `npm run check`, `npm run typecheck` and `npm run build` are also available individually.

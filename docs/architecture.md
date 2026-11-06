@@ -8,9 +8,9 @@ Adota-se **monólito modular com Portas e Adaptadores (arquitetura hexagonal)**,
 
 - **Monólito modular:** uma composição e uma distribuição como Pi package, sem exigir serviços independentes para separar responsabilidades. Processos auxiliares continuam sob o controle do módulo que os utiliza.
 - **Organização vertical:** código, adaptadores e testes de uma capacidade ficam no diretório da frente responsável, em vez de distribuir as frentes por pastas globais de controllers, services ou repositories. Isso reduz arquivos compartilhados durante mudanças paralelas.
-- **Portas e Adaptadores:** cada módulo declara as operações externas de que necessita; a composição fornece implementações. Essa inversão de dependência permite desenvolver e testar uma frente sem carregar o pi ou a implementação das outras duas.
+- **Portas e Adaptadores:** cada módulo declara as operações externas de que necessita; a composição fornece implementações. Essa inversão de dependência permite desenvolver e testar uma frente sem carregar o pi ou a implementação das outras frentes.
 
-A composição e a integração são infraestrutura de montagem, não um quarto módulo de produto. O pi permanece proprietário do loop do agente, das sessões, do histórico e da compactação.
+A composição e a integração são infraestrutura de montagem, não um módulo de produto adicional. O pi permanece proprietário do loop do agente, das sessões, do histórico e da compactação.
 
 ## Fronteiras dos módulos
 

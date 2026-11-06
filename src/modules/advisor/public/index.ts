@@ -1,4 +1,9 @@
-import { createService } from "../internal/service.ts";
-import { loadConfig, saveConfig } from "../adapters/config.ts";
-export type { Config, ConfigPort, TranscriptMessage, ModelPort } from "./contracts.ts";
-export function createAdvisor() { return createService({ load: loadConfig, save: saveConfig }); }
+import { loadConfig, saveConfig } from "@/modules/advisor/adapters/config.ts";
+import { createService } from "@/modules/advisor/internal/service.ts";
+import type { Advisor } from "@/modules/advisor/public/contracts.ts";
+
+export { THINKING_LEVELS } from "@/modules/advisor/internal/thinking.ts";
+
+export function createAdvisor(): Advisor {
+  return createService({ load: loadConfig, save: saveConfig });
+}
