@@ -1,14 +1,10 @@
-import { Text } from "@earendil-works/pi-tui";
+import { type Theme, type ToolRenderResultOptions } from "@earendil-works/pi-coding-agent";
+import { type Component, Text } from "@earendil-works/pi-tui";
 import {
   type AdvisorRenderCallContext,
   type AdvisorRenderCallInput,
-  type AdvisorRenderCallResult,
-  type AdvisorRenderCallTheme,
   type AdvisorRenderers,
   type AdvisorRenderResultContext,
-  type AdvisorRenderResultOptions,
-  type AdvisorRenderResultResult,
-  type AdvisorRenderResultTheme,
   type AdvisorRenderResultValue,
 } from "@/integration";
 import { type Advisor } from "@/modules";
@@ -18,9 +14,9 @@ class AdvisorRendering {
 
   renderCall(
     _input: AdvisorRenderCallInput,
-    theme: AdvisorRenderCallTheme,
+    theme: Theme,
     context: AdvisorRenderCallContext,
-  ): AdvisorRenderCallResult {
+  ): Component {
     let text: Text;
     if (context.lastComponent instanceof Text) {
       text = context.lastComponent;
@@ -37,10 +33,10 @@ class AdvisorRendering {
 
   renderResult(
     result: AdvisorRenderResultValue,
-    options: AdvisorRenderResultOptions,
-    theme: AdvisorRenderResultTheme,
+    options: ToolRenderResultOptions,
+    theme: Theme,
     context: AdvisorRenderResultContext,
-  ): AdvisorRenderResultResult {
+  ): Component {
     let text: Text;
     if (context.lastComponent instanceof Text) {
       text = context.lastComponent;

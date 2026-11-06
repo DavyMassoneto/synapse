@@ -1,16 +1,7 @@
 import { Type } from "typebox";
+import { THINKING_LEVELS } from "@/modules";
 
 export const configSchema = Type.Object({
   model: Type.Optional(Type.String()),
-  thinking: Type.Optional(
-    Type.Union([
-      Type.Literal("off"),
-      Type.Literal("minimal"),
-      Type.Literal("low"),
-      Type.Literal("medium"),
-      Type.Literal("high"),
-      Type.Literal("xhigh"),
-      Type.Literal("max"),
-    ]),
-  ),
+  thinking: Type.Optional(Type.Enum(THINKING_LEVELS)),
 });
