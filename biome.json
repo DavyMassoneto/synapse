@@ -113,6 +113,42 @@
           }
         }
       }
+    },
+    {
+      "includes": ["src/modules/advisor/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["./**", "../**"],
+                    "message": "Use o alias @/"
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "@/composition",
+                      "@/integration",
+                      "@/integration/**",
+                      "@/modules",
+                      "@/modules/browser",
+                      "@/modules/browser/**",
+                      "@/modules/memory",
+                      "@/modules/memory/**",
+                      "@/modules/pi-web",
+                      "@/modules/pi-web/**"
+                    ],
+                    "message": "Depend\u00eancia fora da fronteira do advisor"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
     }
   ]
 }

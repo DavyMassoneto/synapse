@@ -11,4 +11,4 @@
 - Do not declare functions inside other functions; keep responsibilities separate.
 - Use ternaries only for very small expressions; prefer explicit conditionals when they improve readability.
 - Do not edit generated files directly; change their sources or generation configuration and regenerate them.
-- Before delivery, run `npm run validate` (Biome, TypeScript and build). Use `npm run check:fix` for safe formatting fixes; `npm run check`, `npm run typecheck` and `npm run build` are also available individually.
+- Before delivery, run `npm run validate` (Biome, TypeScript, bundle verification and tests). Use `npm run check:fix` for safe formatting fixes; `npm run check`, `npm run typecheck` and `npm run build` are also available individually.

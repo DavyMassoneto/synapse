@@ -772,9 +772,16 @@ var AdvisorToolHandler = class {
   advisor;
   lifetime;
   async execute(_id, _params, signal, onUpdate, context) {
+    const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
+    if (callSignal.aborted) {
+      return {
+        content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+        details: {},
+        isError: true
+      };
+    }
     try {
       onUpdate?.({ content: [{ type: "text", text: "Consultando advisor..." }], details: {} });
-      const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
       const advisorModel = new AdvisorModel(context);
       const result = await this.advisor.consult(
         {
@@ -800,6 +807,13 @@ var AdvisorToolHandler = class {
         usage: result.response.usage
       };
     } catch (error) {
+      if (callSignal.aborted) {
+        return {
+          content: [{ type: "text", text: "Consulta ao advisor cancelada." }],
+          details: {},
+          isError: true
+        };
+      }
       const message = error instanceof Error ? error.message : String(error);
       return {
         content: [

@@ -5,7 +5,6 @@ Synapse é um monólito modular de capacidades para o [pi](https://github.com/ba
 ## Capacidades
 
 - **Advisor:** consulta um modelo revisor e lembra o agente de consultá-lo. Veja [configuração](src/modules/advisor/README.md).
-
 - **Memória:** observações do histórico (Observational Memory), consolidação em um vault Markdown e recuperação de conhecimento com proveniência. O núcleo independe do host.
 - **pi-web:** interface para apresentar e operar o runtime do host pi.
 - **Navegador:** operações de navegação, ações e verificação de resultados.
@@ -15,6 +14,10 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 ## Estado do projeto
 
 O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. A integração foi verificada com pi 1.5.0. Instale localmente com `pi install ./` e não carregue outra extensão advisor simultaneamente.
+
+## Desenvolvimento
+
+Execute `npm ci --include=dev` para instalar dependências e `npm run validate` para verificar Biome, tipos, correspondência do bundle e testes. Após alterar os fontes, `npm run build` regenera `dist/index.js`.
 
 ## Documentação
 
