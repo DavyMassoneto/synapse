@@ -1,5 +1,6 @@
 import type { AdvisorContext } from "../contracts";
 import { COMMAND_TEXT } from "../presentation";
+import { CANCELLED_SELECTION } from "./selection-constants";
 import type { ModelSelection } from "./selection-types";
 
 export async function selectInitialModel(
@@ -13,7 +14,7 @@ export async function selectInitialModel(
   }
   const choice = await context.ui.select(COMMAND_TEXT.title, [...options.keys()]);
   if (choice === undefined) {
-    return { kind: "cancelled" };
+    return CANCELLED_SELECTION;
   }
-  return options.get(choice) ?? { kind: "cancelled" };
+  return options.get(choice) ?? CANCELLED_SELECTION;
 }

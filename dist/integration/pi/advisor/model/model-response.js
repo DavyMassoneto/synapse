@@ -1,6 +1,7 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.modelResponse = modelResponse;
+const text_1 = require("../text");
 const diagnostics_1 = require("./diagnostics");
 function modelResponse(reply) {
     if (reply.stopReason === "aborted") {
@@ -9,13 +10,7 @@ function modelResponse(reply) {
     if (reply.stopReason === "error") {
         throw new Error(reply.errorMessage ?? reply.stopReason);
     }
-    const parts = [];
-    for (const block of reply.content) {
-        if (block.type === "text") {
-            parts.push(block.text);
-        }
-    }
-    const text = parts.join("\n").trim();
+    const text = (0, text_1.extractText)(reply.content).trim();
     if (!text) {
         throw new Error(diagnostics_1.MODEL_DIAGNOSTICS.emptyResponse);
     }
