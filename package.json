@@ -12,8 +12,9 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "validate": "npm run check && npm run typecheck && npm run check:build && npm test",
-    "test": "node --test tests/integration/*.test.mjs src/modules/advisor/tests/*.test.mjs",
-    "check:build": "node scripts/check-build.mjs"
+    "test": "node --test tests/integration/*.test.mjs src/modules/advisor/tests/*.test.mjs && npm run test:typed",
+    "check:build": "node scripts/check-build.mjs",
+    "test:typed": "node scripts/run-typed-tests.mjs"
   },
   "peerDependencies": {
     "@earendil-works/pi-agent-core": "~1.5.0",

@@ -34,7 +34,7 @@ export class TestModel {
   gate = undefined;
   window = 40_000;
 
-  async contextWindow(reference) {
+  async resolve(reference) {
     this.calls += 1;
     this.resolvedReference = reference;
     if (this.cancelAt === "resolve") {
@@ -43,10 +43,17 @@ export class TestModel {
     if (this.gate) {
       await this.gate;
     }
-    return this.window;
+    return {
+      reference,
+      contextWindow: this.window,
+      maxOutputTokens: 32_000,
+      reasoningTokens: 2_048,
+      effectiveThinking: "low",
+    };
   }
 
-  async consult(request) {
+  async consult(resolved, request) {
+    this.resolved = resolved;
     this.captured = request;
     if (this.cancelAt === "execute") {
       this.controller.abort();

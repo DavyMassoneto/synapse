@@ -25,7 +25,14 @@ class Registry {
   }
   find() {
     this.calls += 1;
-    return { provider: "provider", id: "model", contextWindow: 40_000, reasoning: true };
+    return {
+      provider: "provider",
+      id: "model",
+      contextWindow: 40_000,
+      maxTokens: 32_000,
+      reasoning: true,
+      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    };
   }
   hasConfiguredAuth() {
     return true;

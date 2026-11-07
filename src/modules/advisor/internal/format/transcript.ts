@@ -83,32 +83,32 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
     return clip(blocks[blocks.length - 1] ?? "", budget);
   }
 
+  const firstBudget = Math.floor((budget - marker.length - SEPARATOR.length * 2) / 2);
+  if (firstBudget <= 0) {
+    return clip(blocks[0] ?? "", budget);
+  }
+
+  const first = clip(blocks[0], firstBudget);
   const selected: string[] = [];
-  let remaining = budget - marker.length;
-  for (let index = blocks.length - 1; index >= 0; index--) {
-    const block = blocks[index];
+  let remaining = budget - first.length - marker.length - SEPARATOR.length;
+
+  for (let index = blocks.length - 1; index > 0; index--) {
     const available = remaining - SEPARATOR.length;
     if (available <= 0) {
       break;
     }
+
+    const block = blocks[index];
     if (block.length > available) {
       if (selected.length === 0) {
-        const clipped = clip(block, available);
-        selected.unshift(clipped);
-        remaining -= clipped.length + SEPARATOR.length;
+        selected.unshift(clip(block, available));
       }
       break;
     }
+
     selected.unshift(block);
     remaining -= block.length + SEPARATOR.length;
   }
 
-  if (selected.length > 0 && blocks.length > selected.length) {
-    const available = remaining - SEPARATOR.length;
-    if (available > 0) {
-      selected.unshift(clip(blocks[0], available));
-    }
-  }
-
-  return [marker, ...selected].join(SEPARATOR);
+  return [first, marker, ...selected].join(SEPARATOR);
 }

@@ -57,28 +57,30 @@ export class AdvisorService implements Advisor {
       return { kind: "failure", message: "no advisor model configured" };
     }
     try {
-      const contextWindow = await model.contextWindow(configuration.model, input.signal);
+      const resolved = await model.resolve(
+        configuration.model,
+        configuration.thinking,
+        input.signal,
+      );
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
-      const prompt = preparePrompt(input, contextWindow);
+      const prompt = preparePrompt(input, resolved);
       if (prompt === undefined) {
         return {
           kind: "failure",
           message: "A janela do advisor é pequena demais para a consulta.",
         };
       }
-      const response = await model.consult({
+      const response = await model.consult(resolved, {
         system: ADVISOR_SYSTEM,
         prompt,
-        model: configuration.model,
-        thinking: configuration.thinking,
         signal: input.signal,
       });
       if (input.signal?.aborted || response.kind === "cancelled") {
         return { kind: "cancelled" };
       }
-      return { kind: "success", model: configuration.model, response };
+      return { kind: "success", model: resolved.reference, response };
     } catch (error) {
       if (input.signal?.aborted) {
         return { kind: "cancelled" };

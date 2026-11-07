@@ -1,15 +1,17 @@
-import { type Api, type Model } from "@earendil-works/pi-ai";
-import { type ExtensionToolContext } from "@earendil-works/pi-coding-agent";
+import { type Api, clampThinkingLevel, type Model } from "@earendil-works/pi-ai";
+import { type AdvisorModelRegistry } from "@/integration";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
-import { type ModelRequest, type ModelResponse } from "@/modules";
+import {
+  type ModelRequest,
+  type ModelResponse,
+  type ResolvedModel,
+  type ThinkingLevel,
+} from "@/modules";
 
 export class AdvisorModel {
-  constructor(private readonly context: ExtensionToolContext) {}
+  constructor(private readonly registry: AdvisorModelRegistry) {}
 
-  private model: Model<Api> | undefined;
-
-  async contextWindow(reference: string, signal?: AbortSignal): Promise<number> {
-    signal?.throwIfAborted();
+  private findModel(reference: string): Model<Api> {
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
       throw new Error(ADVISOR_MESSAGES.invalidReference);
@@ -17,25 +19,54 @@ export class AdvisorModel {
 
     const provider = reference.slice(0, separator);
     const modelId = reference.slice(separator + 1);
-    const model = this.context.modelRegistry.find(provider, modelId);
+    const model = this.registry.find(provider, modelId);
     if (!model) {
       throw new Error(`Modelo advisor não encontrado: ${reference}`);
     }
-    if (!this.context.modelRegistry.hasConfiguredAuth(model)) {
+    if (!this.registry.hasConfiguredAuth(model)) {
       throw new Error(`Credenciais ausentes para ${reference}`);
     }
 
-    this.model = model;
-    return model.contextWindow;
+    return model;
   }
 
-  async consult(request: ModelRequest): Promise<ModelResponse> {
-    const model = this.model;
-    if (!model) {
-      throw new Error(ADVISOR_MESSAGES.modelNotResolved);
+  async resolve(
+    reference: string,
+    thinking: ThinkingLevel,
+    signal?: AbortSignal,
+  ): Promise<ResolvedModel> {
+    signal?.throwIfAborted();
+    const model = this.findModel(reference);
+    const level = clampThinkingLevel(model, thinking);
+    let reasoningTokens = 0;
+    if (level === "minimal") {
+      reasoningTokens = 1_024;
+    } else if (level === "low") {
+      reasoningTokens = 2_048;
+    } else if (level === "medium") {
+      reasoningTokens = 8_192;
+    } else if (level === "high" || level === "xhigh" || level === "max") {
+      reasoningTokens = 16_384;
     }
-    const reasoning = request.thinking !== "off" && model.reasoning ? request.thinking : undefined;
-    const reply = await this.context.modelRegistry
+    return {
+      reference,
+      contextWindow: model.contextWindow,
+      maxOutputTokens: model.maxTokens,
+      reasoningTokens,
+      effectiveThinking: level,
+    };
+  }
+
+  async consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
+    const model = this.findModel(resolved.reference);
+    if (
+      model.contextWindow !== resolved.contextWindow ||
+      model.maxTokens !== resolved.maxOutputTokens
+    ) {
+      throw new Error("As capacidades do modelo advisor mudaram durante a consulta.");
+    }
+    const reasoning = resolved.effectiveThinking !== "off" ? resolved.effectiveThinking : undefined;
+    const reply = await this.registry
       .streamSimple(
         model,
         {

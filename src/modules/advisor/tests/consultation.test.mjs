@@ -15,8 +15,8 @@ async function snapshotIsStable() {
   assert.equal(result.kind, "success");
   assert.equal(result.model, "provider/first");
   assert.equal(port.resolvedReference, "provider/first");
-  assert.equal(port.captured.model, "provider/first");
-  assert.equal(port.captured.thinking, "low");
+  assert.equal(port.resolved.reference, "provider/first");
+  assert.equal(port.resolved.effectiveThinking, "low");
 }
 
 async function cancellationAndFailure() {

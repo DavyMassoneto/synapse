@@ -78,13 +78,22 @@ Rules:
 
 // src/modules/advisor/internal/format/prompt.ts
 var ESTIMATED_CHARACTERS_PER_TOKEN = 3;
-var RESPONSE_RESERVE_CHARACTERS = 2048;
+var HOST_SAFETY_TOKENS = 4096;
+var MINIMUM_ANSWER_TOKENS = 1024;
 var MAX_SYSTEM_CHARACTERS = 4e4;
 var PROMPT_PREFIX = "<executor_system_prompt>\n";
 var TRANSCRIPT_PREFIX = "\n</executor_system_prompt>\n\n<transcript>\n";
 var PROMPT_SUFFIX = "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
-function preparePrompt(input, contextWindow) {
-  const available = contextWindow * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length - RESPONSE_RESERVE_CHARACTERS;
+function preparePrompt(input, model) {
+  const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS;
+  if (requiredOutputTokens > model.maxOutputTokens) {
+    return void 0;
+  }
+  const inputTokens = model.contextWindow - HOST_SAFETY_TOKENS - model.maxOutputTokens;
+  if (inputTokens <= 0) {
+    return void 0;
+  }
+  const available = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length;
   const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length;
   if (available <= fixedLength) {
     return void 0;
@@ -205,32 +214,29 @@ function buildTranscript(messages, budget) {
   if (budget <= marker.length) {
     return clip(blocks[blocks.length - 1] ?? "", budget);
   }
+  const firstBudget = Math.floor((budget - marker.length - SEPARATOR.length * 2) / 2);
+  if (firstBudget <= 0) {
+    return clip(blocks[0] ?? "", budget);
+  }
+  const first = clip(blocks[0], firstBudget);
   const selected = [];
-  let remaining = budget - marker.length;
-  for (let index = blocks.length - 1; index >= 0; index--) {
-    const block = blocks[index];
+  let remaining = budget - first.length - marker.length - SEPARATOR.length;
+  for (let index = blocks.length - 1; index > 0; index--) {
     const available = remaining - SEPARATOR.length;
     if (available <= 0) {
       break;
     }
+    const block = blocks[index];
     if (block.length > available) {
       if (selected.length === 0) {
-        const clipped = clip(block, available);
-        selected.unshift(clipped);
-        remaining -= clipped.length + SEPARATOR.length;
+        selected.unshift(clip(block, available));
       }
       break;
     }
     selected.unshift(block);
     remaining -= block.length + SEPARATOR.length;
   }
-  if (selected.length > 0 && blocks.length > selected.length) {
-    const available = remaining - SEPARATOR.length;
-    if (available > 0) {
-      selected.unshift(clip(blocks[0], available));
-    }
-  }
-  return [marker, ...selected].join(SEPARATOR);
+  return [first, marker, ...selected].join(SEPARATOR);
 }
 
 // src/modules/advisor/internal/config/state.ts
@@ -340,28 +346,30 @@ var AdvisorService = class {
       return { kind: "failure", message: "no advisor model configured" };
     }
     try {
-      const contextWindow = await model.contextWindow(configuration.model, input.signal);
+      const resolved = await model.resolve(
+        configuration.model,
+        configuration.thinking,
+        input.signal
+      );
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
-      const prompt = preparePrompt(input, contextWindow);
+      const prompt = preparePrompt(input, resolved);
       if (prompt === void 0) {
         return {
           kind: "failure",
           message: "A janela do advisor \xE9 pequena demais para a consulta."
         };
       }
-      const response = await model.consult({
+      const response = await model.consult(resolved, {
         system: ADVISOR_SYSTEM,
         prompt,
-        model: configuration.model,
-        thinking: configuration.thinking,
         signal: input.signal
       });
       if (input.signal?.aborted || response.kind === "cancelled") {
         return { kind: "cancelled" };
       }
-      return { kind: "success", model: configuration.model, response };
+      return { kind: "success", model: resolved.reference, response };
     } catch (error) {
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
@@ -673,37 +681,57 @@ function registerEvents(pi, advisor, shutdownCallback) {
 }
 
 // src/integration/pi/advisor/model.ts
+import { clampThinkingLevel } from "@earendil-works/pi-ai";
 var AdvisorModel = class {
-  constructor(context) {
-    this.context = context;
+  constructor(registry) {
+    this.registry = registry;
   }
-  context;
-  model;
-  async contextWindow(reference, signal) {
-    signal?.throwIfAborted();
+  registry;
+  findModel(reference) {
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
       throw new Error(ADVISOR_MESSAGES.invalidReference);
     }
     const provider = reference.slice(0, separator);
     const modelId = reference.slice(separator + 1);
-    const model = this.context.modelRegistry.find(provider, modelId);
+    const model = this.registry.find(provider, modelId);
     if (!model) {
       throw new Error(`Modelo advisor n\xE3o encontrado: ${reference}`);
     }
-    if (!this.context.modelRegistry.hasConfiguredAuth(model)) {
+    if (!this.registry.hasConfiguredAuth(model)) {
       throw new Error(`Credenciais ausentes para ${reference}`);
     }
-    this.model = model;
-    return model.contextWindow;
+    return model;
   }
-  async consult(request) {
-    const model = this.model;
-    if (!model) {
-      throw new Error(ADVISOR_MESSAGES.modelNotResolved);
+  async resolve(reference, thinking, signal) {
+    signal?.throwIfAborted();
+    const model = this.findModel(reference);
+    const level = clampThinkingLevel(model, thinking);
+    let reasoningTokens = 0;
+    if (level === "minimal") {
+      reasoningTokens = 1024;
+    } else if (level === "low") {
+      reasoningTokens = 2048;
+    } else if (level === "medium") {
+      reasoningTokens = 8192;
+    } else if (level === "high" || level === "xhigh" || level === "max") {
+      reasoningTokens = 16384;
     }
-    const reasoning = request.thinking !== "off" && model.reasoning ? request.thinking : void 0;
-    const reply = await this.context.modelRegistry.streamSimple(
+    return {
+      reference,
+      contextWindow: model.contextWindow,
+      maxOutputTokens: model.maxTokens,
+      reasoningTokens,
+      effectiveThinking: level
+    };
+  }
+  async consult(resolved, request) {
+    const model = this.findModel(resolved.reference);
+    if (model.contextWindow !== resolved.contextWindow || model.maxTokens !== resolved.maxOutputTokens) {
+      throw new Error("As capacidades do modelo advisor mudaram durante a consulta.");
+    }
+    const reasoning = resolved.effectiveThinking !== "off" ? resolved.effectiveThinking : void 0;
+    const reply = await this.registry.streamSimple(
       model,
       {
         systemPrompt: request.system,
@@ -835,7 +863,7 @@ var AdvisorToolHandler = class {
     }
     try {
       onUpdate?.({ content: [{ type: "text", text: ADVISOR_MESSAGES.progress }], details: {} });
-      const advisorModel = new AdvisorModel(context);
+      const advisorModel = new AdvisorModel(context.modelRegistry);
       const result = await this.advisor.consult(
         {
           system: context.getSystemPrompt(),

@@ -40,7 +40,7 @@ class AdvisorToolHandler {
     try {
       onUpdate?.({ content: [{ type: "text", text: ADVISOR_MESSAGES.progress }], details: {} });
 
-      const advisorModel = new AdvisorModel(context);
+      const advisorModel = new AdvisorModel(context.modelRegistry);
       const result = await this.advisor.consult(
         {
           system: context.getSystemPrompt(),

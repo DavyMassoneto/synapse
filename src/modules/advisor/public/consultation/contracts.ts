@@ -21,9 +21,15 @@ export interface Usage {
 export interface ModelRequest {
   system: string;
   prompt: string;
-  model: string;
-  thinking: ThinkingLevel;
   signal?: AbortSignal;
+}
+
+export interface ResolvedModel {
+  reference: string;
+  contextWindow: number;
+  maxOutputTokens: number;
+  reasoningTokens: number;
+  effectiveThinking: ThinkingLevel;
 }
 
 export interface ModelSuccess {
@@ -39,8 +45,8 @@ export interface ModelCancelled {
 export type ModelResponse = ModelSuccess | ModelCancelled;
 
 export interface ModelPort {
-  contextWindow(model: string, signal?: AbortSignal): Promise<number>;
-  consult(request: ModelRequest): Promise<ModelResponse>;
+  resolve(model: string, thinking: ThinkingLevel, signal?: AbortSignal): Promise<ResolvedModel>;
+  consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse>;
 }
 
 export interface ConsultationSuccess {

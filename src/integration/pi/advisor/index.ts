@@ -2,6 +2,7 @@ export * from "@/integration/pi/advisor/advisor.ts";
 export * from "@/integration/pi/advisor/command.ts";
 export * from "@/integration/pi/advisor/events.ts";
 export * from "@/integration/pi/advisor/model.ts";
+export * from "@/integration/pi/advisor/model-types.ts";
 export * from "@/integration/pi/advisor/rendering.ts";
 export * from "@/integration/pi/advisor/rendering-types.ts";
 export * from "@/integration/pi/advisor/selection-types.ts";

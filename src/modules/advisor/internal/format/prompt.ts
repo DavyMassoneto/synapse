@@ -1,20 +1,26 @@
 import { ADVISOR_SYSTEM, buildTranscript, clip } from "@/modules/advisor/internal/format";
-import { type Consultation } from "@/modules/advisor/public/consultation";
+import { type Consultation, type ResolvedModel } from "@/modules/advisor/public/consultation";
 
 // A conservative character estimate; it is not a provider tokenizer.
 const ESTIMATED_CHARACTERS_PER_TOKEN = 3;
-const RESPONSE_RESERVE_CHARACTERS = 2_048;
+const HOST_SAFETY_TOKENS = 4_096;
+const MINIMUM_ANSWER_TOKENS = 1_024;
 const MAX_SYSTEM_CHARACTERS = 40_000;
 const PROMPT_PREFIX = "<executor_system_prompt>\n";
 const TRANSCRIPT_PREFIX = "\n</executor_system_prompt>\n\n<transcript>\n";
 const PROMPT_SUFFIX =
   "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
 
-export function preparePrompt(input: Consultation, contextWindow: number): string | undefined {
-  const available =
-    contextWindow * ESTIMATED_CHARACTERS_PER_TOKEN -
-    ADVISOR_SYSTEM.length -
-    RESPONSE_RESERVE_CHARACTERS;
+export function preparePrompt(input: Consultation, model: ResolvedModel): string | undefined {
+  const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS;
+  if (requiredOutputTokens > model.maxOutputTokens) {
+    return undefined;
+  }
+  const inputTokens = model.contextWindow - HOST_SAFETY_TOKENS - model.maxOutputTokens;
+  if (inputTokens <= 0) {
+    return undefined;
+  }
+  const available = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length;
   const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length;
   if (available <= fixedLength) {
     return undefined;
