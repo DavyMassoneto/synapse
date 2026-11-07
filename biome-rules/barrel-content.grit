@@ -1,0 +1,36 @@
+file(body=$body) where {
+  $body <: JsModule(items=$items, directives=$directives),
+  or {
+    $directives <: [
+      $directive where { register_diagnostic(span=$directive, message="diretiva proibida") }, ...
+    ],
+    $items <: [
+      ...,
+      $item where {
+        not $item <: or {
+          `export * from $source`,
+          `export { default as $name } from $source`
+        },
+        register_diagnostic(span=$item, message="forma proibida")
+      },
+      ...
+    ],
+    $body <: r"(?s)^#!.*$" where { register_diagnostic(span=$body, message="shebang proibido") },
+    $items <: [
+      ...,
+      $item where {
+        $item <: or {
+          `export * from $source`,
+          `export { default as $name } from $source`
+        },
+        or {
+          not $source <: r"^[\"']\./[^/\\]+[\"']$",
+          $source <: r"^[\"']\./(?:index|\.|\.\.)[\"']$",
+          $source <: r"^.*\.(?:ts|js)[\"']$"
+        },
+        register_diagnostic(span=$source, message="caminho proibido")
+      },
+      ...
+    ]
+  }
+}

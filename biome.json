@@ -74,7 +74,11 @@
   "plugins": [
     "./biome-rules/no-unknown.grit",
     "./biome-rules/no-const-assertion.grit",
-    "./biome-rules/no-satisfies.grit"
+    "./biome-rules/no-satisfies.grit",
+    {
+      "path": "./biome-rules/barrel-content.grit",
+      "includes": ["src/**/index.ts", "tests/**/index.ts"]
+    }
   ],
   "overrides": [
     {
