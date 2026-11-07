@@ -5,7 +5,7 @@ import {
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
 import { syncAdvisor } from "@/integration/pi/advisor/sync";
 import { type Advisor } from "@/modules";
 import { type AdvisorContext } from "../context-types.ts";

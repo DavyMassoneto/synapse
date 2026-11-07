@@ -1,4 +1,4 @@
-import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
+import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
 
 const CONTENT_LIMITS = [12_000, 4_000, 1_500, 500];

@@ -1,4 +1,4 @@
-import { ADVISOR_SYSTEM } from "@/modules/advisor/internal/instructions.ts";
+import { ADVISOR_SYSTEM } from "@/modules/advisor/internal/instructions";
 import { type Consultation, type ResolvedModel } from "@/modules/advisor/public/consultation";
 import { buildTranscript, clip } from "./transcript.ts";
 

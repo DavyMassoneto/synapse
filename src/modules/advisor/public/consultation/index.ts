@@ -1,2 +1,2 @@
-export * from "@/modules/advisor/public/consultation/contracts.ts";
-export * from "@/modules/advisor/public/consultation/model.ts";
+export * from "@/modules/advisor/public/consultation/contracts";
+export * from "@/modules/advisor/public/consultation/model";

@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { AdvisorService } from "@/modules/advisor/internal";
 import { type ConfigLoadResult, type ConfigPort } from "@/modules/advisor/internal/config";
 import { type ThinkingLevel } from "@/modules/advisor/public/config";

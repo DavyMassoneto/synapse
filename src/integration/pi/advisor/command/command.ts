@@ -1,6 +1,6 @@
 import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
 import { type AdvisorContext, type AdvisorHost } from "@/integration/pi/advisor";
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
 import {
   ADVISOR_MESSAGES,
   currentStatus,

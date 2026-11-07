@@ -2,7 +2,6 @@ import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { test } from "node:test";
 import {
   type Api,
   type AssistantMessage,
@@ -13,6 +12,7 @@ import {
 } from "@earendil-works/pi-ai";
 import { buildBaseOptions } from "@earendil-works/pi-ai/api/simple-options";
 import { normalizeContext } from "@earendil-works/pi-ai/utils/transcript";
+import { test } from "vitest";
 import { AdvisorModel, type AdvisorModelRegistry } from "@/integration";
 import { createAdvisor, type ModelRequest } from "@/modules";
 

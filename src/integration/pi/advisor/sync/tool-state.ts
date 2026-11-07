@@ -1,4 +1,4 @@
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
 import { type AdvisorToolActivation } from "./types.ts";
 
 export function updateAdvisorTool(pi: AdvisorToolActivation, enabled: boolean): void {

@@ -1,5 +1,6 @@
 export const buildOptions = {
-  entryPoints: ["src/entry.ts"],
+  entryPoints: [".build/entry.js"],
+  alias: { "@": "./.build" },
   bundle: true,
   platform: "node",
   format: "esm",

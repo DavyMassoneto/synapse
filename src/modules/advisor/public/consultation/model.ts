@@ -1,5 +1,5 @@
 import { type ThinkingLevel } from "@/modules/advisor/public/config";
-import { type Cancelled } from "@/modules/advisor/public/result.ts";
+import { type Cancelled } from "@/modules/advisor/public/result";
 
 export interface UsageCost {
   input: number;

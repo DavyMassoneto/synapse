@@ -1,2 +1,2 @@
-export * from "@/integration/pi/advisor/rendering/rendering.ts";
-export * from "@/integration/pi/advisor/rendering/rendering-types.ts";
+export * from "@/integration/pi/advisor/rendering/rendering";
+export * from "@/integration/pi/advisor/rendering/rendering-types";

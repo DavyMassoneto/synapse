@@ -1,4 +1,4 @@
-import { type Cancelled, type Failure } from "@/modules/advisor/public/result.ts";
+import { type Cancelled, type Failure } from "@/modules/advisor/public/result";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
 import { type ModelSuccess } from "./model.ts";
 

@@ -3,18 +3,18 @@ import {
   type ConfigLoadResult,
   type ConfigPort,
 } from "@/modules/advisor/internal/config";
-import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
+import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics";
 import { preparePrompt } from "@/modules/advisor/internal/format";
-import { ADVISOR_SYSTEM, TIMING } from "@/modules/advisor/internal/instructions.ts";
+import { ADVISOR_SYSTEM, TIMING } from "@/modules/advisor/internal/instructions";
 import { REMINDER, ReminderCounter } from "@/modules/advisor/internal/reminder";
-import { type Advisor } from "@/modules/advisor/public/advisor.ts";
+import { type Advisor } from "@/modules/advisor/public/advisor";
 import { type AdvisorResult } from "@/modules/advisor/public/config";
 import {
   type Consultation,
   type ConsultationResult,
   type ModelPort,
 } from "@/modules/advisor/public/consultation";
-import { type ReminderTurn } from "@/modules/advisor/public/reminder.ts";
+import { type ReminderTurn } from "@/modules/advisor/public/reminder";
 
 export class AdvisorService implements Advisor {
   readonly consultationInstructions = TIMING;

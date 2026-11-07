@@ -1,4 +1,4 @@
-import { type ReminderTurn } from "@/modules/advisor/public/reminder.ts";
+import { type ReminderTurn } from "@/modules/advisor/public/reminder";
 
 export const REMIND_EVERY = 5;
 

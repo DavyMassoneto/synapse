@@ -1,4 +1,4 @@
-import { type Failure } from "@/modules/advisor/public/result.ts";
+import { type Failure } from "@/modules/advisor/public/result";
 import { type Config } from "./config.ts";
 
 export interface AdvisorSuccess {

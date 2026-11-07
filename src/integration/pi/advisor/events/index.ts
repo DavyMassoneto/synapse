@@ -1,1 +1,1 @@
-export * from "@/integration/pi/advisor/events/events.ts";
+export * from "@/integration/pi/advisor/events/events";

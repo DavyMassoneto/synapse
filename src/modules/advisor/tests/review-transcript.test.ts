@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { buildTranscript } from "@/modules/advisor/internal/format";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
 

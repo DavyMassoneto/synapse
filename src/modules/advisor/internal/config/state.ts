@@ -1,4 +1,4 @@
-import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
+import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics";
 import {
   type AdvisorResult,
   type Config,

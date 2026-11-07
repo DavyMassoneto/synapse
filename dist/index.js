@@ -1,10 +1,10 @@
 /* ARQUIVO AUTOGERADO — NÃO EDITE DIRETAMENTE. Altere src/ e execute npm run build. */
 
-// src/composition/compose.ts
+// .build/composition/compose.js
 import { homedir } from "node:os";
 import { join } from "node:path";
 
-// src/modules/advisor/public/config/levels.ts
+// .build/modules/advisor/public/config/levels.js
 var THINKING_LEVELS = Object.freeze({
   off: "off",
   minimal: "minimal",
@@ -15,13 +15,13 @@ var THINKING_LEVELS = Object.freeze({
   max: "max"
 });
 
-// src/modules/advisor/adapters/config.ts
+// .build/modules/advisor/adapters/config.js
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
 
-// src/modules/advisor/adapters/config-schema.ts
+// .build/modules/advisor/adapters/config-schema.js
 import { Type } from "typebox";
 var thinkingSchema = Type.Enum(THINKING_LEVELS);
 var configSchema = Type.Object({
@@ -29,16 +29,16 @@ var configSchema = Type.Object({
   thinking: Type.Optional(thinkingSchema)
 });
 
-// src/modules/advisor/adapters/config.ts
+// .build/modules/advisor/adapters/config.js
 var CONFIG_DIAGNOSTICS = {
   readFailed: "N\xE3o foi poss\xEDvel ler a configura\xE7\xE3o do advisor.",
   invalid: "Configura\xE7\xE3o do advisor inv\xE1lida; revise advisor.json."
 };
 var FileConfig = class {
+  path;
   constructor(path) {
     this.path = path;
   }
-  path;
   load() {
     let content;
     try {
@@ -76,7 +76,7 @@ var FileConfig = class {
   }
 };
 
-// src/modules/advisor/internal/instructions.ts
+// .build/modules/advisor/internal/instructions.js
 var ADVISOR_SYSTEM = `You are the advisor: a stronger model that a faster executor model consults in the middle of a task.
 You have no tools and cannot act. Below you get the executor's system prompt and its full transcript so far (user messages, the executor's text, every tool call and tool result), ending at the moment it called advisor(). Earlier advisor results appear in the transcript too.
 
@@ -105,7 +105,7 @@ Give the advice serious weight. If you follow a step and it fails empirically, o
 
 If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
 
-// src/modules/advisor/internal/diagnostics.ts
+// .build/modules/advisor/internal/diagnostics.js
 var ADVISOR_DIAGNOSTICS = {
   noModel: "no advisor model configured",
   windowTooSmall: "A janela do advisor \xE9 pequena demais para a consulta.",
@@ -116,7 +116,7 @@ var ADVISOR_DIAGNOSTICS = {
   omittedMessages: "[... mensagens anteriores omitidas ...]"
 };
 
-// src/modules/advisor/internal/format/transcript.ts
+// .build/modules/advisor/internal/format/transcript.js
 var CONTENT_LIMITS = [12e3, 4e3, 1500, 500];
 var HEAD_FRACTION = 0.6;
 var SEPARATOR = "\n\n";
@@ -216,7 +216,7 @@ function buildTranscript(messages, budget) {
   return [first, marker, ...selected].join(SEPARATOR);
 }
 
-// src/modules/advisor/internal/format/prompt.ts
+// .build/modules/advisor/internal/format/prompt.js
 var ESTIMATED_CHARACTERS_PER_TOKEN = 3;
 var HOST_SAFETY_TOKENS = 4096;
 var MINIMUM_ANSWER_TOKENS = 1024;
@@ -245,7 +245,7 @@ function preparePrompt(input, model) {
   return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
 }
 
-// src/modules/advisor/internal/reminder/counter.ts
+// .build/modules/advisor/internal/reminder/counter.js
 var REMIND_EVERY = 5;
 var ReminderCounter = class {
   turns = 0;
@@ -265,7 +265,7 @@ var ReminderCounter = class {
   }
 };
 
-// src/modules/advisor/internal/reminder/text.ts
+// .build/modules/advisor/internal/reminder/text.js
 var REMINDER = `<system-reminder>
 J\xE1 se passaram ${REMIND_EVERY} turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:
 - Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?
@@ -274,8 +274,10 @@ J\xE1 se passaram ${REMIND_EVERY} turnos desde a \xFAltima consulta ao advisor. 
 Se alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.
 </system-reminder>`;
 
-// src/modules/advisor/internal/config/state.ts
+// .build/modules/advisor/internal/config/state.js
 var AdvisorConfiguration = class {
+  config;
+  current;
   constructor(config, loaded) {
     this.config = config;
     if (loaded.kind === "invalid") {
@@ -292,8 +294,6 @@ var AdvisorConfiguration = class {
       this.current = { kind: "success", config: { thinking: "high" } };
     }
   }
-  config;
-  current;
   status() {
     if (this.current.kind === "failure") {
       return { ...this.current };
@@ -343,7 +343,7 @@ var AdvisorConfiguration = class {
   }
 };
 
-// src/modules/advisor/internal/service.ts
+// .build/modules/advisor/internal/service.js
 var AdvisorService = class {
   consultationInstructions = TIMING;
   configuration;
@@ -389,11 +389,7 @@ var AdvisorService = class {
       return { kind: "failure", message: ADVISOR_DIAGNOSTICS.noModel };
     }
     try {
-      const resolved = await model.resolve(
-        configuration.model,
-        configuration.thinking,
-        input.signal
-      );
+      const resolved = await model.resolve(configuration.model, configuration.thinking, input.signal);
       if (input.signal?.aborted) {
         return { kind: "cancelled" };
       }
@@ -423,17 +419,17 @@ var AdvisorService = class {
   }
 };
 
-// src/modules/advisor/public/create-advisor.ts
+// .build/modules/advisor/public/create-advisor.js
 function createAdvisor(path) {
   const storage = new FileConfig(path);
   const loaded = storage.load();
   return new AdvisorService(storage, loaded);
 }
 
-// src/modules/advisor/public/thinking.ts
+// .build/modules/advisor/public/thinking.js
 var THINKING_LEVEL_OPTIONS = Object.values(THINKING_LEVELS);
 
-// src/composition/compose.ts
+// .build/composition/compose.js
 function compose(host, configPath = join(homedir(), ".pi", "agent", "advisor.json")) {
   const controller = new AbortController();
   const lifecycle = {
@@ -443,7 +439,7 @@ function compose(host, configPath = join(homedir(), ".pi", "agent", "advisor.jso
   host.register(createAdvisor(configPath), lifecycle);
 }
 
-// src/integration/pi/advisor/command/catalog.ts
+// .build/integration/pi/advisor/command/catalog.js
 var COMPLETION_LIMIT = 40;
 var ModelCatalog = class {
   models = [];
@@ -499,13 +495,13 @@ var ModelCatalog = class {
   }
 };
 
-// src/integration/pi/advisor/identifiers.ts
+// .build/integration/pi/advisor/identifiers.js
 var ADVISOR_NAME = "advisor";
 
-// src/integration/pi/advisor/presentation/layout.ts
+// .build/integration/pi/advisor/presentation/layout.js
 var PREVIEW_LINES = 8;
 
-// src/integration/pi/advisor/presentation/messages.ts
+// .build/integration/pi/advisor/presentation/messages.js
 var ADVISOR_MESSAGES = {
   title: "Modelo advisor",
   renderPending: "consultando...",
@@ -534,7 +530,7 @@ function additionalLines(count) {
   return `... (${count} linhas a mais)`;
 }
 
-// src/integration/pi/advisor/presentation/styles.ts
+// .build/integration/pi/advisor/presentation/styles.js
 var RENDER_STYLE = {
   title: "toolTitle",
   pending: "warning",
@@ -544,18 +540,18 @@ var RENDER_STYLE = {
   additional: "dim"
 };
 
-// src/integration/pi/advisor/presentation/tool-metadata.ts
+// .build/integration/pi/advisor/presentation/tool-metadata.js
 var ADVISOR_TOOL_DESCRIPTION = "Consult a reviewer model for strategic guidance. The active conversation is sent to the configured provider, subject to context limits; images are omitted.";
 var ADVISOR_TOOL_SNIPPET = "Consult a reviewer model with the conversation, without parameters";
 
-// src/integration/pi/advisor/sync/status.ts
+// .build/integration/pi/advisor/sync/status.js
 function updateAdvisorStatus(context, model) {
   if (context.hasUI) {
     context.ui.setStatus(ADVISOR_NAME, model ? `advisor: ${model}` : void 0);
   }
 }
 
-// src/integration/pi/advisor/sync/tool-state.ts
+// .build/integration/pi/advisor/sync/tool-state.js
 function updateAdvisorTool(pi, enabled) {
   const active = pi.getActiveTools();
   if (enabled && !active.includes(ADVISOR_NAME)) {
@@ -571,7 +567,7 @@ function updateAdvisorTool(pi, enabled) {
   }
 }
 
-// src/integration/pi/advisor/sync/sync.ts
+// .build/integration/pi/advisor/sync/sync.js
 function syncAdvisor(pi, advisor, context) {
   const result = advisor.status();
   const model = result.kind === "success" ? result.config.model : void 0;
@@ -579,7 +575,7 @@ function syncAdvisor(pi, advisor, context) {
   updateAdvisorStatus(context, model);
 }
 
-// src/integration/pi/advisor/command/choose-model.ts
+// .build/integration/pi/advisor/command/choose-model.js
 var MODEL_SELECTION_LIMIT = 100;
 async function chooseModel(catalog, context, input) {
   if (!input) {
@@ -604,10 +600,7 @@ async function chooseModel(catalog, context, input) {
     return { kind: "selected", model: matches[0] };
   }
   if (context.hasUI) {
-    const choice = await context.ui.select(
-      ADVISOR_MESSAGES.title,
-      matches.slice(0, MODEL_SELECTION_LIMIT)
-    );
+    const choice = await context.ui.select(ADVISOR_MESSAGES.title, matches.slice(0, MODEL_SELECTION_LIMIT));
     if (choice !== void 0) {
       return { kind: "selected", model: choice };
     }
@@ -617,7 +610,7 @@ async function chooseModel(catalog, context, input) {
   return { kind: "cancelled" };
 }
 
-// src/integration/pi/advisor/command/parser.ts
+// .build/integration/pi/advisor/command/parser.js
 function parseAdvisorCommand(args) {
   const input = args.trim();
   if (input === "off") {
@@ -630,15 +623,15 @@ function parseAdvisorCommand(args) {
   return { kind: "select", query: input };
 }
 
-// src/integration/pi/advisor/command/command.ts
+// .build/integration/pi/advisor/command/command.js
 var AdvisorCommand = class {
+  pi;
+  advisor;
+  catalog = new ModelCatalog();
   constructor(pi, advisor) {
     this.pi = pi;
     this.advisor = advisor;
   }
-  pi;
-  advisor;
-  catalog = new ModelCatalog();
   start(_event, context) {
     this.catalog.refresh(context);
   }
@@ -681,11 +674,7 @@ var AdvisorCommand = class {
     if (chosen.kind === "disabled") {
       this.disable(context);
     } else if (chosen.kind === "selected") {
-      this.syncAndNotify(
-        context,
-        this.advisor.selectModel(chosen.model),
-        modelStatus(chosen.model)
-      );
+      this.syncAndNotify(context, this.advisor.selectModel(chosen.model), modelStatus(chosen.model));
     }
   }
 };
@@ -699,16 +688,16 @@ function registerCommand(pi, advisor) {
   });
 }
 
-// src/integration/pi/advisor/events/events.ts
+// .build/integration/pi/advisor/events/events.js
 var AdvisorEvents = class {
+  pi;
+  advisor;
+  shutdownCallback;
   constructor(pi, advisor, shutdownCallback) {
     this.pi = pi;
     this.advisor = advisor;
     this.shutdownCallback = shutdownCallback;
   }
-  pi;
-  advisor;
-  shutdownCallback;
   start(_event, context) {
     this.advisor.resetReminder();
     syncAdvisor(this.pi, this.advisor, context);
@@ -766,10 +755,10 @@ function registerEvents(pi, advisor, shutdownCallback) {
   pi.on("turn_end", handlers.turnEnd.bind(handlers));
 }
 
-// src/integration/pi/advisor/tool/model.ts
+// .build/integration/pi/advisor/tool/model.js
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 
-// src/integration/pi/advisor/tool/diagnostics.ts
+// .build/integration/pi/advisor/tool/diagnostics.js
 var MODEL_DIAGNOSTICS = {
   invalidReference: "Refer\xEAncia de modelo advisor inv\xE1lida.",
   capabilitiesChanged: "As capacidades do modelo advisor mudaram durante a consulta.",
@@ -785,12 +774,12 @@ function advisorUnavailable(message) {
   return `Advisor indispon\xEDvel: ${message}.`;
 }
 
-// src/integration/pi/advisor/tool/model.ts
+// .build/integration/pi/advisor/tool/model.js
 var AdvisorModel = class {
+  registry;
   constructor(registry) {
     this.registry = registry;
   }
-  registry;
   findModel(reference) {
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
@@ -835,20 +824,16 @@ var AdvisorModel = class {
       throw new Error(MODEL_DIAGNOSTICS.capabilitiesChanged);
     }
     const reasoning = resolved.effectiveThinking !== "off" ? resolved.effectiveThinking : void 0;
-    const reply = await this.registry.streamSimple(
-      model,
-      {
-        systemPrompt: request.system,
-        messages: [
-          {
-            role: "user",
-            content: [{ type: "text", text: request.prompt }],
-            timestamp: Date.now()
-          }
-        ]
-      },
-      { signal: request.signal, reasoning }
-    ).result();
+    const reply = await this.registry.streamSimple(model, {
+      systemPrompt: request.system,
+      messages: [
+        {
+          role: "user",
+          content: [{ type: "text", text: request.prompt }],
+          timestamp: Date.now()
+        }
+      ]
+    }, { signal: request.signal, reasoning }).result();
     if (reply.stopReason === "aborted") {
       return { kind: "cancelled" };
     }
@@ -887,7 +872,7 @@ var AdvisorModel = class {
   }
 };
 
-// src/integration/pi/advisor/rendering/rendering.ts
+// .build/integration/pi/advisor/rendering/rendering.js
 import { Text } from "@earendil-works/pi-tui";
 function textComponent(context) {
   if (context.lastComponent instanceof Text) {
@@ -935,11 +920,11 @@ ${shown.join("\n")}${suffix}`);
   return text;
 }
 
-// src/integration/pi/advisor/tool/tool-schema.ts
+// .build/integration/pi/advisor/tool/tool-schema.js
 import { Type as Type2 } from "typebox";
 var advisorParameters = Type2.Object({});
 
-// src/integration/pi/advisor/tool/transcript.ts
+// .build/integration/pi/advisor/tool/transcript.js
 function convertContent(content) {
   if (typeof content === "string") {
     return [{ kind: "text", text: content }];
@@ -1012,17 +997,17 @@ function captureTranscript(context) {
   return transcript;
 }
 
-// src/integration/pi/advisor/tool/tool.ts
+// .build/integration/pi/advisor/tool/tool.js
 function toolFailure(message) {
   return { content: [{ type: "text", text: message }], details: {}, isError: true };
 }
 var AdvisorToolHandler = class {
+  advisor;
+  lifetime;
   constructor(advisor, lifetime) {
     this.advisor = advisor;
     this.lifetime = lifetime;
   }
-  advisor;
-  lifetime;
   async execute(_id, _params, signal, onUpdate, context) {
     const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
     if (callSignal.aborted) {
@@ -1031,14 +1016,11 @@ var AdvisorToolHandler = class {
     try {
       onUpdate?.({ content: [{ type: "text", text: ADVISOR_MESSAGES.progress }], details: {} });
       const advisorModel = new AdvisorModel(context.modelRegistry);
-      const result = await this.advisor.consult(
-        {
-          system: context.getSystemPrompt(),
-          messages: captureTranscript(context),
-          signal: callSignal
-        },
-        advisorModel
-      );
+      const result = await this.advisor.consult({
+        system: context.getSystemPrompt(),
+        messages: captureTranscript(context),
+        signal: callSignal
+      }, advisorModel);
       if (result.kind === "cancelled") {
         return toolFailure(ADVISOR_MESSAGES.cancelled);
       }
@@ -1074,25 +1056,25 @@ function registerTool(pi, advisor, lifetime) {
   });
 }
 
-// src/integration/pi/advisor/advisor.ts
+// .build/integration/pi/advisor/advisor.js
 function registerAdvisor(pi, advisor, signal, shutdown) {
   registerEvents(pi, advisor, shutdown);
   registerTool(pi, advisor, signal);
   registerCommand(pi, advisor);
 }
 
-// src/integration/pi/extension.ts
+// .build/integration/pi/extension.js
 var PiHost = class {
+  pi;
   constructor(pi) {
     this.pi = pi;
   }
-  pi;
   register(advisor, lifecycle) {
     registerAdvisor(this.pi, advisor, lifecycle.signal, lifecycle.shutdown);
   }
 };
 
-// src/entry.ts
+// .build/entry.js
 function registerSynapse(pi) {
   compose(new PiHost(pi));
 }

@@ -1,1 +1,1 @@
-export * from "@/modules/advisor/public/transcript/types.ts";
+export * from "@/modules/advisor/public/transcript/types";

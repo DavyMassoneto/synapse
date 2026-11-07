@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
 import { type AgentToolResult } from "@earendil-works/pi-coding-agent";
+import { test } from "vitest";
 import { type AdvisorRenderTheme, type AdvisorToolDetails } from "@/integration";
 import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
 

@@ -1,5 +1,5 @@
 import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
 import {
   ADVISOR_MESSAGES,
   ADVISOR_TOOL_DESCRIPTION,

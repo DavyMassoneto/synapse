@@ -1,2 +1,2 @@
-export * from "@/composition/compose.ts";
-export * from "@/composition/types.ts";
+export * from "@/composition/compose";
+export * from "@/composition/types";

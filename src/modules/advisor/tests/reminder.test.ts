@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { REMIND_EVERY, REMINDER, ReminderCounter } from "@/modules/advisor/internal/reminder";
 
 function verifyReminder(): void {

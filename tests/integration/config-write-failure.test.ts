@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { test } from "node:test";
+import { test } from "vitest";
 import { TestContext } from "../fixtures/typed-context.ts";
 import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
 

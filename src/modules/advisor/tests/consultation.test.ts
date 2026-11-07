@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { test } from "node:test";
+import { test } from "vitest";
 import { AdvisorService, FailingModel, TestModel, TestStorage, WaitingModel } from "./fixtures.ts";
 
 async function snapshotIsStable() {
