@@ -1,16 +1,12 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
 import { test } from "node:test";
+import { REMINDER } from "@/modules/advisor/internal/format";
+import { REMIND_EVERY, ReminderCounter } from "@/modules/advisor/internal/reminder";
 
-const require = createRequire(import.meta.url);
-const { createJiti } = require("jiti");
-const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
-const { ReminderCounter, REMIND_EVERY } = await jiti.import("../internal/reminder/counter.ts");
-const { REMINDER } = await jiti.import("../internal/format/reminder-text.ts");
-
-function verifyReminder() {
+function verifyReminder(): void {
   const first = new ReminderCounter();
   const second = new ReminderCounter();
+
   for (let index = 1; index < REMIND_EVERY; index++) {
     assert.equal(first.advance({ completed: true, usedTools: true }), false);
   }

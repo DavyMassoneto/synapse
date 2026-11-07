@@ -1,21 +1,16 @@
 import assert from "node:assert/strict";
-import { createRequire } from "node:module";
 import { test } from "node:test";
+import { buildTranscript } from "@/modules/advisor/internal/format";
+import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
+import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
 
-const require = createRequire(import.meta.url);
-const { createJiti } = require("jiti");
-const jiti = createJiti(import.meta.url, { tsconfigPaths: true });
-const { buildTranscript } = await jiti.import("../internal/format/transcript.ts");
-
-import { AdvisorService, TestModel, TestStorage } from "#advisor-test-module";
-
-function transcriptRespectsBudget() {
-  const messages = [
+function transcriptRespectsBudget(): void {
+  const messages: TranscriptMessage[] = [
     { kind: "user", blocks: [{ kind: "text", text: "á".repeat(30_000) }] },
     { kind: "shell", hidden: true, command: "secret", blocks: [{ kind: "text", text: "hidden" }] },
     { kind: "toolResult", tool: "read", error: true, blocks: [{ kind: "text", text: "failed" }] },
+    { kind: "user", blocks: [{ kind: "text", text: "MOST_RECENT" }] },
   ];
-  messages.push({ kind: "user", blocks: [{ kind: "text", text: "MOST_RECENT" }] });
   const short = buildTranscript(messages, 200);
   assert.ok(short.includes("MOST_RECENT"));
   assert.ok(short.length <= 200);
@@ -23,20 +18,30 @@ function transcriptRespectsBudget() {
   assert.equal(buildTranscript([], 200), "");
   assert.match(buildTranscript(messages.slice(1), 200), /tool_result read \(error\)/);
 
-  const beginning = { kind: "user", blocks: [{ kind: "text", text: "FIRST_MESSAGE" }] };
-  const middle = { kind: "user", blocks: [{ kind: "text", text: "middle".repeat(1000) }] };
-  const ending = { kind: "user", blocks: [{ kind: "text", text: "LAST_MESSAGE" }] };
+  const beginning: TranscriptMessage = {
+    kind: "user",
+    blocks: [{ kind: "text", text: "FIRST_MESSAGE" }],
+  };
+  const middle: TranscriptMessage = {
+    kind: "user",
+    blocks: [{ kind: "text", text: "middle".repeat(1000) }],
+  };
+  const ending: TranscriptMessage = {
+    kind: "user",
+    blocks: [{ kind: "text", text: "LAST_MESSAGE" }],
+  };
   const trimmed = buildTranscript([beginning, middle, ending], 200);
   assert.ok(trimmed.includes("FIRST_MESSAGE"));
   assert.ok(trimmed.includes("LAST_MESSAGE"));
   assert.ok(trimmed.length <= 200);
-
-  const oversizedLast = { kind: "user", blocks: [{ kind: "text", text: "last".repeat(1000) }] };
-  const bounded = buildTranscript([beginning, oversizedLast], 200);
-  assert.ok(bounded.length <= 200);
+  const oversizedLast: TranscriptMessage = {
+    kind: "user",
+    blocks: [{ kind: "text", text: "last".repeat(1000) }],
+  };
+  assert.ok(buildTranscript([beginning, oversizedLast], 200).length <= 200);
 }
 
-async function smallContextFails() {
+async function smallContextFails(): Promise<void> {
   const advisor = new AdvisorService(new TestStorage());
   const model = new TestModel();
   model.window = 100;

@@ -12,7 +12,7 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "validate": "npm run check && npm run typecheck && npm run check:build && npm test",
-    "test": "node --test tests/integration/*.test.mjs src/modules/advisor/tests/*.test.mjs && npm run test:typed",
+    "test": "node --test tests/integration/*.test.mjs && npm run test:typed",
     "check:build": "node scripts/check-build.mjs",
     "test:typed": "node scripts/run-typed-tests.mjs"
   },
@@ -37,7 +37,6 @@
   },
   "imports": {
     "#build-options": "./scripts/build-options.mjs",
-    "#advisor-test-host": "./tests/fixtures/advisor-host.mjs",
-    "#advisor-test-module": "./src/modules/advisor/tests/fixtures.mjs"
+    "#advisor-test-host": "./tests/fixtures/advisor-host.mjs"
   }
 }

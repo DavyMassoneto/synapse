@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AdvisorService, TestModel, TestStorage } from "#advisor-test-module";
+import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
 
 async function snapshotIsStable() {
   const advisor = new AdvisorService(new TestStorage("provider/first"));
   const port = new TestModel();
-  const gate = Promise.withResolvers();
+  const gate = Promise.withResolvers<void>();
   port.gate = gate.promise;
   const pending = advisor.consult({ system: "", messages: [] }, port);
   advisor.selectModel("provider/second");
@@ -15,6 +15,7 @@ async function snapshotIsStable() {
   assert.equal(result.kind, "success");
   assert.equal(result.model, "provider/first");
   assert.equal(port.resolvedReference, "provider/first");
+  assert.ok(port.resolved);
   assert.equal(port.resolved.reference, "provider/first");
   assert.equal(port.resolved.effectiveThinking, "low");
 }

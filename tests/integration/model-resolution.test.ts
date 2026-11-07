@@ -1,4 +1,7 @@
 import assert from "node:assert/strict";
+import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { test } from "node:test";
 import {
   type Api,
@@ -11,8 +14,7 @@ import {
 import { buildBaseOptions } from "@earendil-works/pi-ai/api/simple-options";
 import { normalizeContext } from "@earendil-works/pi-ai/utils/transcript";
 import { AdvisorModel, type AdvisorModelRegistry } from "@/integration";
-import { type ModelRequest } from "@/modules";
-import { preparePrompt } from "@/modules/advisor/internal/format";
+import { createAdvisor, type ModelRequest } from "@/modules";
 
 const USAGE = {
   input: 0,
@@ -73,16 +75,23 @@ async function resolvesIndependently(): Promise<void> {
   const adapter = new AdvisorModel(registry);
   const first = await adapter.resolve("provider/first", "high");
   const second = await adapter.resolve("provider/second", "low");
-  const prompt = preparePrompt(
-    {
-      system: "review",
-      messages: [{ kind: "user", blocks: [{ kind: "text", text: "x".repeat(300_000) }] }],
-    },
-    first,
-  );
-  assert.ok(prompt);
-  const request: ModelRequest = { system: "review", prompt };
-  await adapter.consult(first, request);
+  const directory = mkdtempSync(join(tmpdir(), "advisor-model-"));
+  const file = join(directory, "advisor.json");
+  writeFileSync(file, JSON.stringify({ model: "provider/first", thinking: "high" }));
+  const advisor = createAdvisor(file);
+  try {
+    const result = await advisor.consult(
+      {
+        system: "review",
+        messages: [{ kind: "user", blocks: [{ kind: "text", text: "x".repeat(300_000) }] }],
+      },
+      adapter,
+    );
+    assert.equal(result.kind, "success");
+  } finally {
+    rmSync(directory, { recursive: true, force: true });
+  }
+  const request: ModelRequest = { system: "review", prompt: "question" };
   assert.equal(registry.used?.id, "first");
   assert.equal(registry.options?.reasoning, "high");
   assert.equal(registry.options?.maxTokens, undefined);

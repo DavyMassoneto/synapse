@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AdvisorService, TestModel, TestStorage } from "#advisor-test-module";
+import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
 
 async function cancellationDuringResolution() {
   const advisor = new AdvisorService(new TestStorage());
