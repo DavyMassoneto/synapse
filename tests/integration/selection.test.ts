@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { prepareHostDirectory, TestContext, TypedAdvisorHost } from "../fixtures";
 
 let host: TypedAdvisorHost;
@@ -56,8 +56,12 @@ async function disableAdvisor(): Promise<void> {
   expect(status.config.model).toBeUndefined();
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
-test("seleciona modelo", chooseModel);
-test("cancelamento preserva modelo", cancelSelection);
-test("desliga advisor", disableAdvisor);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
+  test("seleciona modelo", chooseModel);
+  test("cancelamento preserva modelo", cancelSelection);
+  test("desliga advisor", disableAdvisor);
+}
+
+describe("selection", registerTests);

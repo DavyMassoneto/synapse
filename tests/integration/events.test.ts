@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import {
   advisorToolResult,
   beforeStartEvent,
@@ -83,10 +83,14 @@ async function disabledAdvisor(): Promise<void> {
   expect(host.active).toStrictEqual(["read", "write", "read"]);
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
-test("início ativa ferramenta", sessionStart);
-test("instruções são inseridas", instructions);
-test("lembrete respeita cadência", reminderCadence);
-test("resultado da ferramenta reinicia lembrete", toolResetsReminder);
-test("desligamento remove ferramenta e instruções", disabledAdvisor);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
+  test("início ativa ferramenta", sessionStart);
+  test("instruções são inseridas", instructions);
+  test("lembrete respeita cadência", reminderCadence);
+  test("resultado da ferramenta reinicia lembrete", toolResetsReminder);
+  test("desligamento remove ferramenta e instruções", disabledAdvisor);
+}
+
+describe("events", registerTests);

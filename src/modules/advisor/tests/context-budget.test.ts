@@ -1,11 +1,16 @@
-import { expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { AdvisorService } from "../internal";
 import { BudgetModel } from "./budget-model";
 import { TestStorage } from "./test-storage";
 
-async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
+let advisor: AdvisorService;
+
+function prepare(): void {
   const storage = new TestStorage("provider/model", "high");
-  const advisor = new AdvisorService(storage, storage.load());
+  advisor = new AdvisorService(storage, storage.load());
+}
+
+async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
   const port = new BudgetModel({
     reference: "provider/model",
     contextWindow,
@@ -20,8 +25,6 @@ async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
 }
 
 async function reserveFullOutput(): Promise<void> {
-  const storage = new TestStorage("provider/model", "high");
-  const advisor = new AdvisorService(storage, storage.load());
   const port = new BudgetModel({
     reference: "provider/model",
     contextWindow: 128_000,
@@ -46,8 +49,6 @@ async function reserveFullOutput(): Promise<void> {
 }
 
 async function noReasoningFits(): Promise<void> {
-  const storage = new TestStorage("provider/model", "high");
-  const advisor = new AdvisorService(storage, storage.load());
   const port = new BudgetModel({
     reference: "provider/model",
     contextWindow: 16_000,
@@ -59,9 +60,14 @@ async function noReasoningFits(): Promise<void> {
   expect(result.kind).toBe("success");
 }
 
-test.each([16_000, 32_000])(
-  "rejeita contexto %i incapaz de reservar saída",
-  rejectInsufficientWindows,
-);
-test("reserva o teto de saída do advisor", reserveFullOutput);
-test("modelo sem raciocínio usa capacidade disponível", noReasoningFits);
+function registerTests(): void {
+  beforeEach(prepare);
+  test.each([16_000, 32_000])(
+    "rejeita contexto %i incapaz de reservar saída",
+    rejectInsufficientWindows,
+  );
+  test("reserva o teto de saída do advisor", reserveFullOutput);
+  test("modelo sem raciocínio usa capacidade disponível", noReasoningFits);
+}
+
+describe("orçamento de contexto", registerTests);

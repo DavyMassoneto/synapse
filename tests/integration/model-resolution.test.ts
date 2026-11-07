@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { AdvisorModel } from "#synapse/integration";
 import { createAdvisor, type ModelRequest } from "#synapse/modules";
 import { RegistryFixture } from "../fixtures";
@@ -57,8 +57,12 @@ async function changedCapabilities(): Promise<void> {
   );
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
-test("resoluções intercaladas preservam modelos", independentResolutions);
-test("consulta usa modelo configurado", serviceConsultation);
-test("mudança de capacidade é rejeitada", changedCapabilities);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
+  test("resoluções intercaladas preservam modelos", independentResolutions);
+  test("consulta usa modelo configurado", serviceConsultation);
+  test("mudança de capacidade é rejeitada", changedCapabilities);
+}
+
+describe("model resolution", registerTests);

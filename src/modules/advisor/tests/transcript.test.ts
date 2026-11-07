@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { AdvisorService, buildTranscript } from "../internal";
 import type { TranscriptMessage } from "../public";
 import { TestModel } from "./test-model";
@@ -61,10 +61,14 @@ async function smallContextFails(): Promise<void> {
   expect(model.captured).toBeUndefined();
 }
 
-test("transcrição vazia", emptyTranscript);
-test("shell oculto não aparece na transcrição", hiddenShell);
-test("resultado de ferramenta identifica erro", toolErrorLabel);
-test("mensagem recente cabe no orçamento", recentMessageFits);
-test("início e fim são preservados", preservesBeginningAndEnd);
-test("última mensagem excessiva respeita orçamento", oversizedLastFits);
-test("janela muito pequena retorna falha antes de chamar o modelo", smallContextFails);
+function registerTests(): void {
+  test("transcrição vazia", emptyTranscript);
+  test("shell oculto não aparece na transcrição", hiddenShell);
+  test("resultado de ferramenta identifica erro", toolErrorLabel);
+  test("mensagem recente cabe no orçamento", recentMessageFits);
+  test("início e fim são preservados", preservesBeginningAndEnd);
+  test("última mensagem excessiva respeita orçamento", oversizedLastFits);
+  test("janela muito pequena retorna falha antes de chamar o modelo", smallContextFails);
+}
+
+describe("transcript", registerTests);

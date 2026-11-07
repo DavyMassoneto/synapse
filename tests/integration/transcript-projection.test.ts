@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { captureTranscript } from "#synapse/integration";
 import { TestContext } from "../fixtures";
 
@@ -28,4 +28,8 @@ function preservesProjectedMessages(): void {
   ]);
 }
 
-test("captura mensagens e imagens sem alterar ordem", preservesProjectedMessages);
+function registerTests(): void {
+  test("captura mensagens e imagens sem alterar ordem", preservesProjectedMessages);
+}
+
+describe("transcript projection", registerTests);

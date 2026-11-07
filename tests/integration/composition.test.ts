@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { compose } from "#synapse/composition";
 
 function compositionLifecycle(): void {
@@ -9,4 +9,8 @@ function compositionLifecycle(): void {
   expect(composition.signal.aborted).toBe(true);
 }
 
-test("composição cria advisor e coordena encerramento", compositionLifecycle);
+function registerTests(): void {
+  test("composição cria advisor e coordena encerramento", compositionLifecycle);
+}
+
+describe("composition", registerTests);

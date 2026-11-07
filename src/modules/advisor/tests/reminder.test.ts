@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { REMIND_EVERY, REMINDER, ReminderCounter } from "../internal";
 
 function cadence(): void {
@@ -52,9 +52,13 @@ function reminderText(): void {
   expect(REMINDER).toContain(String(REMIND_EVERY));
 }
 
-test("lembrete respeita cadência", cadence);
-test("turno incompleto não conta", incompleteTurn);
-test("turno sem ferramenta conta sem emitir", turnWithoutTools);
-test("contadores são isolados", isolatedCounters);
-test("reset reinicia cadência", resetCadence);
-test("texto informa cadência", reminderText);
+function registerTests(): void {
+  test("lembrete respeita cadência", cadence);
+  test("turno incompleto não conta", incompleteTurn);
+  test("turno sem ferramenta conta sem emitir", turnWithoutTools);
+  test("contadores são isolados", isolatedCounters);
+  test("reset reinicia cadência", resetCadence);
+  test("texto informa cadência", reminderText);
+}
+
+describe("reminder", registerTests);

@@ -1,34 +1,24 @@
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { CASES, type ConfigCase, runDistribution } from "../fixtures";
 
-async function verifyDistribution(example: ConfigCase): Promise<void> {
-  const home = mkdtempSync(join(tmpdir(), "synapse-config-"));
-  const directory = join(home, ".pi", "agent");
-  const file = join(directory, "advisor.json");
-  mkdirSync(directory, { recursive: true });
-  const previousHome = process.env.HOME;
-  const previousProfile = process.env.USERPROFILE;
+let home: string | undefined;
+let previousHome: string | undefined;
+let previousProfile: string | undefined;
+
+function prepare(): void {
+  previousHome = process.env.HOME;
+  previousProfile = process.env.USERPROFILE;
+  home = mkdtempSync(join(tmpdir(), "synapse-config-"));
+  mkdirSync(join(home, ".pi", "agent"), { recursive: true });
   process.env.HOME = home;
   process.env.USERPROFILE = home;
+}
+
+function cleanup(): void {
   try {
-    if (example.content !== undefined) {
-      writeFileSync(file, example.content);
-    }
-    const result = await runDistribution(home);
-    expect(result.notices.join("\n")).toMatch(example.expected);
-    if (example.content === undefined) {
-      expect(existsSync(file)).toBe(false);
-    } else {
-      expect(readFileSync(file, "utf8")).toBe(example.content);
-    }
-    if (example.invalid) {
-      expect(result.lookups).toBe(0);
-      expect(result.isError).toBe(true);
-    }
-  } finally {
     if (previousHome === undefined) {
       delete process.env.HOME;
     } else {
@@ -39,8 +29,39 @@ async function verifyDistribution(example: ConfigCase): Promise<void> {
     } else {
       process.env.USERPROFILE = previousProfile;
     }
-    rmSync(home, { recursive: true, force: true });
+  } finally {
+    if (home !== undefined) {
+      rmSync(home, { recursive: true, force: true });
+      home = undefined;
+    }
   }
 }
 
-test.each(CASES)("distribuição: $name", verifyDistribution);
+async function verifyDistribution(example: ConfigCase): Promise<void> {
+  if (home === undefined) {
+    throw new Error("diretório de teste ausente");
+  }
+  const file = join(home, ".pi", "agent", "advisor.json");
+  if (example.content !== undefined) {
+    writeFileSync(file, example.content);
+  }
+  const result = await runDistribution(home);
+  expect(result.notices.join("\n")).toMatch(example.expected);
+  if (example.content === undefined) {
+    expect(existsSync(file)).toBe(false);
+  } else {
+    expect(readFileSync(file, "utf8")).toBe(example.content);
+  }
+  if (example.invalid) {
+    expect(result.lookups).toBe(0);
+    expect(result.isError).toBe(true);
+  }
+}
+
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
+  test.each(CASES)("distribuição: $name", verifyDistribution);
+}
+
+describe("distribution", registerTests);

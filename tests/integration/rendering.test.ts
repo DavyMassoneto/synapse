@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { PlainTheme, prepareHostDirectory, RENDER_RESULT, TypedAdvisorHost } from "../fixtures";
 
 let host: TypedAdvisorHost;
@@ -77,11 +77,15 @@ function errorRendering(): void {
   expect(component.render(100).join("")).toMatch(/line0/);
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
 
-test("renderiza consulta parcial", partialRendering);
-test("renderiza resumo compacto", compactRendering);
-test("reutiliza componente ao expandir", expandedRendering);
-test("preserva modelo histórico", historicalModel);
-test("renderiza erro", errorRendering);
+  test("renderiza consulta parcial", partialRendering);
+  test("renderiza resumo compacto", compactRendering);
+  test("reutiliza componente ao expandir", expandedRendering);
+  test("preserva modelo histórico", historicalModel);
+  test("renderiza erro", errorRendering);
+}
+
+describe("rendering", registerTests);

@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { FileConfig } from "../adapters";
 import { AdvisorService } from "../internal";
 
@@ -70,10 +70,14 @@ function rejectsDirectoryDestination(): void {
   expect(readdirSync(directory)).toStrictEqual(["blocked"]);
 }
 
-beforeEach(prepareDirectory);
-afterEach(cleanupDirectory);
-test("configuração ausente usa padrão", missingConfiguration);
-test("modelo vazio desliga advisor", disabledConfiguration);
-test("configuração sem nível usa padrão", defaultThinking);
-test("gravação substitui arquivo", replacesFile);
-test("falha de substituição preserva destino e limpa temporário", rejectsDirectoryDestination);
+function registerTests(): void {
+  beforeEach(prepareDirectory);
+  afterEach(cleanupDirectory);
+  test("configuração ausente usa padrão", missingConfiguration);
+  test("modelo vazio desliga advisor", disabledConfiguration);
+  test("configuração sem nível usa padrão", defaultThinking);
+  test("gravação substitui arquivo", replacesFile);
+  test("falha de substituição preserva destino e limpa temporário", rejectsDirectoryDestination);
+}
+
+describe("config file", registerTests);

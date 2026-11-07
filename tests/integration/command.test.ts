@@ -1,5 +1,5 @@
 import type { AutocompleteItem } from "@earendil-works/pi-tui";
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { prepareHostDirectory, TestContext, TypedAdvisorHost } from "../fixtures";
 
 let host: TypedAdvisorHost;
@@ -125,13 +125,17 @@ async function scopedSearch(): Promise<void> {
   expect(context.ui.notices.at(-1)).toMatch(/Nenhum modelo encontrado/);
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
-test("thinking sem nível", missingThinking);
-test("thinking inválido", invalidThinking);
-test("thinkingx é modelo", thinkingModel);
-test("referência exata", exactModel);
-test("referência ambígua", ambiguousModel);
-test("autocomplete respeita escopo", scopedSuggestions);
-test("autocomplete limita sugestões", completionLimit);
-test("busca respeita escopo e correspondência exata", scopedSearch);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
+  test("thinking sem nível", missingThinking);
+  test("thinking inválido", invalidThinking);
+  test("thinkingx é modelo", thinkingModel);
+  test("referência exata", exactModel);
+  test("referência ambígua", ambiguousModel);
+  test("autocomplete respeita escopo", scopedSuggestions);
+  test("autocomplete limita sugestões", completionLimit);
+  test("busca respeita escopo e correspondência exata", scopedSearch);
+}
+
+describe("command", registerTests);

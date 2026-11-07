@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { prepareHostDirectory, TEST_USAGE, TestContext, TypedAdvisorHost } from "../fixtures";
 
 let host: TypedAdvisorHost;
@@ -68,10 +68,14 @@ async function registeredShutdown(): Promise<void> {
   expect(context.modelRegistry.calls).toBe(0);
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
 
-test("consulta registrada preserva uso e modelo", successfulConsultation);
-test("provedor abortado devolve cancelamento", abortedProvider);
-test("falha de projeção não consulta provedor", projectionFailure);
-test("shutdown registrado impede consulta", registeredShutdown);
+  test("consulta registrada preserva uso e modelo", successfulConsultation);
+  test("provedor abortado devolve cancelamento", abortedProvider);
+  test("falha de projeção não consulta provedor", projectionFailure);
+  test("shutdown registrado impede consulta", registeredShutdown);
+}
+
+describe("host", registerTests);

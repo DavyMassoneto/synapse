@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, expect, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, test } from "vitest";
 import { BlockedConfigHost, prepareHostDirectory, TestContext } from "../fixtures";
 
 let host: BlockedConfigHost;
@@ -37,7 +37,11 @@ async function preservesState(): Promise<void> {
   expect(host.advisor.isEnabled()).toBe(true);
 }
 
-beforeEach(prepare);
-afterEach(cleanup);
-test("falha ao salvar é informada", reportsFailure);
-test("falha ao salvar preserva estado", preservesState);
+function registerTests(): void {
+  beforeEach(prepare);
+  afterEach(cleanup);
+  test("falha ao salvar é informada", reportsFailure);
+  test("falha ao salvar preserva estado", preservesState);
+}
+
+describe("config write failure", registerTests);

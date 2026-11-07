@@ -1,4 +1,4 @@
-import { expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import { buildTranscript } from "../internal";
 import type { TranscriptMessage } from "../public";
 
@@ -21,4 +21,8 @@ function originalTaskAndGap(): void {
   expect(result.length).toBeLessThanOrEqual(700);
 }
 
-test("preserva tarefa original antes da lacuna e mensagens recentes", originalTaskAndGap);
+function registerTests(): void {
+  test("preserva tarefa original antes da lacuna e mensagens recentes", originalTaskAndGap);
+}
+
+describe("transcript truncation", registerTests);
