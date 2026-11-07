@@ -22,15 +22,15 @@ async function selectionAndCancellation() {
 
     ui.selected = "provider/other";
     await harness.command.handler("", harness.context);
-    assert.equal(harness.advisor.status().status.model, "provider/other");
+    assert.equal(harness.advisor.status().config.model, "provider/other");
 
     ui.selected = undefined;
     await harness.command.handler("", harness.context);
-    assert.equal(harness.advisor.status().status.model, "provider/other");
+    assert.equal(harness.advisor.status().config.model, "provider/other");
 
     ui.selected = "(sem advisor)";
     await harness.command.handler("", harness.context);
-    assert.equal(harness.advisor.status().status.model, undefined);
+    assert.equal(harness.advisor.status().config.model, undefined);
   } finally {
     harness.cleanup();
   }

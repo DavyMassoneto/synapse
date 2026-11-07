@@ -1,4 +1,3 @@
-import { type Static } from "typebox";
-import { type thinkingSchema } from "@/modules/advisor/public/config";
+import { type THINKING_LEVELS } from "@/modules/advisor/public/config";
 
-export type ThinkingLevel = Static<typeof thinkingSchema>;
+export type ThinkingLevel = (typeof THINKING_LEVELS)[keyof typeof THINKING_LEVELS];

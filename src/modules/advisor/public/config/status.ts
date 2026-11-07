@@ -1,13 +1,8 @@
-import { type ThinkingLevel } from "@/modules/advisor/public/config";
-
-export interface AdvisorStatus {
-  model?: string;
-  thinking: ThinkingLevel;
-}
+import { type Config } from "@/modules/advisor/public/config";
 
 export interface AdvisorSuccess {
   kind: "success";
-  status: AdvisorStatus;
+  config: Config;
 }
 
 export interface AdvisorFailure {

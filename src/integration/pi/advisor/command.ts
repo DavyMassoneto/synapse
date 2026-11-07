@@ -7,7 +7,7 @@ import {
 import { type AutocompleteItem } from "@earendil-works/pi-tui";
 import { type ModelSelection, syncAdvisor } from "@/integration";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
-import { type Advisor, type AdvisorResult, THINKING_LEVELS } from "@/modules";
+import { type Advisor, type AdvisorResult, THINKING_LEVEL_OPTIONS } from "@/modules";
 
 const COMPLETION_LIMIT = 40;
 const MODEL_SELECTION_LIMIT = 100;
@@ -68,7 +68,7 @@ class AdvisorCommand {
   }
 
   private changeThinking(context: ExtensionContext, requested: string): void {
-    for (const level of THINKING_LEVELS) {
+    for (const level of THINKING_LEVEL_OPTIONS) {
       if (level === requested) {
         const status = this.advisor.setThinking(level);
         this.notifyStatus(context, status, `Advisor thinking: ${level}`);
@@ -76,7 +76,7 @@ class AdvisorCommand {
       }
     }
 
-    context.ui.notify(`Níveis: ${THINKING_LEVELS.join(", ")}`, "error");
+    context.ui.notify(`Níveis: ${THINKING_LEVEL_OPTIONS.join(", ")}`, "error");
   }
 
   private matchModels(models: string[], input: string): string[] {
@@ -168,7 +168,7 @@ class AdvisorCommand {
     }
     if (!input && !context.hasUI) {
       context.ui.notify(
-        `Advisor: ${status.status.model ?? "desligado"}, thinking ${status.status.thinking}`,
+        `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
         "info",
       );
       return;

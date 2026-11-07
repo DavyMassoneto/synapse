@@ -11,7 +11,7 @@ import { type Advisor } from "@/modules";
 
 export function syncAdvisor(pi: ExtensionAPI, advisor: Advisor, context: ExtensionContext): void {
   const result = advisor.status();
-  const model = result.kind === "success" ? result.status.model : undefined;
+  const model = result.kind === "success" ? result.config.model : undefined;
   const active = pi.getActiveTools();
 
   if (model && !active.includes("advisor")) {
@@ -54,7 +54,7 @@ class AdvisorEvents {
   beforeStart(event: BeforeAgentStartEvent, context: ExtensionContext): void {
     syncAdvisor(this.pi, this.advisor, context);
     const result = this.advisor.status();
-    if (result.kind === "success" && result.status.model) {
+    if (result.kind === "success" && result.config.model) {
       event.systemPromptOptions.sections.advisor = this.advisor.timing;
     } else {
       delete event.systemPromptOptions.sections.advisor;

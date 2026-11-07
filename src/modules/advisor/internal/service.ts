@@ -35,7 +35,7 @@ export class AdvisorService implements Advisor {
   }
   turn(event: ReminderTurn): string | undefined {
     const status = this.configuration.status();
-    if (status.kind === "failure" || !status.status.model) {
+    if (status.kind === "failure" || !status.config.model) {
       return undefined;
     }
     if (this.reminder.advance(event)) {
@@ -52,7 +52,7 @@ export class AdvisorService implements Advisor {
     if (status.kind === "failure") {
       return status;
     }
-    const configuration = status.status;
+    const configuration = status.config;
     if (!configuration.model) {
       return { kind: "failure", message: "no advisor model configured" };
     }

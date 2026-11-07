@@ -11,7 +11,7 @@ function failedSavePreservesState() {
   assert.equal(advisor.selectModel("provider/novo").kind, "failure");
   assert.deepEqual(advisor.status(), {
     kind: "success",
-    status: { model: "provider/original", thinking: "low" },
+    config: { model: "provider/original", thinking: "low" },
   });
 }
 
