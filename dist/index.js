@@ -1,6 +1,6 @@
 /* ARQUIVO AUTOGERADO — NÃO EDITE DIRETAMENTE. Altere src/ e execute npm run build. */
 
-// src/entry.ts
+// src/composition/compose.ts
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -413,10 +413,13 @@ function createAdvisor(path) {
 var THINKING_LEVEL_OPTIONS = Object.values(THINKING_LEVELS);
 
 // src/composition/compose.ts
-function compose(host, configPath) {
-  const lifetime = new AbortController();
-  const advisor = createAdvisor(configPath);
-  host.register(advisor, lifetime.signal, lifetime.abort.bind(lifetime));
+function compose(host, configPath = join(homedir(), ".pi", "agent", "advisor.json")) {
+  const controller = new AbortController();
+  const lifecycle = {
+    signal: controller.signal,
+    shutdown: controller.abort.bind(controller)
+  };
+  host.register(createAdvisor(configPath), lifecycle);
 }
 
 // src/integration/pi/advisor/command/catalog.ts
@@ -1057,14 +1060,14 @@ var PiHost = class {
     this.pi = pi;
   }
   pi;
-  register(advisor, signal, shutdown) {
-    registerAdvisor(this.pi, advisor, signal, shutdown);
+  register(advisor, lifecycle) {
+    registerAdvisor(this.pi, advisor, lifecycle.signal, lifecycle.shutdown);
   }
 };
 
 // src/entry.ts
 function registerSynapse(pi) {
-  compose(new PiHost(pi), join(homedir(), ".pi", "agent", "advisor.json"));
+  compose(new PiHost(pi));
 }
 export {
   registerSynapse as default

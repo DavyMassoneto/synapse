@@ -1,17 +1,16 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { compose } from "@/composition";
-import { type HostPort } from "@/integration/host";
+import { type AdvisorLifecycle, type AdvisorRegistrationPort, compose } from "@/composition";
 import { type Advisor } from "@/modules";
 
-class HostFixture implements HostPort {
+class HostFixture implements AdvisorRegistrationPort {
   signal: AbortSignal | undefined;
   shutdown: (() => void) | undefined;
 
-  register(advisor: Advisor, signal: AbortSignal, shutdown: () => void): void {
+  register(advisor: Advisor, lifecycle: AdvisorLifecycle): void {
     assert.ok(advisor);
-    this.signal = signal;
-    this.shutdown = shutdown;
+    this.signal = lifecycle.signal;
+    this.shutdown = lifecycle.shutdown;
   }
 }
 

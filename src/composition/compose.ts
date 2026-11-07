@@ -1,8 +1,16 @@
-import { type HostPort } from "@/integration/host";
+import { homedir } from "node:os";
+import { join } from "node:path";
 import { createAdvisor } from "@/modules";
+import { type AdvisorLifecycle, type AdvisorRegistrationPort } from "./types.ts";
 
-export function compose(host: HostPort, configPath: string): void {
-  const lifetime = new AbortController();
-  const advisor = createAdvisor(configPath);
-  host.register(advisor, lifetime.signal, lifetime.abort.bind(lifetime));
+export function compose(
+  host: AdvisorRegistrationPort,
+  configPath = join(homedir(), ".pi", "agent", "advisor.json"),
+): void {
+  const controller = new AbortController();
+  const lifecycle: AdvisorLifecycle = {
+    signal: controller.signal,
+    shutdown: controller.abort.bind(controller),
+  };
+  host.register(createAdvisor(configPath), lifecycle);
 }
