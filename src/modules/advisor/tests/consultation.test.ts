@@ -1,9 +1,17 @@
-import { expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { AdvisorService } from "../internal";
 import { FailingModel } from "./failing-model";
 import { TestModel } from "./test-model";
 import { TestStorage } from "./test-storage";
 import { WaitingModel } from "./waiting-model";
+
+let storage: TestStorage;
+let advisor: AdvisorService;
+
+function prepare(): void {
+  storage = new TestStorage();
+  advisor = new AdvisorService(storage, storage.load());
+}
 
 async function snapshotIsStable() {
   const storage = new TestStorage("provider/first");
@@ -26,8 +34,6 @@ async function snapshotIsStable() {
 }
 
 async function cancellationBeforeResolution() {
-  const storage = new TestStorage();
-  const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   controller.abort();
   const port = new TestModel();
@@ -38,8 +44,6 @@ async function cancellationBeforeResolution() {
 }
 
 async function providerFailure() {
-  const storage = new TestStorage();
-  const advisor = new AdvisorService(storage, storage.load());
   const port = new FailingModel();
   expect(await advisor.consult({ system: "", messages: [] }, port)).toStrictEqual({
     kind: "failure",
@@ -47,6 +51,11 @@ async function providerFailure() {
   });
 }
 
-test("a consulta preserva o snapshot durante alterações de configuração", snapshotIsStable);
-test("cancelamento prévio impede resolução", cancellationBeforeResolution);
-test("falha do provedor é comunicada", providerFailure);
+function registerTests(): void {
+  beforeEach(prepare);
+  test("a consulta preserva o snapshot durante alterações de configuração", snapshotIsStable);
+  test("cancelamento prévio impede resolução", cancellationBeforeResolution);
+  test("falha do provedor é comunicada", providerFailure);
+}
+
+describe("consulta advisor", registerTests);

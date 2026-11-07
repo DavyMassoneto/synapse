@@ -1,13 +1,19 @@
-import { expect, test } from "vitest";
+import { beforeEach, describe, expect, test } from "vitest";
 import { AdvisorService } from "../internal";
 import { CancelOnConsultModel } from "./cancel-on-consult-model";
 import { CancelOnResolveModel } from "./cancel-on-resolve-model";
 import { CancelledModel } from "./cancelled-model";
 import { TestStorage } from "./test-storage";
 
+let storage: TestStorage;
+let advisor: AdvisorService;
+
+function prepare(): void {
+  storage = new TestStorage();
+  advisor = new AdvisorService(storage, storage.load());
+}
+
 async function cancellationDuringResolution() {
-  const storage = new TestStorage();
-  const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   const port = new CancelOnResolveModel(controller);
   const result = await advisor.consult(
@@ -19,8 +25,6 @@ async function cancellationDuringResolution() {
 }
 
 async function cancellationDuringExecution() {
-  const storage = new TestStorage();
-  const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   const port = new CancelOnConsultModel(controller);
   const result = await advisor.consult(
@@ -31,12 +35,15 @@ async function cancellationDuringExecution() {
 }
 
 async function cancellationFromProvider() {
-  const storage = new TestStorage();
-  const advisor = new AdvisorService(storage, storage.load());
   const result = await advisor.consult({ system: "", messages: [] }, new CancelledModel());
   expect(result.kind).toBe("cancelled");
 }
 
-test("cancelamento durante resolução impede execução", cancellationDuringResolution);
-test("cancelamento durante execução é distinguido de falha", cancellationDuringExecution);
-test("porta cancelada sem sinal externo é cancelamento", cancellationFromProvider);
+function registerTests(): void {
+  beforeEach(prepare);
+  test("cancelamento durante resolução impede execução", cancellationDuringResolution);
+  test("cancelamento durante execução é distinguido de falha", cancellationDuringExecution);
+  test("porta cancelada sem sinal externo é cancelamento", cancellationFromProvider);
+}
+
+describe("consulta advisor", registerTests);

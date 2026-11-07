@@ -10,13 +10,18 @@ export class TypedAdvisorHost extends AdvisorHostCollector {
 
   constructor(readonly directory: string) {
     super();
-    this.advisor = createAdvisor(join(directory, "advisor.json"));
-    registerAdvisor(
-      this,
-      this.advisor,
-      this.lifetime.signal,
-      this.lifetime.abort.bind(this.lifetime),
-    );
+    try {
+      this.advisor = createAdvisor(join(directory, "advisor.json"));
+      registerAdvisor(
+        this,
+        this.advisor,
+        this.lifetime.signal,
+        this.lifetime.abort.bind(this.lifetime),
+      );
+    } catch (error) {
+      rmSync(directory, { recursive: true, force: true });
+      throw error;
+    }
   }
 
   cleanup(): void {

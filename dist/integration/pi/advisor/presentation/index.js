@@ -17,6 +17,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 __exportStar(require("./command-text"), exports);
 __exportStar(require("./layout"), exports);
 __exportStar(require("./render-text"), exports);
+__exportStar(require("./status-text"), exports);
 __exportStar(require("./styles"), exports);
 __exportStar(require("./tool-metadata"), exports);
 __exportStar(require("./tool-text"), exports);

@@ -1,0 +1,3 @@
+`$value satisfies $type` as $expression where {
+  register_diagnostic(span=$expression, message="satisfies é proibido")
+}
