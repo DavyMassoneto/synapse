@@ -18,6 +18,7 @@
     "rules": {
       "preset": "recommended",
       "suspicious": {
+        "noImportCycles": { "level": "error", "options": { "ignoreTypes": false } },
         "noExplicitAny": "error"
       },
       "style": {
