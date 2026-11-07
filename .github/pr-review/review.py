@@ -39,20 +39,25 @@ req = urllib.request.Request(
     headers={"Authorization": "Bearer " + os.environ["OMNIROUTE_API_KEY"],
              "Content-Type": "application/json", "User-Agent": "synapse-pr-review"},
 )
+failed = False
 try:
     with urllib.request.urlopen(req, timeout=300) as r:
         text = json.load(r)["choices"][0]["message"]["content"].strip()
 except urllib.error.HTTPError as e:
-    text = f"Falha ao chamar o OmniRoute: HTTP {e.code}."
+    text, failed = f"Falha ao chamar o OmniRoute: HTTP {e.code}.", True
 except Exception as e:
-    text = f"Falha ao chamar o OmniRoute: {type(e).__name__}."
+    text, failed = f"Falha ao chamar o OmniRoute: {type(e).__name__}.", True
 
 body = f"{MARK}\n### 🤖 {TITLES[BOT]}\n\n{text}\n"
 
-comments = json.loads(sh("gh", "api", "--paginate", f"repos/{REPO}/issues/{PR}/comments"))
-existing = next((c for c in comments if MARK in c["body"]), None)
+comments = json.loads(sh("gh", "api", "--paginate", "--slurp", f"repos/{REPO}/issues/{PR}/comments"))
+comments = [c for page in comments for c in page]
+existing = next((c for c in comments if MARK in c["body"] and c["user"]["login"] == "github-actions[bot]"), None)
 payload = json.dumps({"body": body})
 if existing:
     sh("gh", "api", "-X", "PATCH", f"repos/{REPO}/issues/comments/{existing['id']}", "--input", "-", inp=payload)
 else:
     sh("gh", "api", "-X", "POST", f"repos/{REPO}/issues/{PR}/comments", "--input", "-", inp=payload)
+
+if failed:
+    sys.exit(1)
