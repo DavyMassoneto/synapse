@@ -1,7 +1,7 @@
 import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
 
-const TOOL_RESULT_LIMIT = 12_000;
+const CONTENT_LIMITS = [12_000, 4_000, 1_500, 500];
 const HEAD_FRACTION = 0.6;
 const SEPARATOR = "\n\n";
 
@@ -30,12 +30,17 @@ function renderMessage(message: TranscriptMessage, limit: number): string {
   }
 
   let label = `[${message.kind}]`;
+  let clipContent = false;
   if (message.kind === "toolResult") {
-    label = `[tool_result ${message.tool}${message.error ? " (error)" : ""}]`;
+    const error = message.error ? " (error)" : "";
+    label = `[tool_result ${message.tool}${error}]`;
+    clipContent = true;
   } else if (message.kind === "shell") {
     label = `[user ran shell] $ ${message.command}`;
+    clipContent = true;
   } else if (message.kind === "custom") {
     label = `[context:${message.customType}]`;
+    clipContent = true;
   } else if (message.kind === "summary") {
     label = "[summary of earlier conversation]";
   }
@@ -46,11 +51,7 @@ function renderMessage(message: TranscriptMessage, limit: number): string {
       parts.push("[image omitted]");
     } else if (block.kind === "call") {
       parts.push(`[tool_call ${block.name}] ${clip(block.arguments, limit)}`);
-    } else if (
-      message.kind === "toolResult" ||
-      message.kind === "shell" ||
-      message.kind === "custom"
-    ) {
+    } else if (clipContent) {
       parts.push(clip(block.text, limit));
     } else {
       parts.push(block.text);
@@ -65,7 +66,7 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
   }
 
   let blocks: string[] = [];
-  for (const limit of [TOOL_RESULT_LIMIT, 4_000, 1_500, 500]) {
+  for (const limit of CONTENT_LIMITS) {
     blocks = [];
     for (const message of messages) {
       const text = renderMessage(message, limit);

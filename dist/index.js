@@ -103,7 +103,7 @@ var ADVISOR_DIAGNOSTICS = {
 };
 
 // src/modules/advisor/internal/format/transcript.ts
-var TOOL_RESULT_LIMIT = 12e3;
+var CONTENT_LIMITS = [12e3, 4e3, 1500, 500];
 var HEAD_FRACTION = 0.6;
 var SEPARATOR = "\n\n";
 function clip(text, limit) {
@@ -127,12 +127,17 @@ function renderMessage(message, limit) {
     return "";
   }
   let label = `[${message.kind}]`;
+  let clipContent = false;
   if (message.kind === "toolResult") {
-    label = `[tool_result ${message.tool}${message.error ? " (error)" : ""}]`;
+    const error = message.error ? " (error)" : "";
+    label = `[tool_result ${message.tool}${error}]`;
+    clipContent = true;
   } else if (message.kind === "shell") {
     label = `[user ran shell] $ ${message.command}`;
+    clipContent = true;
   } else if (message.kind === "custom") {
     label = `[context:${message.customType}]`;
+    clipContent = true;
   } else if (message.kind === "summary") {
     label = "[summary of earlier conversation]";
   }
@@ -142,7 +147,7 @@ function renderMessage(message, limit) {
       parts.push("[image omitted]");
     } else if (block.kind === "call") {
       parts.push(`[tool_call ${block.name}] ${clip(block.arguments, limit)}`);
-    } else if (message.kind === "toolResult" || message.kind === "shell" || message.kind === "custom") {
+    } else if (clipContent) {
       parts.push(clip(block.text, limit));
     } else {
       parts.push(block.text);
@@ -155,7 +160,7 @@ function buildTranscript(messages, budget) {
     return "";
   }
   let blocks = [];
-  for (const limit of [TOOL_RESULT_LIMIT, 4e3, 1500, 500]) {
+  for (const limit of CONTENT_LIMITS) {
     blocks = [];
     for (const message of messages) {
       const text = renderMessage(message, limit);
@@ -585,7 +590,6 @@ function parseAdvisorCommand(args) {
 
 // src/integration/pi/advisor/command/command.ts
 var MODEL_SELECTION_LIMIT = 100;
-var DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
 var AdvisorCommand = class {
   constructor(pi, advisor) {
     this.pi = pi;
@@ -597,7 +601,7 @@ var AdvisorCommand = class {
   start(_event, context) {
     this.catalog.refresh(context);
   }
-  notifyStatus(context, status, message) {
+  syncAndNotify(context, status, message) {
     if (status.kind === "failure") {
       context.ui.notify(status.message, "error");
       return;
@@ -605,20 +609,23 @@ var AdvisorCommand = class {
     syncAdvisor(this.pi, this.advisor, context);
     context.ui.notify(message, "info");
   }
+  disable(context) {
+    this.syncAndNotify(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+  }
   changeThinking(context, requested) {
     const status = this.advisor.setThinking(requested);
-    this.notifyStatus(context, status, thinkingStatus(requested));
+    this.syncAndNotify(context, status, thinkingStatus(requested));
   }
   async chooseModel(context, input) {
     if (!input) {
       const choice = await context.ui.select(ADVISOR_MESSAGES.title, [
-        DISABLED_OPTION,
+        ADVISOR_MESSAGES.disabledOption,
         ...this.catalog.list()
       ]);
       if (choice === void 0) {
         return { kind: "cancelled" };
       }
-      if (choice === DISABLED_OPTION) {
+      if (choice === ADVISOR_MESSAGES.disabledOption) {
         return { kind: "disabled" };
       }
       return { kind: "selected", model: choice };
@@ -653,7 +660,7 @@ var AdvisorCommand = class {
       return;
     }
     if (input.kind === "disable") {
-      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+      this.disable(context);
       return;
     }
     if (input.kind === "thinking") {
@@ -666,9 +673,13 @@ var AdvisorCommand = class {
     }
     const chosen = await this.chooseModel(context, input.query);
     if (chosen.kind === "disabled") {
-      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+      this.disable(context);
     } else if (chosen.kind === "selected") {
-      this.notifyStatus(context, this.advisor.selectModel(chosen.model), modelStatus(chosen.model));
+      this.syncAndNotify(
+        context,
+        this.advisor.selectModel(chosen.model),
+        modelStatus(chosen.model)
+      );
     }
   }
 };

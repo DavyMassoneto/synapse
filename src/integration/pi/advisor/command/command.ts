@@ -14,7 +14,6 @@ import { parseAdvisorCommand } from "./parser.ts";
 import { type ModelSelection } from "./selection-types.ts";
 
 const MODEL_SELECTION_LIMIT = 100;
-const DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
 
 class AdvisorCommand {
   readonly catalog = new ModelCatalog();
@@ -28,7 +27,7 @@ class AdvisorCommand {
     this.catalog.refresh(context);
   }
 
-  private notifyStatus(context: AdvisorContext, status: AdvisorResult, message: string): void {
+  private syncAndNotify(context: AdvisorContext, status: AdvisorResult, message: string): void {
     if (status.kind === "failure") {
       context.ui.notify(status.message, "error");
       return;
@@ -37,21 +36,25 @@ class AdvisorCommand {
     context.ui.notify(message, "info");
   }
 
+  private disable(context: AdvisorContext): void {
+    this.syncAndNotify(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+  }
+
   private changeThinking(context: AdvisorContext, requested: string): void {
     const status = this.advisor.setThinking(requested);
-    this.notifyStatus(context, status, thinkingStatus(requested));
+    this.syncAndNotify(context, status, thinkingStatus(requested));
   }
 
   private async chooseModel(context: AdvisorContext, input: string): Promise<ModelSelection> {
     if (!input) {
       const choice = await context.ui.select(ADVISOR_MESSAGES.title, [
-        DISABLED_OPTION,
+        ADVISOR_MESSAGES.disabledOption,
         ...this.catalog.list(),
       ]);
       if (choice === undefined) {
         return { kind: "cancelled" };
       }
-      if (choice === DISABLED_OPTION) {
+      if (choice === ADVISOR_MESSAGES.disabledOption) {
         return { kind: "disabled" };
       }
       return { kind: "selected", model: choice };
@@ -90,7 +93,7 @@ class AdvisorCommand {
     }
 
     if (input.kind === "disable") {
-      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+      this.disable(context);
       return;
     }
     if (input.kind === "thinking") {
@@ -104,9 +107,13 @@ class AdvisorCommand {
 
     const chosen = await this.chooseModel(context, input.query);
     if (chosen.kind === "disabled") {
-      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+      this.disable(context);
     } else if (chosen.kind === "selected") {
-      this.notifyStatus(context, this.advisor.selectModel(chosen.model), modelStatus(chosen.model));
+      this.syncAndNotify(
+        context,
+        this.advisor.selectModel(chosen.model),
+        modelStatus(chosen.model),
+      );
     }
   }
 }
