@@ -1,6 +1,6 @@
-import type { ReminderTurn } from "#synapse/modules/advisor/public";
+import type { ReminderTurn } from "#synapse/modules/advisor/public/contracts";
 
-import { REMIND_EVERY } from "./constants.ts";
+import { REMIND_EVERY } from "./constants";
 
 export class ReminderCounter {
   private turns = 0;

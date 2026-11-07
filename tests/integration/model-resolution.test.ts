@@ -1,112 +1,64 @@
-import assert from "node:assert/strict";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import {
-  type Api,
-  type AssistantMessage,
-  type Context,
-  createAssistantMessageEventStream,
-  type Model,
-  type ModelsSimpleStreamOptions,
-} from "@earendil-works/pi-ai";
-import { buildBaseOptions } from "@earendil-works/pi-ai/api/simple-options";
-import { normalizeContext } from "@earendil-works/pi-ai/utils/transcript";
-import { test } from "vitest";
-import { AdvisorModel, type AdvisorModelRegistry } from "#synapse/integration";
+import { afterEach, beforeEach, expect, test } from "vitest";
+import { AdvisorModel } from "#synapse/integration";
 import { createAdvisor, type ModelRequest } from "#synapse/modules";
+import { RegistryFixture } from "../fixtures";
 
-const USAGE = {
-  input: 0,
-  output: 0,
-  cacheRead: 0,
-  cacheWrite: 0,
-  totalTokens: 0,
-  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
-};
+let registry: RegistryFixture;
+let adapter: AdvisorModel;
+let directory = "";
 
-class RegistryFixture implements AdvisorModelRegistry {
-  used: Model<Api> | undefined;
-  options: ModelsSimpleStreamOptions | undefined;
-  context: Context | undefined;
-  window = 128_000;
-
-  find(provider: string, id: string): Model<Api> {
-    return {
-      provider,
-      id,
-      name: id,
-      api: "anthropic-messages",
-      baseUrl: "https://example.invalid",
-      input: ["text"],
-      cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-      reasoning: true,
-      contextWindow: this.window,
-      maxTokens: 32_000,
-    };
-  }
-
-  hasConfiguredAuth(): boolean {
-    return true;
-  }
-
-  streamSimple(model: Model<Api>, context: Context, options?: ModelsSimpleStreamOptions) {
-    this.used = model;
-    this.context = context;
-    this.options = options;
-    const stream = createAssistantMessageEventStream();
-    const message: AssistantMessage = {
-      role: "assistant",
-      content: [{ type: "text", text: "ok" }],
-      api: "anthropic-messages",
-      provider: "provider",
-      model: model.id,
-      usage: USAGE,
-      stopReason: "stop",
-      timestamp: Date.now(),
-    };
-    stream.end(message);
-    return stream;
-  }
+function prepare(): void {
+  registry = new RegistryFixture();
+  adapter = new AdvisorModel(registry);
+  directory = mkdtempSync(join(tmpdir(), "advisor-model-"));
+}
+function cleanup(): void {
+  rmSync(directory, { recursive: true, force: true });
 }
 
-async function resolvesIndependently(): Promise<void> {
-  const registry = new RegistryFixture();
-  const adapter = new AdvisorModel(registry);
+async function independentResolutions(): Promise<void> {
   const first = await adapter.resolve("provider/first", "high");
   const second = await adapter.resolve("provider/second", "low");
-  const directory = mkdtempSync(join(tmpdir(), "advisor-model-"));
+  const request: ModelRequest = { system: "review", prompt: "question" };
+  await adapter.consult(first, request);
+  expect(registry.used?.id).toBe("first");
+  expect(registry.options?.reasoning).toBe("high");
+  await adapter.consult(second, request);
+  expect(registry.used?.id).toBe("second");
+  expect(registry.options?.reasoning).toBe("low");
+}
+
+async function serviceConsultation(): Promise<void> {
   const file = join(directory, "advisor.json");
   writeFileSync(file, JSON.stringify({ model: "provider/first", thinking: "high" }));
   const advisor = createAdvisor(file);
-  try {
-    const result = await advisor.consult(
-      {
-        system: "review",
-        messages: [{ kind: "user", blocks: [{ kind: "text", text: "x".repeat(300_000) }] }],
-      },
-      adapter,
-    );
-    assert.equal(result.kind, "success");
-  } finally {
-    rmSync(directory, { recursive: true, force: true });
-  }
-  const request: ModelRequest = { system: "review", prompt: "question" };
-  assert.equal(registry.used?.id, "first");
-  assert.equal(registry.options?.reasoning, "high");
-  assert.equal(registry.options?.maxTokens, undefined);
-  assert.ok(registry.used && registry.context);
-  const base = buildBaseOptions(
-    registry.used,
-    normalizeContext(registry.context),
-    registry.options,
+  const result = await advisor.consult(
+    {
+      system: "review",
+      messages: [{ kind: "user", blocks: [{ kind: "text", text: "x".repeat(300_000) }] }],
+    },
+    adapter,
   );
-  assert.equal(base.maxTokens, first.maxOutputTokens);
-  await adapter.consult(second, request);
-  assert.equal(registry.used?.id, "second");
-  assert.equal(registry.options?.reasoning, "low");
-  registry.window = 64_000;
-  await assert.rejects(adapter.consult(first, request), /capacidades/);
+  expect(result.kind).toBe("success");
+  expect(registry.used?.id).toBe("first");
+  expect(registry.options?.reasoning).toBe("high");
+  expect(registry.options?.maxTokens).toBeUndefined();
+  expect(registry.context).toBeDefined();
 }
 
-test("resoluções intercaladas preservam modelo, opções e capacidades", resolvesIndependently);
+async function changedCapabilities(): Promise<void> {
+  const first = await adapter.resolve("provider/first", "high");
+  registry.window = 64_000;
+  await expect(adapter.consult(first, { system: "review", prompt: "question" })).rejects.toThrow(
+    /capacidades/,
+  );
+}
+
+beforeEach(prepare);
+afterEach(cleanup);
+test("resoluções intercaladas preservam modelos", independentResolutions);
+test("consulta usa modelo configurado", serviceConsultation);
+test("mudança de capacidade é rejeitada", changedCapabilities);

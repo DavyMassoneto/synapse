@@ -1,11 +1,13 @@
-import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/constants";
 import {
   type AdvisorResult,
   type Config,
+  parseModelReference,
   THINKING_LEVELS,
   type ThinkingLevel,
-} from "#synapse/modules/advisor/public";
-import type { ConfigLoadResult, ConfigPort } from "./contracts.ts";
+} from "#synapse/modules/advisor/public/contracts";
+import { ADVISOR_DIAGNOSTICS } from "../constants";
+import type { ConfigLoadResult, ConfigPort } from "./contracts";
+import { initialConfiguration } from "./initialize";
 
 export class AdvisorConfiguration {
   private current: AdvisorResult;
@@ -14,19 +16,7 @@ export class AdvisorConfiguration {
     private readonly config: ConfigPort,
     loaded: ConfigLoadResult,
   ) {
-    if (loaded.kind === "invalid") {
-      this.current = { kind: "failure", message: loaded.message };
-    } else if (loaded.kind === "loaded") {
-      this.current = {
-        kind: "success",
-        config: {
-          model: loaded.config.model || undefined,
-          thinking: loaded.config.thinking ?? "high",
-        },
-      };
-    } else {
-      this.current = { kind: "success", config: { thinking: "high" } };
-    }
+    this.current = initialConfiguration(loaded);
   }
 
   status(): AdvisorResult {
@@ -47,8 +37,7 @@ export class AdvisorConfiguration {
   }
 
   selectModel(model: string): AdvisorResult {
-    const separator = model.indexOf("/");
-    if (separator <= 0 || separator === model.length - 1) {
+    if (!parseModelReference(model)) {
       return { kind: "failure", message: ADVISOR_DIAGNOSTICS.invalidModel };
     }
 
@@ -67,7 +56,7 @@ export class AdvisorConfiguration {
 
   setThinking(requested: string): AdvisorResult {
     let thinking: ThinkingLevel | undefined;
-    for (const level of Object.values(THINKING_LEVELS)) {
+    for (const level of THINKING_LEVELS) {
       if (level === requested) {
         thinking = level;
         break;

@@ -33,7 +33,6 @@
     ]
   },
   "imports": {
-    "#synapse/*": "./dist/*/index.js",
-    "#synapse-entry": "./dist/entry.js"
+    "#synapse/*": "./dist/*/index.js"
   }
 }

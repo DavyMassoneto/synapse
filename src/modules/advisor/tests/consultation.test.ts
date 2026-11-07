@@ -1,25 +1,28 @@
-import assert from "node:assert/strict";
-import { test } from "vitest";
-import { AdvisorService, FailingModel, TestModel, TestStorage, WaitingModel } from "./fixtures.ts";
+import { expect, test } from "vitest";
+import { AdvisorService } from "../internal";
+import { FailingModel } from "./failing-model";
+import { TestModel } from "./test-model";
+import { TestStorage } from "./test-storage";
+import { WaitingModel } from "./waiting-model";
 
 async function snapshotIsStable() {
-  const advisor = new AdvisorService(
-    new TestStorage("provider/first"),
-    new TestStorage("provider/first").load(),
-  );
+  const storage = new TestStorage("provider/first");
+  const advisor = new AdvisorService(storage, storage.load());
   const gate = Promise.withResolvers<void>();
   const port = new WaitingModel(gate.promise);
   const pending = advisor.consult({ system: "", messages: [] }, port);
-  advisor.selectModel("provider/second");
-  advisor.setThinking("high");
+  advisor.configuration.selectModel("provider/second");
+  advisor.configuration.setThinking("high");
   gate.resolve();
   const result = await pending;
-  assert.equal(result.kind, "success");
-  assert.equal(result.model, "provider/first");
-  assert.equal(port.resolvedReference, "provider/first");
-  assert.ok(port.resolved);
-  assert.equal(port.resolved.reference, "provider/first");
-  assert.equal(port.resolved.effectiveThinking, "low");
+  expect(result.kind).toBe("success");
+  if (result.kind !== "success") {
+    throw new Error("consulta não concluída");
+  }
+  expect(result.model).toBe("provider/first");
+  expect(port.resolvedReference).toBe("provider/first");
+  expect(port.resolved?.reference).toBe("provider/first");
+  expect(port.resolved?.effectiveThinking).toBe("low");
 }
 
 async function cancellationBeforeResolution() {
@@ -28,18 +31,17 @@ async function cancellationBeforeResolution() {
   const controller = new AbortController();
   controller.abort();
   const port = new TestModel();
-  assert.deepEqual(
+  expect(
     await advisor.consult({ system: "", messages: [], signal: controller.signal }, port),
-    { kind: "cancelled" },
-  );
-  assert.equal(port.calls, 0);
+  ).toStrictEqual({ kind: "cancelled" });
+  expect(port.calls).toBe(0);
 }
 
 async function providerFailure() {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
   const port = new FailingModel();
-  assert.deepEqual(await advisor.consult({ system: "", messages: [] }, port), {
+  expect(await advisor.consult({ system: "", messages: [] }, port)).toStrictEqual({
     kind: "failure",
     message: "provider error",
   });

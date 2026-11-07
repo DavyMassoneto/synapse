@@ -1,2 +1,3 @@
-export * from "./diagnostics.js";
-export * from "./instructions.js";
+export * from "./advisor-system";
+export * from "./consultation-instructions";
+export * from "./diagnostics";

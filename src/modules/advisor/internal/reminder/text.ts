@@ -1,4 +1,4 @@
-import { REMIND_EVERY } from "./constants.ts";
+import { REMIND_EVERY } from "./constants";
 
 export const REMINDER = `<system-reminder>
 Já se passaram ${REMIND_EVERY} turnos desde a última consulta ao advisor. Pergunte-se agora:

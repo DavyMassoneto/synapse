@@ -1,6 +1,6 @@
 import type { Api, Context, Model, ModelsSimpleStreamOptions } from "@earendil-works/pi-ai";
 import { ModelRegistry, type ModelRuntime } from "@earendil-works/pi-coding-agent";
-import { TestRegistry } from "./typed-context.ts";
+import { TestRegistry } from "./test-registry";
 
 export class DistributionRegistry extends ModelRegistry {
   readonly fake = new TestRegistry();

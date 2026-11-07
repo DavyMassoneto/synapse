@@ -1,3 +1,3 @@
-export * from "./composition/index.js";
-export * from "./integration/index.js";
-export * from "./modules/index.js";
+export * from "./composition";
+export * from "./integration";
+export * from "./modules";

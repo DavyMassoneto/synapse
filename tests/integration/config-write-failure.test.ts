@@ -1,31 +1,43 @@
-import assert from "node:assert/strict";
-import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
-import { join } from "node:path";
-import { test } from "vitest";
-import { TestContext, TypedAdvisorHost } from "../fixtures/index.js";
+import { afterEach, beforeEach, expect, test } from "vitest";
+import { BlockedConfigHost, prepareHostDirectory, TestContext } from "../fixtures";
 
-async function reportWriteFailure(): Promise<void> {
-  const host = new TypedAdvisorHost();
-  const context = new TestContext();
-  const path = join(host.directory, "advisor.json");
+let host: BlockedConfigHost;
+let context: TestContext;
 
-  try {
-    unlinkSync(path);
-    mkdirSync(path);
-    writeFileSync(join(path, "keep"), "original");
-    assert.ok(host.command);
-    await host.command.handler("thinking high", context);
-    assert.match(context.ui.notices.at(-1) ?? "", /salvar/);
-    assert.equal(context.ui.notices.length, 1);
-    assert.doesNotMatch(context.ui.notices[0], /Advisor thinking: high/);
-    const status = host.advisor.status();
-    assert.equal(status.kind, "success");
-    assert.equal(status.config.thinking, "low");
-    assert.equal(host.advisor.isEnabled(), true);
-  } finally {
-    rmSync(path, { recursive: true, force: true });
-    host.cleanup();
-  }
+function prepare(): void {
+  host = new BlockedConfigHost(prepareHostDirectory());
+  host.blockConfiguration();
+  context = new TestContext();
+}
+function cleanup(): void {
+  host.cleanup();
 }
 
-test("falha ao salvar pelo comando preserva o estado e informa o erro", reportWriteFailure);
+async function reportsFailure(): Promise<void> {
+  if (!host.command) {
+    throw new Error("comando ausente");
+  }
+  await host.command.handler("thinking high", context);
+  expect(context.ui.notices).toHaveLength(1);
+  expect(context.ui.notices[0]).toMatch(/salvar/);
+  expect(context.ui.notices[0]).not.toMatch(/Advisor thinking: high/);
+}
+
+async function preservesState(): Promise<void> {
+  if (!host.command) {
+    throw new Error("comando ausente");
+  }
+  await host.command.handler("thinking high", context);
+  const status = host.advisor.configuration.status();
+  expect(status.kind).toBe("success");
+  if (status.kind !== "success") {
+    throw new Error("status inválido");
+  }
+  expect(status.config.thinking).toBe("low");
+  expect(host.advisor.isEnabled()).toBe(true);
+}
+
+beforeEach(prepare);
+afterEach(cleanup);
+test("falha ao salvar é informada", reportsFailure);
+test("falha ao salvar preserva estado", preservesState);

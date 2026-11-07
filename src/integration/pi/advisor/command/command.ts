@@ -1,87 +1,46 @@
-import type { SessionStartEvent } from "@earendil-works/pi-coding-agent";
-import type { Advisor, AdvisorResult } from "#synapse/modules";
-import { ADVISOR_NAME } from "../constants";
+import type { Advisor } from "#synapse/modules";
 import type { AdvisorContext, AdvisorHost } from "../contracts";
-import { ADVISOR_MESSAGES } from "../presentation";
+import { COMMAND_TEXT } from "../presentation";
 import { syncAdvisor } from "../sync";
-import { ModelCatalog } from "./catalog.ts";
-import { chooseModel } from "./choose-model.ts";
-import { parseAdvisorCommand } from "./parser.ts";
+import { applySelection } from "./apply-selection";
+import { chooseModel } from "./choose-model";
+import { parseAdvisorCommand } from "./parser";
 
 export class AdvisorCommand {
-  readonly catalog = new ModelCatalog();
-
   constructor(
     private readonly pi: AdvisorHost,
     private readonly advisor: Advisor,
   ) {}
 
-  start(_event: SessionStartEvent, context: AdvisorContext): void {
-    this.catalog.refresh(context);
-  }
-
-  private syncAndNotify(context: AdvisorContext, status: AdvisorResult, message: string): void {
-    if (status.kind === "failure") {
-      context.ui.notify(status.message, "error");
-      return;
-    }
-    syncAdvisor(this.pi, this.advisor, context);
-    context.ui.notify(message, "info");
-  }
-
-  private disable(context: AdvisorContext): void {
-    this.syncAndNotify(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
-  }
-
-  private changeThinking(context: AdvisorContext, requested: string): void {
-    const status = this.advisor.setThinking(requested);
-    this.syncAndNotify(context, status, `Advisor thinking: ${requested}`);
-  }
-
   async handle(args: string, context: AdvisorContext): Promise<void> {
-    this.catalog.refresh(context);
-    const status = this.advisor.status();
+    const status = this.advisor.configuration.status();
     const input = parseAdvisorCommand(args);
-
     if (status.kind === "failure") {
       context.ui.notify(status.message, "error");
       return;
     }
-
     if (input.kind === "disable") {
-      this.disable(context);
+      applySelection(this.pi, this.advisor, context, { kind: "disabled" });
       return;
     }
     if (input.kind === "thinking") {
-      this.changeThinking(context, input.level);
+      const result = this.advisor.configuration.setThinking(input.level);
+      if (result.kind === "failure") {
+        context.ui.notify(result.message, "error");
+        return;
+      }
+      syncAdvisor(this.pi, this.advisor, context);
+      context.ui.notify(`Advisor thinking: ${input.level}`, "info");
       return;
     }
     if (!input.query && !context.hasUI) {
       context.ui.notify(
-        `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
+        `Advisor: ${status.config.model ?? COMMAND_TEXT.disabledStatus}, thinking ${status.config.thinking}`,
         "info",
       );
       return;
     }
-
-    const chosen = await chooseModel(this.catalog, context, input.query);
-    if (chosen.kind === "disabled") {
-      this.disable(context);
-    } else if (chosen.kind === "selected") {
-      this.syncAndNotify(
-        context,
-        this.advisor.selectModel(chosen.model),
-        `Advisor: ${chosen.model}`,
-      );
-    }
-  }
-  static register(pi: AdvisorHost, advisor: Advisor): void {
-    const command = new AdvisorCommand(pi, advisor);
-    pi.on("session_start", command.start.bind(command));
-    pi.registerCommand(ADVISOR_NAME, {
-      description: ADVISOR_MESSAGES.commandDescription,
-      getArgumentCompletions: command.catalog.completions.bind(command.catalog),
-      handler: command.handle.bind(command),
-    });
+    const chosen = await chooseModel(context, input.query);
+    applySelection(this.pi, this.advisor, context, chosen);
   }
 }

@@ -4,6 +4,4 @@ export const ADVISOR_DIAGNOSTICS = {
   saveFailed: "Não foi possível salvar a configuração do advisor.",
   invalidModel: "O modelo deve usar o formato provedor/id.",
   invalidThinking: "Nível de raciocínio inválido.",
-  clippedContent: "\n[... conteúdo omitido ...]\n",
-  omittedMessages: "[... mensagens anteriores omitidas ...]",
 };

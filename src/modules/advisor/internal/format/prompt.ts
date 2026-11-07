@@ -1,13 +1,14 @@
-import { ADVISOR_SYSTEM } from "#synapse/modules/advisor/internal/constants";
-import type { Consultation, ResolvedModel } from "#synapse/modules/advisor/public";
+import type { Consultation, ResolvedModel } from "#synapse/modules/advisor/public/contracts";
+import { ADVISOR_SYSTEM } from "../constants";
+import { clip } from "./clip";
 import {
   ESTIMATED_CHARACTERS_PER_TOKEN,
   HOST_SAFETY_TOKENS,
   MAX_SYSTEM_CHARACTERS,
   MINIMUM_ANSWER_TOKENS,
-} from "./limits.ts";
-import { PROMPT_PREFIX, PROMPT_SUFFIX, TRANSCRIPT_PREFIX } from "./prompt-text.ts";
-import { buildTranscript, clip } from "./transcript.ts";
+} from "./limits";
+import { PROMPT_PREFIX, PROMPT_SUFFIX, TRANSCRIPT_PREFIX } from "./prompt-text";
+import { buildTranscript } from "./transcript";
 
 function availableBudget(model: ResolvedModel): number | undefined {
   const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS;

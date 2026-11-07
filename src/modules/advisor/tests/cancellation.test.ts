@@ -1,12 +1,9 @@
-import assert from "node:assert/strict";
-import { test } from "vitest";
-import {
-  AdvisorService,
-  CancelledModel,
-  CancelOnConsultModel,
-  CancelOnResolveModel,
-  TestStorage,
-} from "./fixtures.ts";
+import { expect, test } from "vitest";
+import { AdvisorService } from "../internal";
+import { CancelOnConsultModel } from "./cancel-on-consult-model";
+import { CancelOnResolveModel } from "./cancel-on-resolve-model";
+import { CancelledModel } from "./cancelled-model";
+import { TestStorage } from "./test-storage";
 
 async function cancellationDuringResolution() {
   const storage = new TestStorage();
@@ -17,8 +14,8 @@ async function cancellationDuringResolution() {
     { system: "", messages: [], signal: controller.signal },
     port,
   );
-  assert.equal(result.kind, "cancelled");
-  assert.equal(port.captured, undefined);
+  expect(result.kind).toBe("cancelled");
+  expect(port.captured).toBeUndefined();
 }
 
 async function cancellationDuringExecution() {
@@ -30,15 +27,14 @@ async function cancellationDuringExecution() {
     { system: "", messages: [], signal: controller.signal },
     port,
   );
-  assert.equal(result.kind, "cancelled");
+  expect(result.kind).toBe("cancelled");
 }
 
 async function cancellationFromProvider() {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
-  const port = new CancelledModel();
-  const result = await advisor.consult({ system: "", messages: [] }, port);
-  assert.equal(result.kind, "cancelled");
+  const result = await advisor.consult({ system: "", messages: [] }, new CancelledModel());
+  expect(result.kind).toBe("cancelled");
 }
 
 test("cancelamento durante resolução impede execução", cancellationDuringResolution);

@@ -1,16 +1,12 @@
-import { homedir } from "node:os";
-import { join } from "node:path";
-import { createAdvisor } from "#synapse/modules";
-import type { AdvisorLifecycle, AdvisorRegistrationPort } from "./types.ts";
+import { createAdvisor } from "../modules";
+import { advisorConfigPath } from "./config-path";
+import type { AdvisorComposition } from "./types";
 
-export function compose(
-  host: AdvisorRegistrationPort,
-  configPath = join(homedir(), ".pi", "agent", "advisor.json"),
-): void {
+export function compose(configPath = advisorConfigPath()): AdvisorComposition {
   const controller = new AbortController();
-  const lifecycle: AdvisorLifecycle = {
+  return {
+    advisor: createAdvisor(configPath),
     signal: controller.signal,
     shutdown: controller.abort.bind(controller),
   };
-  host.register(createAdvisor(configPath), lifecycle);
 }

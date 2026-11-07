@@ -9,6 +9,11 @@ export type AdvisorRegistry = Pick<
   ModelRegistry,
   "getAvailable" | "find" | "hasConfiguredAuth" | "streamSimple"
 >;
+export type AdvisorModelRegistry = Pick<
+  AdvisorRegistry,
+  "find" | "hasConfiguredAuth" | "streamSimple"
+>;
+
 export type AdvisorSession = Pick<ExtensionContext["sessionManager"], "buildSessionProjection">;
 
 export interface AdvisorContext

@@ -1,4 +1,4 @@
-import type { Config, ThinkingLevel } from "#synapse/modules/advisor/public";
+import type { Config, ThinkingLevel } from "#synapse/modules/advisor/public/contracts";
 
 export interface ConfigPort {
   load(): ConfigLoadResult;

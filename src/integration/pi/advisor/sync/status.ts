@@ -3,6 +3,10 @@ import type { AdvisorContext } from "../contracts";
 
 export function updateAdvisorStatus(context: AdvisorContext, model: string | undefined): void {
   if (context.hasUI) {
-    context.ui.setStatus(ADVISOR_NAME, model ? `advisor: ${model}` : undefined);
+    if (model) {
+      context.ui.setStatus(ADVISOR_NAME, `advisor: ${model}`);
+    } else {
+      context.ui.setStatus(ADVISOR_NAME, undefined);
+    }
   }
 }

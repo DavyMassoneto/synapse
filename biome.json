@@ -22,6 +22,10 @@
       },
       "style": {
         "noNonNullAssertion": "error",
+        "noRestrictedTypes": {
+          "level": "error",
+          "options": { "types": { "Record": "Use tipos explícitos." } }
+        },
         "useBlockStatements": "error",
         "useImportType": {
           "level": "error",
@@ -36,6 +40,20 @@
               {
                 "group": ["../../**"],
                 "message": "Use o alias #synapse/"
+              },
+              {
+                "group": [
+                  "./**/*.ts",
+                  "./**/*.js",
+                  "../**/*.ts",
+                  "../**/*.js",
+                  "#synapse/**/*.ts",
+                  "#synapse/**/*.js",
+                  "./**/index",
+                  "../**/index",
+                  "#synapse/**/index"
+                ],
+                "message": "Imports e exports locais não usam extensão nem index."
               }
             ]
           }
@@ -70,6 +88,20 @@
                   },
                   {
                     "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
                       "@earendil-works/**",
                       "#synapse/composition",
                       "#synapse/integration",
@@ -97,6 +129,20 @@
                   {
                     "group": ["../../**"],
                     "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
                   },
                   {
                     "group": [
@@ -138,6 +184,20 @@
                   },
                   {
                     "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
                       "@earendil-works/**",
                       "#synapse/composition",
                       "#synapse/integration",
@@ -173,6 +233,20 @@
                   {
                     "group": ["../../**"],
                     "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
                   },
                   {
                     "group": [
@@ -227,6 +301,20 @@
                   },
                   {
                     "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
                       "#synapse/modules/*/internal",
                       "#synapse/modules/*/internal/**",
                       "#synapse/modules/*/adapters",
@@ -266,6 +354,20 @@
                   {
                     "group": ["../../**"],
                     "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
                   },
                   {
                     "group": [

@@ -1,58 +1,55 @@
-import assert from "node:assert/strict";
-import { test } from "vitest";
-import { buildTranscript } from "#synapse/modules/advisor/internal/format";
-import type { TranscriptMessage } from "#synapse/modules/advisor/public";
-import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
+import { expect, test } from "vitest";
+import { AdvisorService, buildTranscript } from "../internal";
+import type { TranscriptMessage } from "../public";
+import { TestModel } from "./test-model";
+import { TestStorage } from "./test-storage";
 
 function emptyTranscript(): void {
-  assert.equal(buildTranscript([], 200), "");
+  expect(buildTranscript([], 200)).toBe("");
 }
 
 function hiddenShell(): void {
   const messages: TranscriptMessage[] = [
     { kind: "shell", hidden: true, command: "secret", blocks: [{ kind: "text", text: "hidden" }] },
   ];
-  assert.ok(!buildTranscript(messages, 200).includes("secret"));
+  expect(buildTranscript(messages, 200)).not.toContain("secret");
 }
 
 function toolErrorLabel(): void {
   const messages: TranscriptMessage[] = [
     { kind: "toolResult", tool: "read", error: true, blocks: [{ kind: "text", text: "failed" }] },
   ];
-  assert.match(buildTranscript(messages, 200), /tool_result read \(error\)/);
+  expect(buildTranscript(messages, 200)).toMatch(/tool_result read \(error\)/);
 }
 
-function transcriptRespectsBudget(): void {
+function recentMessageFits(): void {
   const messages: TranscriptMessage[] = [
     { kind: "user", blocks: [{ kind: "text", text: "á".repeat(30_000) }] },
-    { kind: "shell", hidden: true, command: "secret", blocks: [{ kind: "text", text: "hidden" }] },
-    { kind: "toolResult", tool: "read", error: true, blocks: [{ kind: "text", text: "failed" }] },
     { kind: "user", blocks: [{ kind: "text", text: "MOST_RECENT" }] },
   ];
-  const short = buildTranscript(messages, 200);
-  assert.ok(short.includes("MOST_RECENT"));
-  assert.ok(short.length <= 200);
-  const beginning: TranscriptMessage = {
-    kind: "user",
-    blocks: [{ kind: "text", text: "FIRST_MESSAGE" }],
-  };
-  const middle: TranscriptMessage = {
-    kind: "user",
-    blocks: [{ kind: "text", text: "middle".repeat(1000) }],
-  };
-  const ending: TranscriptMessage = {
-    kind: "user",
-    blocks: [{ kind: "text", text: "LAST_MESSAGE" }],
-  };
-  const trimmed = buildTranscript([beginning, middle, ending], 200);
-  assert.ok(trimmed.includes("FIRST_MESSAGE"));
-  assert.ok(trimmed.includes("LAST_MESSAGE"));
-  assert.ok(trimmed.length <= 200);
-  const oversizedLast: TranscriptMessage = {
-    kind: "user",
-    blocks: [{ kind: "text", text: "last".repeat(1000) }],
-  };
-  assert.ok(buildTranscript([beginning, oversizedLast], 200).length <= 200);
+  const text = buildTranscript(messages, 200);
+  expect(text).toContain("MOST_RECENT");
+  expect(text.length).toBeLessThanOrEqual(200);
+}
+
+function preservesBeginningAndEnd(): void {
+  const messages: TranscriptMessage[] = [
+    { kind: "user", blocks: [{ kind: "text", text: "FIRST_MESSAGE" }] },
+    { kind: "user", blocks: [{ kind: "text", text: "middle".repeat(1000) }] },
+    { kind: "user", blocks: [{ kind: "text", text: "LAST_MESSAGE" }] },
+  ];
+  const text = buildTranscript(messages, 200);
+  expect(text).toContain("FIRST_MESSAGE");
+  expect(text).toContain("LAST_MESSAGE");
+  expect(text.length).toBeLessThanOrEqual(200);
+}
+
+function oversizedLastFits(): void {
+  const messages: TranscriptMessage[] = [
+    { kind: "user", blocks: [{ kind: "text", text: "FIRST_MESSAGE" }] },
+    { kind: "user", blocks: [{ kind: "text", text: "last".repeat(1000) }] },
+  ];
+  expect(buildTranscript(messages, 200).length).toBeLessThanOrEqual(200);
 }
 
 async function smallContextFails(): Promise<void> {
@@ -60,12 +57,14 @@ async function smallContextFails(): Promise<void> {
   const advisor = new AdvisorService(storage, storage.load());
   const model = new TestModel(100);
   const result = await advisor.consult({ system: "", messages: [] }, model);
-  assert.equal(result.kind, "failure");
-  assert.equal(model.captured, undefined);
+  expect(result.kind).toBe("failure");
+  expect(model.captured).toBeUndefined();
 }
 
 test("transcrição vazia", emptyTranscript);
 test("shell oculto não aparece na transcrição", hiddenShell);
 test("resultado de ferramenta identifica erro", toolErrorLabel);
-test("transcrição preserva mensagens sob orçamento", transcriptRespectsBudget);
+test("mensagem recente cabe no orçamento", recentMessageFits);
+test("início e fim são preservados", preservesBeginningAndEnd);
+test("última mensagem excessiva respeita orçamento", oversizedLastFits);
 test("janela muito pequena retorna falha antes de chamar o modelo", smallContextFails);

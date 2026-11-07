@@ -1,1 +1,1 @@
-export * from "./pi/index.js";
+export * from "./pi";

@@ -1,1 +1,1 @@
-export * from "./advisor/index.js";
+export * from "./advisor";

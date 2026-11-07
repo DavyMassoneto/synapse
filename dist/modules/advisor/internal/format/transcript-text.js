@@ -1,0 +1,12 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.ERROR_LABEL = exports.TOOL_CALL_LABEL = exports.IMAGE_OMITTED = exports.SUMMARY_LABEL = exports.CONTEXT_LABEL = exports.SHELL_LABEL = exports.TOOL_RESULT_LABEL = exports.OMITTED_MESSAGES = exports.CLIPPED_CONTENT = void 0;
+exports.CLIPPED_CONTENT = "\n[... conteúdo omitido ...]\n";
+exports.OMITTED_MESSAGES = "[... mensagens anteriores omitidas ...]";
+exports.TOOL_RESULT_LABEL = "tool_result";
+exports.SHELL_LABEL = "user ran shell";
+exports.CONTEXT_LABEL = "context";
+exports.SUMMARY_LABEL = "[summary of earlier conversation]";
+exports.IMAGE_OMITTED = "[image omitted]";
+exports.TOOL_CALL_LABEL = "tool_call";
+exports.ERROR_LABEL = " (error)";
