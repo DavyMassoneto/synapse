@@ -11,8 +11,8 @@ import {
   type AdvisorToolResultHandler,
   type AdvisorTurnEndHandler,
   registerAdvisor,
-} from "#synapse/integration/index.js";
-import { type Advisor, createAdvisor } from "#synapse/modules/index.js";
+} from "#synapse/integration";
+import { type Advisor, createAdvisor } from "#synapse/modules";
 import { type AdvisorEventRegistration } from "./typed-host-types.ts";
 
 export class AdvisorHostCollector implements AdvisorHost {

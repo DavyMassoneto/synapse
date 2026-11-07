@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { TEST_USAGE, TestContext } from "../fixtures/typed-context.ts";
-import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
+import { TEST_USAGE, TestContext, TypedAdvisorHost } from "../fixtures/index.js";
 
 async function successfulConsultation(): Promise<void> {
   const host = new TypedAdvisorHost();

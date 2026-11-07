@@ -3,8 +3,8 @@ import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSyn
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "vitest";
-import { FileConfig } from "#synapse/modules/advisor/adapters/index.js";
-import { AdvisorService } from "#synapse/modules/advisor/internal/index.js";
+import { FileConfig } from "#synapse/modules/advisor/adapters";
+import { AdvisorService } from "#synapse/modules/advisor/internal";
 
 function readsDefaultsAndDisabled(): void {
   const directory = mkdtempSync(join(tmpdir(), "advisor-config-"));

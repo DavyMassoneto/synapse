@@ -1,2 +1,2 @@
-export * from "#synapse/modules/advisor/internal/config/contracts.js";
-export * from "#synapse/modules/advisor/internal/config/state.js";
+export * from "./contracts.js";
+export * from "./state.js";

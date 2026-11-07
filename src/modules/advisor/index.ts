@@ -1,1 +1,2 @@
-export * from "#synapse/modules/advisor/public/index.js";
+export * from "./create-advisor.js";
+export * from "./public/index.js";

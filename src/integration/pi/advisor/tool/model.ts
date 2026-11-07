@@ -4,8 +4,8 @@ import {
   type ModelResponse,
   type ResolvedModel,
   type ThinkingLevel,
-} from "#synapse/modules/index.js";
-import { credentialsMissing, MODEL_DIAGNOSTICS, modelNotFound } from "./diagnostics.ts";
+} from "#synapse/modules";
+import { MODEL_DIAGNOSTICS } from "./diagnostics.ts";
 import { type AdvisorModelRegistry } from "./model-types.ts";
 
 export class AdvisorModel {
@@ -21,10 +21,10 @@ export class AdvisorModel {
     const modelId = reference.slice(separator + 1);
     const model = this.registry.find(provider, modelId);
     if (!model) {
-      throw new Error(modelNotFound(reference));
+      throw new Error(`Modelo advisor não encontrado: ${reference}`);
     }
     if (!this.registry.hasConfiguredAuth(model)) {
-      throw new Error(credentialsMissing(reference));
+      throw new Error(`Credenciais ausentes para ${reference}`);
     }
 
     return model;

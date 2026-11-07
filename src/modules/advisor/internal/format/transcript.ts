@@ -1,9 +1,7 @@
-import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/diagnostics.js";
-import { type TranscriptMessage } from "#synapse/modules/advisor/public/transcript/index.js";
+import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/constants";
+import { type TranscriptMessage } from "#synapse/modules/advisor/public";
 
-const CONTENT_LIMITS = [12_000, 4_000, 1_500, 500];
-const HEAD_FRACTION = 0.6;
-const SEPARATOR = "\n\n";
+import { CONTENT_LIMITS, HEAD_FRACTION, SEPARATOR } from "./limits.ts";
 
 export function clip(text: string, limit: number): string {
   if (limit <= 0) {
@@ -45,6 +43,15 @@ function renderMessage(message: TranscriptMessage, limit: number): string {
     label = "[summary of earlier conversation]";
   }
 
+  return renderBlocks(message, limit, label, clipContent);
+}
+
+function renderBlocks(
+  message: TranscriptMessage,
+  limit: number,
+  label: string,
+  clipContent: boolean,
+): string {
   const parts = [label];
   for (const block of message.blocks) {
     if (block.kind === "image") {
@@ -80,6 +87,10 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
     }
   }
 
+  return selectMessages(blocks, budget);
+}
+
+function selectMessages(blocks: string[], budget: number): string {
   const marker = ADVISOR_DIAGNOSTICS.omittedMessages;
   if (budget <= marker.length) {
     return clip(blocks[blocks.length - 1] ?? "", budget);
@@ -91,8 +102,14 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
   }
 
   const first = clip(blocks[0], firstBudget);
+  const remaining = budget - first.length - marker.length - SEPARATOR.length;
+  const selected = selectRecent(blocks, remaining);
+  return [first, marker, ...selected].join(SEPARATOR);
+}
+
+function selectRecent(blocks: string[], budget: number): string[] {
+  let remaining = budget;
   const selected: string[] = [];
-  let remaining = budget - first.length - marker.length - SEPARATOR.length;
 
   for (let index = blocks.length - 1; index > 0; index--) {
     const available = remaining - SEPARATOR.length;
@@ -112,5 +129,5 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
     remaining -= block.length + SEPARATOR.length;
   }
 
-  return [first, marker, ...selected].join(SEPARATOR);
+  return selected;
 }

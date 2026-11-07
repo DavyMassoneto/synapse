@@ -1,2 +1,2 @@
-export * from "#synapse/modules/advisor/adapters/config.js";
-export * from "#synapse/modules/advisor/adapters/config-schema.js";
+export * from "./config.js";
+export * from "./config-schema.js";

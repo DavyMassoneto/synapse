@@ -1,4 +1,4 @@
-import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/identifiers.js";
+import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/constants";
 import { type AdvisorToolActivation } from "./types.ts";
 
 function isOtherTool(name: string): boolean {

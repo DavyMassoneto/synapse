@@ -1,2 +1,3 @@
-export * from "#synapse/modules/advisor/internal/reminder/counter.js";
-export * from "#synapse/modules/advisor/internal/reminder/text.js";
+export * from "./constants.js";
+export * from "./counter.js";
+export * from "./text.js";

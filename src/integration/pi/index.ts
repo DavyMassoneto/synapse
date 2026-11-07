@@ -1,3 +1,3 @@
-export * from "#synapse/integration/pi/advisor/index.js";
-export * from "#synapse/integration/pi/entry-types.js";
-export * from "#synapse/integration/pi/extension.js";
+export * from "./advisor/index.js";
+export * from "./entry-types.js";
+export * from "./extension.js";

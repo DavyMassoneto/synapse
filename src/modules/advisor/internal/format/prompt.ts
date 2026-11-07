@@ -1,21 +1,15 @@
-import { ADVISOR_SYSTEM } from "#synapse/modules/advisor/internal/instructions.js";
+import { ADVISOR_SYSTEM } from "#synapse/modules/advisor/internal/constants";
+import { type Consultation, type ResolvedModel } from "#synapse/modules/advisor/public";
 import {
-  type Consultation,
-  type ResolvedModel,
-} from "#synapse/modules/advisor/public/consultation/index.js";
+  ESTIMATED_CHARACTERS_PER_TOKEN,
+  HOST_SAFETY_TOKENS,
+  MAX_SYSTEM_CHARACTERS,
+  MINIMUM_ANSWER_TOKENS,
+} from "./limits.ts";
+import { PROMPT_PREFIX, PROMPT_SUFFIX, TRANSCRIPT_PREFIX } from "./prompt-text.ts";
 import { buildTranscript, clip } from "./transcript.ts";
 
-// A conservative character estimate; it is not a provider tokenizer.
-const ESTIMATED_CHARACTERS_PER_TOKEN = 3;
-const HOST_SAFETY_TOKENS = 4_096;
-const MINIMUM_ANSWER_TOKENS = 1_024;
-const MAX_SYSTEM_CHARACTERS = 40_000;
-const PROMPT_PREFIX = "<executor_system_prompt>\n";
-const TRANSCRIPT_PREFIX = "\n</executor_system_prompt>\n\n<transcript>\n";
-const PROMPT_SUFFIX =
-  "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
-
-export function preparePrompt(input: Consultation, model: ResolvedModel): string | undefined {
+function availableBudget(model: ResolvedModel): number | undefined {
   const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS;
   if (requiredOutputTokens > model.maxOutputTokens) {
     return undefined;
@@ -30,9 +24,17 @@ export function preparePrompt(input: Consultation, model: ResolvedModel): string
     return undefined;
   }
 
-  const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor((available - fixedLength) / 2));
+  return available - fixedLength;
+}
+
+export function preparePrompt(input: Consultation, model: ResolvedModel): string | undefined {
+  const budget = availableBudget(model);
+  if (budget === undefined) {
+    return undefined;
+  }
+  const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(budget / 2));
   const system = clip(input.system, systemLimit);
-  const transcriptBudget = available - fixedLength - system.length;
+  const transcriptBudget = budget - system.length;
   const transcript = buildTranscript(input.messages, transcriptBudget);
   return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
 }

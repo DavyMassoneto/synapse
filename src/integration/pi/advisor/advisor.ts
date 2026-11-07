@@ -1,8 +1,8 @@
-import { type Advisor } from "#synapse/modules/index.js";
-import { registerCommand } from "./command/index.js";
-import { registerEvents } from "./events/index.js";
-import { type AdvisorHost } from "./host-types.ts";
-import { registerTool } from "./tool/index.js";
+import { type AdvisorHost } from "#synapse/integration/pi/advisor/contracts";
+import { type Advisor } from "#synapse/modules";
+import { AdvisorCommand } from "./command/index.js";
+import { AdvisorEvents } from "./events/index.js";
+import { AdvisorToolHandler } from "./tool/index.js";
 
 export function registerAdvisor(
   pi: AdvisorHost,
@@ -10,7 +10,7 @@ export function registerAdvisor(
   signal: AbortSignal,
   shutdown: () => void,
 ): void {
-  registerEvents(pi, advisor, shutdown);
-  registerTool(pi, advisor, signal);
-  registerCommand(pi, advisor);
+  AdvisorEvents.register(pi, advisor, shutdown);
+  AdvisorToolHandler.register(pi, advisor, signal);
+  AdvisorCommand.register(pi, advisor);
 }

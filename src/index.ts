@@ -1,3 +1,3 @@
-export * from "#synapse/composition/index.js";
-export * from "#synapse/integration/index.js";
-export * from "#synapse/modules/index.js";
+export * from "./composition/index.js";
+export * from "./integration/index.js";
+export * from "./modules/index.js";

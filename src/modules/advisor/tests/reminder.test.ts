@@ -4,7 +4,7 @@ import {
   REMIND_EVERY,
   REMINDER,
   ReminderCounter,
-} from "#synapse/modules/advisor/internal/reminder/index.js";
+} from "#synapse/modules/advisor/internal/reminder";
 
 function verifyReminder(): void {
   const first = new ReminderCounter();

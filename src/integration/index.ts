@@ -1,1 +1,1 @@
-export * from "#synapse/integration/pi/index.js";
+export * from "./pi/index.js";

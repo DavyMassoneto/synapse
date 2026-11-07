@@ -1,5 +1,5 @@
-import { type AdvisorContext } from "#synapse/integration/pi/advisor/index.js";
-import { type Advisor } from "#synapse/modules/index.js";
+import { type AdvisorContext } from "#synapse/integration/pi/advisor/contracts";
+import { type Advisor } from "#synapse/modules";
 import { updateAdvisorStatus } from "./status.ts";
 import { updateAdvisorTool } from "./tool-state.ts";
 import { type AdvisorToolActivation } from "./types.ts";

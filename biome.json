@@ -71,10 +71,10 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "#synapse/composition/index.js",
-                      "#synapse/integration/index.js",
+                      "#synapse/composition",
+                      "#synapse/integration",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js"
+                      "#synapse/modules"
                     ],
                     "message": "Dependência fora da fronteira do módulo"
                   }
@@ -139,15 +139,19 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "#synapse/composition/index.js",
-                      "#synapse/integration/index.js",
+                      "#synapse/composition",
+                      "#synapse/integration",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js"
+                      "#synapse/modules"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
                   },
                   {
-                    "group": ["#synapse/modules/**", "!#synapse/modules/advisor/**"],
+                    "group": [
+                      "#synapse/modules/**",
+                      "!#synapse/modules/advisor",
+                      "!#synapse/modules/advisor/**"
+                    ],
                     "message": "Não importe outros módulos"
                   }
                 ]
@@ -173,22 +177,26 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "#synapse/composition/index.js",
-                      "#synapse/integration/index.js",
+                      "#synapse/composition",
+                      "#synapse/integration",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js"
+                      "#synapse/modules"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
                   },
                   {
-                    "group": ["#synapse/modules/**", "!#synapse/modules/advisor/**"],
+                    "group": [
+                      "#synapse/modules/**",
+                      "!#synapse/modules/advisor",
+                      "!#synapse/modules/advisor/**"
+                    ],
                     "message": "Não importe outros módulos"
                   },
                   {
                     "group": [
                       "../adapters",
                       "../adapters/**",
-                      "#synapse/modules/advisor/adapters/index.js",
+                      "#synapse/modules/advisor/adapters",
                       "#synapse/modules/advisor/adapters/**"
                     ],
                     "message": "Núcleo não acessa adaptadores"
@@ -262,15 +270,19 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "#synapse/composition/index.js",
-                      "#synapse/integration/index.js",
+                      "#synapse/composition",
+                      "#synapse/integration",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js"
+                      "#synapse/modules"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
                   },
                   {
-                    "group": ["#synapse/modules/**", "!#synapse/modules/advisor/**"],
+                    "group": [
+                      "#synapse/modules/**",
+                      "!#synapse/modules/advisor",
+                      "!#synapse/modules/advisor/**"
+                    ],
                     "message": "Não importe outros módulos"
                   },
                   {

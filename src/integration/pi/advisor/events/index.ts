@@ -1,1 +1,1 @@
-export * from "#synapse/integration/pi/advisor/events/events.js";
+export * from "./events.js";

@@ -1,4 +1,4 @@
-import { type Failure } from "#synapse/modules/advisor/public/result.js";
+import { type Failure } from "#synapse/modules/advisor/public/result";
 import { type Config } from "./config.ts";
 
 export interface AdvisorSuccess {

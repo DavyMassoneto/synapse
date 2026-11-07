@@ -1,39 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import {
-  type ConfigLoadResult,
-  type ConfigPort,
-} from "#synapse/modules/advisor/internal/config/index.js";
-import { AdvisorService } from "#synapse/modules/advisor/internal/index.js";
-import { type ThinkingLevel } from "#synapse/modules/advisor/public/config/index.js";
-import {
-  type ModelPort,
-  type ModelRequest,
-  type ModelResponse,
-  type ResolvedModel,
-} from "#synapse/modules/advisor/public/consultation/index.js";
-
-class Storage implements ConfigPort {
-  load(): ConfigLoadResult {
-    return { kind: "loaded", config: { model: "provider/model", thinking: "high" } };
-  }
-  save(): void {}
-}
-
-class BudgetModel implements ModelPort {
-  request: ModelRequest | undefined;
-
-  constructor(private readonly descriptor: ResolvedModel) {}
-
-  async resolve(_reference: string, _thinking: ThinkingLevel): Promise<ResolvedModel> {
-    return this.descriptor;
-  }
-
-  async consult(_resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
-    this.request = request;
-    return { kind: "success", text: "ok" };
-  }
-}
+import { AdvisorService } from "#synapse/modules/advisor/internal";
+import { BudgetModel, Storage } from "./budget-fixtures.ts";
 
 async function rejectInsufficientWindows(): Promise<void> {
   const storage = new Storage();

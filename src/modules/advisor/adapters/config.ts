@@ -2,14 +2,11 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
-import { type ConfigLoadResult } from "#synapse/modules/advisor/internal/config/index.js";
-import { type Config } from "#synapse/modules/advisor/public/config/index.js";
+import { type ConfigLoadResult } from "#synapse/modules/advisor/internal/config";
+import { type Config } from "#synapse/modules/advisor/public";
 import { configSchema } from "./config-schema.ts";
 
-const CONFIG_DIAGNOSTICS = {
-  readFailed: "Não foi possível ler a configuração do advisor.",
-  invalid: "Configuração do advisor inválida; revise advisor.json.",
-};
+import { CONFIG_DIAGNOSTICS } from "./diagnostics.ts";
 
 export class FileConfig {
   constructor(private readonly path: string) {}

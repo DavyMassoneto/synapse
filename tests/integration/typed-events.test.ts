@@ -5,8 +5,7 @@ import {
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
 import { test } from "vitest";
-import { TestContext } from "../fixtures/typed-context.ts";
-import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
+import { TestContext, TypedAdvisorHost } from "../fixtures/index.js";
 
 async function eventLifecycle(): Promise<void> {
   const host = new TypedAdvisorHost();

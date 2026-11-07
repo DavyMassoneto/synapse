@@ -4,10 +4,7 @@ import {
   type ToolRenderResultOptions,
 } from "@earendil-works/pi-coding-agent";
 import { type Component } from "@earendil-works/pi-tui";
-import {
-  type AdvisorToolDetails,
-  type AdvisorToolInput,
-} from "#synapse/integration/pi/advisor/tool/index.js";
+import { type AdvisorToolDetails, type AdvisorToolInput } from "./tool-base-types.ts";
 
 export type AdvisorRenderTheme = Pick<Theme, "fg" | "bold">;
 

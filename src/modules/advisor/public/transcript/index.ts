@@ -1,1 +1,1 @@
-export * from "#synapse/modules/advisor/public/transcript/types.js";
+export * from "./types.js";

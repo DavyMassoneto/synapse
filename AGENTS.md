@@ -2,12 +2,12 @@
 
 - Always follow docs/architecture.md
 - Follow SRP, DRY, YAGNI and Clean Code; keep code readable and consistently spaced. Write control-flow bodies on separate lines with braces.
-- Keep type declarations separate from implementation; do not declare inline object types in implementation.
-- Use `./` for sibling imports; `../` is allowed, but never use `../../`. For imports between areas, use `#synapse/` with explicit `.js` paths and the highest applicable barrel of the destination directory, respecting module boundaries and avoiding ancestor-barrel cycles.
+- Keep type declarations and constants separate from implementation; do not declare inline object types in implementation. Do not mix standalone functions with class declarations in the same file.
+- Use `./` for sibling imports; `../` may target a sibling directory barrel (for example `../componente`), but never use `../../`. For more distant imports, use the highest applicable directory barrel that does not reexport the consumer: if `#synapse/controller` would cause a cycle, use `#synapse/controller/componente`. Never import individual files across areas. Barrel exports must reference only files or directories in their own directory using relative paths.
 - Combine type and value imports from the same module into one declaration using inline `type`.
 - Every source directory must contain one barrel named `index.ts`, containing only `export * from` or `export { default as Name } from` declarations.
-- Do not use `any`, `unknown`, type assertions or casts.
-- Avoid unnecessary functions, including redundant type guards.
+- Do not use `any`, `unknown`, `Record`, type assertions or casts.
+- Split complex logic into small, readable functions with clear responsibilities; avoid unnecessary functions and redundant type guards.
 - Do not declare functions inside other functions; keep responsibilities separate.
 - Use ternaries only for very small expressions; prefer explicit conditionals when they improve readability.
 - Do not edit generated files directly; change their sources or generation configuration and regenerate them.

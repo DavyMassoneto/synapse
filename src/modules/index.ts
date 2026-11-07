@@ -1,1 +1,1 @@
-export * from "#synapse/modules/advisor/index.js";
+export * from "./advisor/index.js";

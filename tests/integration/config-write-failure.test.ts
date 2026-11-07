@@ -2,8 +2,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, rmSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { test } from "vitest";
-import { TestContext } from "../fixtures/typed-context.ts";
-import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
+import { TestContext, TypedAdvisorHost } from "../fixtures/index.js";
 
 async function reportWriteFailure(): Promise<void> {
   const host = new TypedAdvisorHost();

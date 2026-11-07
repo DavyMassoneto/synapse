@@ -5,13 +5,12 @@ import {
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/identifiers.js";
-import { syncAdvisor } from "#synapse/integration/pi/advisor/sync/index.js";
-import { type Advisor } from "#synapse/modules/index.js";
-import { type AdvisorContext } from "../context-types.ts";
-import { type AdvisorHost } from "../host-types.ts";
+import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/constants";
+import { type AdvisorContext, type AdvisorHost } from "#synapse/integration/pi/advisor/contracts";
+import { syncAdvisor } from "#synapse/integration/pi/advisor/sync";
+import { type Advisor } from "#synapse/modules";
 
-class AdvisorEvents {
+export class AdvisorEvents {
   constructor(
     private readonly pi: AdvisorHost,
     private readonly advisor: Advisor,
@@ -68,17 +67,12 @@ class AdvisorEvents {
       ],
     };
   }
-}
-
-export function registerEvents(
-  pi: AdvisorHost,
-  advisor: Advisor,
-  shutdownCallback: () => void,
-): void {
-  const handlers = new AdvisorEvents(pi, advisor, shutdownCallback);
-  pi.on("session_start", handlers.start.bind(handlers));
-  pi.on("session_shutdown", handlers.shutdown.bind(handlers));
-  pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
-  pi.on("tool_result", handlers.toolResult.bind(handlers));
-  pi.on("turn_end", handlers.turnEnd.bind(handlers));
+  static register(pi: AdvisorHost, advisor: Advisor, shutdownCallback: () => void): void {
+    const handlers = new AdvisorEvents(pi, advisor, shutdownCallback);
+    pi.on("session_start", handlers.start.bind(handlers));
+    pi.on("session_shutdown", handlers.shutdown.bind(handlers));
+    pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
+    pi.on("tool_result", handlers.toolResult.bind(handlers));
+    pi.on("turn_end", handlers.turnEnd.bind(handlers));
+  }
 }

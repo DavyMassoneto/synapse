@@ -1,2 +1,2 @@
-export * from "#synapse/composition/compose.js";
-export * from "#synapse/composition/types.js";
+export * from "./compose.js";
+export * from "./types.js";

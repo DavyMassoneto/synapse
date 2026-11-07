@@ -33,7 +33,7 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `src/modules/pi-web/` | Área exclusiva da frente de pi-web |
 | `src/modules/browser/` | Área exclusiva da frente de navegador |
 | `src/modules/advisor/` | Área exclusiva da frente de advisor |
-| `src/modules/<modulo>/public/` | Contratos de entrada e saída, portas requeridas e ponto público de montagem do módulo |
+| `src/modules/<modulo>/public/` | Contratos de entrada e saída e portas requeridas |
 | `src/modules/<modulo>/internal/` | Núcleo privado de regras e casos de uso; a organização interna pertence à frente |
 | `src/modules/<modulo>/adapters/` | Adaptadores privados de entrada e saída: interface, armazenamento, provedores e engine, conforme o módulo |
 | `src/modules/<modulo>/tests/` | Testes isolados do módulo e substitutos de suas portas |
@@ -44,7 +44,7 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `tests/integration/` | Verificação dos contratos conectados e da integração com o host |
 | `tests/fixtures/` | Substitutos e dados usados nos testes de integração |
 
-`public/` separa contratos sem dependências concretas do ponto de montagem que instancia a implementação privada. A composição usa esse ponto para obter a interface do módulo; não importa `internal/` nem `adapters/`. Não há uma pasta compartilhada de regras de negócio.
+`public/` contém contratos sem dependências concretas. O ponto de montagem do módulo instancia a implementação privada; a composição usa esse ponto sem importar `internal/` nem `adapters/`. Não há uma pasta compartilhada de regras de negócio.
 
 ## Dependências permitidas
 

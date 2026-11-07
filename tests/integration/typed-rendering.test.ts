@@ -1,31 +1,13 @@
 import assert from "node:assert/strict";
-import { type AgentToolResult } from "@earendil-works/pi-coding-agent";
 import { test } from "vitest";
-import { type AdvisorRenderTheme, type AdvisorToolDetails } from "#synapse/integration/index.js";
-import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
-
-class PlainTheme implements AdvisorRenderTheme {
-  fg(_color: Parameters<AdvisorRenderTheme["fg"]>[0], text: string): string {
-    return text;
-  }
-  bold(text: string): string {
-    return text;
-  }
-}
-
-const RESULT: AgentToolResult<AdvisorToolDetails> = {
-  content: [
-    { type: "text", text: "line0\nline1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9" },
-  ],
-  details: { model: "provider/original" },
-};
+import { PlainTheme, RENDER_RESULT, TypedAdvisorHost } from "../fixtures/index.js";
 
 function partialRendering(): void {
   const host = new TypedAdvisorHost();
   try {
     assert.ok(host.tool?.renderResult);
     const component = host.tool.renderResult(
-      RESULT,
+      RENDER_RESULT,
       { isPartial: true, expanded: false },
       new PlainTheme(),
       {},
@@ -41,7 +23,7 @@ function compactRendering(): void {
   try {
     assert.ok(host.tool?.renderResult);
     const component = host.tool.renderResult(
-      RESULT,
+      RENDER_RESULT,
       { isPartial: false, expanded: false },
       new PlainTheme(),
       {},
@@ -58,8 +40,8 @@ function expandedRendering(): void {
     assert.ok(host.tool?.renderResult);
     const render = host.tool.renderResult;
     const theme = new PlainTheme();
-    const compact = render(RESULT, { isPartial: false, expanded: false }, theme, {});
-    const expanded = render(RESULT, { isPartial: false, expanded: true }, theme, {
+    const compact = render(RENDER_RESULT, { isPartial: false, expanded: false }, theme, {});
+    const expanded = render(RENDER_RESULT, { isPartial: false, expanded: true }, theme, {
       lastComponent: compact,
     });
     assert.equal(expanded, compact);
@@ -75,7 +57,7 @@ function historicalModel(): void {
     assert.ok(host.tool?.renderResult);
     host.advisor.selectModel("provider/other");
     const component = host.tool.renderResult(
-      RESULT,
+      RENDER_RESULT,
       { isPartial: false, expanded: false },
       new PlainTheme(),
       {},
@@ -91,7 +73,7 @@ function errorRendering(): void {
   try {
     assert.ok(host.tool?.renderResult);
     const component = host.tool.renderResult(
-      RESULT,
+      RENDER_RESULT,
       { isPartial: false, expanded: false },
       new PlainTheme(),
       { isError: true },
