@@ -1,5 +1,5 @@
 import { ADVISOR_SYSTEM } from "#synapse/modules/advisor/internal/constants";
-import { type Consultation, type ResolvedModel } from "#synapse/modules/advisor/public";
+import type { Consultation, ResolvedModel } from "#synapse/modules/advisor/public";
 import {
   ESTIMATED_CHARACTERS_PER_TOKEN,
   HOST_SAFETY_TOKENS,

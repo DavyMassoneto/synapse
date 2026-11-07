@@ -1,10 +1,10 @@
-import {
-  type AgentToolResult,
-  type Theme,
-  type ToolRenderResultOptions,
+import type {
+  AgentToolResult,
+  Theme,
+  ToolRenderResultOptions,
 } from "@earendil-works/pi-coding-agent";
-import { type Component } from "@earendil-works/pi-tui";
-import { type AdvisorToolDetails, type AdvisorToolInput } from "./tool-base-types.ts";
+import type { Component } from "@earendil-works/pi-tui";
+import type { AdvisorToolDetails, AdvisorToolInput } from "./tool-base-types.ts";
 
 export type AdvisorRenderTheme = Pick<Theme, "fg" | "bold">;
 

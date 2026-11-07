@@ -1,8 +1,8 @@
-import { type AdvisorContext } from "#synapse/integration/pi/advisor/contracts";
-import { type Advisor } from "#synapse/modules";
+import type { Advisor } from "#synapse/modules";
+import type { AdvisorContext } from "../contracts";
 import { updateAdvisorStatus } from "./status.ts";
 import { updateAdvisorTool } from "./tool-state.ts";
-import { type AdvisorToolActivation } from "./types.ts";
+import type { AdvisorToolActivation } from "./types.ts";
 
 export function syncAdvisor(
   pi: AdvisorToolActivation,

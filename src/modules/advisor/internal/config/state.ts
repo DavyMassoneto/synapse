@@ -5,7 +5,7 @@ import {
   THINKING_LEVELS,
   type ThinkingLevel,
 } from "#synapse/modules/advisor/public";
-import { type ConfigLoadResult, type ConfigPort } from "./contracts.ts";
+import type { ConfigLoadResult, ConfigPort } from "./contracts.ts";
 
 export class AdvisorConfiguration {
   private current: AdvisorResult;

@@ -1,11 +1,11 @@
 import { AdvisorService } from "#synapse/modules/advisor/internal";
-import { type ConfigLoadResult, type ConfigPort } from "#synapse/modules/advisor/internal/config";
-import {
-  type ModelPort,
-  type ModelRequest,
-  type ModelResponse,
-  type ResolvedModel,
-  type ThinkingLevel,
+import type { ConfigLoadResult, ConfigPort } from "#synapse/modules/advisor/internal/config";
+import type {
+  ModelPort,
+  ModelRequest,
+  ModelResponse,
+  ResolvedModel,
+  ThinkingLevel,
 } from "#synapse/modules/advisor/public";
 
 export { AdvisorService };

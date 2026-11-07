@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
 import { buildTranscript } from "#synapse/modules/advisor/internal/format";
-import { type TranscriptMessage } from "#synapse/modules/advisor/public";
+import type { TranscriptMessage } from "#synapse/modules/advisor/public";
 
 function originalTaskAndGap(): void {
   const task = `TAREFA_ORIGINAL ${"x".repeat(300)}`;

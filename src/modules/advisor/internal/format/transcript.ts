@@ -1,5 +1,5 @@
 import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/constants";
-import { type TranscriptMessage } from "#synapse/modules/advisor/public";
+import type { TranscriptMessage } from "#synapse/modules/advisor/public";
 
 import { CONTENT_LIMITS, HEAD_FRACTION, SEPARATOR } from "./limits.ts";
 

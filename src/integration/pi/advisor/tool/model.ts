@@ -1,12 +1,7 @@
 import { type Api, clampThinkingLevel, type Model } from "@earendil-works/pi-ai";
-import {
-  type ModelRequest,
-  type ModelResponse,
-  type ResolvedModel,
-  type ThinkingLevel,
-} from "#synapse/modules";
+import type { ModelRequest, ModelResponse, ResolvedModel, ThinkingLevel } from "#synapse/modules";
 import { MODEL_DIAGNOSTICS } from "./diagnostics.ts";
-import { type AdvisorModelRegistry } from "./model-types.ts";
+import type { AdvisorModelRegistry } from "./model-types.ts";
 
 export class AdvisorModel {
   constructor(private readonly registry: AdvisorModelRegistry) {}

@@ -1,17 +1,17 @@
-import {
-  type BeforeAgentStartEvent,
-  type BeforeAgentStartEventResult,
-  type ExtensionAPI,
-  type RegisteredCommand,
-  type SessionShutdownEvent,
-  type SessionStartEvent,
-  type ToolResultEvent,
-  type ToolResultEventResult,
-  type TurnEndEvent,
-  type TurnEndEventResult,
+import type {
+  BeforeAgentStartEvent,
+  BeforeAgentStartEventResult,
+  ExtensionAPI,
+  RegisteredCommand,
+  SessionShutdownEvent,
+  SessionStartEvent,
+  ToolResultEvent,
+  ToolResultEventResult,
+  TurnEndEvent,
+  TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
-import { type AdvisorContext } from "./context-types.ts";
-import { type AdvisorTool } from "./tool-types.ts";
+import type { AdvisorContext } from "./context-types.ts";
+import type { AdvisorTool } from "./tool-types.ts";
 
 export interface AdvisorCommandDefinition
   extends Pick<RegisteredCommand, "description" | "getArgumentCompletions"> {

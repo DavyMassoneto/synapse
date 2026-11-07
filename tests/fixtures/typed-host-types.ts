@@ -1,9 +1,9 @@
-import {
-  type AdvisorBeforeStartHandler,
-  type AdvisorSessionStartHandler,
-  type AdvisorShutdownHandler,
-  type AdvisorToolResultHandler,
-  type AdvisorTurnEndHandler,
+import type {
+  AdvisorBeforeStartHandler,
+  AdvisorSessionStartHandler,
+  AdvisorShutdownHandler,
+  AdvisorToolResultHandler,
+  AdvisorTurnEndHandler,
 } from "#synapse/integration";
 
 export type AdvisorEventRegistration =

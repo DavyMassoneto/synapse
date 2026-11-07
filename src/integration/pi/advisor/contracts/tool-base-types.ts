@@ -1,5 +1,5 @@
-import { type ToolDefinition } from "@earendil-works/pi-coding-agent";
-import { type advisorParameters } from "./tool-schema.ts";
+import type { ToolDefinition } from "@earendil-works/pi-coding-agent";
+import type { advisorParameters } from "./tool-schema.ts";
 
 export interface AdvisorToolDetails {
   model?: string;

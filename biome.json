@@ -26,7 +26,7 @@
         "useImportType": {
           "level": "error",
           "options": {
-            "style": "inlineType"
+            "style": "auto"
           }
         },
         "noRestrictedImports": {

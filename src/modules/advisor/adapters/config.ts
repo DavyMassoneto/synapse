@@ -2,8 +2,8 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
-import { type ConfigLoadResult } from "#synapse/modules/advisor/internal/config";
-import { type Config } from "#synapse/modules/advisor/public";
+import type { ConfigLoadResult } from "#synapse/modules/advisor/internal/config";
+import type { Config } from "../public";
 import { configSchema } from "./config-schema.ts";
 
 import { CONFIG_DIAGNOSTICS } from "./diagnostics.ts";

@@ -1,7 +1,7 @@
-import { type AgentMessage } from "@earendil-works/pi-agent-core";
-import { type ImageContent, type TextContent } from "@earendil-works/pi-ai";
-import { type AdvisorContext } from "#synapse/integration/pi/advisor/contracts";
-import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules";
+import type { AgentMessage } from "@earendil-works/pi-agent-core";
+import type { ImageContent, TextContent } from "@earendil-works/pi-ai";
+import type { TranscriptBlock, TranscriptMessage } from "#synapse/modules";
+import type { AdvisorContext } from "../contracts";
 
 function convertContent(content: string | (TextContent | ImageContent)[]): TranscriptBlock[] {
   if (typeof content === "string") {

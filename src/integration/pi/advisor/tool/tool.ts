@@ -1,5 +1,6 @@
-import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/constants";
+import type { AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
+import type { Advisor } from "#synapse/modules";
+import { ADVISOR_NAME } from "../constants";
 import {
   type AdvisorContext,
   type AdvisorHost,
@@ -7,14 +8,9 @@ import {
   type AdvisorToolInput,
   type AdvisorToolResult,
   advisorParameters,
-} from "#synapse/integration/pi/advisor/contracts";
-import {
-  ADVISOR_MESSAGES,
-  ADVISOR_TOOL_DESCRIPTION,
-  ADVISOR_TOOL_SNIPPET,
-} from "#synapse/integration/pi/advisor/presentation";
-import { renderAdvisorCall, renderAdvisorResult } from "#synapse/integration/pi/advisor/rendering";
-import { type Advisor } from "#synapse/modules";
+} from "../contracts";
+import { ADVISOR_MESSAGES, ADVISOR_TOOL_DESCRIPTION, ADVISOR_TOOL_SNIPPET } from "../presentation";
+import { renderAdvisorCall, renderAdvisorResult } from "../rendering";
 import { toolFailure } from "./failure.ts";
 import { AdvisorModel } from "./model.ts";
 import { captureTranscript } from "./transcript.ts";

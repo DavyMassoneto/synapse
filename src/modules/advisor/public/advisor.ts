@@ -1,10 +1,6 @@
-import { type AdvisorResult } from "#synapse/modules/advisor/public/config";
-import {
-  type Consultation,
-  type ConsultationResult,
-  type ModelPort,
-} from "#synapse/modules/advisor/public/consultation";
-import { type ReminderTurn } from "./reminder.ts";
+import type { AdvisorResult } from "./config/index.js";
+import type { Consultation, ConsultationResult, ModelPort } from "./consultation/index.js";
+import type { ReminderTurn } from "./reminder.ts";
 
 export interface Advisor {
   status(): AdvisorResult;

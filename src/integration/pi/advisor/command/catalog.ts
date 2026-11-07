@@ -1,5 +1,5 @@
-import { type AutocompleteItem } from "@earendil-works/pi-tui";
-import { type AdvisorContext } from "#synapse/integration/pi/advisor/contracts";
+import type { AutocompleteItem } from "@earendil-works/pi-tui";
+import type { AdvisorContext } from "../contracts";
 import { COMPLETION_LIMIT } from "./limits.ts";
 
 export class ModelCatalog {

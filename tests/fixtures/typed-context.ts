@@ -6,12 +6,12 @@ import {
   type Model,
   type ModelsSimpleStreamOptions,
 } from "@earendil-works/pi-ai";
-import { type SessionProjection } from "@earendil-works/pi-coding-agent";
-import {
-  type AdvisorContext,
-  type AdvisorRegistry,
-  type AdvisorSession,
-  type AdvisorUI,
+import type { SessionProjection } from "@earendil-works/pi-coding-agent";
+import type {
+  AdvisorContext,
+  AdvisorRegistry,
+  AdvisorSession,
+  AdvisorUI,
 } from "#synapse/integration";
 
 import { TEST_USAGE } from "./usage.ts";

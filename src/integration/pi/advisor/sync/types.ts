@@ -1,3 +1,3 @@
-import { type AdvisorHost } from "#synapse/integration/pi/advisor/contracts";
+import type { AdvisorHost } from "../contracts";
 
 export type AdvisorToolActivation = Pick<AdvisorHost, "getActiveTools" | "setActiveTools">;

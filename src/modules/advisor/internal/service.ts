@@ -10,14 +10,14 @@ import {
 } from "#synapse/modules/advisor/internal/constants";
 import { preparePrompt } from "#synapse/modules/advisor/internal/format";
 import { REMINDER, ReminderCounter } from "#synapse/modules/advisor/internal/reminder";
-import {
-  type Advisor,
-  type AdvisorResult,
-  type Consultation,
-  type ConsultationResult,
-  type ModelPort,
-  type ReminderTurn,
-} from "#synapse/modules/advisor/public";
+import type {
+  Advisor,
+  AdvisorResult,
+  Consultation,
+  ConsultationResult,
+  ModelPort,
+  ReminderTurn,
+} from "../public";
 
 export class AdvisorService implements Advisor {
   readonly consultationInstructions = TIMING;

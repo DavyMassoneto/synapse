@@ -13,7 +13,7 @@ import {
   registerAdvisor,
 } from "#synapse/integration";
 import { type Advisor, createAdvisor } from "#synapse/modules";
-import { type AdvisorEventRegistration } from "./typed-host-types.ts";
+import type { AdvisorEventRegistration } from "./typed-host-types.ts";
 
 export class AdvisorHostCollector implements AdvisorHost {
   readonly starts: AdvisorSessionStartHandler[] = [];

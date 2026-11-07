@@ -1,14 +1,11 @@
-import {
-  type AgentToolResult,
-  type ToolRenderResultOptions,
-} from "@earendil-works/pi-coding-agent";
+import type { AgentToolResult, ToolRenderResultOptions } from "@earendil-works/pi-coding-agent";
 import { type Component, Text } from "@earendil-works/pi-tui";
-import {
-  type AdvisorRenderContext,
-  type AdvisorRenderTheme,
-  type AdvisorToolDetails,
-  type AdvisorToolInput,
-} from "#synapse/integration/pi/advisor/contracts";
+import type {
+  AdvisorRenderContext,
+  AdvisorRenderTheme,
+  AdvisorToolDetails,
+  AdvisorToolInput,
+} from "../contracts";
 import {
   ADDITIONAL_COLOR,
   ADVISOR_MESSAGES,
@@ -17,7 +14,7 @@ import {
   PREVIEW_LINES,
   SUCCESS_COLOR,
   TITLE_COLOR,
-} from "#synapse/integration/pi/advisor/presentation";
+} from "../presentation";
 
 function textComponent(context: AdvisorRenderContext): Text {
   if (context.lastComponent instanceof Text) {

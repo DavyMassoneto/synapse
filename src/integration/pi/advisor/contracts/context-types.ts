@@ -1,7 +1,7 @@
-import {
-  type ExtensionContext,
-  type ExtensionUIContext,
-  type ModelRegistry,
+import type {
+  ExtensionContext,
+  ExtensionUIContext,
+  ModelRegistry,
 } from "@earendil-works/pi-coding-agent";
 
 export type AdvisorUI = Pick<ExtensionUIContext, "notify" | "select" | "setStatus">;

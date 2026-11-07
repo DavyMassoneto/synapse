@@ -1,10 +1,10 @@
-import { type AdvisorContext } from "./context-types.ts";
-import { type AdvisorRenderers } from "./rendering-types.ts";
-import {
-  type AdvisorToolInput,
-  type AdvisorToolResult,
-  type AdvisorToolUpdate,
-  type PiAdvisorTool,
+import type { AdvisorContext } from "./context-types.ts";
+import type { AdvisorRenderers } from "./rendering-types.ts";
+import type {
+  AdvisorToolInput,
+  AdvisorToolResult,
+  AdvisorToolUpdate,
+  PiAdvisorTool,
 } from "./tool-base-types.ts";
 
 export interface AdvisorTool

@@ -1,14 +1,14 @@
-import {
-  type BeforeAgentStartEvent,
-  type SessionStartEvent,
-  type ToolResultEvent,
-  type TurnEndEvent,
-  type TurnEndEventResult,
+import type {
+  BeforeAgentStartEvent,
+  SessionStartEvent,
+  ToolResultEvent,
+  TurnEndEvent,
+  TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/constants";
-import { type AdvisorContext, type AdvisorHost } from "#synapse/integration/pi/advisor/contracts";
-import { syncAdvisor } from "#synapse/integration/pi/advisor/sync";
-import { type Advisor } from "#synapse/modules";
+import type { Advisor } from "#synapse/modules";
+import { ADVISOR_NAME } from "../constants";
+import type { AdvisorContext, AdvisorHost } from "../contracts";
+import { syncAdvisor } from "../sync";
 
 export class AdvisorEvents {
   constructor(

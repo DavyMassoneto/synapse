@@ -1,9 +1,9 @@
-import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/constants";
-import { type AdvisorContext, type AdvisorHost } from "#synapse/integration/pi/advisor/contracts";
-import { ADVISOR_MESSAGES } from "#synapse/integration/pi/advisor/presentation";
-import { syncAdvisor } from "#synapse/integration/pi/advisor/sync";
-import { type Advisor, type AdvisorResult } from "#synapse/modules";
+import type { SessionStartEvent } from "@earendil-works/pi-coding-agent";
+import type { Advisor, AdvisorResult } from "#synapse/modules";
+import { ADVISOR_NAME } from "../constants";
+import type { AdvisorContext, AdvisorHost } from "../contracts";
+import { ADVISOR_MESSAGES } from "../presentation";
+import { syncAdvisor } from "../sync";
 import { ModelCatalog } from "./catalog.ts";
 import { chooseModel } from "./choose-model.ts";
 import { parseAdvisorCommand } from "./parser.ts";

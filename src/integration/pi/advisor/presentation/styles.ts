@@ -1,4 +1,4 @@
-import { type ThemeColor } from "@earendil-works/pi-coding-agent";
+import type { ThemeColor } from "@earendil-works/pi-coding-agent";
 
 export const TITLE_COLOR: ThemeColor = "toolTitle";
 export const PENDING_COLOR: ThemeColor = "warning";

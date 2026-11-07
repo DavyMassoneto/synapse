@@ -1,4 +1,4 @@
-import { type ThinkingLevel } from "./types.ts";
+import type { ThinkingLevel } from "./types.ts";
 
 export interface Config {
   model?: string;

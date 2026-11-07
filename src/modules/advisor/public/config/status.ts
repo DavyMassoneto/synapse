@@ -1,5 +1,5 @@
-import { type Failure } from "#synapse/modules/advisor/public/result";
-import { type Config } from "./config.ts";
+import type { Failure } from "../result";
+import type { Config } from "./config.ts";
 
 export interface AdvisorSuccess {
   kind: "success";

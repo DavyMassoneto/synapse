@@ -1,5 +1,5 @@
-import { type AgentToolResult } from "@earendil-works/pi-coding-agent";
-import { type AdvisorToolDetails } from "#synapse/integration";
+import type { AgentToolResult } from "@earendil-works/pi-coding-agent";
+import type { AdvisorToolDetails } from "#synapse/integration";
 
 export const RENDER_RESULT: AgentToolResult<AdvisorToolDetails> = {
   content: [

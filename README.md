@@ -17,7 +17,7 @@ O módulo advisor está disponível; memória, pi-web e navegador continuam como
 
 ## Desenvolvimento
 
-Com Node.js 24, execute `npm ci --include=dev` para instalar dependências e `npm run validate` para verificar Biome, tipos, compilação e testes Vitest. Após alterar os fontes, `npm run build` recompila a distribuição em `dist/`.
+Com Node.js 24, execute `npm ci --include=dev` para instalar dependências e `npm run validate` para verificar Biome, tipos, compilação e testes Vitest. Após alterar os fontes, `npm run build` compila CommonJS e seu manifesto em `dist/`, preservando imports relativos de diretórios para carregamento pelo Pi.
 
 ## Documentação
 

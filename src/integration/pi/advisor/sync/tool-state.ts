@@ -1,5 +1,5 @@
-import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/constants";
-import { type AdvisorToolActivation } from "./types.ts";
+import { ADVISOR_NAME } from "../constants";
+import type { AdvisorToolActivation } from "./types.ts";
 
 function isOtherTool(name: string): boolean {
   return name !== ADVISOR_NAME;

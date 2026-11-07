@@ -1,5 +1,5 @@
-import { type ThinkingLevel } from "#synapse/modules/advisor/public/config";
-import { type Cancelled } from "#synapse/modules/advisor/public/result";
+import type { ThinkingLevel } from "../config";
+import type { Cancelled } from "../result";
 
 export interface UsageCost {
   input: number;

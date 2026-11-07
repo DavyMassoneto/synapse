@@ -1,4 +1,4 @@
-import { type AdvisorCommandInput } from "./parser-types.ts";
+import type { AdvisorCommandInput } from "./parser-types.ts";
 
 export function parseAdvisorCommand(args: string): AdvisorCommandInput {
   const input = args.trim();

@@ -1,8 +1,8 @@
 import assert from "node:assert/strict";
-import {
-  type BeforeAgentStartEvent,
-  type TurnEndEvent,
-  type TurnEndEventResult,
+import type {
+  BeforeAgentStartEvent,
+  TurnEndEvent,
+  TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
 import { test } from "vitest";
 import { TestContext, TypedAdvisorHost } from "../fixtures/index.js";

@@ -1,4 +1,4 @@
-import { type ConfigCase } from "./distribution-case-types.ts";
+import type { ConfigCase } from "./distribution-case-types.ts";
 
 export const CASES: ConfigCase[] = [
   { name: "ausente", expected: /Advisor: desligado, thinking high/ },

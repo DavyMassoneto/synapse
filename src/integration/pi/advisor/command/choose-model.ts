@@ -1,8 +1,8 @@
-import { type AdvisorContext } from "#synapse/integration/pi/advisor/contracts";
-import { ADVISOR_MESSAGES } from "#synapse/integration/pi/advisor/presentation";
-import { type ModelCatalog } from "./catalog.ts";
+import type { AdvisorContext } from "../contracts";
+import { ADVISOR_MESSAGES } from "../presentation";
+import type { ModelCatalog } from "./catalog.ts";
 import { MODEL_SELECTION_LIMIT } from "./limits.ts";
-import { type ModelSelection } from "./selection-types.ts";
+import type { ModelSelection } from "./selection-types.ts";
 
 async function chooseInitial(
   context: AdvisorContext,

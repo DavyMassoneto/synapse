@@ -1,4 +1,4 @@
-import { type ReminderTurn } from "#synapse/modules/advisor/public";
+import type { ReminderTurn } from "#synapse/modules/advisor/public";
 
 import { REMIND_EVERY } from "./constants.ts";
 
