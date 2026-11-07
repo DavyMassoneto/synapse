@@ -17,7 +17,7 @@ O módulo advisor está disponível; memória, pi-web e navegador continuam como
 
 ## Desenvolvimento
 
-Execute `npm ci --include=dev` para instalar dependências e `npm run validate` para verificar Biome, tipos, correspondência do bundle e testes. Após alterar os fontes, `npm run build` regenera `dist/index.js`.
+Com Node.js 24, execute `npm ci --include=dev` para instalar dependências e `npm run validate` para verificar Biome, tipos, correspondência do bundle e testes. Após alterar os fontes, `npm run build` regenera `dist/index.js`.
 
 ## Documentação
 
