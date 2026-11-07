@@ -13,37 +13,97 @@ class PlainTheme implements AdvisorRenderTheme {
   }
 }
 
-function historicalRendering(): void {
+const RESULT: AgentToolResult<AdvisorToolDetails> = {
+  content: [
+    { type: "text", text: "line0\nline1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9" },
+  ],
+  details: { model: "provider/original" },
+};
+
+function partialRendering(): void {
   const host = new TypedAdvisorHost();
   try {
-    assert.ok(host.tool);
-    const render = host.tool.renderResult;
-    assert.ok(render);
-    const theme = new PlainTheme();
-    const lines: string[] = [];
-    for (let index = 0; index < 10; index++) {
-      lines.push(`line${index}`);
-    }
-    const result: AgentToolResult<AdvisorToolDetails> = {
-      content: [{ type: "text", text: lines.join("\n") }],
-      details: { model: "provider/original" },
-    };
-    host.advisor.selectModel("provider/other");
-    const partial = render(result, { isPartial: true, expanded: false }, theme, {});
-    assert.match(partial.render(100).join(""), /consultando/);
-    const compact = render(result, { isPartial: false, expanded: false }, theme, {});
-    assert.match(compact.render(100).join(""), /provider\/original/);
-    assert.doesNotMatch(compact.render(100).join(""), /line9/);
-    const expanded = render(result, { isPartial: false, expanded: true }, theme, {
-      lastComponent: compact,
-    });
-    assert.equal(expanded, compact);
-    assert.match(expanded.render(100).join(""), /line9/);
-    const error = render(result, { isPartial: false, expanded: false }, theme, { isError: true });
-    assert.match(error.render(100).join(""), /line0/);
+    assert.ok(host.tool?.renderResult);
+    const component = host.tool.renderResult(
+      RESULT,
+      { isPartial: true, expanded: false },
+      new PlainTheme(),
+      {},
+    );
+    assert.match(component.render(100).join(""), /consultando/);
   } finally {
     host.cleanup();
   }
 }
 
-test("renderização preserva modelo histórico e reaproveita componente", historicalRendering);
+function compactRendering(): void {
+  const host = new TypedAdvisorHost();
+  try {
+    assert.ok(host.tool?.renderResult);
+    const component = host.tool.renderResult(
+      RESULT,
+      { isPartial: false, expanded: false },
+      new PlainTheme(),
+      {},
+    );
+    assert.doesNotMatch(component.render(100).join(""), /line9/);
+  } finally {
+    host.cleanup();
+  }
+}
+
+function expandedRendering(): void {
+  const host = new TypedAdvisorHost();
+  try {
+    assert.ok(host.tool?.renderResult);
+    const render = host.tool.renderResult;
+    const theme = new PlainTheme();
+    const compact = render(RESULT, { isPartial: false, expanded: false }, theme, {});
+    const expanded = render(RESULT, { isPartial: false, expanded: true }, theme, {
+      lastComponent: compact,
+    });
+    assert.equal(expanded, compact);
+    assert.match(expanded.render(100).join(""), /line9/);
+  } finally {
+    host.cleanup();
+  }
+}
+
+function historicalModel(): void {
+  const host = new TypedAdvisorHost();
+  try {
+    assert.ok(host.tool?.renderResult);
+    host.advisor.selectModel("provider/other");
+    const component = host.tool.renderResult(
+      RESULT,
+      { isPartial: false, expanded: false },
+      new PlainTheme(),
+      {},
+    );
+    assert.match(component.render(100).join(""), /provider\/original/);
+  } finally {
+    host.cleanup();
+  }
+}
+
+function errorRendering(): void {
+  const host = new TypedAdvisorHost();
+  try {
+    assert.ok(host.tool?.renderResult);
+    const component = host.tool.renderResult(
+      RESULT,
+      { isPartial: false, expanded: false },
+      new PlainTheme(),
+      { isError: true },
+    );
+    assert.match(component.render(100).join(""), /line0/);
+  } finally {
+    host.cleanup();
+  }
+}
+
+test("renderiza consulta parcial", partialRendering);
+test("renderiza resumo compacto", compactRendering);
+test("reutiliza componente ao expandir", expandedRendering);
+test("preserva modelo histórico", historicalModel);
+test("renderiza erro", errorRendering);

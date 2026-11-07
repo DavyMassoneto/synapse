@@ -4,6 +4,24 @@ import { buildTranscript } from "#synapse/modules/advisor/internal/format/index.
 import { type TranscriptMessage } from "#synapse/modules/advisor/public/transcript/index.js";
 import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
 
+function emptyTranscript(): void {
+  assert.equal(buildTranscript([], 200), "");
+}
+
+function hiddenShell(): void {
+  const messages: TranscriptMessage[] = [
+    { kind: "shell", hidden: true, command: "secret", blocks: [{ kind: "text", text: "hidden" }] },
+  ];
+  assert.ok(!buildTranscript(messages, 200).includes("secret"));
+}
+
+function toolErrorLabel(): void {
+  const messages: TranscriptMessage[] = [
+    { kind: "toolResult", tool: "read", error: true, blocks: [{ kind: "text", text: "failed" }] },
+  ];
+  assert.match(buildTranscript(messages, 200), /tool_result read \(error\)/);
+}
+
 function transcriptRespectsBudget(): void {
   const messages: TranscriptMessage[] = [
     { kind: "user", blocks: [{ kind: "text", text: "á".repeat(30_000) }] },
@@ -14,10 +32,6 @@ function transcriptRespectsBudget(): void {
   const short = buildTranscript(messages, 200);
   assert.ok(short.includes("MOST_RECENT"));
   assert.ok(short.length <= 200);
-  assert.ok(!short.includes("secret"));
-  assert.equal(buildTranscript([], 200), "");
-  assert.match(buildTranscript(messages.slice(1), 200), /tool_result read \(error\)/);
-
   const beginning: TranscriptMessage = {
     kind: "user",
     blocks: [{ kind: "text", text: "FIRST_MESSAGE" }],
@@ -50,5 +64,8 @@ async function smallContextFails(): Promise<void> {
   assert.equal(model.captured, undefined);
 }
 
-test("a transcrição trata conteúdo como dados e respeita o orçamento", transcriptRespectsBudget);
+test("transcrição vazia", emptyTranscript);
+test("shell oculto não aparece na transcrição", hiddenShell);
+test("resultado de ferramenta identifica erro", toolErrorLabel);
+test("transcrição preserva mensagens sob orçamento", transcriptRespectsBudget);
 test("janela muito pequena retorna falha antes de chamar o modelo", smallContextFails);

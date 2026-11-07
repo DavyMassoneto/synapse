@@ -28,6 +28,10 @@ export class AdvisorService implements Advisor {
   status(): AdvisorResult {
     return this.configuration.status();
   }
+  isEnabled(): boolean {
+    const status = this.configuration.status();
+    return status.kind === "success" && Boolean(status.config.model);
+  }
   selectModel(model: string): AdvisorResult {
     return this.configuration.selectModel(model);
   }
@@ -41,8 +45,7 @@ export class AdvisorService implements Advisor {
     this.reminder.reset();
   }
   turn(event: ReminderTurn): string | undefined {
-    const status = this.configuration.status();
-    if (status.kind === "failure" || !status.config.model) {
+    if (!this.isEnabled()) {
       return undefined;
     }
     if (this.reminder.advance(event)) {

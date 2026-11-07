@@ -11,6 +11,6 @@ export function syncAdvisor(
 ): void {
   const result = advisor.status();
   const model = result.kind === "success" ? result.config.model : undefined;
-  updateAdvisorTool(pi, Boolean(model));
+  updateAdvisorTool(pi, advisor.isEnabled());
   updateAdvisorStatus(context, model);
 }

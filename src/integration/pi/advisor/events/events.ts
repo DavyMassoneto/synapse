@@ -33,8 +33,7 @@ class AdvisorEvents {
 
   beforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): undefined {
     syncAdvisor(this.pi, this.advisor, context);
-    const result = this.advisor.status();
-    if (result.kind === "success" && result.config.model) {
+    if (this.advisor.isEnabled()) {
       event.systemPromptOptions.sections.advisor = this.advisor.consultationInstructions;
     } else {
       delete event.systemPromptOptions.sections.advisor;
@@ -62,7 +61,7 @@ class AdvisorEvents {
         ...event.entries,
         {
           type: "custom_message",
-          customType: "advisor-lembrete",
+          customType: "advisor-reminder",
           content: reminder,
           display: false,
         },

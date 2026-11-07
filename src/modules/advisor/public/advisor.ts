@@ -8,6 +8,7 @@ import { type ReminderTurn } from "./reminder.ts";
 
 export interface Advisor {
   status(): AdvisorResult;
+  isEnabled(): boolean;
   selectModel(model: string): AdvisorResult;
   disable(): AdvisorResult;
   setThinking(level: string): AdvisorResult;
