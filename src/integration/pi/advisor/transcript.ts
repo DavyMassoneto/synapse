@@ -1,7 +1,7 @@
 import { type AgentMessage } from "@earendil-works/pi-agent-core";
 import { type ImageContent, type TextContent } from "@earendil-works/pi-ai";
-import { type ExtensionContext } from "@earendil-works/pi-coding-agent";
 import { type TranscriptBlock, type TranscriptMessage } from "@/modules";
+import { type AdvisorContext } from "./context-types.ts";
 
 function convertContent(content: string | (TextContent | ImageContent)[]): TranscriptBlock[] {
   if (typeof content === "string") {
@@ -66,7 +66,7 @@ function convertMessage(message: AgentMessage): TranscriptMessage | undefined {
   }
 }
 
-export function captureTranscript(context: ExtensionContext): TranscriptMessage[] {
+export function captureTranscript(context: AdvisorContext): TranscriptMessage[] {
   const messages = context.sessionManager.buildSessionProjection().messages;
   const transcript: TranscriptMessage[] = [];
 

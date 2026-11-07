@@ -1,15 +1,15 @@
 import {
   type BeforeAgentStartEvent,
-  type ExtensionAPI,
-  type ExtensionContext,
   type SessionStartEvent,
   type ToolResultEvent,
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
 import { type Advisor } from "@/modules";
+import { type AdvisorContext } from "./context-types.ts";
+import { type AdvisorHost } from "./host-types.ts";
 
-export function syncAdvisor(pi: ExtensionAPI, advisor: Advisor, context: ExtensionContext): void {
+export function syncAdvisor(pi: AdvisorHost, advisor: Advisor, context: AdvisorContext): void {
   const result = advisor.status();
   const model = result.kind === "success" ? result.config.model : undefined;
   const active = pi.getActiveTools();
@@ -33,12 +33,12 @@ export function syncAdvisor(pi: ExtensionAPI, advisor: Advisor, context: Extensi
 
 class AdvisorEvents {
   constructor(
-    private readonly pi: ExtensionAPI,
+    private readonly pi: AdvisorHost,
     private readonly advisor: Advisor,
     private readonly shutdownCallback: () => void,
   ) {}
 
-  start(_event: SessionStartEvent, context: ExtensionContext): void {
+  start(_event: SessionStartEvent, context: AdvisorContext): void {
     this.advisor.reset();
     syncAdvisor(this.pi, this.advisor, context);
     const status = this.advisor.status();
@@ -51,7 +51,7 @@ class AdvisorEvents {
     this.shutdownCallback();
   }
 
-  beforeStart(event: BeforeAgentStartEvent, context: ExtensionContext): void {
+  beforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): undefined {
     syncAdvisor(this.pi, this.advisor, context);
     const result = this.advisor.status();
     if (result.kind === "success" && result.config.model) {
@@ -59,12 +59,14 @@ class AdvisorEvents {
     } else {
       delete event.systemPromptOptions.sections.advisor;
     }
+    return undefined;
   }
 
-  toolResult(event: ToolResultEvent): void {
+  toolResult(event: ToolResultEvent): undefined {
     if (event.toolName === "advisor") {
       this.advisor.reset();
     }
+    return undefined;
   }
 
   turnEnd(event: TurnEndEvent): TurnEndEventResult | undefined {
@@ -90,7 +92,7 @@ class AdvisorEvents {
 }
 
 export function registerEvents(
-  pi: ExtensionAPI,
+  pi: AdvisorHost,
   advisor: Advisor,
   shutdownCallback: () => void,
 ): void {

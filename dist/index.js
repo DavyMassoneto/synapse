@@ -471,11 +471,13 @@ var AdvisorEvents = class {
     } else {
       delete event.systemPromptOptions.sections.advisor;
     }
+    return void 0;
   }
   toolResult(event) {
     if (event.toolName === "advisor") {
       this.advisor.reset();
     }
+    return void 0;
   }
   turnEnd(event) {
     const reminder = this.advisor.turn({

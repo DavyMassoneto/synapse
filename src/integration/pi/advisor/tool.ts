@@ -1,10 +1,8 @@
-import {
-  type AgentToolUpdateCallback,
-  type ExtensionAPI,
-  type ExtensionToolContext,
-} from "@earendil-works/pi-coding-agent";
+import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { type Advisor } from "@/modules";
+import { type AdvisorContext } from "./context-types.ts";
+import { type AdvisorHost } from "./host-types.ts";
 import { AdvisorModel } from "./model.ts";
 import { createRenderers } from "./rendering.ts";
 import { advisorParameters } from "./tool-schema.ts";
@@ -26,7 +24,7 @@ class AdvisorToolHandler {
     _params: AdvisorToolInput,
     signal: AbortSignal | undefined,
     onUpdate: AgentToolUpdateCallback<AdvisorToolDetails> | undefined,
-    context: ExtensionToolContext,
+    context: AdvisorContext,
   ): AdvisorToolResult {
     const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
     if (callSignal.aborted) {
@@ -88,7 +86,7 @@ class AdvisorToolHandler {
   }
 }
 
-export function registerTool(pi: ExtensionAPI, advisor: Advisor, lifetime: AbortSignal): void {
+export function registerTool(pi: AdvisorHost, advisor: Advisor, lifetime: AbortSignal): void {
   const handler = new AdvisorToolHandler(advisor, lifetime);
   pi.registerTool({
     name: "advisor",

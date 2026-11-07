@@ -1,13 +1,10 @@
-import {
-  type ExtensionAPI,
-  type ExtensionCommandContext,
-  type ExtensionContext,
-  type SessionStartEvent,
-} from "@earendil-works/pi-coding-agent";
+import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
 import { type AutocompleteItem } from "@earendil-works/pi-tui";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { type Advisor, type AdvisorResult, THINKING_LEVEL_OPTIONS } from "@/modules";
+import { type AdvisorContext } from "./context-types.ts";
 import { syncAdvisor } from "./events.ts";
+import { type AdvisorHost } from "./host-types.ts";
 import { type ModelSelection } from "./selection-types.ts";
 
 const COMPLETION_LIMIT = 40;
@@ -18,15 +15,15 @@ class AdvisorCommand {
   private models: string[] = [];
 
   constructor(
-    private readonly pi: ExtensionAPI,
+    private readonly pi: AdvisorHost,
     private readonly advisor: Advisor,
   ) {}
 
-  start(_event: SessionStartEvent, context: ExtensionContext): void {
+  start(_event: SessionStartEvent, context: AdvisorContext): void {
     this.models = this.modelRefs(context);
   }
 
-  private modelRefs(context: ExtensionContext): string[] {
+  private modelRefs(context: AdvisorContext): string[] {
     const refs: string[] = [];
 
     if (context.scopedModels.length > 0) {
@@ -59,7 +56,7 @@ class AdvisorCommand {
     return items;
   }
 
-  private notifyStatus(context: ExtensionContext, status: AdvisorResult, message: string): void {
+  private notifyStatus(context: AdvisorContext, status: AdvisorResult, message: string): void {
     if (status.kind === "failure") {
       context.ui.notify(status.message, "error");
       return;
@@ -68,7 +65,7 @@ class AdvisorCommand {
     context.ui.notify(message, "info");
   }
 
-  private changeThinking(context: ExtensionContext, requested: string): void {
+  private changeThinking(context: AdvisorContext, requested: string): void {
     for (const level of THINKING_LEVEL_OPTIONS) {
       if (level === requested) {
         const status = this.advisor.setThinking(level);
@@ -108,7 +105,7 @@ class AdvisorCommand {
   }
 
   private async chooseModel(
-    context: ExtensionCommandContext,
+    context: AdvisorContext,
     models: string[],
     input: string,
   ): Promise<ModelSelection> {
@@ -148,7 +145,7 @@ class AdvisorCommand {
     return { kind: "cancelled" };
   }
 
-  async handle(args: string, context: ExtensionCommandContext): Promise<void> {
+  async handle(args: string, context: AdvisorContext): Promise<void> {
     this.models = this.modelRefs(context);
     const status = this.advisor.status();
     const input = args.trim();
@@ -188,7 +185,7 @@ class AdvisorCommand {
   }
 }
 
-export function registerCommand(pi: ExtensionAPI, advisor: Advisor): void {
+export function registerCommand(pi: AdvisorHost, advisor: Advisor): void {
   const command = new AdvisorCommand(pi, advisor);
   pi.on("session_start", command.start.bind(command));
   pi.registerCommand("advisor", {
