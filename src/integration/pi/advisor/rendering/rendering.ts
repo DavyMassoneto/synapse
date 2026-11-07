@@ -8,8 +8,11 @@ import {
   additionalLines,
   PREVIEW_LINES,
   RENDER_STYLE,
-} from "@/integration/pi/advisor/presentation";
-import { type AdvisorToolDetails, type AdvisorToolInput } from "@/integration/pi/advisor/tool";
+} from "#synapse/integration/pi/advisor/presentation/index.js";
+import {
+  type AdvisorToolDetails,
+  type AdvisorToolInput,
+} from "#synapse/integration/pi/advisor/tool/index.js";
 import { type AdvisorRenderContext, type AdvisorRenderTheme } from "./rendering-types.ts";
 
 function textComponent(context: AdvisorRenderContext): Text {

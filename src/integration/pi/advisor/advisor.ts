@@ -1,8 +1,8 @@
-import { type Advisor } from "@/modules";
-import { registerCommand } from "./command";
-import { registerEvents } from "./events";
+import { type Advisor } from "#synapse/modules/index.js";
+import { registerCommand } from "./command/index.js";
+import { registerEvents } from "./events/index.js";
 import { type AdvisorHost } from "./host-types.ts";
-import { registerTool } from "./tool";
+import { registerTool } from "./tool/index.js";
 
 export function registerAdvisor(
   pi: AdvisorHost,

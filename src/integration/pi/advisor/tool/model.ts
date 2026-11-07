@@ -4,7 +4,7 @@ import {
   type ModelResponse,
   type ResolvedModel,
   type ThinkingLevel,
-} from "@/modules";
+} from "#synapse/modules/index.js";
 import { credentialsMissing, MODEL_DIAGNOSTICS, modelNotFound } from "./diagnostics.ts";
 import { type AdvisorModelRegistry } from "./model-types.ts";
 

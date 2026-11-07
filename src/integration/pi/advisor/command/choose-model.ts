@@ -1,5 +1,8 @@
-import { type AdvisorContext } from "@/integration/pi/advisor";
-import { ADVISOR_MESSAGES, noMatchingModel } from "@/integration/pi/advisor/presentation";
+import { type AdvisorContext } from "#synapse/integration/pi/advisor/index.js";
+import {
+  ADVISOR_MESSAGES,
+  noMatchingModel,
+} from "#synapse/integration/pi/advisor/presentation/index.js";
 import { type ModelCatalog } from "./catalog.ts";
 import { type ModelSelection } from "./selection-types.ts";
 

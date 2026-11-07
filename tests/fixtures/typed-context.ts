@@ -12,7 +12,7 @@ import {
   type AdvisorRegistry,
   type AdvisorSession,
   type AdvisorUI,
-} from "@/integration";
+} from "#synapse/integration/index.js";
 
 export const TEST_USAGE = {
   input: 1,

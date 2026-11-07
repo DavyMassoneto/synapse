@@ -1,1 +1,1 @@
-export * from "@/integration/pi/advisor/events/events";
+export * from "#synapse/integration/pi/advisor/events/events.js";

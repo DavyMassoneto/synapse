@@ -1,12 +1,15 @@
 import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
+import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/identifiers.js";
 import {
   ADVISOR_MESSAGES,
   ADVISOR_TOOL_DESCRIPTION,
   ADVISOR_TOOL_SNIPPET,
-} from "@/integration/pi/advisor/presentation";
-import { renderAdvisorCall, renderAdvisorResult } from "@/integration/pi/advisor/rendering";
-import { type Advisor } from "@/modules";
+} from "#synapse/integration/pi/advisor/presentation/index.js";
+import {
+  renderAdvisorCall,
+  renderAdvisorResult,
+} from "#synapse/integration/pi/advisor/rendering/index.js";
+import { type Advisor } from "#synapse/modules/index.js";
 import { type AdvisorContext } from "../context-types.ts";
 import { type AdvisorHost } from "../host-types.ts";
 import { advisorUnavailable } from "./diagnostics.ts";

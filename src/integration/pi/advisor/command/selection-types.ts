@@ -1,4 +1,4 @@
-import { type Cancelled } from "@/modules";
+import { type Cancelled } from "#synapse/modules/index.js";
 
 export interface ModelSelected {
   kind: "selected";

@@ -1,5 +1,5 @@
-import { type Cancelled, type Failure } from "@/modules/advisor/public/result";
-import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
+import { type Cancelled, type Failure } from "#synapse/modules/advisor/public/result.js";
+import { type TranscriptMessage } from "#synapse/modules/advisor/public/transcript/index.js";
 import { type ModelSuccess } from "./model.ts";
 
 export interface ConsultationSuccess {

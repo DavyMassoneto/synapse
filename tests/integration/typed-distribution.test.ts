@@ -3,7 +3,7 @@ import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { inject, test } from "vitest";
+import { test } from "vitest";
 
 interface ConfigCase {
   name: string;
@@ -40,7 +40,7 @@ const CASES: ConfigCase[] = [
 ];
 
 function verifyDistribution(): void {
-  const fixture = inject("distributionFixture");
+  const fixture = "tests/fixtures/distribution-host.ts";
   assert.ok(fixture);
   const home = mkdtempSync(join(tmpdir(), "synapse-config-"));
   const directory = join(home, ".pi", "agent");

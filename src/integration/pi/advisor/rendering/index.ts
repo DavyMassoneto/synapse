@@ -1,2 +1,2 @@
-export * from "@/integration/pi/advisor/rendering/rendering";
-export * from "@/integration/pi/advisor/rendering/rendering-types";
+export * from "#synapse/integration/pi/advisor/rendering/rendering.js";
+export * from "#synapse/integration/pi/advisor/rendering/rendering-types.js";

@@ -7,14 +7,12 @@
     "pi-package"
   ],
   "scripts": {
-    "build": "npm run compile && node scripts/build.mjs",
+    "build": "tsgo -p tsconfig.build.json",
     "typecheck": "tsgo --noEmit",
     "check": "biome check .",
     "check:fix": "biome check --write .",
-    "validate": "npm run check && npm run typecheck && npm run check:build && npm test",
-    "test": "vitest run",
-    "check:build": "npm run compile && node scripts/check-build.mjs",
-    "compile": "tsgo -p tsconfig.build.json"
+    "validate": "npm run check && npm run typecheck && npm run build && npm test",
+    "test": "vitest run"
   },
   "peerDependencies": {
     "@earendil-works/pi-agent-core": "~1.5.0",
@@ -27,15 +25,14 @@
     "@biomejs/biome": "2.6.6",
     "@types/node": "^22.0.0",
     "@typescript/native-preview": "7.0.0-dev.20260707.2",
-    "esbuild": "0.28.1",
     "vitest": "4.1.12"
   },
   "pi": {
     "extensions": [
-      "./dist/index.js"
+      "./dist/entry.js"
     ]
   },
   "imports": {
-    "#build-options": "./scripts/build-options.mjs"
+    "#synapse/*": "./dist/*"
   }
 }

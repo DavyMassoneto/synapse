@@ -1,8 +1,14 @@
 import assert from "node:assert/strict";
-import register from "@/entry";
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+import { pathToFileURL } from "node:url";
+import register from "#synapse/entry.js";
 import { TestContext } from "./typed-context.ts";
 import { AdvisorHostCollector } from "./typed-host.ts";
 
+const manifest = JSON.parse(readFileSync("package.json", "utf8"));
+const entrypoint = pathToFileURL(resolve(manifest.pi.extensions[0])).href;
+assert.equal(entrypoint, import.meta.resolve("#synapse/entry.js"));
 const host = new AdvisorHostCollector();
 const context = new TestContext();
 register(host);

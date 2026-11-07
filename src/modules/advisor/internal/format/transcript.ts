@@ -1,5 +1,5 @@
-import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics";
-import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
+import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/diagnostics.js";
+import { type TranscriptMessage } from "#synapse/modules/advisor/public/transcript/index.js";
 
 const CONTENT_LIMITS = [12_000, 4_000, 1_500, 500];
 const HEAD_FRACTION = 0.6;

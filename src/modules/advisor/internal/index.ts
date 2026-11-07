@@ -1,3 +1,3 @@
-export * from "@/modules/advisor/internal/format";
-export * from "@/modules/advisor/internal/reminder";
-export * from "@/modules/advisor/internal/service";
+export * from "#synapse/modules/advisor/internal/format/index.js";
+export * from "#synapse/modules/advisor/internal/reminder/index.js";
+export * from "#synapse/modules/advisor/internal/service.js";

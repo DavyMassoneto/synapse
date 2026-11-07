@@ -1,5 +1,5 @@
 import { type ToolDefinition } from "@earendil-works/pi-coding-agent";
-import { type AdvisorRenderers } from "@/integration/pi/advisor/rendering";
+import { type AdvisorRenderers } from "#synapse/integration/pi/advisor/rendering/index.js";
 import { type AdvisorContext } from "../context-types.ts";
 import { type advisorParameters } from "./tool-schema.ts";
 

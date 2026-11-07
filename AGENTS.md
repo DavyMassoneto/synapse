@@ -3,7 +3,7 @@
 - Always follow docs/architecture.md
 - Follow SRP, DRY, YAGNI and Clean Code; keep code readable and consistently spaced. Write control-flow bodies on separate lines with braces.
 - Keep type declarations separate from implementation; do not declare inline object types in implementation.
-- Use `./` for sibling imports; `../` is allowed, but never use `../../`. For imports between areas, use `@/` and the highest applicable barrel of the destination directory, respecting module boundaries and avoiding ancestor-barrel cycles.
+- Use `./` for sibling imports; `../` is allowed, but never use `../../`. For imports between areas, use `#synapse/` with explicit `.js` paths and the highest applicable barrel of the destination directory, respecting module boundaries and avoiding ancestor-barrel cycles.
 - Combine type and value imports from the same module into one declaration using inline `type`.
 - Every source directory must contain one barrel named `index.ts`, containing only `export * from` or `export { default as Name } from` declarations.
 - Do not use `any`, `unknown`, type assertions or casts.
@@ -12,4 +12,4 @@
 - Use ternaries only for very small expressions; prefer explicit conditionals when they improve readability.
 - Do not edit generated files directly; change their sources or generation configuration and regenerate them.
 - Compile and typecheck TypeScript with the configured TypeScript compiler; run TypeScript tests with Vitest.
-- Before delivery, run `npm run validate` (Biome, TypeScript, bundle verification and tests). Use `npm run check:fix` for safe formatting fixes; `npm run check`, `npm run typecheck` and `npm run build` are also available individually.
+- Before delivery, run `npm run validate` (Biome, TypeScript compilation and tests). Use `npm run check:fix` for safe formatting fixes; `npm run check`, `npm run typecheck` and `npm run build` are also available individually.

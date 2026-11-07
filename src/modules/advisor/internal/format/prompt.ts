@@ -1,5 +1,8 @@
-import { ADVISOR_SYSTEM } from "@/modules/advisor/internal/instructions";
-import { type Consultation, type ResolvedModel } from "@/modules/advisor/public/consultation";
+import { ADVISOR_SYSTEM } from "#synapse/modules/advisor/internal/instructions.js";
+import {
+  type Consultation,
+  type ResolvedModel,
+} from "#synapse/modules/advisor/public/consultation/index.js";
 import { buildTranscript, clip } from "./transcript.ts";
 
 // A conservative character estimate; it is not a provider tokenizer.

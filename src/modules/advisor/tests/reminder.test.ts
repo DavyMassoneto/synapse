@@ -1,6 +1,10 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { REMIND_EVERY, REMINDER, ReminderCounter } from "@/modules/advisor/internal/reminder";
+import {
+  REMIND_EVERY,
+  REMINDER,
+  ReminderCounter,
+} from "#synapse/modules/advisor/internal/reminder/index.js";
 
 function verifyReminder(): void {
   const first = new ReminderCounter();

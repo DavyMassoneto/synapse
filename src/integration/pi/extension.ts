@@ -1,6 +1,6 @@
-import { type AdvisorLifecycle, type AdvisorRegistrationPort } from "@/composition";
-import { type AdvisorHost, registerAdvisor } from "@/integration/pi/advisor";
-import { type Advisor } from "@/modules";
+import { type AdvisorLifecycle, type AdvisorRegistrationPort } from "#synapse/composition/index.js";
+import { type AdvisorHost, registerAdvisor } from "#synapse/integration/pi/advisor/index.js";
+import { type Advisor } from "#synapse/modules/index.js";
 
 export class PiHost implements AdvisorRegistrationPort {
   constructor(private readonly pi: AdvisorHost) {}

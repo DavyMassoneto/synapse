@@ -1,4 +1,4 @@
-import { type ReminderTurn } from "@/modules/advisor/public/reminder";
+import { type ReminderTurn } from "#synapse/modules/advisor/public/reminder.js";
 
 export const REMIND_EVERY = 5;
 

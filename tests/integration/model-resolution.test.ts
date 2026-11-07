@@ -13,8 +13,8 @@ import {
 import { buildBaseOptions } from "@earendil-works/pi-ai/api/simple-options";
 import { normalizeContext } from "@earendil-works/pi-ai/utils/transcript";
 import { test } from "vitest";
-import { AdvisorModel, type AdvisorModelRegistry } from "@/integration";
-import { createAdvisor, type ModelRequest } from "@/modules";
+import { AdvisorModel, type AdvisorModelRegistry } from "#synapse/integration/index.js";
+import { createAdvisor, type ModelRequest } from "#synapse/modules/index.js";
 
 const USAGE = {
   input: 0,

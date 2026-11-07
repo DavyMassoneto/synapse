@@ -1,5 +1,5 @@
-import { FileConfig } from "@/modules/advisor/adapters";
-import { AdvisorService } from "@/modules/advisor/internal";
+import { FileConfig } from "#synapse/modules/advisor/adapters/index.js";
+import { AdvisorService } from "#synapse/modules/advisor/internal/index.js";
 import { type Advisor } from "./advisor.ts";
 
 export function createAdvisor(path: string): Advisor {

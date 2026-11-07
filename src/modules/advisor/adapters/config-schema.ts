@@ -1,5 +1,5 @@
 import { Type } from "typebox";
-import { THINKING_LEVELS } from "@/modules/advisor/public/config";
+import { THINKING_LEVELS } from "#synapse/modules/advisor/public/config/index.js";
 
 export const thinkingSchema = Type.Enum(THINKING_LEVELS);
 

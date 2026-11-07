@@ -1,2 +1,2 @@
-export * from "@/modules/advisor/internal/format/prompt";
-export * from "@/modules/advisor/internal/format/transcript";
+export * from "#synapse/modules/advisor/internal/format/prompt.js";
+export * from "#synapse/modules/advisor/internal/format/transcript.js";

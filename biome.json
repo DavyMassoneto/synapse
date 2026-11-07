@@ -35,7 +35,7 @@
             "patterns": [
               {
                 "group": ["../../**"],
-                "message": "Use o alias @/"
+                "message": "Use o alias #synapse/"
               }
             ]
           }
@@ -71,10 +71,10 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "@/composition",
-                      "@/integration",
-                      "@/integration/**",
-                      "@/modules"
+                      "#synapse/composition/index.js",
+                      "#synapse/integration/index.js",
+                      "#synapse/integration/**",
+                      "#synapse/modules/index.js"
                     ],
                     "message": "Dependência fora da fronteira do módulo"
                   }
@@ -100,10 +100,10 @@
                   },
                   {
                     "group": [
-                      "@/modules/*/internal",
-                      "@/modules/*/internal/**",
-                      "@/modules/*/adapters",
-                      "@/modules/*/adapters/**"
+                      "#synapse/modules/*/internal",
+                      "#synapse/modules/*/internal/**",
+                      "#synapse/modules/*/adapters",
+                      "#synapse/modules/*/adapters/**"
                     ],
                     "message": "Acesso a área privada do módulo"
                   },
@@ -139,16 +139,16 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "@/composition",
-                      "@/integration",
-                      "@/integration/**",
-                      "@/modules",
-                      "@/modules/browser",
-                      "@/modules/browser/**",
-                      "@/modules/memory",
-                      "@/modules/memory/**",
-                      "@/modules/pi-web",
-                      "@/modules/pi-web/**"
+                      "#synapse/composition/index.js",
+                      "#synapse/integration/index.js",
+                      "#synapse/integration/**",
+                      "#synapse/modules/index.js",
+                      "#synapse/modules/browser/index.js",
+                      "#synapse/modules/browser/**",
+                      "#synapse/modules/memory/index.js",
+                      "#synapse/modules/memory/**",
+                      "#synapse/modules/pi-web/index.js",
+                      "#synapse/modules/pi-web/**"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
                   }
@@ -175,16 +175,16 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "@/composition",
-                      "@/integration",
-                      "@/integration/**",
-                      "@/modules",
-                      "@/modules/browser",
-                      "@/modules/browser/**",
-                      "@/modules/memory",
-                      "@/modules/memory/**",
-                      "@/modules/pi-web",
-                      "@/modules/pi-web/**"
+                      "#synapse/composition/index.js",
+                      "#synapse/integration/index.js",
+                      "#synapse/integration/**",
+                      "#synapse/modules/index.js",
+                      "#synapse/modules/browser/index.js",
+                      "#synapse/modules/browser/**",
+                      "#synapse/modules/memory/index.js",
+                      "#synapse/modules/memory/**",
+                      "#synapse/modules/pi-web/index.js",
+                      "#synapse/modules/pi-web/**"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
                   },
@@ -192,8 +192,8 @@
                     "group": [
                       "../adapters",
                       "../adapters/**",
-                      "@/modules/advisor/adapters",
-                      "@/modules/advisor/adapters/**"
+                      "#synapse/modules/advisor/adapters/index.js",
+                      "#synapse/modules/advisor/adapters/**"
                     ],
                     "message": "Núcleo não acessa adaptadores"
                   },
@@ -223,10 +223,10 @@
                   },
                   {
                     "group": [
-                      "@/modules/*/internal",
-                      "@/modules/*/internal/**",
-                      "@/modules/*/adapters",
-                      "@/modules/*/adapters/**"
+                      "#synapse/modules/*/internal",
+                      "#synapse/modules/*/internal/**",
+                      "#synapse/modules/*/adapters",
+                      "#synapse/modules/*/adapters/**"
                     ],
                     "message": "Acesso a área privada do módulo"
                   },
@@ -266,16 +266,16 @@
                   {
                     "group": [
                       "@earendil-works/**",
-                      "@/composition",
-                      "@/integration",
-                      "@/integration/**",
-                      "@/modules",
-                      "@/modules/browser",
-                      "@/modules/browser/**",
-                      "@/modules/memory",
-                      "@/modules/memory/**",
-                      "@/modules/pi-web",
-                      "@/modules/pi-web/**"
+                      "#synapse/composition/index.js",
+                      "#synapse/integration/index.js",
+                      "#synapse/integration/**",
+                      "#synapse/modules/index.js",
+                      "#synapse/modules/browser/index.js",
+                      "#synapse/modules/browser/**",
+                      "#synapse/modules/memory/index.js",
+                      "#synapse/modules/memory/**",
+                      "#synapse/modules/pi-web/index.js",
+                      "#synapse/modules/pi-web/**"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
                   },

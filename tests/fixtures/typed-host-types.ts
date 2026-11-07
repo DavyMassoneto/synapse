@@ -4,7 +4,7 @@ import {
   type AdvisorShutdownHandler,
   type AdvisorToolResultHandler,
   type AdvisorTurnEndHandler,
-} from "@/integration";
+} from "#synapse/integration/index.js";
 
 export type AdvisorEventRegistration =
   | ["session_start", AdvisorSessionStartHandler]

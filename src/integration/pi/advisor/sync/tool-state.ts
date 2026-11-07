@@ -1,4 +1,4 @@
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
+import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/identifiers.js";
 import { type AdvisorToolActivation } from "./types.ts";
 
 export function updateAdvisorTool(pi: AdvisorToolActivation, enabled: boolean): void {

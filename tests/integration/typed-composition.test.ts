@@ -1,7 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "vitest";
-import { type AdvisorLifecycle, type AdvisorRegistrationPort, compose } from "@/composition";
-import { type Advisor } from "@/modules";
+import {
+  type AdvisorLifecycle,
+  type AdvisorRegistrationPort,
+  compose,
+} from "#synapse/composition/index.js";
+import { type Advisor } from "#synapse/modules/index.js";
 
 class HostFixture implements AdvisorRegistrationPort {
   signal: AbortSignal | undefined;

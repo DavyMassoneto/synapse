@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { type AgentToolResult } from "@earendil-works/pi-coding-agent";
 import { test } from "vitest";
-import { type AdvisorRenderTheme, type AdvisorToolDetails } from "@/integration";
+import { type AdvisorRenderTheme, type AdvisorToolDetails } from "#synapse/integration/index.js";
 import { TypedAdvisorHost } from "../fixtures/typed-host.ts";
 
 class PlainTheme implements AdvisorRenderTheme {

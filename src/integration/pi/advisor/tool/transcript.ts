@@ -1,6 +1,6 @@
 import { type AgentMessage } from "@earendil-works/pi-agent-core";
 import { type ImageContent, type TextContent } from "@earendil-works/pi-ai";
-import { type TranscriptBlock, type TranscriptMessage } from "@/modules";
+import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules/index.js";
 import { type AdvisorContext } from "../context-types.ts";
 
 function convertContent(content: string | (TextContent | ImageContent)[]): TranscriptBlock[] {

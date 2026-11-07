@@ -1,6 +1,6 @@
 import { homedir } from "node:os";
 import { join } from "node:path";
-import { createAdvisor } from "@/modules";
+import { createAdvisor } from "#synapse/modules/index.js";
 import { type AdvisorLifecycle, type AdvisorRegistrationPort } from "./types.ts";
 
 export function compose(

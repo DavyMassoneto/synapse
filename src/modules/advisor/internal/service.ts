@@ -2,19 +2,19 @@ import {
   AdvisorConfiguration,
   type ConfigLoadResult,
   type ConfigPort,
-} from "@/modules/advisor/internal/config";
-import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics";
-import { preparePrompt } from "@/modules/advisor/internal/format";
-import { ADVISOR_SYSTEM, TIMING } from "@/modules/advisor/internal/instructions";
-import { REMINDER, ReminderCounter } from "@/modules/advisor/internal/reminder";
-import { type Advisor } from "@/modules/advisor/public/advisor";
-import { type AdvisorResult } from "@/modules/advisor/public/config";
+} from "#synapse/modules/advisor/internal/config/index.js";
+import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/diagnostics.js";
+import { preparePrompt } from "#synapse/modules/advisor/internal/format/index.js";
+import { ADVISOR_SYSTEM, TIMING } from "#synapse/modules/advisor/internal/instructions.js";
+import { REMINDER, ReminderCounter } from "#synapse/modules/advisor/internal/reminder/index.js";
+import { type Advisor } from "#synapse/modules/advisor/public/advisor.js";
+import { type AdvisorResult } from "#synapse/modules/advisor/public/config/index.js";
 import {
   type Consultation,
   type ConsultationResult,
   type ModelPort,
-} from "@/modules/advisor/public/consultation";
-import { type ReminderTurn } from "@/modules/advisor/public/reminder";
+} from "#synapse/modules/advisor/public/consultation/index.js";
+import { type ReminderTurn } from "#synapse/modules/advisor/public/reminder.js";
 
 export class AdvisorService implements Advisor {
   readonly consultationInstructions = TIMING;

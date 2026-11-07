@@ -1,2 +1,2 @@
-export * from "@/modules/advisor/public/consultation/contracts";
-export * from "@/modules/advisor/public/consultation/model";
+export * from "#synapse/modules/advisor/public/consultation/contracts.js";
+export * from "#synapse/modules/advisor/public/consultation/model.js";

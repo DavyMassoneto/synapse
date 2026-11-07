@@ -1,5 +1,5 @@
-import { type AdvisorContext } from "@/integration/pi/advisor";
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
+import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/identifiers.js";
+import { type AdvisorContext } from "#synapse/integration/pi/advisor/index.js";
 
 export function updateAdvisorStatus(context: AdvisorContext, model: string | undefined): void {
   if (context.hasUI) {

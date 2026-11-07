@@ -1,10 +1,10 @@
-import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics";
+import { ADVISOR_DIAGNOSTICS } from "#synapse/modules/advisor/internal/diagnostics.js";
 import {
   type AdvisorResult,
   type Config,
   THINKING_LEVELS,
   type ThinkingLevel,
-} from "@/modules/advisor/public/config";
+} from "#synapse/modules/advisor/public/config/index.js";
 import { type ConfigLoadResult, type ConfigPort } from "./contracts.ts";
 
 export class AdvisorConfiguration {

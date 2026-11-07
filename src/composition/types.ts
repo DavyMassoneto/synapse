@@ -1,4 +1,4 @@
-import { type Advisor } from "@/modules";
+import { type Advisor } from "#synapse/modules/index.js";
 
 export interface AdvisorLifecycle {
   signal: AbortSignal;

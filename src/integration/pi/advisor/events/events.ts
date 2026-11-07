@@ -5,9 +5,9 @@ import {
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers";
-import { syncAdvisor } from "@/integration/pi/advisor/sync";
-import { type Advisor } from "@/modules";
+import { ADVISOR_NAME } from "#synapse/integration/pi/advisor/identifiers.js";
+import { syncAdvisor } from "#synapse/integration/pi/advisor/sync/index.js";
+import { type Advisor } from "#synapse/modules/index.js";
 import { type AdvisorContext } from "../context-types.ts";
 import { type AdvisorHost } from "../host-types.ts";
 

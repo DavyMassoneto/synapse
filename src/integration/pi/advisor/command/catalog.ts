@@ -1,5 +1,5 @@
 import { type AutocompleteItem } from "@earendil-works/pi-tui";
-import { type AdvisorContext } from "@/integration/pi/advisor";
+import { type AdvisorContext } from "#synapse/integration/pi/advisor/index.js";
 
 const COMPLETION_LIMIT = 40;
 
