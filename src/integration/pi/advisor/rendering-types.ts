@@ -1,9 +1,28 @@
-import { type AdvisorTool } from "./tool-types.ts";
+import {
+  type AgentToolResult,
+  type Theme,
+  type ToolRenderResultOptions,
+} from "@earendil-works/pi-coding-agent";
+import { type Component } from "@earendil-works/pi-tui";
+import { type AdvisorToolDetails, type AdvisorToolInput } from "./tool-types.ts";
 
-export type AdvisorRenderers = Pick<AdvisorTool, "renderCall" | "renderResult">;
-export type AdvisorRenderCallArguments = Parameters<NonNullable<AdvisorTool["renderCall"]>>;
-export type AdvisorRenderResultArguments = Parameters<NonNullable<AdvisorTool["renderResult"]>>;
-export type AdvisorRenderCallInput = AdvisorRenderCallArguments[0];
-export type AdvisorRenderCallContext = AdvisorRenderCallArguments[2];
-export type AdvisorRenderResultValue = AdvisorRenderResultArguments[0];
-export type AdvisorRenderResultContext = AdvisorRenderResultArguments[3];
+export type AdvisorRenderTheme = Pick<Theme, "fg" | "bold">;
+
+export interface AdvisorRenderContext {
+  lastComponent?: Component;
+  isError?: boolean;
+}
+
+export interface AdvisorRenderers {
+  renderCall(
+    input: AdvisorToolInput,
+    theme: AdvisorRenderTheme,
+    context: AdvisorRenderContext,
+  ): Component;
+  renderResult(
+    result: AgentToolResult<AdvisorToolDetails>,
+    options: ToolRenderResultOptions,
+    theme: AdvisorRenderTheme,
+    context: AdvisorRenderContext,
+  ): Component;
+}

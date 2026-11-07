@@ -1,5 +1,6 @@
 import { type ToolDefinition } from "@earendil-works/pi-coding-agent";
 import { type AdvisorContext } from "./context-types.ts";
+import { type AdvisorRenderers } from "./rendering-types.ts";
 import { type advisorParameters } from "./tool-schema.ts";
 
 export interface AdvisorToolDetails {
@@ -7,7 +8,9 @@ export interface AdvisorToolDetails {
 }
 
 export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, object>;
-export interface AdvisorTool extends Omit<PiAdvisorTool, "execute"> {
+export interface AdvisorTool
+  extends Omit<PiAdvisorTool, "execute" | "renderCall" | "renderResult">,
+    AdvisorRenderers {
   execute(
     id: string,
     input: AdvisorToolInput,

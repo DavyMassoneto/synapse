@@ -40,7 +40,7 @@ export class TestRegistry implements AdvisorRegistry {
   };
 
   getAvailable(): Model<Api>[] {
-    return [this.model];
+    return [this.model, { ...this.model, id: "other", name: "other" }];
   }
   find(): Model<Api> {
     this.calls += 1;

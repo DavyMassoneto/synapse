@@ -15,32 +15,15 @@ import {
 import { type Advisor, createAdvisor } from "@/modules";
 import { type AdvisorEventRegistration } from "./typed-host-types.ts";
 
-export class TypedAdvisorHost implements AdvisorHost {
+export class AdvisorHostCollector implements AdvisorHost {
   readonly starts: AdvisorSessionStartHandler[] = [];
   readonly shutdowns: AdvisorShutdownHandler[] = [];
   readonly beforeStarts: AdvisorBeforeStartHandler[] = [];
   readonly toolResults: AdvisorToolResultHandler[] = [];
   readonly turns: AdvisorTurnEndHandler[] = [];
-  readonly directory = mkdtempSync(join(tmpdir(), "synapse-host-"));
-  readonly lifetime = new AbortController();
-  readonly advisor: Advisor;
   tool: AdvisorTool | undefined;
   command: AdvisorCommandDefinition | undefined;
   active: string[] = [];
-
-  constructor() {
-    writeFileSync(
-      join(this.directory, "advisor.json"),
-      JSON.stringify({ model: "provider/model", thinking: "low" }),
-    );
-    this.advisor = createAdvisor(join(this.directory, "advisor.json"));
-    registerAdvisor(
-      this,
-      this.advisor,
-      this.lifetime.signal,
-      this.lifetime.abort.bind(this.lifetime),
-    );
-  }
 
   on(event: "session_start", handler: AdvisorSessionStartHandler): () => void;
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): () => void;
@@ -81,6 +64,28 @@ export class TypedAdvisorHost implements AdvisorHost {
   setActiveTools(names: string[]): void {
     this.active = names;
   }
+}
+
+export class TypedAdvisorHost extends AdvisorHostCollector {
+  readonly directory = mkdtempSync(join(tmpdir(), "synapse-host-"));
+  readonly lifetime = new AbortController();
+  readonly advisor: Advisor;
+
+  constructor() {
+    super();
+    writeFileSync(
+      join(this.directory, "advisor.json"),
+      JSON.stringify({ model: "provider/model", thinking: "low" }),
+    );
+    this.advisor = createAdvisor(join(this.directory, "advisor.json"));
+    registerAdvisor(
+      this,
+      this.advisor,
+      this.lifetime.signal,
+      this.lifetime.abort.bind(this.lifetime),
+    );
+  }
+
   cleanup(): void {
     rmSync(this.directory, { recursive: true, force: true });
   }

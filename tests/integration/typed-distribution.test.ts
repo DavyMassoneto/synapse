@@ -1,11 +1,18 @@
 import assert from "node:assert/strict";
-import { spawnSync } from "node:child_process";
+import { type SpawnSyncReturns, spawnSync } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { test } from "node:test";
 
-const CASES = [
+interface ConfigCase {
+  name: string;
+  content?: string;
+  expected: RegExp;
+  invalid?: boolean;
+}
+
+const CASES: ConfigCase[] = [
   { name: "ausente", expected: /Advisor: desligado, thinking high/ },
   {
     name: "válida",
@@ -32,7 +39,9 @@ const CASES = [
   },
 ];
 
-function verifyDistribution() {
+function verifyDistribution(): void {
+  const fixture = process.env.SYNAPSE_DISTRIBUTION_FIXTURE;
+  assert.ok(fixture);
   const home = mkdtempSync(join(tmpdir(), "synapse-config-"));
   const directory = join(home, ".pi", "agent");
   const file = join(directory, "advisor.json");
@@ -46,23 +55,21 @@ function verifyDistribution() {
         writeFileSync(file, example.content);
       }
 
-      const processResult = spawnSync(process.execPath, ["tests/fixtures/config-host.mjs"], {
+      const result: SpawnSyncReturns<string> = spawnSync(process.execPath, [fixture], {
         cwd: process.cwd(),
         env: { ...process.env, HOME: home, USERPROFILE: home },
         encoding: "utf8",
       });
-
-      assert.equal(processResult.status, 0, example.name + processResult.stderr);
-      const result = JSON.parse(processResult.stdout);
-      assert.match(result.notifications.join(" "), example.expected, example.name);
+      assert.equal(result.status, 0, example.name + result.stderr);
+      assert.match(result.stdout, example.expected, example.name);
       if (example.content === undefined) {
         assert.equal(existsSync(file), false);
       } else {
         assert.equal(readFileSync(file, "utf8"), example.content);
       }
       if (example.invalid) {
-        assert.equal(result.modelLookups, 0);
-        assert.equal(result.result.isError, true);
+        assert.match(result.stdout, /LOOKUPS=0/);
+        assert.match(result.stdout, /ERROR=true/);
       }
     }
   } finally {
@@ -70,4 +77,4 @@ function verifyDistribution() {
   }
 }
 
-test("a distribuição preserva configuração e informa estados inválidos", verifyDistribution);
+test("distribuição preserva configuração e informa erros", verifyDistribution);

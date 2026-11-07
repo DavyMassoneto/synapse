@@ -12,7 +12,7 @@
     "check": "biome check .",
     "check:fix": "biome check --write .",
     "validate": "npm run check && npm run typecheck && npm run check:build && npm test",
-    "test": "node --test tests/integration/*.test.mjs && npm run test:typed",
+    "test": "npm run test:typed",
     "check:build": "node scripts/check-build.mjs",
     "test:typed": "node scripts/run-typed-tests.mjs"
   },
@@ -27,7 +27,6 @@
     "@biomejs/biome": "2.6.6",
     "@types/node": "^22.0.0",
     "esbuild": "0.28.1",
-    "jiti": "2.7.0",
     "typescript": "5.9.3"
   },
   "pi": {
@@ -36,7 +35,6 @@
     ]
   },
   "imports": {
-    "#build-options": "./scripts/build-options.mjs",
-    "#advisor-test-host": "./tests/fixtures/advisor-host.mjs"
+    "#build-options": "./scripts/build-options.mjs"
   }
 }

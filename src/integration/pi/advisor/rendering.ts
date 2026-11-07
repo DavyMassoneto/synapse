@@ -1,19 +1,21 @@
-import { type Theme, type ToolRenderResultOptions } from "@earendil-works/pi-coding-agent";
+import {
+  type AgentToolResult,
+  type ToolRenderResultOptions,
+} from "@earendil-works/pi-coding-agent";
 import { type Component, Text } from "@earendil-works/pi-tui";
 import { PREVIEW_LINES, RENDER_STYLE, RENDER_TEXT } from "@/integration/pi/advisor/presentation";
 import {
-  type AdvisorRenderCallContext,
-  type AdvisorRenderCallInput,
+  type AdvisorRenderContext,
   type AdvisorRenderers,
-  type AdvisorRenderResultContext,
-  type AdvisorRenderResultValue,
+  type AdvisorRenderTheme,
 } from "./rendering-types.ts";
+import { type AdvisorToolDetails, type AdvisorToolInput } from "./tool-types.ts";
 
 class AdvisorRendering {
   renderCall(
-    _input: AdvisorRenderCallInput,
-    theme: Theme,
-    context: AdvisorRenderCallContext,
+    _input: AdvisorToolInput,
+    theme: AdvisorRenderTheme,
+    context: AdvisorRenderContext,
   ): Component {
     let text: Text;
     if (context.lastComponent instanceof Text) {
@@ -27,10 +29,10 @@ class AdvisorRendering {
   }
 
   renderResult(
-    result: AdvisorRenderResultValue,
+    result: AgentToolResult<AdvisorToolDetails>,
     options: ToolRenderResultOptions,
-    theme: Theme,
-    context: AdvisorRenderResultContext,
+    theme: AdvisorRenderTheme,
+    context: AdvisorRenderContext,
   ): Component {
     let text: Text;
     if (context.lastComponent instanceof Text) {
@@ -38,7 +40,6 @@ class AdvisorRendering {
     } else {
       text = new Text("", 0, 0);
     }
-
     if (options.isPartial) {
       text.setText(theme.fg(RENDER_STYLE.pending, RENDER_TEXT.pending));
       return text;
