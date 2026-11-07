@@ -1,4 +1,5 @@
 import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
 import {
   ADVISOR_MESSAGES,
   ADVISOR_TOOL_DESCRIPTION,
@@ -77,7 +78,7 @@ class AdvisorToolHandler {
 export function registerTool(pi: AdvisorHost, advisor: Advisor, lifetime: AbortSignal): void {
   const handler = new AdvisorToolHandler(advisor, lifetime);
   pi.registerTool({
-    name: "advisor",
+    name: ADVISOR_NAME,
     label: "Advisor",
     executionMode: "sequential",
     parameters: advisorParameters,

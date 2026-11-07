@@ -5,6 +5,7 @@ import {
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
 import { syncAdvisor } from "@/integration/pi/advisor/sync";
 import { type Advisor } from "@/modules";
 import { type AdvisorContext } from "../context-types.ts";
@@ -42,7 +43,7 @@ class AdvisorEvents {
   }
 
   toolResult(event: ToolResultEvent): undefined {
-    if (event.toolName === "advisor") {
+    if (event.toolName === ADVISOR_NAME) {
       this.advisor.resetReminder();
     }
     return undefined;

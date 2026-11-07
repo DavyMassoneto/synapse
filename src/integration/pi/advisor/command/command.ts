@@ -1,5 +1,6 @@
 import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
 import { type AdvisorContext, type AdvisorHost } from "@/integration/pi/advisor";
+import { ADVISOR_NAME } from "@/integration/pi/advisor/identifiers.ts";
 import {
   ADVISOR_MESSAGES,
   currentStatus,
@@ -81,7 +82,7 @@ class AdvisorCommand {
 export function registerCommand(pi: AdvisorHost, advisor: Advisor): void {
   const command = new AdvisorCommand(pi, advisor);
   pi.on("session_start", command.start.bind(command));
-  pi.registerCommand("advisor", {
+  pi.registerCommand(ADVISOR_NAME, {
     description: ADVISOR_MESSAGES.commandDescription,
     getArgumentCompletions: command.catalog.completions.bind(command.catalog),
     handler: command.handle.bind(command),

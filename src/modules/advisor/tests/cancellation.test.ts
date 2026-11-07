@@ -1,14 +1,18 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
+import {
+  AdvisorService,
+  CancelledModel,
+  CancelOnConsultModel,
+  CancelOnResolveModel,
+  TestStorage,
+} from "./fixtures.ts";
 
 async function cancellationDuringResolution() {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
-  const port = new TestModel();
-  port.controller = controller;
-  port.cancelAt = "resolve";
+  const port = new CancelOnResolveModel(controller);
   const result = await advisor.consult(
     { system: "", messages: [], signal: controller.signal },
     port,
@@ -21,9 +25,7 @@ async function cancellationDuringExecution() {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
-  const port = new TestModel();
-  port.controller = controller;
-  port.cancelAt = "execute";
+  const port = new CancelOnConsultModel(controller);
   const result = await advisor.consult(
     { system: "", messages: [], signal: controller.signal },
     port,
@@ -34,8 +36,7 @@ async function cancellationDuringExecution() {
 async function cancellationFromProvider() {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
-  const port = new TestModel();
-  port.cancelled = true;
+  const port = new CancelledModel();
   const result = await advisor.consult({ system: "", messages: [] }, port);
   assert.equal(result.kind, "cancelled");
 }

@@ -38,22 +38,12 @@ export class TestModel implements ModelPort {
   captured: ModelRequest | undefined;
   resolved: ResolvedModel | undefined;
   resolvedReference: string | undefined;
-  controller: AbortController | undefined;
-  cancelAt: "resolve" | "execute" | undefined;
-  failure = false;
-  cancelled = false;
-  gate: Promise<void> | undefined;
-  window = 40_000;
+
+  constructor(private readonly window = 40_000) {}
 
   async resolve(reference: string): Promise<ResolvedModel> {
     this.calls += 1;
     this.resolvedReference = reference;
-    if (this.cancelAt === "resolve") {
-      this.controller?.abort();
-    }
-    if (this.gate) {
-      await this.gate;
-    }
     return {
       reference,
       contextWindow: this.window,
@@ -66,15 +56,52 @@ export class TestModel implements ModelPort {
   async consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
     this.resolved = resolved;
     this.captured = request;
-    if (this.cancelAt === "execute") {
-      this.controller?.abort();
-    }
-    if (this.failure) {
-      throw new Error("provider error");
-    }
-    if (this.cancelled) {
-      return { kind: "cancelled" };
-    }
     return { kind: "success", text: "advice" };
+  }
+}
+
+export class CancelOnResolveModel extends TestModel {
+  constructor(private readonly controller: AbortController) {
+    super();
+  }
+  override async resolve(reference: string): Promise<ResolvedModel> {
+    const resolved = await super.resolve(reference);
+    this.controller.abort();
+    return resolved;
+  }
+}
+
+export class CancelOnConsultModel extends TestModel {
+  constructor(private readonly controller: AbortController) {
+    super();
+  }
+  override async consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
+    const response = await super.consult(resolved, request);
+    this.controller.abort();
+    return response;
+  }
+}
+
+export class CancelledModel extends TestModel {
+  override async consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
+    await super.consult(resolved, request);
+    return { kind: "cancelled" };
+  }
+}
+
+export class FailingModel extends TestModel {
+  override async consult(): Promise<ModelResponse> {
+    throw new Error("provider error");
+  }
+}
+
+export class WaitingModel extends TestModel {
+  constructor(private readonly gate: Promise<void>) {
+    super();
+  }
+  override async resolve(reference: string): Promise<ResolvedModel> {
+    const resolved = await super.resolve(reference);
+    await this.gate;
+    return resolved;
   }
 }

@@ -1,5 +1,5 @@
+import { ADVISOR_SYSTEM } from "@/modules/advisor/internal/instructions.ts";
 import { type Consultation, type ResolvedModel } from "@/modules/advisor/public/consultation";
-import { ADVISOR_SYSTEM } from "./advisor-system.ts";
 import { buildTranscript, clip } from "./transcript.ts";
 
 // A conservative character estimate; it is not a provider tokenizer.

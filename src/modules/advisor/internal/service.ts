@@ -4,7 +4,8 @@ import {
   type ConfigPort,
 } from "@/modules/advisor/internal/config";
 import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
-import { ADVISOR_SYSTEM, preparePrompt, TIMING } from "@/modules/advisor/internal/format";
+import { preparePrompt } from "@/modules/advisor/internal/format";
+import { ADVISOR_SYSTEM, TIMING } from "@/modules/advisor/internal/instructions.ts";
 import { REMINDER, ReminderCounter } from "@/modules/advisor/internal/reminder";
 import { type Advisor } from "@/modules/advisor/public/advisor.ts";
 import { type AdvisorResult } from "@/modules/advisor/public/config";

@@ -76,7 +76,7 @@ var FileConfig = class {
   }
 };
 
-// src/modules/advisor/internal/format/advisor-system.ts
+// src/modules/advisor/internal/instructions.ts
 var ADVISOR_SYSTEM = `You are the advisor: a stronger model that a faster executor model consults in the middle of a task.
 You have no tools and cannot act. Below you get the executor's system prompt and its full transcript so far (user messages, the executor's text, every tool call and tool result), ending at the moment it called advisor(). Earlier advisor results appear in the transcript too.
 
@@ -90,6 +90,20 @@ Rules:
 - Do not rewrite the whole solution, do not repeat the transcript, do not pad. If the executor is on track, say so in a line.
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
+var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
+
+Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
+
+Also call advisor:
+- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
+- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
+- When considering a change of approach.
+
+On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
+
+Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
+
+If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
 
 // src/modules/advisor/internal/diagnostics.ts
 var ADVISOR_DIAGNOSTICS = {
@@ -231,22 +245,6 @@ function preparePrompt(input, model) {
   return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
 }
 
-// src/modules/advisor/internal/format/timing.ts
-var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
-
-Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
-
-Also call advisor:
-- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
-- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
-- When considering a change of approach.
-
-On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
-
-Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
-
-If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
-
 // src/modules/advisor/internal/reminder/counter.ts
 var REMIND_EVERY = 5;
 var ReminderCounter = class {
@@ -268,7 +266,13 @@ var ReminderCounter = class {
 };
 
 // src/modules/advisor/internal/reminder/text.ts
-var REMINDER = "<system-reminder>\nJ\xE1 se passaram " + REMIND_EVERY + " turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:\n- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?\n- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?\n- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?\nSe alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.\n</system-reminder>";
+var REMINDER = `<system-reminder>
+J\xE1 se passaram ${REMIND_EVERY} turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:
+- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?
+- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?
+- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?
+Se alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.
+</system-reminder>`;
 
 // src/modules/advisor/internal/config/state.ts
 var AdvisorConfiguration = class {
@@ -495,6 +499,9 @@ var ModelCatalog = class {
   }
 };
 
+// src/integration/pi/advisor/identifiers.ts
+var ADVISOR_NAME = "advisor";
+
 // src/integration/pi/advisor/presentation/layout.ts
 var PREVIEW_LINES = 8;
 
@@ -544,19 +551,19 @@ var ADVISOR_TOOL_SNIPPET = "Consult a reviewer model with the conversation, with
 // src/integration/pi/advisor/sync/status.ts
 function updateAdvisorStatus(context, model) {
   if (context.hasUI) {
-    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
+    context.ui.setStatus(ADVISOR_NAME, model ? `advisor: ${model}` : void 0);
   }
 }
 
 // src/integration/pi/advisor/sync/tool-state.ts
 function updateAdvisorTool(pi, enabled) {
   const active = pi.getActiveTools();
-  if (enabled && !active.includes("advisor")) {
-    pi.setActiveTools([...active, "advisor"]);
-  } else if (!enabled && active.includes("advisor")) {
+  if (enabled && !active.includes(ADVISOR_NAME)) {
+    pi.setActiveTools([...active, ADVISOR_NAME]);
+  } else if (!enabled && active.includes(ADVISOR_NAME)) {
     const remaining = [];
     for (const name of active) {
-      if (name !== "advisor") {
+      if (name !== ADVISOR_NAME) {
         remaining.push(name);
       }
     }
@@ -685,7 +692,7 @@ var AdvisorCommand = class {
 function registerCommand(pi, advisor) {
   const command = new AdvisorCommand(pi, advisor);
   pi.on("session_start", command.start.bind(command));
-  pi.registerCommand("advisor", {
+  pi.registerCommand(ADVISOR_NAME, {
     description: ADVISOR_MESSAGES.commandDescription,
     getArgumentCompletions: command.catalog.completions.bind(command.catalog),
     handler: command.handle.bind(command)
@@ -724,7 +731,7 @@ var AdvisorEvents = class {
     return void 0;
   }
   toolResult(event) {
-    if (event.toolName === "advisor") {
+    if (event.toolName === ADVISOR_NAME) {
       this.advisor.resetReminder();
     }
     return void 0;
@@ -1055,7 +1062,7 @@ var AdvisorToolHandler = class {
 function registerTool(pi, advisor, lifetime) {
   const handler = new AdvisorToolHandler(advisor, lifetime);
   pi.registerTool({
-    name: "advisor",
+    name: ADVISOR_NAME,
     label: "Advisor",
     executionMode: "sequential",
     parameters: advisorParameters,

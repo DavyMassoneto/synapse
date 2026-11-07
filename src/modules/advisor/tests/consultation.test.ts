@@ -1,15 +1,14 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
+import { AdvisorService, FailingModel, TestModel, TestStorage, WaitingModel } from "./fixtures.ts";
 
 async function snapshotIsStable() {
   const advisor = new AdvisorService(
     new TestStorage("provider/first"),
     new TestStorage("provider/first").load(),
   );
-  const port = new TestModel();
   const gate = Promise.withResolvers<void>();
-  port.gate = gate.promise;
+  const port = new WaitingModel(gate.promise);
   const pending = advisor.consult({ system: "", messages: [] }, port);
   advisor.selectModel("provider/second");
   advisor.setThinking("high");
@@ -23,18 +22,23 @@ async function snapshotIsStable() {
   assert.equal(port.resolved.effectiveThinking, "low");
 }
 
-async function cancellationAndFailure() {
+async function cancellationBeforeResolution() {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   controller.abort();
   const port = new TestModel();
-  port.failure = true;
   assert.deepEqual(
     await advisor.consult({ system: "", messages: [], signal: controller.signal }, port),
     { kind: "cancelled" },
   );
   assert.equal(port.calls, 0);
+}
+
+async function providerFailure() {
+  const storage = new TestStorage();
+  const advisor = new AdvisorService(storage, storage.load());
+  const port = new FailingModel();
   assert.deepEqual(await advisor.consult({ system: "", messages: [] }, port), {
     kind: "failure",
     message: "provider error",
@@ -42,4 +46,5 @@ async function cancellationAndFailure() {
 }
 
 test("a consulta preserva o snapshot durante alterações de configuração", snapshotIsStable);
-test("cancelamento e falha são resultados distintos", cancellationAndFailure);
+test("cancelamento prévio impede resolução", cancellationBeforeResolution);
+test("falha do provedor é comunicada", providerFailure);

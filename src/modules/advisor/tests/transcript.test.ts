@@ -44,8 +44,7 @@ function transcriptRespectsBudget(): void {
 async function smallContextFails(): Promise<void> {
   const storage = new TestStorage();
   const advisor = new AdvisorService(storage, storage.load());
-  const model = new TestModel();
-  model.window = 100;
+  const model = new TestModel(100);
   const result = await advisor.consult({ system: "", messages: [] }, model);
   assert.equal(result.kind, "failure");
   assert.equal(model.captured, undefined);
