@@ -9,81 +9,63 @@ import {
   RENDER_STYLE,
 } from "@/integration/pi/advisor/presentation";
 import { type AdvisorToolDetails, type AdvisorToolInput } from "@/integration/pi/advisor/tool";
-import {
-  type AdvisorRenderContext,
-  type AdvisorRenderers,
-  type AdvisorRenderTheme,
-} from "./rendering-types.ts";
+import { type AdvisorRenderContext, type AdvisorRenderTheme } from "./rendering-types.ts";
 
-class AdvisorRendering {
-  renderCall(
-    _input: AdvisorToolInput,
-    theme: AdvisorRenderTheme,
-    context: AdvisorRenderContext,
-  ): Component {
-    let text: Text;
-    if (context.lastComponent instanceof Text) {
-      text = context.lastComponent;
-    } else {
-      text = new Text("", 0, 0);
-    }
-
-    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(ADVISOR_MESSAGES.renderTitle)));
-    return text;
+function textComponent(context: AdvisorRenderContext): Text {
+  if (context.lastComponent instanceof Text) {
+    return context.lastComponent;
   }
-
-  renderResult(
-    result: AgentToolResult<AdvisorToolDetails>,
-    options: ToolRenderResultOptions,
-    theme: AdvisorRenderTheme,
-    context: AdvisorRenderContext,
-  ): Component {
-    let text: Text;
-    if (context.lastComponent instanceof Text) {
-      text = context.lastComponent;
-    } else {
-      text = new Text("", 0, 0);
-    }
-    if (options.isPartial) {
-      text.setText(theme.fg(RENDER_STYLE.pending, ADVISOR_MESSAGES.renderPending));
-      return text;
-    }
-
-    const content: string[] = [];
-    for (const block of result.content) {
-      if (block.type === "text") {
-        content.push(block.text);
-      }
-    }
-    const body = content.join("\n");
-    if (context.isError) {
-      text.setText(theme.fg(RENDER_STYLE.error, body));
-      return text;
-    }
-
-    const lines = body.split("\n");
-    let shown = lines;
-    if (!options.expanded) {
-      shown = lines.slice(0, PREVIEW_LINES);
-    }
-    const remaining = lines.length - shown.length;
-    let suffix = "";
-    if (!options.expanded && remaining > 0) {
-      suffix = `\n${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
-    }
-    const model = result.details?.model;
-    const title = model
-      ? `${ADVISOR_MESSAGES.renderSuccess} (${model})`
-      : ADVISOR_MESSAGES.renderSuccess;
-    text.setText(`${theme.fg(RENDER_STYLE.success, title)}\n${shown.join("\n")}${suffix}`);
-    return text;
-  }
+  return new Text("", 0, 0);
 }
 
-export function createRenderers(): AdvisorRenderers {
-  const rendering = new AdvisorRendering();
-  return {
-    renderCall: rendering.renderCall.bind(rendering),
-    renderResult: rendering.renderResult.bind(rendering),
-  };
+export function renderAdvisorCall(
+  _input: AdvisorToolInput,
+  theme: AdvisorRenderTheme,
+  context: AdvisorRenderContext,
+): Component {
+  const text = textComponent(context);
+  text.setText(theme.fg(RENDER_STYLE.title, theme.bold(ADVISOR_MESSAGES.renderTitle)));
+  return text;
+}
+
+export function renderAdvisorResult(
+  result: AgentToolResult<AdvisorToolDetails>,
+  options: ToolRenderResultOptions,
+  theme: AdvisorRenderTheme,
+  context: AdvisorRenderContext,
+): Component {
+  const text = textComponent(context);
+  if (options.isPartial) {
+    text.setText(theme.fg(RENDER_STYLE.pending, ADVISOR_MESSAGES.renderPending));
+    return text;
+  }
+
+  const content: string[] = [];
+  for (const block of result.content) {
+    if (block.type === "text") {
+      content.push(block.text);
+    }
+  }
+  const body = content.join("\n");
+  if (context.isError) {
+    text.setText(theme.fg(RENDER_STYLE.error, body));
+    return text;
+  }
+
+  const lines = body.split("\n");
+  let shown = lines;
+  if (!options.expanded) {
+    shown = lines.slice(0, PREVIEW_LINES);
+  }
+  const remaining = lines.length - shown.length;
+  let suffix = "";
+  if (!options.expanded && remaining > 0) {
+    suffix = `\n${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
+  }
+  const model = result.details?.model;
+  const title = model
+    ? `${ADVISOR_MESSAGES.renderSuccess} (${model})`
+    : ADVISOR_MESSAGES.renderSuccess;
+  text.setText(`${theme.fg(RENDER_STYLE.success, title)}\n${shown.join("\n")}${suffix}`);
+  return text;
 }

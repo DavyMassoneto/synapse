@@ -18,7 +18,7 @@ class AdvisorEvents {
   ) {}
 
   start(_event: SessionStartEvent, context: AdvisorContext): void {
-    this.advisor.reset();
+    this.advisor.resetReminder();
     syncAdvisor(this.pi, this.advisor, context);
     const status = this.advisor.status();
     if (status.kind === "failure" && context.hasUI) {
@@ -34,7 +34,7 @@ class AdvisorEvents {
     syncAdvisor(this.pi, this.advisor, context);
     const result = this.advisor.status();
     if (result.kind === "success" && result.config.model) {
-      event.systemPromptOptions.sections.advisor = this.advisor.timing;
+      event.systemPromptOptions.sections.advisor = this.advisor.consultationInstructions;
     } else {
       delete event.systemPromptOptions.sections.advisor;
     }
@@ -43,7 +43,7 @@ class AdvisorEvents {
 
   toolResult(event: ToolResultEvent): undefined {
     if (event.toolName === "advisor") {
-      this.advisor.reset();
+      this.advisor.resetReminder();
     }
     return undefined;
   }

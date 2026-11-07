@@ -69,10 +69,7 @@ class AdvisorCommand {
       }
       return { kind: "cancelled" };
     }
-    context.ui.notify(
-      "Mais de um modelo corresponde; informe uma referência mais específica.",
-      "warning",
-    );
+    context.ui.notify(ADVISOR_MESSAGES.ambiguousModel, "warning");
     return { kind: "cancelled" };
   }
 
@@ -119,7 +116,7 @@ export function registerCommand(pi: AdvisorHost, advisor: Advisor): void {
   const command = new AdvisorCommand(pi, advisor);
   pi.on("session_start", command.start.bind(command));
   pi.registerCommand("advisor", {
-    description: "Escolhe o modelo advisor ou o nível de raciocínio",
+    description: ADVISOR_MESSAGES.commandDescription,
     getArgumentCompletions: command.catalog.completions.bind(command.catalog),
     handler: command.handle.bind(command),
   });

@@ -324,7 +324,7 @@ var AdvisorConfiguration = class {
 
 // src/modules/advisor/internal/service.ts
 var AdvisorService = class {
-  timing = TIMING;
+  consultationInstructions = TIMING;
   configuration;
   reminder = new ReminderCounter();
   constructor(config, loaded) {
@@ -342,7 +342,7 @@ var AdvisorService = class {
   setThinking(thinking) {
     return this.configuration.setThinking(thinking);
   }
-  reset() {
+  resetReminder() {
     this.reminder.reset();
   }
   turn(event) {
@@ -492,9 +492,8 @@ var ADVISOR_MESSAGES = {
   progress: "Consultando advisor...",
   cancelled: "Consulta ao advisor cancelada.",
   invalidReference: "Refer\xEAncia de modelo advisor inv\xE1lida.",
-  modelNotResolved: "Modelo advisor n\xE3o resolvido.",
-  description: "Consulte um modelo revisor para orienta\xE7\xE3o estrat\xE9gica. A conversa ativa \xE9 enviada ao provedor configurado, sujeita aos limites de contexto; imagens s\xE3o omitidas.",
-  snippet: "Consultar um modelo revisor com a conversa, sem par\xE2metros"
+  ambiguousModel: "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
+  commandDescription: "Escolhe o modelo advisor ou o n\xEDvel de racioc\xEDnio"
 };
 
 // src/integration/pi/advisor/presentation/styles.ts
@@ -506,6 +505,10 @@ var RENDER_STYLE = {
   muted: "muted",
   additional: "dim"
 };
+
+// src/integration/pi/advisor/presentation/tool-metadata.ts
+var ADVISOR_TOOL_DESCRIPTION = "Consult a reviewer model for strategic guidance. The active conversation is sent to the configured provider, subject to context limits; images are omitted.";
+var ADVISOR_TOOL_SNIPPET = "Consult a reviewer model with the conversation, without parameters";
 
 // src/integration/pi/advisor/sync/status.ts
 function updateAdvisorStatus(context, model) {
@@ -609,10 +612,7 @@ var AdvisorCommand = class {
       }
       return { kind: "cancelled" };
     }
-    context.ui.notify(
-      "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
-      "warning"
-    );
+    context.ui.notify(ADVISOR_MESSAGES.ambiguousModel, "warning");
     return { kind: "cancelled" };
   }
   async handle(args, context) {
@@ -654,7 +654,7 @@ function registerCommand(pi, advisor) {
   const command = new AdvisorCommand(pi, advisor);
   pi.on("session_start", command.start.bind(command));
   pi.registerCommand("advisor", {
-    description: "Escolhe o modelo advisor ou o n\xEDvel de racioc\xEDnio",
+    description: ADVISOR_MESSAGES.commandDescription,
     getArgumentCompletions: command.catalog.completions.bind(command.catalog),
     handler: command.handle.bind(command)
   });
@@ -671,7 +671,7 @@ var AdvisorEvents = class {
   advisor;
   shutdownCallback;
   start(_event, context) {
-    this.advisor.reset();
+    this.advisor.resetReminder();
     syncAdvisor(this.pi, this.advisor, context);
     const status = this.advisor.status();
     if (status.kind === "failure" && context.hasUI) {
@@ -685,7 +685,7 @@ var AdvisorEvents = class {
     syncAdvisor(this.pi, this.advisor, context);
     const result = this.advisor.status();
     if (result.kind === "success" && result.config.model) {
-      event.systemPromptOptions.sections.advisor = this.advisor.timing;
+      event.systemPromptOptions.sections.advisor = this.advisor.consultationInstructions;
     } else {
       delete event.systemPromptOptions.sections.advisor;
     }
@@ -693,7 +693,7 @@ var AdvisorEvents = class {
   }
   toolResult(event) {
     if (event.toolName === "advisor") {
-      this.advisor.reset();
+      this.advisor.resetReminder();
     }
     return void 0;
   }
@@ -832,63 +832,50 @@ var AdvisorModel = class {
 
 // src/integration/pi/advisor/rendering/rendering.ts
 import { Text } from "@earendil-works/pi-tui";
-var AdvisorRendering = class {
-  renderCall(_input, theme, context) {
-    let text;
-    if (context.lastComponent instanceof Text) {
-      text = context.lastComponent;
-    } else {
-      text = new Text("", 0, 0);
-    }
-    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(ADVISOR_MESSAGES.renderTitle)));
+function textComponent(context) {
+  if (context.lastComponent instanceof Text) {
+    return context.lastComponent;
+  }
+  return new Text("", 0, 0);
+}
+function renderAdvisorCall(_input, theme, context) {
+  const text = textComponent(context);
+  text.setText(theme.fg(RENDER_STYLE.title, theme.bold(ADVISOR_MESSAGES.renderTitle)));
+  return text;
+}
+function renderAdvisorResult(result, options, theme, context) {
+  const text = textComponent(context);
+  if (options.isPartial) {
+    text.setText(theme.fg(RENDER_STYLE.pending, ADVISOR_MESSAGES.renderPending));
     return text;
   }
-  renderResult(result, options, theme, context) {
-    let text;
-    if (context.lastComponent instanceof Text) {
-      text = context.lastComponent;
-    } else {
-      text = new Text("", 0, 0);
+  const content = [];
+  for (const block of result.content) {
+    if (block.type === "text") {
+      content.push(block.text);
     }
-    if (options.isPartial) {
-      text.setText(theme.fg(RENDER_STYLE.pending, ADVISOR_MESSAGES.renderPending));
-      return text;
-    }
-    const content = [];
-    for (const block of result.content) {
-      if (block.type === "text") {
-        content.push(block.text);
-      }
-    }
-    const body = content.join("\n");
-    if (context.isError) {
-      text.setText(theme.fg(RENDER_STYLE.error, body));
-      return text;
-    }
-    const lines = body.split("\n");
-    let shown = lines;
-    if (!options.expanded) {
-      shown = lines.slice(0, PREVIEW_LINES);
-    }
-    const remaining = lines.length - shown.length;
-    let suffix = "";
-    if (!options.expanded && remaining > 0) {
-      suffix = `
+  }
+  const body = content.join("\n");
+  if (context.isError) {
+    text.setText(theme.fg(RENDER_STYLE.error, body));
+    return text;
+  }
+  const lines = body.split("\n");
+  let shown = lines;
+  if (!options.expanded) {
+    shown = lines.slice(0, PREVIEW_LINES);
+  }
+  const remaining = lines.length - shown.length;
+  let suffix = "";
+  if (!options.expanded && remaining > 0) {
+    suffix = `
 ${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
-    }
-    const model = result.details?.model;
-    const title = model ? `${ADVISOR_MESSAGES.renderSuccess} (${model})` : ADVISOR_MESSAGES.renderSuccess;
-    text.setText(`${theme.fg(RENDER_STYLE.success, title)}
-${shown.join("\n")}${suffix}`);
-    return text;
   }
-};
-function createRenderers() {
-  const rendering = new AdvisorRendering();
-  return {
-    renderCall: rendering.renderCall.bind(rendering),
-    renderResult: rendering.renderResult.bind(rendering)
-  };
+  const model = result.details?.model;
+  const title = model ? `${ADVISOR_MESSAGES.renderSuccess} (${model})` : ADVISOR_MESSAGES.renderSuccess;
+  text.setText(`${theme.fg(RENDER_STYLE.success, title)}
+${shown.join("\n")}${suffix}`);
+  return text;
 }
 
 // src/integration/pi/advisor/tool/tool-schema.ts
@@ -1040,9 +1027,10 @@ function registerTool(pi, advisor, lifetime) {
     label: "Advisor",
     executionMode: "sequential",
     parameters: advisorParameters,
-    description: ADVISOR_MESSAGES.description,
-    promptSnippet: ADVISOR_MESSAGES.snippet,
-    ...createRenderers(),
+    description: ADVISOR_TOOL_DESCRIPTION,
+    promptSnippet: ADVISOR_TOOL_SNIPPET,
+    renderCall: renderAdvisorCall,
+    renderResult: renderAdvisorResult,
     execute: handler.execute.bind(handler)
   });
 }

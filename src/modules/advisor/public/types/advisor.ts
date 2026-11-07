@@ -11,8 +11,8 @@ export interface Advisor {
   selectModel(model: string): AdvisorResult;
   disable(): AdvisorResult;
   setThinking(level: string): AdvisorResult;
-  timing: string;
-  reset(): void;
+  consultationInstructions: string;
+  resetReminder(): void;
   turn(event: ReminderTurn): string | undefined;
   consult(input: Consultation, model: ModelPort): Promise<ConsultationResult>;
 }

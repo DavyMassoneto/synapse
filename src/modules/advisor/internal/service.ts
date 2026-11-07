@@ -14,7 +14,7 @@ import {
 import { type Advisor, type ReminderTurn } from "@/modules/advisor/public/types";
 
 export class AdvisorService implements Advisor {
-  readonly timing = TIMING;
+  readonly consultationInstructions = TIMING;
   private readonly configuration: AdvisorConfiguration;
   private readonly reminder = new ReminderCounter();
 
@@ -34,7 +34,7 @@ export class AdvisorService implements Advisor {
   setThinking(thinking: string): AdvisorResult {
     return this.configuration.setThinking(thinking);
   }
-  reset(): void {
+  resetReminder(): void {
     this.reminder.reset();
   }
   turn(event: ReminderTurn): string | undefined {

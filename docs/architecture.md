@@ -40,7 +40,10 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `src/integration/pi/` | Adaptação ao SDK, eventos e registros do host |
 | `src/integration/bridges/` | Adaptadores que conectam a porta de um módulo ao contrato público de outro |
 | `src/composition/` | Montagem, injeção de dependências, distribuição da configuração e encerramento |
+| `src/entry.ts` | Entrada do pacote Pi que aciona a composição |
 | `tests/integration/` | Verificação dos contratos conectados e da integração com o host |
+| `tests/fixtures/` | Substitutos e dados usados nos testes de integração |
+| `scripts/` | Automação de build, conferência do artefato e execução de testes |
 
 `public/` separa contratos sem dependências concretas do ponto de montagem que instancia a implementação privada. A composição usa esse ponto para obter a interface do módulo; não importa `internal/` nem `adapters/`. Não há uma pasta compartilhada de regras de negócio.
 

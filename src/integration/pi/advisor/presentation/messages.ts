@@ -8,8 +8,6 @@ export const ADVISOR_MESSAGES = {
   progress: "Consultando advisor...",
   cancelled: "Consulta ao advisor cancelada.",
   invalidReference: "Referência de modelo advisor inválida.",
-  modelNotResolved: "Modelo advisor não resolvido.",
-  description:
-    "Consulte um modelo revisor para orientação estratégica. A conversa ativa é enviada ao provedor configurado, sujeita aos limites de contexto; imagens são omitidas.",
-  snippet: "Consultar um modelo revisor com a conversa, sem parâmetros",
+  ambiguousModel: "Mais de um modelo corresponde; informe uma referência mais específica.",
+  commandDescription: "Escolhe o modelo advisor ou o nível de raciocínio",
 };

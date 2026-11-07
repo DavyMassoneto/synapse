@@ -1,6 +1,10 @@
 import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
-import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
-import { createRenderers } from "@/integration/pi/advisor/rendering";
+import {
+  ADVISOR_MESSAGES,
+  ADVISOR_TOOL_DESCRIPTION,
+  ADVISOR_TOOL_SNIPPET,
+} from "@/integration/pi/advisor/presentation";
+import { renderAdvisorCall, renderAdvisorResult } from "@/integration/pi/advisor/rendering";
 import { type Advisor } from "@/modules";
 import { type AdvisorContext } from "../context-types.ts";
 import { type AdvisorHost } from "../host-types.ts";
@@ -93,9 +97,10 @@ export function registerTool(pi: AdvisorHost, advisor: Advisor, lifetime: AbortS
     label: "Advisor",
     executionMode: "sequential",
     parameters: advisorParameters,
-    description: ADVISOR_MESSAGES.description,
-    promptSnippet: ADVISOR_MESSAGES.snippet,
-    ...createRenderers(),
+    description: ADVISOR_TOOL_DESCRIPTION,
+    promptSnippet: ADVISOR_TOOL_SNIPPET,
+    renderCall: renderAdvisorCall,
+    renderResult: renderAdvisorResult,
     execute: handler.execute.bind(handler),
   });
 }
