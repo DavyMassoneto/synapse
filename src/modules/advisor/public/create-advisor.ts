@@ -1,6 +1,6 @@
 import { FileConfig } from "@/modules/advisor/adapters";
 import { AdvisorService } from "@/modules/advisor/internal";
-import { type Advisor } from "@/modules/advisor/public/types";
+import { type Advisor } from "./advisor.ts";
 
 export function createAdvisor(path: string): Advisor {
   const storage = new FileConfig(path);

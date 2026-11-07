@@ -1,4 +1,4 @@
-import { REMIND_EVERY } from "@/modules/advisor/internal/reminder";
+import { REMIND_EVERY } from "./counter.ts";
 
 export const REMINDER =
   "<system-reminder>\n" +

@@ -231,6 +231,22 @@ function preparePrompt(input, model) {
   return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
 }
 
+// src/modules/advisor/internal/format/timing.ts
+var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
+
+Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
+
+Also call advisor:
+- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
+- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
+- When considering a change of approach.
+
+On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
+
+Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
+
+If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
+
 // src/modules/advisor/internal/reminder/counter.ts
 var REMIND_EVERY = 5;
 var ReminderCounter = class {
@@ -251,24 +267,8 @@ var ReminderCounter = class {
   }
 };
 
-// src/modules/advisor/internal/format/reminder-text.ts
+// src/modules/advisor/internal/reminder/text.ts
 var REMINDER = "<system-reminder>\nJ\xE1 se passaram " + REMIND_EVERY + " turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:\n- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?\n- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?\n- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?\nSe alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.\n</system-reminder>";
-
-// src/modules/advisor/internal/format/timing.ts
-var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
-
-Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
-
-Also call advisor:
-- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
-- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
-- When considering a change of approach.
-
-On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
-
-Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
-
-If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
 
 // src/modules/advisor/internal/config/state.ts
 var AdvisorConfiguration = class {
@@ -297,9 +297,6 @@ var AdvisorConfiguration = class {
     return { kind: "success", config: { ...this.current.config } };
   }
   persist(status) {
-    if (this.current.kind === "failure") {
-      return this.status();
-    }
     try {
       this.config.save(status);
       this.current = { kind: "success", config: status };
@@ -575,6 +572,44 @@ function syncAdvisor(pi, advisor, context) {
   updateAdvisorStatus(context, model);
 }
 
+// src/integration/pi/advisor/command/choose-model.ts
+var MODEL_SELECTION_LIMIT = 100;
+async function chooseModel(catalog, context, input) {
+  if (!input) {
+    const choice = await context.ui.select(ADVISOR_MESSAGES.title, [
+      ADVISOR_MESSAGES.disabledOption,
+      ...catalog.list()
+    ]);
+    if (choice === void 0) {
+      return { kind: "cancelled" };
+    }
+    if (choice === ADVISOR_MESSAGES.disabledOption) {
+      return { kind: "disabled" };
+    }
+    return { kind: "selected", model: choice };
+  }
+  const matches = catalog.search(input);
+  if (matches.length === 0) {
+    context.ui.notify(noMatchingModel(input), "error");
+    return { kind: "cancelled" };
+  }
+  if (matches.length === 1) {
+    return { kind: "selected", model: matches[0] };
+  }
+  if (context.hasUI) {
+    const choice = await context.ui.select(
+      ADVISOR_MESSAGES.title,
+      matches.slice(0, MODEL_SELECTION_LIMIT)
+    );
+    if (choice !== void 0) {
+      return { kind: "selected", model: choice };
+    }
+    return { kind: "cancelled" };
+  }
+  context.ui.notify(ADVISOR_MESSAGES.ambiguousModel, "warning");
+  return { kind: "cancelled" };
+}
+
 // src/integration/pi/advisor/command/parser.ts
 function parseAdvisorCommand(args) {
   const input = args.trim();
@@ -589,7 +624,6 @@ function parseAdvisorCommand(args) {
 }
 
 // src/integration/pi/advisor/command/command.ts
-var MODEL_SELECTION_LIMIT = 100;
 var AdvisorCommand = class {
   constructor(pi, advisor) {
     this.pi = pi;
@@ -616,41 +650,6 @@ var AdvisorCommand = class {
     const status = this.advisor.setThinking(requested);
     this.syncAndNotify(context, status, thinkingStatus(requested));
   }
-  async chooseModel(context, input) {
-    if (!input) {
-      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [
-        ADVISOR_MESSAGES.disabledOption,
-        ...this.catalog.list()
-      ]);
-      if (choice === void 0) {
-        return { kind: "cancelled" };
-      }
-      if (choice === ADVISOR_MESSAGES.disabledOption) {
-        return { kind: "disabled" };
-      }
-      return { kind: "selected", model: choice };
-    }
-    const matches = this.catalog.search(input);
-    if (matches.length === 0) {
-      context.ui.notify(noMatchingModel(input), "error");
-      return { kind: "cancelled" };
-    }
-    if (matches.length === 1) {
-      return { kind: "selected", model: matches[0] };
-    }
-    if (context.hasUI) {
-      const choice = await context.ui.select(
-        ADVISOR_MESSAGES.title,
-        matches.slice(0, MODEL_SELECTION_LIMIT)
-      );
-      if (choice !== void 0) {
-        return { kind: "selected", model: choice };
-      }
-      return { kind: "cancelled" };
-    }
-    context.ui.notify(ADVISOR_MESSAGES.ambiguousModel, "warning");
-    return { kind: "cancelled" };
-  }
   async handle(args, context) {
     this.catalog.refresh(context);
     const status = this.advisor.status();
@@ -671,7 +670,7 @@ var AdvisorCommand = class {
       context.ui.notify(currentStatus(status.config.model, status.config.thinking), "info");
       return;
     }
-    const chosen = await this.chooseModel(context, input.query);
+    const chosen = await chooseModel(this.catalog, context, input.query);
     if (chosen.kind === "disabled") {
       this.disable(context);
     } else if (chosen.kind === "selected") {

@@ -37,9 +37,6 @@ export class AdvisorConfiguration {
   }
 
   private persist(status: Config): AdvisorResult {
-    if (this.current.kind === "failure") {
-      return this.status();
-    }
     try {
       this.config.save(status);
       this.current = { kind: "success", config: status };

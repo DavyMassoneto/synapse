@@ -1,7 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { REMINDER } from "@/modules/advisor/internal/format";
-import { REMIND_EVERY, ReminderCounter } from "@/modules/advisor/internal/reminder";
+import { REMIND_EVERY, REMINDER, ReminderCounter } from "@/modules/advisor/internal/reminder";
 
 function verifyReminder(): void {
   const first = new ReminderCounter();
