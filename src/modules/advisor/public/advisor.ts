@@ -1,5 +1,5 @@
-import type { AdvisorResult } from "./config/index.js";
-import type { Consultation, ConsultationResult, ModelPort } from "./consultation/index.js";
+import type { AdvisorResult } from "./config";
+import type { Consultation, ConsultationResult, ModelPort } from "./consultation";
 import type { ReminderTurn } from "./reminder.ts";
 
 export interface Advisor {

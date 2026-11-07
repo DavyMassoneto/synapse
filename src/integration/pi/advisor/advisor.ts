@@ -1,8 +1,8 @@
-import type { AdvisorHost } from "#synapse/integration/pi/advisor/contracts";
 import type { Advisor } from "#synapse/modules";
-import { AdvisorCommand } from "./command/index.js";
-import { AdvisorEvents } from "./events/index.js";
-import { AdvisorToolHandler } from "./tool/index.js";
+import { AdvisorCommand } from "./command";
+import type { AdvisorHost } from "./contracts";
+import { AdvisorEvents } from "./events";
+import { AdvisorToolHandler } from "./tool";
 
 export function registerAdvisor(
   pi: AdvisorHost,
