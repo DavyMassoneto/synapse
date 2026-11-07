@@ -3,7 +3,11 @@ import {
   type ToolRenderResultOptions,
 } from "@earendil-works/pi-coding-agent";
 import { type Component, Text } from "@earendil-works/pi-tui";
-import { PREVIEW_LINES, RENDER_STYLE, RENDER_TEXT } from "@/integration/pi/advisor/presentation";
+import {
+  ADVISOR_MESSAGES,
+  PREVIEW_LINES,
+  RENDER_STYLE,
+} from "@/integration/pi/advisor/presentation";
 import {
   type AdvisorRenderContext,
   type AdvisorRenderers,
@@ -24,7 +28,7 @@ class AdvisorRendering {
       text = new Text("", 0, 0);
     }
 
-    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(RENDER_TEXT.title)));
+    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(ADVISOR_MESSAGES.renderTitle)));
     return text;
   }
 
@@ -41,7 +45,7 @@ class AdvisorRendering {
       text = new Text("", 0, 0);
     }
     if (options.isPartial) {
-      text.setText(theme.fg(RENDER_STYLE.pending, RENDER_TEXT.pending));
+      text.setText(theme.fg(RENDER_STYLE.pending, ADVISOR_MESSAGES.renderPending));
       return text;
     }
 
@@ -68,7 +72,9 @@ class AdvisorRendering {
       suffix = `\n${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
     }
     const model = result.details?.model;
-    const title = model ? `${RENDER_TEXT.success} (${model})` : RENDER_TEXT.success;
+    const title = model
+      ? `${ADVISOR_MESSAGES.renderSuccess} (${model})`
+      : ADVISOR_MESSAGES.renderSuccess;
     text.setText(`${theme.fg(RENDER_STYLE.success, title)}\n${shown.join("\n")}${suffix}`);
     return text;
   }

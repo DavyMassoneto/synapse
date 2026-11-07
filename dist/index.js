@@ -394,9 +394,71 @@ function compose(host, configPath) {
   host.register(advisor, lifetime.signal, lifetime.abort.bind(lifetime));
 }
 
+// src/integration/pi/advisor/command/catalog.ts
+var COMPLETION_LIMIT = 40;
+var ModelCatalog = class {
+  models = [];
+  refresh(context) {
+    this.models = [];
+    if (context.scopedModels.length > 0) {
+      for (const entry of context.scopedModels) {
+        this.models.push(`${entry.model.provider}/${entry.model.id}`);
+      }
+    } else {
+      for (const model of context.modelRegistry.getAvailable()) {
+        this.models.push(`${model.provider}/${model.id}`);
+      }
+    }
+  }
+  list() {
+    return [...this.models];
+  }
+  completions(prefix) {
+    const normalizedPrefix = prefix.toLowerCase();
+    const items = [];
+    for (const value of ["off", "thinking", ...this.models]) {
+      if (value.toLowerCase().startsWith(normalizedPrefix)) {
+        items.push({ value, label: value });
+      }
+      if (items.length === COMPLETION_LIMIT) {
+        break;
+      }
+    }
+    return items;
+  }
+  search(input) {
+    const search = input.toLowerCase();
+    const terms = search.split(/\s+/);
+    const matches = [];
+    for (const model of this.models) {
+      const normalized = model.toLowerCase();
+      if (normalized === search) {
+        return [model];
+      }
+      let matchesAll = true;
+      for (const term of terms) {
+        if (!normalized.includes(term)) {
+          matchesAll = false;
+          break;
+        }
+      }
+      if (matchesAll) {
+        matches.push(model);
+      }
+    }
+    return matches;
+  }
+};
+
+// src/integration/pi/advisor/presentation/layout.ts
+var PREVIEW_LINES = 8;
+
 // src/integration/pi/advisor/presentation/messages.ts
 var ADVISOR_MESSAGES = {
   title: "Modelo advisor",
+  renderPending: "consultando...",
+  renderSuccess: "\u2713 conselho",
+  renderTitle: "advisor ",
   disabledOption: "(sem advisor)",
   disabled: "Advisor desligado",
   progress: "Consultando advisor...",
@@ -407,13 +469,7 @@ var ADVISOR_MESSAGES = {
   snippet: "Consultar um modelo revisor com a conversa, sem par\xE2metros"
 };
 
-// src/integration/pi/advisor/presentation/rendering-constants.ts
-var PREVIEW_LINES = 8;
-var RENDER_TEXT = {
-  pending: "consultando...",
-  success: "\u2713 conselho",
-  title: "advisor "
-};
+// src/integration/pi/advisor/presentation/styles.ts
 var RENDER_STYLE = {
   title: "toolTitle",
   pending: "warning",
@@ -423,7 +479,7 @@ var RENDER_STYLE = {
   additional: "dim"
 };
 
-// src/integration/pi/advisor/events.ts
+// src/integration/pi/advisor/sync/sync.ts
 function syncAdvisor(pi, advisor, context) {
   const result = advisor.status();
   const model = result.kind === "success" ? result.config.model : void 0;
@@ -443,6 +499,136 @@ function syncAdvisor(pi, advisor, context) {
     context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
   }
 }
+
+// src/integration/pi/advisor/command/parser.ts
+function parseAdvisorCommand(args) {
+  const input = args.trim();
+  if (input === "off") {
+    return { kind: "disable" };
+  }
+  const [command, ...rest] = input.split(/\s+/);
+  if (command === "thinking") {
+    return { kind: "thinking", level: rest.join(" ") };
+  }
+  return { kind: "select", query: input };
+}
+
+// src/integration/pi/advisor/command/command.ts
+var MODEL_SELECTION_LIMIT = 100;
+var DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
+var AdvisorCommand = class {
+  constructor(pi, advisor) {
+    this.pi = pi;
+    this.advisor = advisor;
+  }
+  pi;
+  advisor;
+  catalog = new ModelCatalog();
+  start(_event, context) {
+    this.catalog.refresh(context);
+  }
+  notifyStatus(context, status, message) {
+    if (status.kind === "failure") {
+      context.ui.notify(status.message, "error");
+      return;
+    }
+    syncAdvisor(this.pi, this.advisor, context);
+    context.ui.notify(message, "info");
+  }
+  changeThinking(context, requested) {
+    for (const level of THINKING_LEVEL_OPTIONS) {
+      if (level === requested) {
+        const status = this.advisor.setThinking(level);
+        this.notifyStatus(context, status, `Advisor thinking: ${level}`);
+        return;
+      }
+    }
+    context.ui.notify(`N\xEDveis: ${THINKING_LEVEL_OPTIONS.join(", ")}`, "error");
+  }
+  async chooseModel(context, input) {
+    if (!input) {
+      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [
+        DISABLED_OPTION,
+        ...this.catalog.list()
+      ]);
+      if (choice === void 0) {
+        return { kind: "cancelled" };
+      }
+      if (choice === DISABLED_OPTION) {
+        return { kind: "disabled" };
+      }
+      return { kind: "selected", model: choice };
+    }
+    const matches = this.catalog.search(input);
+    if (matches.length === 0) {
+      context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
+      return { kind: "cancelled" };
+    }
+    if (matches.length === 1) {
+      return { kind: "selected", model: matches[0] };
+    }
+    if (context.hasUI) {
+      const choice = await context.ui.select(
+        ADVISOR_MESSAGES.title,
+        matches.slice(0, MODEL_SELECTION_LIMIT)
+      );
+      if (choice !== void 0) {
+        return { kind: "selected", model: choice };
+      }
+      return { kind: "cancelled" };
+    }
+    context.ui.notify(
+      "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
+      "warning"
+    );
+    return { kind: "cancelled" };
+  }
+  async handle(args, context) {
+    this.catalog.refresh(context);
+    const status = this.advisor.status();
+    const input = parseAdvisorCommand(args);
+    if (status.kind === "failure") {
+      context.ui.notify(status.message, "error");
+      return;
+    }
+    if (input.kind === "disable") {
+      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+      return;
+    }
+    if (input.kind === "thinking") {
+      this.changeThinking(context, input.level);
+      return;
+    }
+    if (!input.query && !context.hasUI) {
+      context.ui.notify(
+        `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
+        "info"
+      );
+      return;
+    }
+    const chosen = await this.chooseModel(context, input.query);
+    if (chosen.kind === "disabled") {
+      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
+    } else if (chosen.kind === "selected") {
+      this.notifyStatus(
+        context,
+        this.advisor.selectModel(chosen.model),
+        `Advisor: ${chosen.model}`
+      );
+    }
+  }
+};
+function registerCommand(pi, advisor) {
+  const command = new AdvisorCommand(pi, advisor);
+  pi.on("session_start", command.start.bind(command));
+  pi.registerCommand("advisor", {
+    description: "Escolhe o modelo advisor ou o n\xEDvel de racioc\xEDnio",
+    getArgumentCompletions: command.catalog.completions.bind(command.catalog),
+    handler: command.handle.bind(command)
+  });
+}
+
+// src/integration/pi/advisor/events.ts
 var AdvisorEvents = class {
   constructor(pi, advisor, shutdownCallback) {
     this.pi = pi;
@@ -507,168 +693,6 @@ function registerEvents(pi, advisor, shutdownCallback) {
   pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
   pi.on("tool_result", handlers.toolResult.bind(handlers));
   pi.on("turn_end", handlers.turnEnd.bind(handlers));
-}
-
-// src/integration/pi/advisor/command.ts
-var COMPLETION_LIMIT = 40;
-var MODEL_SELECTION_LIMIT = 100;
-var DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
-var AdvisorCommand = class {
-  constructor(pi, advisor) {
-    this.pi = pi;
-    this.advisor = advisor;
-  }
-  pi;
-  advisor;
-  models = [];
-  start(_event, context) {
-    this.models = this.modelRefs(context);
-  }
-  modelRefs(context) {
-    const refs = [];
-    if (context.scopedModels.length > 0) {
-      for (const entry of context.scopedModels) {
-        refs.push(`${entry.model.provider}/${entry.model.id}`);
-      }
-    } else {
-      for (const model of context.modelRegistry.getAvailable()) {
-        refs.push(`${model.provider}/${model.id}`);
-      }
-    }
-    return refs;
-  }
-  completions(prefix) {
-    const normalizedPrefix = prefix.toLowerCase();
-    const items = [];
-    for (const value of ["off", "thinking", ...this.models]) {
-      if (value.toLowerCase().startsWith(normalizedPrefix)) {
-        items.push({ value, label: value });
-      }
-      if (items.length === COMPLETION_LIMIT) {
-        break;
-      }
-    }
-    return items;
-  }
-  notifyStatus(context, status, message) {
-    if (status.kind === "failure") {
-      context.ui.notify(status.message, "error");
-      return;
-    }
-    syncAdvisor(this.pi, this.advisor, context);
-    context.ui.notify(message, "info");
-  }
-  changeThinking(context, requested) {
-    for (const level of THINKING_LEVEL_OPTIONS) {
-      if (level === requested) {
-        const status = this.advisor.setThinking(level);
-        this.notifyStatus(context, status, `Advisor thinking: ${level}`);
-        return;
-      }
-    }
-    context.ui.notify(`N\xEDveis: ${THINKING_LEVEL_OPTIONS.join(", ")}`, "error");
-  }
-  matchModels(models, input) {
-    const search = input.toLowerCase();
-    const terms = search.split(/\s+/);
-    const matches = [];
-    for (const model of models) {
-      const normalizedModel = model.toLowerCase();
-      if (normalizedModel === search) {
-        return [model];
-      }
-      let matchesAll = true;
-      for (const term of terms) {
-        if (!normalizedModel.includes(term)) {
-          matchesAll = false;
-          break;
-        }
-      }
-      if (matchesAll) {
-        matches.push(model);
-      }
-    }
-    return matches;
-  }
-  async chooseModel(context, models, input) {
-    if (!input) {
-      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [DISABLED_OPTION, ...models]);
-      if (choice === void 0) {
-        return { kind: "cancelled" };
-      }
-      if (choice === DISABLED_OPTION) {
-        return { kind: "disabled" };
-      }
-      return { kind: "selected", model: choice };
-    }
-    const matches = this.matchModels(models, input);
-    if (matches.length === 0) {
-      context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
-      return { kind: "cancelled" };
-    }
-    if (matches.length === 1) {
-      return { kind: "selected", model: matches[0] };
-    }
-    if (context.hasUI) {
-      const choice = await context.ui.select(
-        ADVISOR_MESSAGES.title,
-        matches.slice(0, MODEL_SELECTION_LIMIT)
-      );
-      if (choice !== void 0) {
-        return { kind: "selected", model: choice };
-      }
-      return { kind: "cancelled" };
-    }
-    context.ui.notify(
-      "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
-      "warning"
-    );
-    return { kind: "cancelled" };
-  }
-  async handle(args, context) {
-    this.models = this.modelRefs(context);
-    const status = this.advisor.status();
-    const input = args.trim();
-    if (status.kind === "failure") {
-      context.ui.notify(status.message, "error");
-      return;
-    }
-    if (input === "off") {
-      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
-      return;
-    }
-    const [command, ...argumentsList] = input.split(/\s+/);
-    if (command === "thinking") {
-      this.changeThinking(context, argumentsList.join(" "));
-      return;
-    }
-    if (!input && !context.hasUI) {
-      context.ui.notify(
-        `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
-        "info"
-      );
-      return;
-    }
-    const chosen = await this.chooseModel(context, this.modelRefs(context), input);
-    if (chosen.kind === "disabled") {
-      this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
-    } else if (chosen.kind === "selected") {
-      this.notifyStatus(
-        context,
-        this.advisor.selectModel(chosen.model),
-        `Advisor: ${chosen.model}`
-      );
-    }
-  }
-};
-function registerCommand(pi, advisor) {
-  const command = new AdvisorCommand(pi, advisor);
-  pi.on("session_start", command.start.bind(command));
-  pi.registerCommand("advisor", {
-    description: "Escolhe o modelo advisor ou o n\xEDvel de racioc\xEDnio",
-    getArgumentCompletions: command.completions.bind(command),
-    handler: command.handle.bind(command)
-  });
 }
 
 // src/integration/pi/advisor/model.ts
@@ -784,7 +808,7 @@ var AdvisorRendering = class {
     } else {
       text = new Text("", 0, 0);
     }
-    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(RENDER_TEXT.title)));
+    text.setText(theme.fg(RENDER_STYLE.title, theme.bold(ADVISOR_MESSAGES.renderTitle)));
     return text;
   }
   renderResult(result, options, theme, context) {
@@ -795,7 +819,7 @@ var AdvisorRendering = class {
       text = new Text("", 0, 0);
     }
     if (options.isPartial) {
-      text.setText(theme.fg(RENDER_STYLE.pending, RENDER_TEXT.pending));
+      text.setText(theme.fg(RENDER_STYLE.pending, ADVISOR_MESSAGES.renderPending));
       return text;
     }
     const content = [];
@@ -821,7 +845,7 @@ var AdvisorRendering = class {
 ${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
     }
     const model = result.details?.model;
-    const title = model ? `${RENDER_TEXT.success} (${model})` : RENDER_TEXT.success;
+    const title = model ? `${ADVISOR_MESSAGES.renderSuccess} (${model})` : ADVISOR_MESSAGES.renderSuccess;
     text.setText(`${theme.fg(RENDER_STYLE.success, title)}
 ${shown.join("\n")}${suffix}`);
     return text;

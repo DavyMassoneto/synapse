@@ -1,5 +1,5 @@
 import { type Advisor } from "@/modules";
-import { registerCommand } from "./command.ts";
+import { registerCommand } from "./command";
 import { registerEvents } from "./events.ts";
 import { type AdvisorHost } from "./host-types.ts";
 import { registerTool } from "./tool.ts";

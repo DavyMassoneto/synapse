@@ -68,12 +68,40 @@ async function eventLifecycle(): Promise<void> {
     assert.ok(start.systemPromptOptions.sections.advisor);
 
     let reminder: TurnEndEventResult | undefined;
-    for (let index = 0; index < 5; index++) {
+    for (let index = 0; index < 4; index++) {
       for (const handler of host.turns) {
         reminder = await handler(turn, context);
       }
+      assert.equal(reminder, undefined);
+    }
+    for (const handler of host.turns) {
+      reminder = await handler(turn, context);
     }
     assert.ok(reminder?.entries?.length);
+
+    for (let index = 0; index < 4; index++) {
+      for (const handler of host.turns) {
+        await handler(turn, context);
+      }
+    }
+    for (const handler of host.toolResults) {
+      await handler(
+        {
+          type: "tool_result",
+          toolCallId: "advisor",
+          toolName: "advisor",
+          input: {},
+          content: [],
+          details: {},
+          isError: false,
+        },
+        context,
+      );
+    }
+    for (const handler of host.turns) {
+      reminder = await handler(turn, context);
+    }
+    assert.equal(reminder, undefined);
 
     host.advisor.disable();
     for (const handler of host.beforeStarts) {

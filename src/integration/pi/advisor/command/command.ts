@@ -1,18 +1,17 @@
 import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
-import { type AutocompleteItem } from "@earendil-works/pi-tui";
+import { type AdvisorContext, type AdvisorHost } from "@/integration/pi/advisor";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
+import { syncAdvisor } from "@/integration/pi/advisor/sync";
 import { type Advisor, type AdvisorResult, THINKING_LEVEL_OPTIONS } from "@/modules";
-import { type AdvisorContext } from "./context-types.ts";
-import { syncAdvisor } from "./events.ts";
-import { type AdvisorHost } from "./host-types.ts";
+import { ModelCatalog } from "./catalog.ts";
+import { parseAdvisorCommand } from "./parser.ts";
 import { type ModelSelection } from "./selection-types.ts";
 
-const COMPLETION_LIMIT = 40;
 const MODEL_SELECTION_LIMIT = 100;
 const DISABLED_OPTION = ADVISOR_MESSAGES.disabledOption;
 
 class AdvisorCommand {
-  private models: string[] = [];
+  readonly catalog = new ModelCatalog();
 
   constructor(
     private readonly pi: AdvisorHost,
@@ -20,40 +19,7 @@ class AdvisorCommand {
   ) {}
 
   start(_event: SessionStartEvent, context: AdvisorContext): void {
-    this.models = this.modelRefs(context);
-  }
-
-  private modelRefs(context: AdvisorContext): string[] {
-    const refs: string[] = [];
-
-    if (context.scopedModels.length > 0) {
-      for (const entry of context.scopedModels) {
-        refs.push(`${entry.model.provider}/${entry.model.id}`);
-      }
-    } else {
-      for (const model of context.modelRegistry.getAvailable()) {
-        refs.push(`${model.provider}/${model.id}`);
-      }
-    }
-
-    return refs;
-  }
-
-  completions(prefix: string): AutocompleteItem[] {
-    const normalizedPrefix = prefix.toLowerCase();
-    const items: AutocompleteItem[] = [];
-
-    for (const value of ["off", "thinking", ...this.models]) {
-      if (value.toLowerCase().startsWith(normalizedPrefix)) {
-        items.push({ value, label: value });
-      }
-
-      if (items.length === COMPLETION_LIMIT) {
-        break;
-      }
-    }
-
-    return items;
+    this.catalog.refresh(context);
   }
 
   private notifyStatus(context: AdvisorContext, status: AdvisorResult, message: string): void {
@@ -77,40 +43,12 @@ class AdvisorCommand {
     context.ui.notify(`Níveis: ${THINKING_LEVEL_OPTIONS.join(", ")}`, "error");
   }
 
-  private matchModels(models: string[], input: string): string[] {
-    const search = input.toLowerCase();
-    const terms = search.split(/\s+/);
-    const matches: string[] = [];
-
-    for (const model of models) {
-      const normalizedModel = model.toLowerCase();
-      if (normalizedModel === search) {
-        return [model];
-      }
-
-      let matchesAll = true;
-      for (const term of terms) {
-        if (!normalizedModel.includes(term)) {
-          matchesAll = false;
-          break;
-        }
-      }
-
-      if (matchesAll) {
-        matches.push(model);
-      }
-    }
-
-    return matches;
-  }
-
-  private async chooseModel(
-    context: AdvisorContext,
-    models: string[],
-    input: string,
-  ): Promise<ModelSelection> {
+  private async chooseModel(context: AdvisorContext, input: string): Promise<ModelSelection> {
     if (!input) {
-      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [DISABLED_OPTION, ...models]);
+      const choice = await context.ui.select(ADVISOR_MESSAGES.title, [
+        DISABLED_OPTION,
+        ...this.catalog.list(),
+      ]);
       if (choice === undefined) {
         return { kind: "cancelled" };
       }
@@ -120,7 +58,7 @@ class AdvisorCommand {
       return { kind: "selected", model: choice };
     }
 
-    const matches = this.matchModels(models, input);
+    const matches = this.catalog.search(input);
     if (matches.length === 0) {
       context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
       return { kind: "cancelled" };
@@ -146,25 +84,24 @@ class AdvisorCommand {
   }
 
   async handle(args: string, context: AdvisorContext): Promise<void> {
-    this.models = this.modelRefs(context);
+    this.catalog.refresh(context);
     const status = this.advisor.status();
-    const input = args.trim();
+    const input = parseAdvisorCommand(args);
 
     if (status.kind === "failure") {
       context.ui.notify(status.message, "error");
       return;
     }
 
-    if (input === "off") {
+    if (input.kind === "disable") {
       this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
       return;
     }
-    const [command, ...argumentsList] = input.split(/\s+/);
-    if (command === "thinking") {
-      this.changeThinking(context, argumentsList.join(" "));
+    if (input.kind === "thinking") {
+      this.changeThinking(context, input.level);
       return;
     }
-    if (!input && !context.hasUI) {
+    if (!input.query && !context.hasUI) {
       context.ui.notify(
         `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
         "info",
@@ -172,7 +109,7 @@ class AdvisorCommand {
       return;
     }
 
-    const chosen = await this.chooseModel(context, this.modelRefs(context), input);
+    const chosen = await this.chooseModel(context, input.query);
     if (chosen.kind === "disabled") {
       this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
     } else if (chosen.kind === "selected") {
@@ -190,7 +127,7 @@ export function registerCommand(pi: AdvisorHost, advisor: Advisor): void {
   pi.on("session_start", command.start.bind(command));
   pi.registerCommand("advisor", {
     description: "Escolhe o modelo advisor ou o nível de raciocínio",
-    getArgumentCompletions: command.completions.bind(command),
+    getArgumentCompletions: command.catalog.completions.bind(command.catalog),
     handler: command.handle.bind(command),
   });
 }

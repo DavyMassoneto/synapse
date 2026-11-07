@@ -13,8 +13,20 @@ async function commandParsing(): Promise<void> {
     await host.command.handler("thinking banana", context);
     assert.match(context.ui.notices.at(-1) ?? "", /Níveis/);
     await host.command.handler("thinkingx", context);
-    assert.match(context.ui.notices.at(-1) ?? "", /Nenhum modelo/);
-    assert.equal(host.advisor.status().kind, "success");
+    let status = host.advisor.status();
+    assert.equal(status.kind, "success");
+    assert.equal(status.config.model, "provider/thinkingx");
+
+    await host.command.handler("provider/model", context);
+    status = host.advisor.status();
+    assert.equal(status.kind, "success");
+    assert.equal(status.config.model, "provider/model");
+
+    await host.command.handler("provider", context);
+    assert.match(context.ui.notices.at(-1) ?? "", /Mais de um modelo/);
+    status = host.advisor.status();
+    assert.equal(status.kind, "success");
+    assert.equal(status.config.model, "provider/model");
   } finally {
     host.cleanup();
   }

@@ -1,5 +1,8 @@
 export const ADVISOR_MESSAGES = {
   title: "Modelo advisor",
+  renderPending: "consultando...",
+  renderSuccess: "✓ conselho",
+  renderTitle: "advisor ",
   disabledOption: "(sem advisor)",
   disabled: "Advisor desligado",
   progress: "Consultando advisor...",
