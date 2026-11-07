@@ -192,11 +192,11 @@ def review(files):
     with ThreadPoolExecutor(MAX_WORKERS) as pool:
         results = list(pool.map(lambda message: call_model(system, message), messages))
     verdict = "ATENÇÃO" if any(result[0] != "OK" for result in results) else "OK"
-    summaries = [result[1] for result in results if result[1]]
+    summary = merge_summaries([result[1] for result in results if result[1]])
     if skipped:
-        summaries.append(f"O diff passou do limite: {skipped} parte(s) final(is) não foram revisadas.")
+        summary += f"\n\nO diff passou do limite: {skipped} parte(s) final(is) não foram revisadas."
     findings = [finding for result in results for finding in result[2]]
-    return verdict, "\n\n".join(summaries), findings
+    return verdict, summary, findings
 
 
 def split_findings(findings, files):
