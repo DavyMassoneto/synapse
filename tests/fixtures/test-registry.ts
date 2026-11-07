@@ -1,14 +1,7 @@
-import {
-  type Api,
-  type AssistantMessage,
-  type Context,
-  createAssistantMessageEventStream,
-  type Model,
-  type ModelsSimpleStreamOptions,
-} from "@earendil-works/pi-ai";
+import type { Api, Context, Model, ModelsSimpleStreamOptions } from "@earendil-works/pi-ai";
 import type { AdvisorRegistry } from "#synapse/integration";
+import { assistantStream } from "./assistant-stream";
 import type { TestStopReason } from "./test-context-types";
-import { TEST_USAGE } from "./usage";
 
 export class TestRegistry implements AdvisorRegistry {
   calls = 0;
@@ -41,18 +34,6 @@ export class TestRegistry implements AdvisorRegistry {
     return true;
   }
   streamSimple(_model: Model<Api>, _context: Context, _options?: ModelsSimpleStreamOptions) {
-    const stream = createAssistantMessageEventStream();
-    const message: AssistantMessage = {
-      role: "assistant",
-      content: [{ type: "text", text: "conselho" }],
-      api: "anthropic-messages",
-      provider: "provider",
-      model: "model",
-      stopReason: this.stopReason,
-      usage: TEST_USAGE,
-      timestamp: Date.now(),
-    };
-    stream.end(message);
-    return stream;
+    return assistantStream("model", "conselho", this.stopReason);
   }
 }

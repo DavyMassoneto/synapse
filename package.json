@@ -31,8 +31,5 @@
     "extensions": [
       "./dist/entry.js"
     ]
-  },
-  "imports": {
-    "#synapse/*": "./dist/*/index.js"
   }
 }

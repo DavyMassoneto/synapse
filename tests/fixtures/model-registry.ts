@@ -1,13 +1,6 @@
-import {
-  type Api,
-  type AssistantMessage,
-  type Context,
-  createAssistantMessageEventStream,
-  type Model,
-  type ModelsSimpleStreamOptions,
-} from "@earendil-works/pi-ai";
+import type { Api, Context, Model, ModelsSimpleStreamOptions } from "@earendil-works/pi-ai";
 import type { AdvisorModelRegistry } from "#synapse/integration";
-import { TEST_USAGE } from "./usage";
+import { assistantStream } from "./assistant-stream";
 
 export class RegistryFixture implements AdvisorModelRegistry {
   used: Model<Api> | undefined;
@@ -38,18 +31,6 @@ export class RegistryFixture implements AdvisorModelRegistry {
     this.used = model;
     this.context = context;
     this.options = options;
-    const stream = createAssistantMessageEventStream();
-    const message: AssistantMessage = {
-      role: "assistant",
-      content: [{ type: "text", text: "ok" }],
-      api: "anthropic-messages",
-      provider: "provider",
-      model: model.id,
-      usage: TEST_USAGE,
-      stopReason: "stop",
-      timestamp: Date.now(),
-    };
-    stream.end(message);
-    return stream;
+    return assistantStream(model.id, "ok", "stop");
   }
 }
