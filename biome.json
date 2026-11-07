@@ -34,7 +34,7 @@
           "options": {
             "patterns": [
               {
-                "group": ["./**", "../**"],
+                "group": ["../../**"],
                 "message": "Use o alias @/"
               }
             ]
@@ -65,8 +65,8 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["./**", "../**"],
-                    "message": "Use o alias @/"
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
                   },
                   {
                     "group": [
@@ -76,7 +76,7 @@
                       "@/integration/**",
                       "@/modules"
                     ],
-                    "message": "Depend\u00eancia fora da fronteira do m\u00f3dulo"
+                    "message": "Dependência fora da fronteira do módulo"
                   }
                 ]
               }
@@ -95,8 +95,8 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["./**", "../**"],
-                    "message": "Use o alias @/"
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
                   },
                   {
                     "group": [
@@ -105,7 +105,16 @@
                       "@/modules/*/adapters",
                       "@/modules/*/adapters/**"
                     ],
-                    "message": "Acesso a \u00e1rea privada do m\u00f3dulo"
+                    "message": "Acesso a área privada do módulo"
+                  },
+                  {
+                    "group": [
+                      "../modules/*/internal",
+                      "../modules/*/internal/**",
+                      "../modules/*/adapters",
+                      "../modules/*/adapters/**"
+                    ],
+                    "message": "Acesso a área privada do módulo"
                   }
                 ]
               }
@@ -124,8 +133,8 @@
               "options": {
                 "patterns": [
                   {
-                    "group": ["./**", "../**"],
-                    "message": "Use o alias @/"
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
                   },
                   {
                     "group": [
@@ -141,7 +150,52 @@
                       "@/modules/pi-web",
                       "@/modules/pi-web/**"
                     ],
-                    "message": "Depend\u00eancia fora da fronteira do advisor"
+                    "message": "Dependência fora da fronteira do advisor"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/advisor/internal/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "@/composition",
+                      "@/integration",
+                      "@/integration/**",
+                      "@/modules",
+                      "@/modules/browser",
+                      "@/modules/browser/**",
+                      "@/modules/memory",
+                      "@/modules/memory/**",
+                      "@/modules/pi-web",
+                      "@/modules/pi-web/**"
+                    ],
+                    "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": [
+                      "../adapters",
+                      "../adapters/**",
+                      "@/modules/advisor/adapters",
+                      "@/modules/advisor/adapters/**"
+                    ],
+                    "message": "Núcleo não acessa adaptadores"
                   }
                 ]
               }

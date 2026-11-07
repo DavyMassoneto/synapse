@@ -5,9 +5,10 @@ import {
   type SessionStartEvent,
 } from "@earendil-works/pi-coding-agent";
 import { type AutocompleteItem } from "@earendil-works/pi-tui";
-import { type ModelSelection, syncAdvisor } from "@/integration";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { type Advisor, type AdvisorResult, THINKING_LEVEL_OPTIONS } from "@/modules";
+import { syncAdvisor } from "./events.ts";
+import { type ModelSelection } from "./selection-types.ts";
 
 const COMPLETION_LIMIT = 40;
 const MODEL_SELECTION_LIMIT = 100;

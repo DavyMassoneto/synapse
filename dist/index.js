@@ -76,74 +76,6 @@ Rules:
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
 
-// src/modules/advisor/internal/format/prompt.ts
-var ESTIMATED_CHARACTERS_PER_TOKEN = 3;
-var HOST_SAFETY_TOKENS = 4096;
-var MINIMUM_ANSWER_TOKENS = 1024;
-var MAX_SYSTEM_CHARACTERS = 4e4;
-var PROMPT_PREFIX = "<executor_system_prompt>\n";
-var TRANSCRIPT_PREFIX = "\n</executor_system_prompt>\n\n<transcript>\n";
-var PROMPT_SUFFIX = "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
-function preparePrompt(input, model) {
-  const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS;
-  if (requiredOutputTokens > model.maxOutputTokens) {
-    return void 0;
-  }
-  const inputTokens = model.contextWindow - HOST_SAFETY_TOKENS - model.maxOutputTokens;
-  if (inputTokens <= 0) {
-    return void 0;
-  }
-  const available = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length;
-  const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length;
-  if (available <= fixedLength) {
-    return void 0;
-  }
-  const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor((available - fixedLength) / 2));
-  const system = clip(input.system, systemLimit);
-  const transcriptBudget = available - fixedLength - system.length;
-  const transcript = buildTranscript(input.messages, transcriptBudget);
-  return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
-}
-
-// src/modules/advisor/internal/reminder/counter.ts
-var REMIND_EVERY = 5;
-var ReminderCounter = class {
-  turns = 0;
-  reset() {
-    this.turns = 0;
-  }
-  advance(event) {
-    if (!event.completed) {
-      return false;
-    }
-    this.turns += 1;
-    if (this.turns < REMIND_EVERY || !event.usedTools) {
-      return false;
-    }
-    this.reset();
-    return true;
-  }
-};
-
-// src/modules/advisor/internal/format/reminder-text.ts
-var REMINDER = "<system-reminder>\nJ\xE1 se passaram " + REMIND_EVERY + " turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:\n- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?\n- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?\n- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?\nSe alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.\n</system-reminder>";
-
-// src/modules/advisor/internal/format/timing.ts
-var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
-
-Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
-
-Also call advisor:
-- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
-- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
-- When considering a change of approach.
-
-On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
-
-Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
-
-If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
-
 // src/modules/advisor/internal/format/transcript.ts
 var TOOL_RESULT_LIMIT = 12e3;
 var HEAD_FRACTION = 0.6;
@@ -238,6 +170,74 @@ function buildTranscript(messages, budget) {
   }
   return [first, marker, ...selected].join(SEPARATOR);
 }
+
+// src/modules/advisor/internal/format/prompt.ts
+var ESTIMATED_CHARACTERS_PER_TOKEN = 3;
+var HOST_SAFETY_TOKENS = 4096;
+var MINIMUM_ANSWER_TOKENS = 1024;
+var MAX_SYSTEM_CHARACTERS = 4e4;
+var PROMPT_PREFIX = "<executor_system_prompt>\n";
+var TRANSCRIPT_PREFIX = "\n</executor_system_prompt>\n\n<transcript>\n";
+var PROMPT_SUFFIX = "\n</transcript>\n\nThe executor just called advisor(). Give your guidance now.";
+function preparePrompt(input, model) {
+  const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS;
+  if (requiredOutputTokens > model.maxOutputTokens) {
+    return void 0;
+  }
+  const inputTokens = model.contextWindow - HOST_SAFETY_TOKENS - model.maxOutputTokens;
+  if (inputTokens <= 0) {
+    return void 0;
+  }
+  const available = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length;
+  const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length;
+  if (available <= fixedLength) {
+    return void 0;
+  }
+  const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor((available - fixedLength) / 2));
+  const system = clip(input.system, systemLimit);
+  const transcriptBudget = available - fixedLength - system.length;
+  const transcript = buildTranscript(input.messages, transcriptBudget);
+  return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX;
+}
+
+// src/modules/advisor/internal/reminder/counter.ts
+var REMIND_EVERY = 5;
+var ReminderCounter = class {
+  turns = 0;
+  reset() {
+    this.turns = 0;
+  }
+  advance(event) {
+    if (!event.completed) {
+      return false;
+    }
+    this.turns += 1;
+    if (this.turns < REMIND_EVERY || !event.usedTools) {
+      return false;
+    }
+    this.reset();
+    return true;
+  }
+};
+
+// src/modules/advisor/internal/format/reminder-text.ts
+var REMINDER = "<system-reminder>\nJ\xE1 se passaram " + REMIND_EVERY + " turnos desde a \xFAltima consulta ao advisor. Pergunte-se agora:\n- Estou repetindo uma tentativa que j\xE1 falhou, ou os resultados n\xE3o batem com o que eu esperava?\n- Vou mudar de abordagem, ou acabei de concluir algo que ainda n\xE3o revisei?\n- O usu\xE1rio me corrigiu ou perguntou algo que eu n\xE3o sei responder com o que est\xE1 no hist\xF3rico?\nSe alguma resposta for sim, chame o advisor agora. Se a pr\xF3xima a\xE7\xE3o j\xE1 est\xE1 clara pelo \xFAltimo resultado, n\xE3o chame e siga.\n</system-reminder>";
+
+// src/modules/advisor/internal/format/timing.ts
+var TIMING = `You have access to an "advisor" tool backed by a stronger reviewer model. It takes NO parameters \u2014 when you call advisor(), your entire conversation history is automatically forwarded. They see the task, every tool call you've made, every result you've seen.
+
+Call advisor BEFORE substantive work \u2014 before writing, before committing to an interpretation, before building on an assumption. If the task requires orientation first (finding files, fetching a source, seeing what's there), do that, then call advisor. Orientation is not substantive work. Writing, editing, and declaring an answer are.
+
+Also call advisor:
+- When you believe the task is complete. BEFORE this call, make your deliverable durable: write the file, save the result, commit the change. The advisor call takes time; if the session ends during it, a durable result persists and an unwritten one doesn't.
+- When stuck \u2014 errors recurring, approach not converging, results that don't fit.
+- When considering a change of approach.
+
+On tasks longer than a few steps, call advisor at least once before committing to an approach and once before declaring done. On short reactive tasks where the next action is dictated by tool output you just read, you don't need to keep calling \u2014 the advisor adds most of its value on the first call, before the approach crystallizes.
+
+Give the advice serious weight. If you follow a step and it fails empirically, or you have primary-source evidence that contradicts a specific claim (the file says X, the paper states Y), adapt. A passing self-test is not evidence the advice is wrong \u2014 it's evidence your test doesn't check what the advice is checking.
+
+If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call \u2014 "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`;
 
 // src/modules/advisor/internal/config/state.ts
 var AdvisorConfiguration = class {
@@ -394,13 +394,6 @@ function compose(host, configPath) {
   host.register(advisor, lifetime.signal, lifetime.abort.bind(lifetime));
 }
 
-// src/integration/pi/advisor/advisor.ts
-function registerAdvisor(pi, advisor, signal, shutdown) {
-  registerEvents(pi, advisor, shutdown);
-  registerTool(pi, advisor, signal);
-  registerCommand(pi, advisor);
-}
-
 // src/integration/pi/advisor/presentation/messages.ts
 var ADVISOR_MESSAGES = {
   title: "Modelo advisor",
@@ -429,6 +422,90 @@ var RENDER_STYLE = {
   muted: "muted",
   additional: "dim"
 };
+
+// src/integration/pi/advisor/events.ts
+function syncAdvisor(pi, advisor, context) {
+  const result = advisor.status();
+  const model = result.kind === "success" ? result.config.model : void 0;
+  const active = pi.getActiveTools();
+  if (model && !active.includes("advisor")) {
+    pi.setActiveTools([...active, "advisor"]);
+  } else if (!model && active.includes("advisor")) {
+    const remaining = [];
+    for (const name of active) {
+      if (name !== "advisor") {
+        remaining.push(name);
+      }
+    }
+    pi.setActiveTools(remaining);
+  }
+  if (context.hasUI) {
+    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
+  }
+}
+var AdvisorEvents = class {
+  constructor(pi, advisor, shutdownCallback) {
+    this.pi = pi;
+    this.advisor = advisor;
+    this.shutdownCallback = shutdownCallback;
+  }
+  pi;
+  advisor;
+  shutdownCallback;
+  start(_event, context) {
+    this.advisor.reset();
+    syncAdvisor(this.pi, this.advisor, context);
+    const status = this.advisor.status();
+    if (status.kind === "failure" && context.hasUI) {
+      context.ui.notify(status.message, "error");
+    }
+  }
+  shutdown() {
+    this.shutdownCallback();
+  }
+  beforeStart(event, context) {
+    syncAdvisor(this.pi, this.advisor, context);
+    const result = this.advisor.status();
+    if (result.kind === "success" && result.config.model) {
+      event.systemPromptOptions.sections.advisor = this.advisor.timing;
+    } else {
+      delete event.systemPromptOptions.sections.advisor;
+    }
+  }
+  toolResult(event) {
+    if (event.toolName === "advisor") {
+      this.advisor.reset();
+    }
+  }
+  turnEnd(event) {
+    const reminder = this.advisor.turn({
+      completed: event.outcome === "completed",
+      usedTools: event.toolResults.length > 0
+    });
+    if (!reminder) {
+      return void 0;
+    }
+    return {
+      entries: [
+        ...event.entries,
+        {
+          type: "custom_message",
+          customType: "advisor-lembrete",
+          content: reminder,
+          display: false
+        }
+      ]
+    };
+  }
+};
+function registerEvents(pi, advisor, shutdownCallback) {
+  const handlers = new AdvisorEvents(pi, advisor, shutdownCallback);
+  pi.on("session_start", handlers.start.bind(handlers));
+  pi.on("session_shutdown", handlers.shutdown.bind(handlers));
+  pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
+  pi.on("tool_result", handlers.toolResult.bind(handlers));
+  pi.on("turn_end", handlers.turnEnd.bind(handlers));
+}
 
 // src/integration/pi/advisor/command.ts
 var COMPLETION_LIMIT = 40;
@@ -590,90 +667,6 @@ function registerCommand(pi, advisor) {
     getArgumentCompletions: command.completions.bind(command),
     handler: command.handle.bind(command)
   });
-}
-
-// src/integration/pi/advisor/events.ts
-function syncAdvisor(pi, advisor, context) {
-  const result = advisor.status();
-  const model = result.kind === "success" ? result.config.model : void 0;
-  const active = pi.getActiveTools();
-  if (model && !active.includes("advisor")) {
-    pi.setActiveTools([...active, "advisor"]);
-  } else if (!model && active.includes("advisor")) {
-    const remaining = [];
-    for (const name of active) {
-      if (name !== "advisor") {
-        remaining.push(name);
-      }
-    }
-    pi.setActiveTools(remaining);
-  }
-  if (context.hasUI) {
-    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
-  }
-}
-var AdvisorEvents = class {
-  constructor(pi, advisor, shutdownCallback) {
-    this.pi = pi;
-    this.advisor = advisor;
-    this.shutdownCallback = shutdownCallback;
-  }
-  pi;
-  advisor;
-  shutdownCallback;
-  start(_event, context) {
-    this.advisor.reset();
-    syncAdvisor(this.pi, this.advisor, context);
-    const status = this.advisor.status();
-    if (status.kind === "failure" && context.hasUI) {
-      context.ui.notify(status.message, "error");
-    }
-  }
-  shutdown() {
-    this.shutdownCallback();
-  }
-  beforeStart(event, context) {
-    syncAdvisor(this.pi, this.advisor, context);
-    const result = this.advisor.status();
-    if (result.kind === "success" && result.config.model) {
-      event.systemPromptOptions.sections.advisor = this.advisor.timing;
-    } else {
-      delete event.systemPromptOptions.sections.advisor;
-    }
-  }
-  toolResult(event) {
-    if (event.toolName === "advisor") {
-      this.advisor.reset();
-    }
-  }
-  turnEnd(event) {
-    const reminder = this.advisor.turn({
-      completed: event.outcome === "completed",
-      usedTools: event.toolResults.length > 0
-    });
-    if (!reminder) {
-      return void 0;
-    }
-    return {
-      entries: [
-        ...event.entries,
-        {
-          type: "custom_message",
-          customType: "advisor-lembrete",
-          content: reminder,
-          display: false
-        }
-      ]
-    };
-  }
-};
-function registerEvents(pi, advisor, shutdownCallback) {
-  const handlers = new AdvisorEvents(pi, advisor, shutdownCallback);
-  pi.on("session_start", handlers.start.bind(handlers));
-  pi.on("session_shutdown", handlers.shutdown.bind(handlers));
-  pi.on("before_agent_start", handlers.beforeStart.bind(handlers));
-  pi.on("tool_result", handlers.toolResult.bind(handlers));
-  pi.on("turn_end", handlers.turnEnd.bind(handlers));
 }
 
 // src/integration/pi/advisor/model.ts
@@ -840,6 +833,79 @@ function createRenderers() {
   };
 }
 
+// src/integration/pi/advisor/tool-schema.ts
+import { Type as Type2 } from "typebox";
+var advisorParameters = Type2.Object({});
+
+// src/integration/pi/advisor/transcript.ts
+function convertContent(content) {
+  if (typeof content === "string") {
+    return [{ kind: "text", text: content }];
+  }
+  const blocks = [];
+  for (const block of content) {
+    if (block.type === "text") {
+      blocks.push({ kind: "text", text: block.text });
+    } else {
+      blocks.push({ kind: "image" });
+    }
+  }
+  return blocks;
+}
+function convertMessage(message) {
+  switch (message.role) {
+    case "user":
+      return { kind: "user", blocks: convertContent(message.content) };
+    case "assistant": {
+      const blocks = [];
+      for (const block of message.content) {
+        if (block.type === "text") {
+          blocks.push({ kind: "text", text: block.text });
+        } else if (block.type === "toolCall") {
+          blocks.push({
+            kind: "call",
+            name: block.name,
+            arguments: JSON.stringify(block.arguments)
+          });
+        }
+      }
+      return { kind: "assistant", blocks };
+    }
+    case "toolResult":
+      return {
+        kind: "toolResult",
+        name: message.toolName,
+        error: message.isError,
+        blocks: convertContent(message.content)
+      };
+    case "bashExecution":
+      return {
+        kind: "shell",
+        name: message.command,
+        hidden: message.excludeFromContext,
+        blocks: [{ kind: "text", text: message.output }]
+      };
+    case "custom":
+      return { kind: "custom", name: message.customType, blocks: convertContent(message.content) };
+    case "branchSummary":
+    case "compactionSummary":
+      return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] };
+    default:
+      return void 0;
+  }
+}
+function captureTranscript(context) {
+  const messages = context.sessionManager.buildSessionProjection().messages;
+  const transcript = [];
+  for (const message of messages) {
+    const converted = convertMessage(message);
+    if (converted !== void 0) {
+      transcript.push(converted);
+    }
+  }
+  return transcript;
+}
+
 // src/integration/pi/advisor/tool.ts
 var AdvisorToolHandler = class {
   constructor(advisor, lifetime) {
@@ -919,77 +985,11 @@ function registerTool(pi, advisor, lifetime) {
   });
 }
 
-// src/integration/pi/advisor/tool-schema.ts
-import { Type as Type2 } from "typebox";
-var advisorParameters = Type2.Object({});
-
-// src/integration/pi/advisor/transcript.ts
-function convertContent(content) {
-  if (typeof content === "string") {
-    return [{ kind: "text", text: content }];
-  }
-  const blocks = [];
-  for (const block of content) {
-    if (block.type === "text") {
-      blocks.push({ kind: "text", text: block.text });
-    } else {
-      blocks.push({ kind: "image" });
-    }
-  }
-  return blocks;
-}
-function convertMessage(message) {
-  switch (message.role) {
-    case "user":
-      return { kind: "user", blocks: convertContent(message.content) };
-    case "assistant": {
-      const blocks = [];
-      for (const block of message.content) {
-        if (block.type === "text") {
-          blocks.push({ kind: "text", text: block.text });
-        } else if (block.type === "toolCall") {
-          blocks.push({
-            kind: "call",
-            name: block.name,
-            arguments: JSON.stringify(block.arguments)
-          });
-        }
-      }
-      return { kind: "assistant", blocks };
-    }
-    case "toolResult":
-      return {
-        kind: "toolResult",
-        name: message.toolName,
-        error: message.isError,
-        blocks: convertContent(message.content)
-      };
-    case "bashExecution":
-      return {
-        kind: "shell",
-        name: message.command,
-        hidden: message.excludeFromContext,
-        blocks: [{ kind: "text", text: message.output }]
-      };
-    case "custom":
-      return { kind: "custom", name: message.customType, blocks: convertContent(message.content) };
-    case "branchSummary":
-    case "compactionSummary":
-      return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] };
-    default:
-      return void 0;
-  }
-}
-function captureTranscript(context) {
-  const messages = context.sessionManager.buildSessionProjection().messages;
-  const transcript = [];
-  for (const message of messages) {
-    const converted = convertMessage(message);
-    if (converted !== void 0) {
-      transcript.push(converted);
-    }
-  }
-  return transcript;
+// src/integration/pi/advisor/advisor.ts
+function registerAdvisor(pi, advisor, signal, shutdown) {
+  registerEvents(pi, advisor, shutdown);
+  registerTool(pi, advisor, signal);
+  registerCommand(pi, advisor);
 }
 
 // src/integration/pi/extension.ts

@@ -4,7 +4,7 @@ import {
   type ConsultationResult,
   type ModelPort,
 } from "@/modules/advisor/public/consultation";
-import { type ReminderTurn } from "@/modules/advisor/public/types";
+import { type ReminderTurn } from "./reminder.ts";
 
 export interface Advisor {
   status(): AdvisorResult;

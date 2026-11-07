@@ -1,5 +1,4 @@
 import { type Api, clampThinkingLevel, type Model } from "@earendil-works/pi-ai";
-import { type AdvisorModelRegistry } from "@/integration";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import {
   type ModelRequest,
@@ -7,6 +6,7 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "@/modules";
+import { type AdvisorModelRegistry } from "./model-types.ts";
 
 export class AdvisorModel {
   constructor(private readonly registry: AdvisorModelRegistry) {}

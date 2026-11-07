@@ -1,13 +1,13 @@
 import { type Theme, type ToolRenderResultOptions } from "@earendil-works/pi-coding-agent";
 import { type Component, Text } from "@earendil-works/pi-tui";
+import { PREVIEW_LINES, RENDER_STYLE, RENDER_TEXT } from "@/integration/pi/advisor/presentation";
 import {
   type AdvisorRenderCallContext,
   type AdvisorRenderCallInput,
   type AdvisorRenderers,
   type AdvisorRenderResultContext,
   type AdvisorRenderResultValue,
-} from "@/integration";
-import { PREVIEW_LINES, RENDER_STYLE, RENDER_TEXT } from "@/integration/pi/advisor/presentation";
+} from "./rendering-types.ts";
 
 class AdvisorRendering {
   renderCall(

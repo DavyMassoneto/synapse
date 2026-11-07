@@ -3,17 +3,17 @@ import {
   type ExtensionAPI,
   type ExtensionToolContext,
 } from "@earendil-works/pi-coding-agent";
+import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
+import { type Advisor } from "@/modules";
+import { AdvisorModel } from "./model.ts";
+import { createRenderers } from "./rendering.ts";
+import { advisorParameters } from "./tool-schema.ts";
 import {
-  AdvisorModel,
   type AdvisorToolDetails,
   type AdvisorToolInput,
   type AdvisorToolResult,
-  advisorParameters,
-  captureTranscript,
-  createRenderers,
-} from "@/integration";
-import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
-import { type Advisor } from "@/modules";
+} from "./tool-types.ts";
+import { captureTranscript } from "./transcript.ts";
 
 class AdvisorToolHandler {
   constructor(

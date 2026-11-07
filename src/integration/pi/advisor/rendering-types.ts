@@ -1,4 +1,4 @@
-import { type AdvisorTool } from "@/integration";
+import { type AdvisorTool } from "./tool-types.ts";
 
 export type AdvisorRenderers = Pick<AdvisorTool, "renderCall" | "renderResult">;
 export type AdvisorRenderCallArguments = Parameters<NonNullable<AdvisorTool["renderCall"]>>;

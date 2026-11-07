@@ -1,4 +1,4 @@
-import { type Config } from "@/modules/advisor/public/config";
+import { type Config } from "./config.ts";
 
 export interface AdvisorSuccess {
   kind: "success";

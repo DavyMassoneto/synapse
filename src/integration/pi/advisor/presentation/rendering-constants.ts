@@ -1,4 +1,4 @@
-import { type AdvisorRenderStyles } from "@/integration/pi/advisor/presentation";
+import { type AdvisorRenderStyles } from "./rendering-style-types.ts";
 
 export const PREVIEW_LINES = 8;
 export const RENDER_TEXT = {

@@ -1,3 +1,3 @@
-import { type THINKING_LEVELS } from "@/modules/advisor/public/config";
+import { type THINKING_LEVELS } from "./levels.ts";
 
 export type ThinkingLevel = (typeof THINKING_LEVELS)[keyof typeof THINKING_LEVELS];
