@@ -22,6 +22,7 @@ async function reportWriteFailure(): Promise<void> {
     const status = host.advisor.status();
     assert.equal(status.kind, "success");
     assert.equal(status.config.thinking, "low");
+    assert.equal(host.advisor.isEnabled(), true);
   } finally {
     rmSync(path, { recursive: true, force: true });
     host.cleanup();

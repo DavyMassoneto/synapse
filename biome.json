@@ -142,15 +142,13 @@
                       "#synapse/composition/index.js",
                       "#synapse/integration/index.js",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js",
-                      "#synapse/modules/browser/index.js",
-                      "#synapse/modules/browser/**",
-                      "#synapse/modules/memory/index.js",
-                      "#synapse/modules/memory/**",
-                      "#synapse/modules/pi-web/index.js",
-                      "#synapse/modules/pi-web/**"
+                      "#synapse/modules/index.js"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": ["#synapse/modules/**", "!#synapse/modules/advisor/**"],
+                    "message": "Não importe outros módulos"
                   }
                 ]
               }
@@ -178,15 +176,13 @@
                       "#synapse/composition/index.js",
                       "#synapse/integration/index.js",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js",
-                      "#synapse/modules/browser/index.js",
-                      "#synapse/modules/browser/**",
-                      "#synapse/modules/memory/index.js",
-                      "#synapse/modules/memory/**",
-                      "#synapse/modules/pi-web/index.js",
-                      "#synapse/modules/pi-web/**"
+                      "#synapse/modules/index.js"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": ["#synapse/modules/**", "!#synapse/modules/advisor/**"],
+                    "message": "Não importe outros módulos"
                   },
                   {
                     "group": [
@@ -269,15 +265,13 @@
                       "#synapse/composition/index.js",
                       "#synapse/integration/index.js",
                       "#synapse/integration/**",
-                      "#synapse/modules/index.js",
-                      "#synapse/modules/browser/index.js",
-                      "#synapse/modules/browser/**",
-                      "#synapse/modules/memory/index.js",
-                      "#synapse/modules/memory/**",
-                      "#synapse/modules/pi-web/index.js",
-                      "#synapse/modules/pi-web/**"
+                      "#synapse/modules/index.js"
                     ],
                     "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": ["#synapse/modules/**", "!#synapse/modules/advisor/**"],
+                    "message": "Não importe outros módulos"
                   },
                   {
                     "group": ["node:fs", "node:fs/**", "typebox/value"],

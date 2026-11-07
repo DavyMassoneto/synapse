@@ -61,6 +61,7 @@ async function eventLifecycle(): Promise<void> {
     for (const handler of host.starts) {
       await handler({ type: "session_start", reason: "startup" }, context);
     }
+    assert.ok(host.advisor.isEnabled());
     assert.ok(host.active.includes("advisor"));
     for (const handler of host.beforeStarts) {
       await handler(start, context);
@@ -78,6 +79,9 @@ async function eventLifecycle(): Promise<void> {
       reminder = await handler(turn, context);
     }
     assert.ok(reminder?.entries?.length);
+    const entry = reminder.entries.at(-1);
+    assert.equal(entry?.type, "custom_message");
+    assert.equal(entry.customType, "advisor-reminder");
 
     for (let index = 0; index < 4; index++) {
       for (const handler of host.turns) {
@@ -104,6 +108,7 @@ async function eventLifecycle(): Promise<void> {
     assert.equal(reminder, undefined);
 
     host.advisor.disable();
+    assert.equal(host.advisor.isEnabled(), false);
     for (const handler of host.beforeStarts) {
       await handler(start, context);
     }
