@@ -1,0 +1,43 @@
+import { afterEach, beforeEach, expect, test } from "vitest";
+import { BlockedConfigHost, prepareHostDirectory, TestContext } from "../fixtures";
+
+let host: BlockedConfigHost;
+let context: TestContext;
+
+function prepare(): void {
+  host = new BlockedConfigHost(prepareHostDirectory());
+  host.blockConfiguration();
+  context = new TestContext();
+}
+function cleanup(): void {
+  host.cleanup();
+}
+
+async function reportsFailure(): Promise<void> {
+  if (!host.command) {
+    throw new Error("comando ausente");
+  }
+  await host.command.handler("thinking high", context);
+  expect(context.ui.notices).toHaveLength(1);
+  expect(context.ui.notices[0]).toMatch(/salvar/);
+  expect(context.ui.notices[0]).not.toMatch(/Advisor thinking: high/);
+}
+
+async function preservesState(): Promise<void> {
+  if (!host.command) {
+    throw new Error("comando ausente");
+  }
+  await host.command.handler("thinking high", context);
+  const status = host.advisor.configuration.status();
+  expect(status.kind).toBe("success");
+  if (status.kind !== "success") {
+    throw new Error("status inválido");
+  }
+  expect(status.config.thinking).toBe("low");
+  expect(host.advisor.isEnabled()).toBe(true);
+}
+
+beforeEach(prepare);
+afterEach(cleanup);
+test("falha ao salvar é informada", reportsFailure);
+test("falha ao salvar preserva estado", preservesState);

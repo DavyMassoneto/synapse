@@ -1,0 +1,9 @@
+export const CLIPPED_CONTENT = "\n[... conteúdo omitido ...]\n";
+export const OMITTED_MESSAGES = "[... mensagens anteriores omitidas ...]";
+export const TOOL_RESULT_LABEL = "tool_result";
+export const SHELL_LABEL = "user ran shell";
+export const CONTEXT_LABEL = "context";
+export const SUMMARY_LABEL = "[summary of earlier conversation]";
+export const IMAGE_OMITTED = "[image omitted]";
+export const TOOL_CALL_LABEL = "tool_call";
+export const ERROR_LABEL = " (error)";

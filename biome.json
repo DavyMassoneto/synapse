@@ -1,0 +1,406 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.6/schema.json",
+  "files": {
+    "includes": ["**", "!dist", "!.build", "!docs", "!**/*.md"]
+  },
+  "formatter": {
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineWidth": 100
+  },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "double"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "preset": "recommended",
+      "suspicious": {
+        "noExplicitAny": "error"
+      },
+      "style": {
+        "noNonNullAssertion": "error",
+        "noRestrictedTypes": {
+          "level": "error",
+          "options": { "types": { "Record": "Use tipos explícitos." } }
+        },
+        "useBlockStatements": "error",
+        "useImportType": {
+          "level": "error",
+          "options": {
+            "style": "auto"
+          }
+        },
+        "noRestrictedImports": {
+          "level": "error",
+          "options": {
+            "patterns": [
+              {
+                "group": ["../../**"],
+                "message": "Use o alias #synapse/"
+              },
+              {
+                "group": [
+                  "./**/*.ts",
+                  "./**/*.js",
+                  "../**/*.ts",
+                  "../**/*.js",
+                  "#synapse/**/*.ts",
+                  "#synapse/**/*.js",
+                  "./**/index",
+                  "../**/index",
+                  "#synapse/**/index"
+                ],
+                "message": "Imports e exports locais não usam extensão nem index."
+              }
+            ]
+          }
+        }
+      },
+      "nursery": {
+        "noUnsafeTypeAssertion": "error"
+      }
+    }
+  },
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": "on"
+      }
+    }
+  },
+  "plugins": [
+    "./biome-rules/no-unknown.grit",
+    "./biome-rules/no-const-assertion.grit",
+    "./biome-rules/no-satisfies.grit"
+  ],
+  "overrides": [
+    {
+      "includes": ["src/modules/**", "!src/modules/advisor/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "#synapse/composition",
+                      "#synapse/integration",
+                      "#synapse/integration/**",
+                      "#synapse/modules"
+                    ],
+                    "message": "Dependência fora da fronteira do módulo"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/integration/**", "src/composition/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
+                      "#synapse/modules/*/internal",
+                      "#synapse/modules/*/internal/**",
+                      "#synapse/modules/*/adapters",
+                      "#synapse/modules/*/adapters/**"
+                    ],
+                    "message": "Acesso a área privada do módulo"
+                  },
+                  {
+                    "group": [
+                      "../modules/*/internal",
+                      "../modules/*/internal/**",
+                      "../modules/*/adapters",
+                      "../modules/*/adapters/**"
+                    ],
+                    "message": "Acesso a área privada do módulo"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/advisor/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "#synapse/composition",
+                      "#synapse/integration",
+                      "#synapse/integration/**",
+                      "#synapse/modules"
+                    ],
+                    "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": [
+                      "#synapse/modules/**",
+                      "!#synapse/modules/advisor",
+                      "!#synapse/modules/advisor/**"
+                    ],
+                    "message": "Não importe outros módulos"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/advisor/internal/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "#synapse/composition",
+                      "#synapse/integration",
+                      "#synapse/integration/**",
+                      "#synapse/modules"
+                    ],
+                    "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": [
+                      "#synapse/modules/**",
+                      "!#synapse/modules/advisor",
+                      "!#synapse/modules/advisor/**"
+                    ],
+                    "message": "Não importe outros módulos"
+                  },
+                  {
+                    "group": [
+                      "../adapters",
+                      "../adapters/**",
+                      "#synapse/modules/advisor/adapters",
+                      "#synapse/modules/advisor/adapters/**"
+                    ],
+                    "message": "Núcleo não acessa adaptadores"
+                  },
+                  {
+                    "group": ["node:fs", "node:fs/**", "typebox/value"],
+                    "message": "Núcleo e contratos não acessam persistência"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/composition/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
+                      "#synapse/modules/*/internal",
+                      "#synapse/modules/*/internal/**",
+                      "#synapse/modules/*/adapters",
+                      "#synapse/modules/*/adapters/**"
+                    ],
+                    "message": "Acesso a área privada do módulo"
+                  },
+                  {
+                    "group": [
+                      "../modules/*/internal",
+                      "../modules/*/internal/**",
+                      "../modules/*/adapters",
+                      "../modules/*/adapters/**"
+                    ],
+                    "message": "Acesso a área privada do módulo"
+                  },
+                  {
+                    "group": ["@earendil-works/**"],
+                    "message": "SDK do Pi pertence à integração"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
+      "includes": ["src/modules/advisor/public/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "./**/*.ts",
+                      "./**/*.js",
+                      "../**/*.ts",
+                      "../**/*.js",
+                      "#synapse/**/*.ts",
+                      "#synapse/**/*.js",
+                      "./**/index",
+                      "../**/index",
+                      "#synapse/**/index"
+                    ],
+                    "message": "Imports e exports locais não usam extensão nem index."
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "#synapse/composition",
+                      "#synapse/integration",
+                      "#synapse/integration/**",
+                      "#synapse/modules"
+                    ],
+                    "message": "Dependência fora da fronteira do advisor"
+                  },
+                  {
+                    "group": [
+                      "#synapse/modules/**",
+                      "!#synapse/modules/advisor",
+                      "!#synapse/modules/advisor/**"
+                    ],
+                    "message": "Não importe outros módulos"
+                  },
+                  {
+                    "group": ["node:fs", "node:fs/**", "typebox/value"],
+                    "message": "Contratos não acessam persistência"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  ]
+}

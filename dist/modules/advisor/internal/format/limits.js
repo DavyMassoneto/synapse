@@ -1,0 +1,10 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.SEPARATOR = exports.HEAD_FRACTION = exports.CONTENT_LIMITS = exports.MAX_SYSTEM_CHARACTERS = exports.MINIMUM_ANSWER_TOKENS = exports.HOST_SAFETY_TOKENS = exports.ESTIMATED_CHARACTERS_PER_TOKEN = void 0;
+exports.ESTIMATED_CHARACTERS_PER_TOKEN = 3;
+exports.HOST_SAFETY_TOKENS = 4_096;
+exports.MINIMUM_ANSWER_TOKENS = 1_024;
+exports.MAX_SYSTEM_CHARACTERS = 40_000;
+exports.CONTENT_LIMITS = [12_000, 4_000, 1_500, 500];
+exports.HEAD_FRACTION = 0.6;
+exports.SEPARATOR = "\n\n";
