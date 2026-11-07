@@ -19,11 +19,11 @@ jobs:
       group: pr-review-${{ github.event.pull_request.number }}-${{ matrix.bot }}
       cancel-in-progress: true
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     strategy:
       fail-fast: false
       matrix:
-        bot: [srp, clean-code, yagni, dry, architecture, quality]
+        bot: [srp, clean-code, yagni, dry, architecture, quality, standards]
     steps:
       - uses: actions/checkout@v4
       - name: Review
@@ -35,4 +35,5 @@ jobs:
           PR_NUMBER: ${{ github.event.pull_request.number }}
           REPO: ${{ github.repository }}
           BOT: ${{ matrix.bot }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
         run: python3 .github/pr-review/review.py
