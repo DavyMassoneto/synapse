@@ -1,8 +1,8 @@
 import type { Advisor } from "#synapse/modules";
 import type { AdvisorContext, AdvisorHost } from "../contracts";
 import { COMMAND_TEXT } from "../presentation";
-import { syncAdvisor } from "../sync";
 import { applySelection } from "./apply-selection";
+import { applyThinking } from "./apply-thinking";
 import { chooseModel } from "./choose-model";
 import { parseAdvisorCommand } from "./parser";
 
@@ -24,13 +24,7 @@ export class AdvisorCommand {
       return;
     }
     if (input.kind === "thinking") {
-      const result = this.advisor.configuration.setThinking(input.level);
-      if (result.kind === "failure") {
-        context.ui.notify(result.message, "error");
-        return;
-      }
-      syncAdvisor(this.pi, this.advisor, context);
-      context.ui.notify(`Advisor thinking: ${input.level}`, "info");
+      applyThinking(this.pi, this.advisor, context, input.level);
       return;
     }
     if (!input.query && !context.hasUI) {

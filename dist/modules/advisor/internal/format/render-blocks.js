@@ -3,7 +3,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.renderBlocks = renderBlocks;
 const clip_1 = require("./clip");
 const transcript_text_1 = require("./transcript-text");
-function renderBlocks(message, limit, label, clipContent) {
+function renderBlocks(message, limit, label) {
     const parts = [label];
     for (const block of message.blocks) {
         if (block.kind === "image") {
@@ -12,7 +12,9 @@ function renderBlocks(message, limit, label, clipContent) {
         else if (block.kind === "call") {
             parts.push(`[${transcript_text_1.TOOL_CALL_LABEL} ${block.name}] ${(0, clip_1.clip)(block.arguments, limit)}`);
         }
-        else if (clipContent) {
+        else if (message.kind === "toolResult" ||
+            message.kind === "shell" ||
+            message.kind === "custom") {
             parts.push((0, clip_1.clip)(block.text, limit));
         }
         else {

@@ -2,8 +2,8 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdvisorCommand = void 0;
 const presentation_1 = require("../presentation");
-const sync_1 = require("../sync");
 const apply_selection_1 = require("./apply-selection");
+const apply_thinking_1 = require("./apply-thinking");
 const choose_model_1 = require("./choose-model");
 const parser_1 = require("./parser");
 class AdvisorCommand {
@@ -25,13 +25,7 @@ class AdvisorCommand {
             return;
         }
         if (input.kind === "thinking") {
-            const result = this.advisor.configuration.setThinking(input.level);
-            if (result.kind === "failure") {
-                context.ui.notify(result.message, "error");
-                return;
-            }
-            (0, sync_1.syncAdvisor)(this.pi, this.advisor, context);
-            context.ui.notify(`Advisor thinking: ${input.level}`, "info");
+            (0, apply_thinking_1.applyThinking)(this.pi, this.advisor, context, input.level);
             return;
         }
         if (!input.query && !context.hasUI) {
