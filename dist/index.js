@@ -102,11 +102,11 @@ function renderMessage(message, limit) {
   }
   let label = `[${message.kind}]`;
   if (message.kind === "toolResult") {
-    label = `[tool_result ${message.name ?? ""}${message.error ? " (error)" : ""}]`;
+    label = `[tool_result ${message.tool}${message.error ? " (error)" : ""}]`;
   } else if (message.kind === "shell") {
-    label = `[user ran shell] $ ${message.name ?? ""}`;
+    label = `[user ran shell] $ ${message.command}`;
   } else if (message.kind === "custom") {
-    label = `[context:${message.name ?? ""}]`;
+    label = `[context:${message.customType}]`;
   } else if (message.kind === "summary") {
     label = "[summary of earlier conversation]";
   }
@@ -874,19 +874,23 @@ function convertMessage(message) {
     case "toolResult":
       return {
         kind: "toolResult",
-        name: message.toolName,
+        tool: message.toolName,
         error: message.isError,
         blocks: convertContent(message.content)
       };
     case "bashExecution":
       return {
         kind: "shell",
-        name: message.command,
-        hidden: message.excludeFromContext,
+        command: message.command,
+        hidden: message.excludeFromContext === true,
         blocks: [{ kind: "text", text: message.output }]
       };
     case "custom":
-      return { kind: "custom", name: message.customType, blocks: convertContent(message.content) };
+      return {
+        kind: "custom",
+        customType: message.customType,
+        blocks: convertContent(message.content)
+      };
     case "branchSummary":
     case "compactionSummary":
       return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] };

@@ -12,8 +12,8 @@ import { AdvisorService, TestModel, TestStorage } from "#advisor-test-module";
 function transcriptRespectsBudget() {
   const messages = [
     { kind: "user", blocks: [{ kind: "text", text: "á".repeat(30_000) }] },
-    { kind: "shell", hidden: true, name: "secret", blocks: [{ kind: "text", text: "hidden" }] },
-    { kind: "toolResult", name: "read", error: true, blocks: [{ kind: "text", text: "failed" }] },
+    { kind: "shell", hidden: true, command: "secret", blocks: [{ kind: "text", text: "hidden" }] },
+    { kind: "toolResult", tool: "read", error: true, blocks: [{ kind: "text", text: "failed" }] },
   ];
   messages.push({ kind: "user", blocks: [{ kind: "text", text: "MOST_RECENT" }] });
   const short = buildTranscript(messages, 200);

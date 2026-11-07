@@ -41,19 +41,23 @@ function convertMessage(message: AgentMessage): TranscriptMessage | undefined {
     case "toolResult":
       return {
         kind: "toolResult",
-        name: message.toolName,
+        tool: message.toolName,
         error: message.isError,
         blocks: convertContent(message.content),
       };
     case "bashExecution":
       return {
         kind: "shell",
-        name: message.command,
-        hidden: message.excludeFromContext,
+        command: message.command,
+        hidden: message.excludeFromContext === true,
         blocks: [{ kind: "text", text: message.output }],
       };
     case "custom":
-      return { kind: "custom", name: message.customType, blocks: convertContent(message.content) };
+      return {
+        kind: "custom",
+        customType: message.customType,
+        blocks: convertContent(message.content),
+      };
     case "branchSummary":
     case "compactionSummary":
       return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] };

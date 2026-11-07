@@ -30,11 +30,11 @@ function renderMessage(message: TranscriptMessage, limit: number): string {
 
   let label = `[${message.kind}]`;
   if (message.kind === "toolResult") {
-    label = `[tool_result ${message.name ?? ""}${message.error ? " (error)" : ""}]`;
+    label = `[tool_result ${message.tool}${message.error ? " (error)" : ""}]`;
   } else if (message.kind === "shell") {
-    label = `[user ran shell] $ ${message.name ?? ""}`;
+    label = `[user ran shell] $ ${message.command}`;
   } else if (message.kind === "custom") {
-    label = `[context:${message.name ?? ""}]`;
+    label = `[context:${message.customType}]`;
   } else if (message.kind === "summary") {
     label = "[summary of earlier conversation]";
   }
