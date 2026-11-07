@@ -2,9 +2,14 @@ import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
-import { configSchema } from "@/modules/advisor/adapters/schema";
 import { type ConfigLoadResult } from "@/modules/advisor/internal/config";
 import { type Config } from "@/modules/advisor/public/config";
+import { configSchema } from "./config-schema.ts";
+
+const CONFIG_DIAGNOSTICS = {
+  readFailed: "Não foi possível ler a configuração do advisor.",
+  invalid: "Configuração do advisor inválida; revise advisor.json.",
+};
 
 export class FileConfig {
   constructor(private readonly path: string) {}
@@ -17,7 +22,7 @@ export class FileConfig {
       if (error instanceof Error && "code" in error && error.code === "ENOENT") {
         return { kind: "missing" };
       }
-      return { kind: "invalid", message: "Não foi possível ler a configuração do advisor." };
+      return { kind: "invalid", message: CONFIG_DIAGNOSTICS.readFailed };
     }
 
     try {
@@ -27,7 +32,7 @@ export class FileConfig {
         config,
       };
     } catch {
-      return { kind: "invalid", message: "Configuração do advisor inválida; revise advisor.json." };
+      return { kind: "invalid", message: CONFIG_DIAGNOSTICS.invalid };
     }
   }
 

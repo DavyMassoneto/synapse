@@ -1,10 +1,11 @@
-import { type ConfigLoadResult, type ConfigPort } from "@/modules/advisor/internal/config/ports";
+import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
 import {
   type AdvisorResult,
   type Config,
   THINKING_LEVELS,
   type ThinkingLevel,
 } from "@/modules/advisor/public/config";
+import { type ConfigLoadResult, type ConfigPort } from "./contracts.ts";
 
 export class AdvisorConfiguration {
   private current: AdvisorResult;
@@ -44,14 +45,14 @@ export class AdvisorConfiguration {
       this.current = { kind: "success", config: status };
       return this.status();
     } catch {
-      return { kind: "failure", message: "Não foi possível salvar a configuração do advisor." };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.saveFailed };
     }
   }
 
   selectModel(model: string): AdvisorResult {
     const separator = model.indexOf("/");
     if (separator <= 0 || separator === model.length - 1) {
-      return { kind: "failure", message: "O modelo deve usar o formato provedor/id." };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.invalidModel };
     }
 
     if (this.current.kind === "failure") {
@@ -76,7 +77,7 @@ export class AdvisorConfiguration {
       }
     }
     if (thinking === undefined) {
-      return { kind: "failure", message: "Nível de raciocínio inválido." };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.invalidThinking };
     }
     if (this.current.kind === "failure") {
       return this.status();

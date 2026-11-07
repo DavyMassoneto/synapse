@@ -5,6 +5,7 @@ import {
 import { type Component, Text } from "@earendil-works/pi-tui";
 import {
   ADVISOR_MESSAGES,
+  additionalLines,
   PREVIEW_LINES,
   RENDER_STYLE,
 } from "@/integration/pi/advisor/presentation";
@@ -60,7 +61,7 @@ export function renderAdvisorResult(
   const remaining = lines.length - shown.length;
   let suffix = "";
   if (!options.expanded && remaining > 0) {
-    suffix = `\n${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
+    suffix = `\n${theme.fg(RENDER_STYLE.additional, additionalLines(remaining))}`;
   }
   const model = result.details?.model;
   const title = model

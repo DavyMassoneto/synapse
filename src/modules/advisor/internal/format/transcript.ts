@@ -1,3 +1,4 @@
+import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
 
 const TOOL_RESULT_LIMIT = 12_000;
@@ -12,7 +13,7 @@ export function clip(text: string, limit: number): string {
     return text;
   }
 
-  const marker = "\n[... conteúdo omitido ...]\n";
+  const marker = ADVISOR_DIAGNOSTICS.clippedContent;
   if (limit <= marker.length) {
     return text.slice(0, limit);
   }
@@ -78,7 +79,7 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
     }
   }
 
-  const marker = "[... mensagens anteriores omitidas ...]";
+  const marker = ADVISOR_DIAGNOSTICS.omittedMessages;
   if (budget <= marker.length) {
     return clip(blocks[blocks.length - 1] ?? "", budget);
   }

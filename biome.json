@@ -56,6 +56,36 @@
   "plugins": ["./biome-rules/no-unknown.grit", "./biome-rules/no-const-assertion.grit"],
   "overrides": [
     {
+      "includes": ["src/modules/**", "!src/modules/advisor/**"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "patterns": [
+                  {
+                    "group": ["../../**"],
+                    "message": "Subidas de dois ou mais níveis são proibidas"
+                  },
+                  {
+                    "group": [
+                      "@earendil-works/**",
+                      "@/composition",
+                      "@/integration",
+                      "@/integration/**",
+                      "@/modules"
+                    ],
+                    "message": "Dependência fora da fronteira do módulo"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["src/integration/**", "src/composition/**"],
       "linter": {
         "rules": {

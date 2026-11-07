@@ -1,4 +1,5 @@
 import { type ThinkingLevel } from "@/modules/advisor/public/config";
+import { type Cancelled, type Failure } from "@/modules/advisor/public/result.ts";
 import { type TranscriptMessage } from "@/modules/advisor/public/transcript";
 
 export interface UsageCost {
@@ -38,11 +39,7 @@ export interface ModelSuccess {
   usage?: Usage;
 }
 
-export interface ModelCancelled {
-  kind: "cancelled";
-}
-
-export type ModelResponse = ModelSuccess | ModelCancelled;
+export type ModelResponse = ModelSuccess | Cancelled;
 
 export interface ModelPort {
   resolve(model: string, thinking: ThinkingLevel, signal?: AbortSignal): Promise<ResolvedModel>;
@@ -55,16 +52,7 @@ export interface ConsultationSuccess {
   response: ModelSuccess;
 }
 
-export interface ConsultationFailure {
-  kind: "failure";
-  message: string;
-}
-
-export interface ConsultationCancelled {
-  kind: "cancelled";
-}
-
-export type ConsultationResult = ConsultationSuccess | ConsultationFailure | ConsultationCancelled;
+export type ConsultationResult = ConsultationSuccess | Failure | Cancelled;
 
 export interface Consultation {
   system: string;

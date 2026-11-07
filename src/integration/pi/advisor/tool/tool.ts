@@ -8,6 +8,7 @@ import { renderAdvisorCall, renderAdvisorResult } from "@/integration/pi/advisor
 import { type Advisor } from "@/modules";
 import { type AdvisorContext } from "../context-types.ts";
 import { type AdvisorHost } from "../host-types.ts";
+import { advisorUnavailable } from "./diagnostics.ts";
 import { AdvisorModel } from "./model.ts";
 import { advisorParameters } from "./tool-schema.ts";
 import {
@@ -80,7 +81,7 @@ class AdvisorToolHandler {
         content: [
           {
             type: "text",
-            text: `Advisor indisponível: ${message}.`,
+            text: advisorUnavailable(message),
           },
         ],
         details: {},

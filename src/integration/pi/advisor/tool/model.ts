@@ -1,11 +1,11 @@
 import { type Api, clampThinkingLevel, type Model } from "@earendil-works/pi-ai";
-import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import {
   type ModelRequest,
   type ModelResponse,
   type ResolvedModel,
   type ThinkingLevel,
 } from "@/modules";
+import { credentialsMissing, MODEL_DIAGNOSTICS, modelNotFound } from "./diagnostics.ts";
 import { type AdvisorModelRegistry } from "./model-types.ts";
 
 export class AdvisorModel {
@@ -14,17 +14,17 @@ export class AdvisorModel {
   private findModel(reference: string): Model<Api> {
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
-      throw new Error(ADVISOR_MESSAGES.invalidReference);
+      throw new Error(MODEL_DIAGNOSTICS.invalidReference);
     }
 
     const provider = reference.slice(0, separator);
     const modelId = reference.slice(separator + 1);
     const model = this.registry.find(provider, modelId);
     if (!model) {
-      throw new Error(`Modelo advisor não encontrado: ${reference}`);
+      throw new Error(modelNotFound(reference));
     }
     if (!this.registry.hasConfiguredAuth(model)) {
-      throw new Error(`Credenciais ausentes para ${reference}`);
+      throw new Error(credentialsMissing(reference));
     }
 
     return model;
@@ -63,7 +63,7 @@ export class AdvisorModel {
       model.contextWindow !== resolved.contextWindow ||
       model.maxTokens !== resolved.maxOutputTokens
     ) {
-      throw new Error("As capacidades do modelo advisor mudaram durante a consulta.");
+      throw new Error(MODEL_DIAGNOSTICS.capabilitiesChanged);
     }
     const reasoning = resolved.effectiveThinking !== "off" ? resolved.effectiveThinking : undefined;
     const reply = await this.registry
@@ -98,7 +98,7 @@ export class AdvisorModel {
     }
     const text = parts.join("\n").trim();
     if (!text) {
-      throw new Error("advisor returned no text");
+      throw new Error(MODEL_DIAGNOSTICS.emptyResponse);
     }
 
     const usage = reply.usage;

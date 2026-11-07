@@ -1,3 +1,4 @@
+import { type Failure } from "@/modules/advisor/public/result.ts";
 import { type Config } from "./config.ts";
 
 export interface AdvisorSuccess {
@@ -5,9 +6,4 @@ export interface AdvisorSuccess {
   config: Config;
 }
 
-export interface AdvisorFailure {
-  kind: "failure";
-  message: string;
-}
-
-export type AdvisorResult = AdvisorSuccess | AdvisorFailure;
+export type AdvisorResult = AdvisorSuccess | Failure;

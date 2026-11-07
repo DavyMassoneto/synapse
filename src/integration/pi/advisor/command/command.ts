@@ -1,6 +1,12 @@
 import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
 import { type AdvisorContext, type AdvisorHost } from "@/integration/pi/advisor";
-import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
+import {
+  ADVISOR_MESSAGES,
+  currentStatus,
+  modelStatus,
+  noMatchingModel,
+  thinkingStatus,
+} from "@/integration/pi/advisor/presentation";
 import { syncAdvisor } from "@/integration/pi/advisor/sync";
 import { type Advisor, type AdvisorResult } from "@/modules";
 import { ModelCatalog } from "./catalog.ts";
@@ -33,7 +39,7 @@ class AdvisorCommand {
 
   private changeThinking(context: AdvisorContext, requested: string): void {
     const status = this.advisor.setThinking(requested);
-    this.notifyStatus(context, status, `Advisor thinking: ${requested}`);
+    this.notifyStatus(context, status, thinkingStatus(requested));
   }
 
   private async chooseModel(context: AdvisorContext, input: string): Promise<ModelSelection> {
@@ -53,7 +59,7 @@ class AdvisorCommand {
 
     const matches = this.catalog.search(input);
     if (matches.length === 0) {
-      context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
+      context.ui.notify(noMatchingModel(input), "error");
       return { kind: "cancelled" };
     }
     if (matches.length === 1) {
@@ -92,10 +98,7 @@ class AdvisorCommand {
       return;
     }
     if (!input.query && !context.hasUI) {
-      context.ui.notify(
-        `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
-        "info",
-      );
+      context.ui.notify(currentStatus(status.config.model, status.config.thinking), "info");
       return;
     }
 
@@ -103,11 +106,7 @@ class AdvisorCommand {
     if (chosen.kind === "disabled") {
       this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
     } else if (chosen.kind === "selected") {
-      this.notifyStatus(
-        context,
-        this.advisor.selectModel(chosen.model),
-        `Advisor: ${chosen.model}`,
-      );
+      this.notifyStatus(context, this.advisor.selectModel(chosen.model), modelStatus(chosen.model));
     }
   }
 }

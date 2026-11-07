@@ -21,7 +21,7 @@ import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
 
-// src/modules/advisor/adapters/schema/config-schema.ts
+// src/modules/advisor/adapters/config-schema.ts
 import { Type } from "typebox";
 var thinkingSchema = Type.Enum(THINKING_LEVELS);
 var configSchema = Type.Object({
@@ -30,6 +30,10 @@ var configSchema = Type.Object({
 });
 
 // src/modules/advisor/adapters/config.ts
+var CONFIG_DIAGNOSTICS = {
+  readFailed: "N\xE3o foi poss\xEDvel ler a configura\xE7\xE3o do advisor.",
+  invalid: "Configura\xE7\xE3o do advisor inv\xE1lida; revise advisor.json."
+};
 var FileConfig = class {
   constructor(path) {
     this.path = path;
@@ -43,7 +47,7 @@ var FileConfig = class {
       if (error instanceof Error && "code" in error && error.code === "ENOENT") {
         return { kind: "missing" };
       }
-      return { kind: "invalid", message: "N\xE3o foi poss\xEDvel ler a configura\xE7\xE3o do advisor." };
+      return { kind: "invalid", message: CONFIG_DIAGNOSTICS.readFailed };
     }
     try {
       const config = Value.Parse(configSchema, JSON.parse(content));
@@ -52,7 +56,7 @@ var FileConfig = class {
         config
       };
     } catch {
-      return { kind: "invalid", message: "Configura\xE7\xE3o do advisor inv\xE1lida; revise advisor.json." };
+      return { kind: "invalid", message: CONFIG_DIAGNOSTICS.invalid };
     }
   }
   save(config) {
@@ -87,6 +91,17 @@ Rules:
 - Correct wrong assumptions even when the executor stated them confidently, and say what evidence would settle a doubt.
 - Answer in the language the user is using.`;
 
+// src/modules/advisor/internal/diagnostics.ts
+var ADVISOR_DIAGNOSTICS = {
+  noModel: "no advisor model configured",
+  windowTooSmall: "A janela do advisor \xE9 pequena demais para a consulta.",
+  saveFailed: "N\xE3o foi poss\xEDvel salvar a configura\xE7\xE3o do advisor.",
+  invalidModel: "O modelo deve usar o formato provedor/id.",
+  invalidThinking: "N\xEDvel de racioc\xEDnio inv\xE1lido.",
+  clippedContent: "\n[... conte\xFAdo omitido ...]\n",
+  omittedMessages: "[... mensagens anteriores omitidas ...]"
+};
+
 // src/modules/advisor/internal/format/transcript.ts
 var TOOL_RESULT_LIMIT = 12e3;
 var HEAD_FRACTION = 0.6;
@@ -98,7 +113,7 @@ function clip(text, limit) {
   if (text.length <= limit) {
     return text;
   }
-  const marker = "\n[... conte\xFAdo omitido ...]\n";
+  const marker = ADVISOR_DIAGNOSTICS.clippedContent;
   if (limit <= marker.length) {
     return text.slice(0, limit);
   }
@@ -153,7 +168,7 @@ function buildTranscript(messages, budget) {
       return full;
     }
   }
-  const marker = "[... mensagens anteriores omitidas ...]";
+  const marker = ADVISOR_DIAGNOSTICS.omittedMessages;
   if (budget <= marker.length) {
     return clip(blocks[blocks.length - 1] ?? "", budget);
   }
@@ -285,13 +300,13 @@ var AdvisorConfiguration = class {
       this.current = { kind: "success", config: status };
       return this.status();
     } catch {
-      return { kind: "failure", message: "N\xE3o foi poss\xEDvel salvar a configura\xE7\xE3o do advisor." };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.saveFailed };
     }
   }
   selectModel(model) {
     const separator = model.indexOf("/");
     if (separator <= 0 || separator === model.length - 1) {
-      return { kind: "failure", message: "O modelo deve usar o formato provedor/id." };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.invalidModel };
     }
     if (this.current.kind === "failure") {
       return this.status();
@@ -313,7 +328,7 @@ var AdvisorConfiguration = class {
       }
     }
     if (thinking === void 0) {
-      return { kind: "failure", message: "N\xEDvel de racioc\xEDnio inv\xE1lido." };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.invalidThinking };
     }
     if (this.current.kind === "failure") {
       return this.status();
@@ -365,7 +380,7 @@ var AdvisorService = class {
     }
     const configuration = status.config;
     if (!configuration.model) {
-      return { kind: "failure", message: "no advisor model configured" };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.noModel };
     }
     try {
       const resolved = await model.resolve(
@@ -380,7 +395,7 @@ var AdvisorService = class {
       if (prompt === void 0) {
         return {
           kind: "failure",
-          message: "A janela do advisor \xE9 pequena demais para a consulta."
+          message: ADVISOR_DIAGNOSTICS.windowTooSmall
         };
       }
       const response = await model.consult(resolved, {
@@ -491,10 +506,24 @@ var ADVISOR_MESSAGES = {
   disabled: "Advisor desligado",
   progress: "Consultando advisor...",
   cancelled: "Consulta ao advisor cancelada.",
-  invalidReference: "Refer\xEAncia de modelo advisor inv\xE1lida.",
   ambiguousModel: "Mais de um modelo corresponde; informe uma refer\xEAncia mais espec\xEDfica.",
   commandDescription: "Escolhe o modelo advisor ou o n\xEDvel de racioc\xEDnio"
 };
+function modelStatus(model) {
+  return `Advisor: ${model}`;
+}
+function thinkingStatus(level) {
+  return `Advisor thinking: ${level}`;
+}
+function currentStatus(model, thinking) {
+  return `Advisor: ${model ?? "desligado"}, thinking ${thinking}`;
+}
+function noMatchingModel(input) {
+  return `Nenhum modelo encontrado: ${input}`;
+}
+function additionalLines(count) {
+  return `... (${count} linhas a mais)`;
+}
 
 // src/integration/pi/advisor/presentation/styles.ts
 var RENDER_STYLE = {
@@ -578,7 +607,7 @@ var AdvisorCommand = class {
   }
   changeThinking(context, requested) {
     const status = this.advisor.setThinking(requested);
-    this.notifyStatus(context, status, `Advisor thinking: ${requested}`);
+    this.notifyStatus(context, status, thinkingStatus(requested));
   }
   async chooseModel(context, input) {
     if (!input) {
@@ -596,7 +625,7 @@ var AdvisorCommand = class {
     }
     const matches = this.catalog.search(input);
     if (matches.length === 0) {
-      context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error");
+      context.ui.notify(noMatchingModel(input), "error");
       return { kind: "cancelled" };
     }
     if (matches.length === 1) {
@@ -632,21 +661,14 @@ var AdvisorCommand = class {
       return;
     }
     if (!input.query && !context.hasUI) {
-      context.ui.notify(
-        `Advisor: ${status.config.model ?? "desligado"}, thinking ${status.config.thinking}`,
-        "info"
-      );
+      context.ui.notify(currentStatus(status.config.model, status.config.thinking), "info");
       return;
     }
     const chosen = await this.chooseModel(context, input.query);
     if (chosen.kind === "disabled") {
       this.notifyStatus(context, this.advisor.disable(), ADVISOR_MESSAGES.disabled);
     } else if (chosen.kind === "selected") {
-      this.notifyStatus(
-        context,
-        this.advisor.selectModel(chosen.model),
-        `Advisor: ${chosen.model}`
-      );
+      this.notifyStatus(context, this.advisor.selectModel(chosen.model), modelStatus(chosen.model));
     }
   }
 };
@@ -729,6 +751,24 @@ function registerEvents(pi, advisor, shutdownCallback) {
 
 // src/integration/pi/advisor/tool/model.ts
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
+
+// src/integration/pi/advisor/tool/diagnostics.ts
+var MODEL_DIAGNOSTICS = {
+  invalidReference: "Refer\xEAncia de modelo advisor inv\xE1lida.",
+  capabilitiesChanged: "As capacidades do modelo advisor mudaram durante a consulta.",
+  emptyResponse: "advisor returned no text"
+};
+function modelNotFound(reference) {
+  return `Modelo advisor n\xE3o encontrado: ${reference}`;
+}
+function credentialsMissing(reference) {
+  return `Credenciais ausentes para ${reference}`;
+}
+function advisorUnavailable(message) {
+  return `Advisor indispon\xEDvel: ${message}.`;
+}
+
+// src/integration/pi/advisor/tool/model.ts
 var AdvisorModel = class {
   constructor(registry) {
     this.registry = registry;
@@ -737,16 +777,16 @@ var AdvisorModel = class {
   findModel(reference) {
     const separator = reference.indexOf("/");
     if (separator <= 0 || separator === reference.length - 1) {
-      throw new Error(ADVISOR_MESSAGES.invalidReference);
+      throw new Error(MODEL_DIAGNOSTICS.invalidReference);
     }
     const provider = reference.slice(0, separator);
     const modelId = reference.slice(separator + 1);
     const model = this.registry.find(provider, modelId);
     if (!model) {
-      throw new Error(`Modelo advisor n\xE3o encontrado: ${reference}`);
+      throw new Error(modelNotFound(reference));
     }
     if (!this.registry.hasConfiguredAuth(model)) {
-      throw new Error(`Credenciais ausentes para ${reference}`);
+      throw new Error(credentialsMissing(reference));
     }
     return model;
   }
@@ -775,7 +815,7 @@ var AdvisorModel = class {
   async consult(resolved, request) {
     const model = this.findModel(resolved.reference);
     if (model.contextWindow !== resolved.contextWindow || model.maxTokens !== resolved.maxOutputTokens) {
-      throw new Error("As capacidades do modelo advisor mudaram durante a consulta.");
+      throw new Error(MODEL_DIAGNOSTICS.capabilitiesChanged);
     }
     const reasoning = resolved.effectiveThinking !== "off" ? resolved.effectiveThinking : void 0;
     const reply = await this.registry.streamSimple(
@@ -806,7 +846,7 @@ var AdvisorModel = class {
     }
     const text = parts.join("\n").trim();
     if (!text) {
-      throw new Error("advisor returned no text");
+      throw new Error(MODEL_DIAGNOSTICS.emptyResponse);
     }
     const usage = reply.usage;
     return {
@@ -869,7 +909,7 @@ function renderAdvisorResult(result, options, theme, context) {
   let suffix = "";
   if (!options.expanded && remaining > 0) {
     suffix = `
-${theme.fg(RENDER_STYLE.additional, `... (${remaining} linhas a mais)`)}`;
+${theme.fg(RENDER_STYLE.additional, additionalLines(remaining))}`;
   }
   const model = result.details?.model;
   const title = model ? `${ADVISOR_MESSAGES.renderSuccess} (${model})` : ADVISOR_MESSAGES.renderSuccess;
@@ -1011,7 +1051,7 @@ var AdvisorToolHandler = class {
         content: [
           {
             type: "text",
-            text: `Advisor indispon\xEDvel: ${message}.`
+            text: advisorUnavailable(message)
           }
         ],
         details: {},

@@ -3,6 +3,7 @@ import {
   type ConfigLoadResult,
   type ConfigPort,
 } from "@/modules/advisor/internal/config";
+import { ADVISOR_DIAGNOSTICS } from "@/modules/advisor/internal/diagnostics.ts";
 import { ADVISOR_SYSTEM, preparePrompt, REMINDER, TIMING } from "@/modules/advisor/internal/format";
 import { ReminderCounter } from "@/modules/advisor/internal/reminder";
 import { type AdvisorResult } from "@/modules/advisor/public/config";
@@ -58,7 +59,7 @@ export class AdvisorService implements Advisor {
     }
     const configuration = status.config;
     if (!configuration.model) {
-      return { kind: "failure", message: "no advisor model configured" };
+      return { kind: "failure", message: ADVISOR_DIAGNOSTICS.noModel };
     }
     try {
       const resolved = await model.resolve(
@@ -73,7 +74,7 @@ export class AdvisorService implements Advisor {
       if (prompt === undefined) {
         return {
           kind: "failure",
-          message: "A janela do advisor é pequena demais para a consulta.",
+          message: ADVISOR_DIAGNOSTICS.windowTooSmall,
         };
       }
       const response = await model.consult(resolved, {
