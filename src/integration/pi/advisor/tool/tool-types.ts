@@ -1,6 +1,6 @@
 import { type ToolDefinition } from "@earendil-works/pi-coding-agent";
-import { type AdvisorContext } from "./context-types.ts";
-import { type AdvisorRenderers } from "./rendering-types.ts";
+import { type AdvisorRenderers } from "@/integration/pi/advisor/rendering";
+import { type AdvisorContext } from "../context-types.ts";
 import { type advisorParameters } from "./tool-schema.ts";
 
 export interface AdvisorToolDetails {

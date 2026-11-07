@@ -1,10 +1,10 @@
 import { type AgentToolUpdateCallback } from "@earendil-works/pi-coding-agent";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
+import { createRenderers } from "@/integration/pi/advisor/rendering";
 import { type Advisor } from "@/modules";
-import { type AdvisorContext } from "./context-types.ts";
-import { type AdvisorHost } from "./host-types.ts";
+import { type AdvisorContext } from "../context-types.ts";
+import { type AdvisorHost } from "../host-types.ts";
 import { AdvisorModel } from "./model.ts";
-import { createRenderers } from "./rendering.ts";
 import { advisorParameters } from "./tool-schema.ts";
 import {
   type AdvisorToolDetails,

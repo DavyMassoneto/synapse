@@ -7,8 +7,8 @@ import {
 } from "@earendil-works/pi-coding-agent";
 import { syncAdvisor } from "@/integration/pi/advisor/sync";
 import { type Advisor } from "@/modules";
-import { type AdvisorContext } from "./context-types.ts";
-import { type AdvisorHost } from "./host-types.ts";
+import { type AdvisorContext } from "../context-types.ts";
+import { type AdvisorHost } from "../host-types.ts";
 
 class AdvisorEvents {
   constructor(

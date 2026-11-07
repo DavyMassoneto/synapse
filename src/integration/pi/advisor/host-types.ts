@@ -11,7 +11,7 @@ import {
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent";
 import { type AdvisorContext } from "./context-types.ts";
-import { type AdvisorTool } from "./tool-types.ts";
+import { type AdvisorTool } from "./tool";
 
 export interface AdvisorCommandDefinition
   extends Pick<RegisteredCommand, "description" | "getArgumentCompletions"> {

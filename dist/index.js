@@ -479,14 +479,19 @@ var RENDER_STYLE = {
   additional: "dim"
 };
 
-// src/integration/pi/advisor/sync/sync.ts
-function syncAdvisor(pi, advisor, context) {
-  const result = advisor.status();
-  const model = result.kind === "success" ? result.config.model : void 0;
+// src/integration/pi/advisor/sync/status.ts
+function updateAdvisorStatus(context, model) {
+  if (context.hasUI) {
+    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
+  }
+}
+
+// src/integration/pi/advisor/sync/tool-state.ts
+function updateAdvisorTool(pi, enabled) {
   const active = pi.getActiveTools();
-  if (model && !active.includes("advisor")) {
+  if (enabled && !active.includes("advisor")) {
     pi.setActiveTools([...active, "advisor"]);
-  } else if (!model && active.includes("advisor")) {
+  } else if (!enabled && active.includes("advisor")) {
     const remaining = [];
     for (const name of active) {
       if (name !== "advisor") {
@@ -495,9 +500,14 @@ function syncAdvisor(pi, advisor, context) {
     }
     pi.setActiveTools(remaining);
   }
-  if (context.hasUI) {
-    context.ui.setStatus("advisor", model ? `advisor: ${model}` : void 0);
-  }
+}
+
+// src/integration/pi/advisor/sync/sync.ts
+function syncAdvisor(pi, advisor, context) {
+  const result = advisor.status();
+  const model = result.kind === "success" ? result.config.model : void 0;
+  updateAdvisorTool(pi, Boolean(model));
+  updateAdvisorStatus(context, model);
 }
 
 // src/integration/pi/advisor/command/parser.ts
@@ -628,7 +638,7 @@ function registerCommand(pi, advisor) {
   });
 }
 
-// src/integration/pi/advisor/events.ts
+// src/integration/pi/advisor/events/events.ts
 var AdvisorEvents = class {
   constructor(pi, advisor, shutdownCallback) {
     this.pi = pi;
@@ -695,7 +705,7 @@ function registerEvents(pi, advisor, shutdownCallback) {
   pi.on("turn_end", handlers.turnEnd.bind(handlers));
 }
 
-// src/integration/pi/advisor/model.ts
+// src/integration/pi/advisor/tool/model.ts
 import { clampThinkingLevel } from "@earendil-works/pi-ai";
 var AdvisorModel = class {
   constructor(registry) {
@@ -798,7 +808,7 @@ var AdvisorModel = class {
   }
 };
 
-// src/integration/pi/advisor/rendering.ts
+// src/integration/pi/advisor/rendering/rendering.ts
 import { Text } from "@earendil-works/pi-tui";
 var AdvisorRendering = class {
   renderCall(_input, theme, context) {
@@ -859,11 +869,11 @@ function createRenderers() {
   };
 }
 
-// src/integration/pi/advisor/tool-schema.ts
+// src/integration/pi/advisor/tool/tool-schema.ts
 import { Type as Type2 } from "typebox";
 var advisorParameters = Type2.Object({});
 
-// src/integration/pi/advisor/transcript.ts
+// src/integration/pi/advisor/tool/transcript.ts
 function convertContent(content) {
   if (typeof content === "string") {
     return [{ kind: "text", text: content }];
@@ -936,7 +946,7 @@ function captureTranscript(context) {
   return transcript;
 }
 
-// src/integration/pi/advisor/tool.ts
+// src/integration/pi/advisor/tool/tool.ts
 var AdvisorToolHandler = class {
   constructor(advisor, lifetime) {
     this.advisor = advisor;

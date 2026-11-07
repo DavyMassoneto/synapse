@@ -8,12 +8,12 @@ import {
   PREVIEW_LINES,
   RENDER_STYLE,
 } from "@/integration/pi/advisor/presentation";
+import { type AdvisorToolDetails, type AdvisorToolInput } from "@/integration/pi/advisor/tool";
 import {
   type AdvisorRenderContext,
   type AdvisorRenderers,
   type AdvisorRenderTheme,
 } from "./rendering-types.ts";
-import { type AdvisorToolDetails, type AdvisorToolInput } from "./tool-types.ts";
 
 class AdvisorRendering {
   renderCall(

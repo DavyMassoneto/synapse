@@ -1,7 +1,7 @@
 import { type AgentMessage } from "@earendil-works/pi-agent-core";
 import { type ImageContent, type TextContent } from "@earendil-works/pi-ai";
 import { type TranscriptBlock, type TranscriptMessage } from "@/modules";
-import { type AdvisorContext } from "./context-types.ts";
+import { type AdvisorContext } from "../context-types.ts";
 
 function convertContent(content: string | (TextContent | ImageContent)[]): TranscriptBlock[] {
   if (typeof content === "string") {

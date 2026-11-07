@@ -1,8 +1,8 @@
 import { type Advisor } from "@/modules";
 import { registerCommand } from "./command";
-import { registerEvents } from "./events.ts";
+import { registerEvents } from "./events";
 import { type AdvisorHost } from "./host-types.ts";
-import { registerTool } from "./tool.ts";
+import { registerTool } from "./tool";
 
 export function registerAdvisor(
   pi: AdvisorHost,
