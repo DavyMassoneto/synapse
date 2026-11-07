@@ -996,6 +996,9 @@ function captureTranscript(context) {
 }
 
 // src/integration/pi/advisor/tool/tool.ts
+function toolFailure(message) {
+  return { content: [{ type: "text", text: message }], details: {}, isError: true };
+}
 var AdvisorToolHandler = class {
   constructor(advisor, lifetime) {
     this.advisor = advisor;
@@ -1006,11 +1009,7 @@ var AdvisorToolHandler = class {
   async execute(_id, _params, signal, onUpdate, context) {
     const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
     if (callSignal.aborted) {
-      return {
-        content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
-        details: {},
-        isError: true
-      };
+      return toolFailure(ADVISOR_MESSAGES.cancelled);
     }
     try {
       onUpdate?.({ content: [{ type: "text", text: ADVISOR_MESSAGES.progress }], details: {} });
@@ -1024,14 +1023,10 @@ var AdvisorToolHandler = class {
         advisorModel
       );
       if (result.kind === "cancelled") {
-        return {
-          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
-          details: {},
-          isError: true
-        };
+        return toolFailure(ADVISOR_MESSAGES.cancelled);
       }
       if (result.kind === "failure") {
-        return { content: [{ type: "text", text: result.message }], details: {}, isError: true };
+        return toolFailure(result.message);
       }
       return {
         content: [{ type: "text", text: result.response.text }],
@@ -1040,23 +1035,10 @@ var AdvisorToolHandler = class {
       };
     } catch (error) {
       if (callSignal.aborted) {
-        return {
-          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
-          details: {},
-          isError: true
-        };
+        return toolFailure(ADVISOR_MESSAGES.cancelled);
       }
       const message = error instanceof Error ? error.message : String(error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: advisorUnavailable(message)
-          }
-        ],
-        details: {},
-        isError: true
-      };
+      return toolFailure(advisorUnavailable(message));
     }
   }
 };

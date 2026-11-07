@@ -18,6 +18,10 @@ import {
 } from "./tool-types.ts";
 import { captureTranscript } from "./transcript.ts";
 
+function toolFailure(message: string): Awaited<AdvisorToolResult> {
+  return { content: [{ type: "text", text: message }], details: {}, isError: true };
+}
+
 class AdvisorToolHandler {
   constructor(
     private readonly advisor: Advisor,
@@ -33,11 +37,7 @@ class AdvisorToolHandler {
   ): AdvisorToolResult {
     const callSignal = signal ? AbortSignal.any([signal, this.lifetime]) : this.lifetime;
     if (callSignal.aborted) {
-      return {
-        content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
-        details: {},
-        isError: true,
-      };
+      return toolFailure(ADVISOR_MESSAGES.cancelled);
     }
 
     try {
@@ -54,14 +54,10 @@ class AdvisorToolHandler {
       );
 
       if (result.kind === "cancelled") {
-        return {
-          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
-          details: {},
-          isError: true,
-        };
+        return toolFailure(ADVISOR_MESSAGES.cancelled);
       }
       if (result.kind === "failure") {
-        return { content: [{ type: "text", text: result.message }], details: {}, isError: true };
+        return toolFailure(result.message);
       }
       return {
         content: [{ type: "text", text: result.response.text }],
@@ -70,23 +66,10 @@ class AdvisorToolHandler {
       };
     } catch (error) {
       if (callSignal.aborted) {
-        return {
-          content: [{ type: "text", text: ADVISOR_MESSAGES.cancelled }],
-          details: {},
-          isError: true,
-        };
+        return toolFailure(ADVISOR_MESSAGES.cancelled);
       }
       const message = error instanceof Error ? error.message : String(error);
-      return {
-        content: [
-          {
-            type: "text",
-            text: advisorUnavailable(message),
-          },
-        ],
-        details: {},
-        isError: true,
-      };
+      return toolFailure(advisorUnavailable(message));
     }
   }
 }
