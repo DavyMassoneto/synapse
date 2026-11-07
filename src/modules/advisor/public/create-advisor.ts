@@ -3,5 +3,7 @@ import { AdvisorService } from "@/modules/advisor/internal";
 import { type Advisor } from "@/modules/advisor/public/types";
 
 export function createAdvisor(path: string): Advisor {
-  return new AdvisorService(new FileConfig(path));
+  const storage = new FileConfig(path);
+  const loaded = storage.load();
+  return new AdvisorService(storage, loaded);
 }

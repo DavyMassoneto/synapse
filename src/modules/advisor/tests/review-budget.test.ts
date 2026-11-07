@@ -33,7 +33,8 @@ class BudgetModel implements ModelPort {
 }
 
 async function rejectInsufficientWindows(): Promise<void> {
-  const advisor = new AdvisorService(new Storage());
+  const storage = new Storage();
+  const advisor = new AdvisorService(storage, storage.load());
   for (const contextWindow of [16_000, 32_000]) {
     const port = new BudgetModel({
       reference: "provider/model",
@@ -49,7 +50,8 @@ async function rejectInsufficientWindows(): Promise<void> {
 }
 
 async function reserveFullOutput(): Promise<void> {
-  const advisor = new AdvisorService(new Storage());
+  const storage = new Storage();
+  const advisor = new AdvisorService(storage, storage.load());
   const port = new BudgetModel({
     reference: "provider/model",
     contextWindow: 128_000,
@@ -72,7 +74,8 @@ async function reserveFullOutput(): Promise<void> {
 }
 
 async function noReasoningFits(): Promise<void> {
-  const advisor = new AdvisorService(new Storage());
+  const storage = new Storage();
+  const advisor = new AdvisorService(storage, storage.load());
   const port = new BudgetModel({
     reference: "provider/model",
     contextWindow: 16_000,

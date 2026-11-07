@@ -42,7 +42,8 @@ function transcriptRespectsBudget(): void {
 }
 
 async function smallContextFails(): Promise<void> {
-  const advisor = new AdvisorService(new TestStorage());
+  const storage = new TestStorage();
+  const advisor = new AdvisorService(storage, storage.load());
   const model = new TestModel();
   model.window = 100;
   const result = await advisor.consult({ system: "", messages: [] }, model);

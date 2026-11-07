@@ -1,4 +1,4 @@
-import { type ConfigPort } from "@/modules/advisor/internal/config/ports";
+import { type ConfigLoadResult, type ConfigPort } from "@/modules/advisor/internal/config/ports";
 import {
   type AdvisorResult,
   type Config,
@@ -9,12 +9,20 @@ import {
 export class AdvisorConfiguration {
   private current: AdvisorResult;
 
-  constructor(private readonly config: ConfigPort) {
-    const loaded = config.load();
+  constructor(
+    private readonly config: ConfigPort,
+    loaded: ConfigLoadResult,
+  ) {
     if (loaded.kind === "invalid") {
       this.current = { kind: "failure", message: loaded.message };
     } else if (loaded.kind === "loaded") {
-      this.current = { kind: "success", config: loaded.config };
+      this.current = {
+        kind: "success",
+        config: {
+          model: loaded.config.model || undefined,
+          thinking: loaded.config.thinking ?? "high",
+        },
+      };
     } else {
       this.current = { kind: "success", config: { thinking: "high" } };
     }
@@ -59,8 +67,15 @@ export class AdvisorConfiguration {
     return this.persist({ thinking: this.current.config.thinking });
   }
 
-  setThinking(thinking: ThinkingLevel): AdvisorResult {
-    if (!Object.values(THINKING_LEVELS).includes(thinking)) {
+  setThinking(requested: string): AdvisorResult {
+    let thinking: ThinkingLevel | undefined;
+    for (const level of Object.values(THINKING_LEVELS)) {
+      if (level === requested) {
+        thinking = level;
+        break;
+      }
+    }
+    if (thinking === undefined) {
       return { kind: "failure", message: "Nível de raciocínio inválido." };
     }
     if (this.current.kind === "failure") {

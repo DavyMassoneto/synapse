@@ -1,4 +1,4 @@
-import { type AdvisorResult, type ThinkingLevel } from "@/modules/advisor/public/config";
+import { type AdvisorResult } from "@/modules/advisor/public/config";
 import {
   type Consultation,
   type ConsultationResult,
@@ -10,7 +10,7 @@ export interface Advisor {
   status(): AdvisorResult;
   selectModel(model: string): AdvisorResult;
   disable(): AdvisorResult;
-  setThinking(level: ThinkingLevel): AdvisorResult;
+  setThinking(level: string): AdvisorResult;
   timing: string;
   reset(): void;
   turn(event: ReminderTurn): string | undefined;

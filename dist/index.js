@@ -16,7 +16,8 @@ var THINKING_LEVELS = Object.freeze({
 });
 
 // src/modules/advisor/adapters/config.ts
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
 
@@ -48,7 +49,7 @@ var FileConfig = class {
       const config = Value.Parse(configSchema, JSON.parse(content));
       return {
         kind: "loaded",
-        config: { model: config.model || void 0, thinking: config.thinking ?? "high" }
+        config
       };
     } catch {
       return { kind: "invalid", message: "Configura\xE7\xE3o do advisor inv\xE1lida; revise advisor.json." };
@@ -56,8 +57,18 @@ var FileConfig = class {
   }
   save(config) {
     mkdirSync(dirname(this.path), { recursive: true });
-    writeFileSync(this.path, `${JSON.stringify(config, null, 2)}
-`);
+    const temporary = `${this.path}.${randomUUID()}.tmp`;
+    try {
+      writeFileSync(temporary, `${JSON.stringify(config, null, 2)}
+`, { flag: "wx" });
+      renameSync(temporary, this.path);
+    } catch (error) {
+      try {
+        unlinkSync(temporary);
+      } catch {
+      }
+      throw error;
+    }
   }
 };
 
@@ -241,13 +252,18 @@ If you've already retrieved data pointing one way and the advisor points another
 
 // src/modules/advisor/internal/config/state.ts
 var AdvisorConfiguration = class {
-  constructor(config) {
+  constructor(config, loaded) {
     this.config = config;
-    const loaded = config.load();
     if (loaded.kind === "invalid") {
       this.current = { kind: "failure", message: loaded.message };
     } else if (loaded.kind === "loaded") {
-      this.current = { kind: "success", config: loaded.config };
+      this.current = {
+        kind: "success",
+        config: {
+          model: loaded.config.model || void 0,
+          thinking: loaded.config.thinking ?? "high"
+        }
+      };
     } else {
       this.current = { kind: "success", config: { thinking: "high" } };
     }
@@ -288,8 +304,15 @@ var AdvisorConfiguration = class {
     }
     return this.persist({ thinking: this.current.config.thinking });
   }
-  setThinking(thinking) {
-    if (!Object.values(THINKING_LEVELS).includes(thinking)) {
+  setThinking(requested) {
+    let thinking;
+    for (const level of Object.values(THINKING_LEVELS)) {
+      if (level === requested) {
+        thinking = level;
+        break;
+      }
+    }
+    if (thinking === void 0) {
       return { kind: "failure", message: "N\xEDvel de racioc\xEDnio inv\xE1lido." };
     }
     if (this.current.kind === "failure") {
@@ -304,8 +327,8 @@ var AdvisorService = class {
   timing = TIMING;
   configuration;
   reminder = new ReminderCounter();
-  constructor(config) {
-    this.configuration = new AdvisorConfiguration(config);
+  constructor(config, loaded) {
+    this.configuration = new AdvisorConfiguration(config, loaded);
   }
   status() {
     return this.configuration.status();
@@ -381,7 +404,9 @@ var AdvisorService = class {
 
 // src/modules/advisor/public/create-advisor.ts
 function createAdvisor(path) {
-  return new AdvisorService(new FileConfig(path));
+  const storage = new FileConfig(path);
+  const loaded = storage.load();
+  return new AdvisorService(storage, loaded);
 }
 
 // src/modules/advisor/public/thinking.ts
@@ -546,14 +571,8 @@ var AdvisorCommand = class {
     context.ui.notify(message, "info");
   }
   changeThinking(context, requested) {
-    for (const level of THINKING_LEVEL_OPTIONS) {
-      if (level === requested) {
-        const status = this.advisor.setThinking(level);
-        this.notifyStatus(context, status, `Advisor thinking: ${level}`);
-        return;
-      }
-    }
-    context.ui.notify(`N\xEDveis: ${THINKING_LEVEL_OPTIONS.join(", ")}`, "error");
+    const status = this.advisor.setThinking(requested);
+    this.notifyStatus(context, status, `Advisor thinking: ${requested}`);
   }
   async chooseModel(context, input) {
     if (!input) {

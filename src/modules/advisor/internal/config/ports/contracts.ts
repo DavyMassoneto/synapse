@@ -1,4 +1,4 @@
-import { type Config } from "@/modules/advisor/public/config";
+import { type Config, type ThinkingLevel } from "@/modules/advisor/public/config";
 
 export interface ConfigPort {
   load(): ConfigLoadResult;
@@ -11,9 +11,14 @@ export interface ConfigMissing {
   kind: "missing";
 }
 
+export interface StoredConfig {
+  model?: string;
+  thinking?: ThinkingLevel;
+}
+
 export interface ConfigLoaded {
   kind: "loaded";
-  config: Config;
+  config: StoredConfig;
 }
 
 export interface ConfigInvalid {

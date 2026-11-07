@@ -9,9 +9,9 @@ async function commandParsing(): Promise<void> {
   try {
     assert.ok(host.command);
     await host.command.handler("thinking", context);
-    assert.match(context.ui.notices.at(-1) ?? "", /Níveis/);
+    assert.match(context.ui.notices.at(-1) ?? "", /inválido/);
     await host.command.handler("thinking banana", context);
-    assert.match(context.ui.notices.at(-1) ?? "", /Níveis/);
+    assert.match(context.ui.notices.at(-1) ?? "", /inválido/);
     await host.command.handler("thinkingx", context);
     let status = host.advisor.status();
     assert.equal(status.kind, "success");

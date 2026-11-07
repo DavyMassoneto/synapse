@@ -3,7 +3,8 @@ import { test } from "node:test";
 import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
 
 async function cancellationDuringResolution() {
-  const advisor = new AdvisorService(new TestStorage());
+  const storage = new TestStorage();
+  const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   const port = new TestModel();
   port.controller = controller;
@@ -17,7 +18,8 @@ async function cancellationDuringResolution() {
 }
 
 async function cancellationDuringExecution() {
-  const advisor = new AdvisorService(new TestStorage());
+  const storage = new TestStorage();
+  const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   const port = new TestModel();
   port.controller = controller;
@@ -30,7 +32,8 @@ async function cancellationDuringExecution() {
 }
 
 async function cancellationFromProvider() {
-  const advisor = new AdvisorService(new TestStorage());
+  const storage = new TestStorage();
+  const advisor = new AdvisorService(storage, storage.load());
   const port = new TestModel();
   port.cancelled = true;
   const result = await advisor.consult({ system: "", messages: [] }, port);

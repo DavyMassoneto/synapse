@@ -1,4 +1,5 @@
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { randomUUID } from "node:crypto";
+import { mkdirSync, readFileSync, renameSync, unlinkSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { Value } from "typebox/value";
 import { configSchema } from "@/modules/advisor/adapters/schema";
@@ -23,7 +24,7 @@ export class FileConfig {
       const config = Value.Parse(configSchema, JSON.parse(content));
       return {
         kind: "loaded",
-        config: { model: config.model || undefined, thinking: config.thinking ?? "high" },
+        config,
       };
     } catch {
       return { kind: "invalid", message: "Configuração do advisor inválida; revise advisor.json." };
@@ -32,6 +33,17 @@ export class FileConfig {
 
   save(config: Config): void {
     mkdirSync(dirname(this.path), { recursive: true });
-    writeFileSync(this.path, `${JSON.stringify(config, null, 2)}\n`);
+    const temporary = `${this.path}.${randomUUID()}.tmp`;
+    try {
+      writeFileSync(temporary, `${JSON.stringify(config, null, 2)}\n`, { flag: "wx" });
+      renameSync(temporary, this.path);
+    } catch (error) {
+      try {
+        unlinkSync(temporary);
+      } catch {
+        // The temporary file may not have been created.
+      }
+      throw error;
+    }
   }
 }

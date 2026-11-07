@@ -3,7 +3,10 @@ import { test } from "node:test";
 import { AdvisorService, TestModel, TestStorage } from "./fixtures.ts";
 
 async function snapshotIsStable() {
-  const advisor = new AdvisorService(new TestStorage("provider/first"));
+  const advisor = new AdvisorService(
+    new TestStorage("provider/first"),
+    new TestStorage("provider/first").load(),
+  );
   const port = new TestModel();
   const gate = Promise.withResolvers<void>();
   port.gate = gate.promise;
@@ -21,7 +24,8 @@ async function snapshotIsStable() {
 }
 
 async function cancellationAndFailure() {
-  const advisor = new AdvisorService(new TestStorage());
+  const storage = new TestStorage();
+  const advisor = new AdvisorService(storage, storage.load());
   const controller = new AbortController();
   controller.abort();
   const port = new TestModel();

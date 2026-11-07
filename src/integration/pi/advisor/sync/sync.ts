@@ -1,10 +1,11 @@
-import { type AdvisorContext, type AdvisorHost } from "@/integration/pi/advisor";
+import { type AdvisorContext } from "@/integration/pi/advisor";
 import { type Advisor } from "@/modules";
 import { updateAdvisorStatus } from "./status.ts";
 import { updateAdvisorTool } from "./tool-state.ts";
+import { type AdvisorToolActivation } from "./types.ts";
 
 export function syncAdvisor(
-  pi: Pick<AdvisorHost, "getActiveTools" | "setActiveTools">,
+  pi: AdvisorToolActivation,
   advisor: Advisor,
   context: AdvisorContext,
 ): void {

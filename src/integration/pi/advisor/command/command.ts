@@ -2,7 +2,7 @@ import { type SessionStartEvent } from "@earendil-works/pi-coding-agent";
 import { type AdvisorContext, type AdvisorHost } from "@/integration/pi/advisor";
 import { ADVISOR_MESSAGES } from "@/integration/pi/advisor/presentation";
 import { syncAdvisor } from "@/integration/pi/advisor/sync";
-import { type Advisor, type AdvisorResult, THINKING_LEVEL_OPTIONS } from "@/modules";
+import { type Advisor, type AdvisorResult } from "@/modules";
 import { ModelCatalog } from "./catalog.ts";
 import { parseAdvisorCommand } from "./parser.ts";
 import { type ModelSelection } from "./selection-types.ts";
@@ -32,15 +32,8 @@ class AdvisorCommand {
   }
 
   private changeThinking(context: AdvisorContext, requested: string): void {
-    for (const level of THINKING_LEVEL_OPTIONS) {
-      if (level === requested) {
-        const status = this.advisor.setThinking(level);
-        this.notifyStatus(context, status, `Advisor thinking: ${level}`);
-        return;
-      }
-    }
-
-    context.ui.notify(`Níveis: ${THINKING_LEVEL_OPTIONS.join(", ")}`, "error");
+    const status = this.advisor.setThinking(requested);
+    this.notifyStatus(context, status, `Advisor thinking: ${requested}`);
   }
 
   private async chooseModel(context: AdvisorContext, input: string): Promise<ModelSelection> {

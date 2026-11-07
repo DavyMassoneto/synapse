@@ -1,7 +1,11 @@
-import { AdvisorConfiguration, type ConfigPort } from "@/modules/advisor/internal/config";
+import {
+  AdvisorConfiguration,
+  type ConfigLoadResult,
+  type ConfigPort,
+} from "@/modules/advisor/internal/config";
 import { ADVISOR_SYSTEM, preparePrompt, REMINDER, TIMING } from "@/modules/advisor/internal/format";
 import { ReminderCounter } from "@/modules/advisor/internal/reminder";
-import { type AdvisorResult, type ThinkingLevel } from "@/modules/advisor/public/config";
+import { type AdvisorResult } from "@/modules/advisor/public/config";
 import {
   type Consultation,
   type ConsultationResult,
@@ -14,8 +18,8 @@ export class AdvisorService implements Advisor {
   private readonly configuration: AdvisorConfiguration;
   private readonly reminder = new ReminderCounter();
 
-  constructor(config: ConfigPort) {
-    this.configuration = new AdvisorConfiguration(config);
+  constructor(config: ConfigPort, loaded: ConfigLoadResult) {
+    this.configuration = new AdvisorConfiguration(config, loaded);
   }
 
   status(): AdvisorResult {
@@ -27,7 +31,7 @@ export class AdvisorService implements Advisor {
   disable(): AdvisorResult {
     return this.configuration.disable();
   }
-  setThinking(thinking: ThinkingLevel): AdvisorResult {
+  setThinking(thinking: string): AdvisorResult {
     return this.configuration.setThinking(thinking);
   }
   reset(): void {

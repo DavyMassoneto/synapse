@@ -1,9 +1,6 @@
-import { type AdvisorHost } from "@/integration/pi/advisor";
+import { type AdvisorToolActivation } from "./types.ts";
 
-export function updateAdvisorTool(
-  pi: Pick<AdvisorHost, "getActiveTools" | "setActiveTools">,
-  enabled: boolean,
-): void {
+export function updateAdvisorTool(pi: AdvisorToolActivation, enabled: boolean): void {
   const active = pi.getActiveTools();
   if (enabled && !active.includes("advisor")) {
     pi.setActiveTools([...active, "advisor"]);
