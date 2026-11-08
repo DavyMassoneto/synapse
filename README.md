@@ -19,5 +19,7 @@ A primeira base precisa definir runtime, versão suportada do pi e ferramentas d
 ## Documentação
 
 - [Arquitetura](docs/architecture.md): composição, fronteiras, interfaces e responsabilidade pelos dados.
+- [Mensageria entre sessões do Pi](docs/mensageria.md) — proposta do MVP.
 - [Memória](docs/memory.md): observação, cobertura, consolidação, vault e Recall.
+- [Legibilidade](docs/standards/legibilidade.md): regras de legibilidade do código.
 - [AGENTS.md](AGENTS.md): instruções para agentes que trabalham no repositório, distintas dos prompts dos modelos do runtime.
