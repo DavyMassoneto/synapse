@@ -102,7 +102,9 @@ export interface AdvisorToolDetails {
   model?: string
 }
 
-export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails>
+export type AdvisorRenderState = Pick<AdvisorToolDetails, never>
+
+export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, AdvisorRenderState>
 
 export type AdvisorToolUpdate = Parameters<PiAdvisorTool["execute"]>[3]
 
