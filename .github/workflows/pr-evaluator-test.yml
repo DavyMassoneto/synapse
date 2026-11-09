@@ -20,10 +20,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      # pull_request_target faz o checkout da branch base. A cabeça da PR nunca é executada:
-      # só o diff dela é lido, depois de buscar a referência da PR.
+      # Ensaio: o checkout é da branch base (que contém o runner), nunca da cabeça da PR.
       - uses: actions/checkout@v4
         with:
+          ref: ${{ github.event.pull_request.base.ref }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -32,13 +32,6 @@ jobs:
       - run: npm ci
       - name: Buscar a cabeça da PR como dado
         run: git fetch --no-tags origin "+refs/pull/${{ github.event.pull_request.number }}/head"
-      - name: Listar modelos permitidos para a chave do secret
-        run: |
-          curl -sS -H "Authorization: Bearer $OMNIROUTE_API_KEY" "$OMNIROUTE_BASE_URL/models" -o models.json -w "models http %{http_code}\n"
-          node -e 'const j=JSON.parse(require("fs").readFileSync("models.json","utf8"));const ids=(j.data||[]).map(m=>m.id);console.log(ids.length+" modelos permitidos");console.log(ids.filter(i=>/claude|gpt-6/.test(i)).join("\n"))'
-        env:
-          OMNIROUTE_API_KEY: ${{ secrets.OMNIROUTE_API_KEY }}
-          OMNIROUTE_BASE_URL: https://omniroute.dmassoneto.com.br/v1
       - name: Avaliar
         run: npm run evaluate
         env:
