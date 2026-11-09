@@ -1,7 +1,7 @@
 import { type Api, type Context, type Model, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
 import { type AdvisorRegistry } from "#synapse/integration"
 import { assistantStream } from "./assistant-stream"
-import { type TestStopReason } from "./test-context-types"
+import { type TestStopReason } from "./types"
 
 export class TestRegistry implements AdvisorRegistry {
   calls = 0

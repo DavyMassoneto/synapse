@@ -1,6 +1,6 @@
 import { type SessionProjection } from "@earendil-works/pi-coding-agent"
 import { type AdvisorSession } from "#synapse/integration"
-import { type ProjectedMessages } from "./test-context-types"
+import { type ProjectedMessages } from "./types"
 
 export class TestSession implements AdvisorSession {
   projectionError = false

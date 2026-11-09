@@ -1,13 +1,16 @@
-import { type TranscriptMessage } from "#synapse/modules/advisor/public/contracts"
+import { type ToolResultTranscript, type TranscriptMessage } from "#synapse/modules/advisor/public/contracts"
 import { CONTEXT_LABEL, ERROR_LABEL, SHELL_LABEL, SUMMARY_LABEL, TOOL_RESULT_LABEL } from "./constants"
+
+function toolResultLabel(message: ToolResultTranscript): string {
+  if (message.error) {
+    return `[${TOOL_RESULT_LABEL} ${message.tool}${ERROR_LABEL}]`
+  }
+  return `[${TOOL_RESULT_LABEL} ${message.tool}]`
+}
 
 export function messageLabel(message: TranscriptMessage): string {
   if (message.kind === "toolResult") {
-    let error = ""
-    if (message.error) {
-      error = ERROR_LABEL
-    }
-    return `[${TOOL_RESULT_LABEL} ${message.tool}${error}]`
+    return toolResultLabel(message)
   }
   if (message.kind === "shell") {
     return `[${SHELL_LABEL}] $ ${message.command}`

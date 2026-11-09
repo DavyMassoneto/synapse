@@ -11,7 +11,7 @@ export function beforeStart(
   context: AdvisorContext,
 ): void {
   syncAdvisor(pi, advisor, context)
-  if (advisor.isEnabled(advisor.configuration.status())) {
+  if (advisor.isEnabled()) {
     event.systemPromptOptions.sections.advisor = advisor.consultationInstructions
   } else {
     delete event.systemPromptOptions.sections.advisor

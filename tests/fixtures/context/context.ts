@@ -1,8 +1,8 @@
 import { type AdvisorContext } from "#synapse/integration"
-import { type ScopedModels } from "./test-context-types"
 import { TestRegistry } from "./test-registry"
 import { TestSession } from "./test-session"
 import { TestUI } from "./test-ui"
+import { type ScopedModels } from "./types"
 
 export class TestContext implements AdvisorContext {
   hasUI = false

@@ -35,8 +35,6 @@ export const CONTENT_LIMITS: number[] = [
   MINIMAL_CONTENT_LIMIT,
 ]
 
-export const NO_BUDGET = 0
-
 export const PROMPT_DIAGNOSTICS = {
   windowTooSmall: "A janela do advisor é pequena demais para a consulta.",
 }

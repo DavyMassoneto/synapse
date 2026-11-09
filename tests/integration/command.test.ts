@@ -25,33 +25,21 @@ async function invalidThinking(): Promise<void> {
 
 async function thinkingModel(): Promise<void> {
   await host.requireCommand().handler("thinkingx", context)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBe("provider/thinkingx")
+  const status = host.requireConfig()
+  expect(status.model).toBe("provider/thinkingx")
 }
 
 async function exactModel(): Promise<void> {
   await host.requireCommand().handler("provider/model", context)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBe("provider/model")
+  const status = host.requireConfig()
+  expect(status.model).toBe("provider/model")
 }
 
 async function ambiguousModel(): Promise<void> {
   await host.requireCommand().handler("provider", context)
   expect(context.ui.notices.at(-1)).toMatch(/Mais de um modelo/)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBe("provider/model")
+  const status = host.requireConfig()
+  expect(status.model).toBe("provider/model")
 }
 
 async function scopedSuggestions(): Promise<void> {
@@ -84,17 +72,11 @@ async function scopedSearch(): Promise<void> {
     { model: { ...context.modelRegistry.model, id: "model-extra" } },
   ]
   await host.requireCommand().handler("PROVIDER/MODEL", context)
-  const status = host.advisor.configuration.status()
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBe("provider/model")
+  const status = host.requireConfig()
+  expect(status.model).toBe("provider/model")
   await host.requireCommand().handler("model extra", context)
-  const next = host.advisor.configuration.status()
-  if (next.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(next.config.model).toBe("provider/model-extra")
+  const next = host.requireConfig()
+  expect(next.model).toBe("provider/model-extra")
   await host.requireCommand().handler("thinkingx", context)
   expect(context.ui.notices.at(-1)).toMatch(/Nenhum modelo encontrado/)
 }

@@ -6,3 +6,14 @@ export interface PromptReady {
 }
 
 export type PreparedPrompt = PromptReady | Failure
+
+export interface BudgetAvailable {
+  kind: "available"
+  characters: number
+}
+
+export interface BudgetInsufficient {
+  kind: "insufficient"
+}
+
+export type PromptBudget = BudgetAvailable | BudgetInsufficient

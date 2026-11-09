@@ -23,7 +23,7 @@ async function sessionStart(): Promise<void> {
   for (const handler of host.starts) {
     await handler({ type: "session_start", reason: "startup" }, context)
   }
-  expect(host.advisor.isEnabled(host.advisor.configuration.status())).toBe(true)
+  expect(host.advisor.isEnabled()).toBe(true)
   expect(host.active).toContain("advisor")
 }
 
@@ -75,7 +75,7 @@ async function disabledAdvisor(): Promise<void> {
   }
   host.active = ["read", "advisor", "write", "advisor", "read"]
   host.advisor.configuration.disable()
-  expect(host.advisor.isEnabled(host.advisor.configuration.status())).toBe(false)
+  expect(host.advisor.isEnabled()).toBe(false)
   for (const handler of host.beforeStarts) {
     await handler(event, context)
   }

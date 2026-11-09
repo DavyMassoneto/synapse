@@ -22,13 +22,9 @@ async function reportsFailure(): Promise<void> {
 
 async function preservesState(): Promise<void> {
   await host.requireCommand().handler("thinking high", context)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.thinking).toBe("low")
-  expect(host.advisor.isEnabled(host.advisor.configuration.status())).toBe(true)
+  const status = host.requireConfig()
+  expect(status.thinking).toBe("low")
+  expect(host.advisor.isEnabled()).toBe(true)
 }
 
 function registerTests(): void {

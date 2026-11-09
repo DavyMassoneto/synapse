@@ -8,13 +8,12 @@ export function clip(text: string, limit: number): string {
     return text
   }
 
-  const marker = CLIPPED_CONTENT
-  if (limit <= marker.length) {
+  if (limit <= CLIPPED_CONTENT.length) {
     return text.slice(0, limit)
   }
 
-  const available = limit - marker.length
+  const available = limit - CLIPPED_CONTENT.length
   const head = Math.floor(available * HEAD_FRACTION)
   const tail = available - head
-  return text.slice(0, head) + marker + text.slice(-tail)
+  return text.slice(0, head) + CLIPPED_CONTENT + text.slice(-tail)
 }

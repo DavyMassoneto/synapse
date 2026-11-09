@@ -12,15 +12,9 @@ export class ModelCatalog {
 
   completions(prefix: string): AutocompleteItem[] {
     const normalized = prefix.toLowerCase()
-    const items: AutocompleteItem[] = []
-    for (const value of [DISABLE_COMMAND, THINKING_COMMAND, ...this.models]) {
-      if (value.toLowerCase().startsWith(normalized)) {
-        items.push({ value, label: value })
-      }
-      if (items.length === COMPLETION_LIMIT) {
-        break
-      }
-    }
-    return items
+    return [DISABLE_COMMAND, THINKING_COMMAND, ...this.models]
+      .filter((value) => value.toLowerCase().startsWith(normalized))
+      .slice(0, COMPLETION_LIMIT)
+      .map((value) => ({ value, label: value }))
   }
 }

@@ -1,5 +1,5 @@
 import { type AssistantMessage, createAssistantMessageEventStream } from "@earendil-works/pi-ai"
-import { type TestStopReason } from "./test-context-types"
+import { type TestStopReason } from "./types"
 import { TEST_USAGE } from "./usage"
 
 export function assistantStream(model: string, text: string, stopReason: TestStopReason) {

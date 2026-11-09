@@ -1,20 +1,30 @@
 import { ADDITIONAL_COLOR, PREVIEW_LINES, RENDER_TEXT, SUCCESS_COLOR } from "./constants"
 import { type AdvisorRenderTheme } from "./types"
 
+function visibleLines(lines: string[], expanded: boolean): string[] {
+  if (expanded) {
+    return lines
+  }
+  return lines.slice(0, PREVIEW_LINES)
+}
+
+function hiddenNotice(hidden: number, theme: AdvisorRenderTheme): string {
+  if (hidden > 0) {
+    return `\n${theme.fg(ADDITIONAL_COLOR, `... (${hidden} linhas a mais)`)}`
+  }
+  return ""
+}
+
+function previewTitle(model?: string): string {
+  if (typeof model === "string") {
+    return `${RENDER_TEXT.success} (${model})`
+  }
+  return RENDER_TEXT.success
+}
+
 export function renderPreview(body: string, expanded: boolean, theme: AdvisorRenderTheme, model?: string): string {
   const lines = body.split("\n")
-  let shown = lines
-  if (!expanded) {
-    shown = lines.slice(0, PREVIEW_LINES)
-  }
-  const remaining = lines.length - shown.length
-  let suffix = ""
-  if (!expanded && remaining > 0) {
-    suffix = `\n${theme.fg(ADDITIONAL_COLOR, `... (${remaining} linhas a mais)`)}`
-  }
-  let title = RENDER_TEXT.success
-  if (typeof model === "string") {
-    title = `${title} (${model})`
-  }
-  return `${theme.fg(SUCCESS_COLOR, title)}\n${shown.join("\n")}${suffix}`
+  const shown = visibleLines(lines, expanded)
+  const suffix = hiddenNotice(lines.length - shown.length, theme)
+  return `${theme.fg(SUCCESS_COLOR, previewTitle(model))}\n${shown.join("\n")}${suffix}`
 }

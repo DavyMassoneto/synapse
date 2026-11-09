@@ -1,4 +1,4 @@
-import { type AdvisorResult, type Config } from "#synapse/modules/advisor/public/contracts"
+import { type AdvisorResult, type Config, isConfiguredModel } from "#synapse/modules/advisor/public/contracts"
 import { DEFAULT_THINKING } from "./constants"
 import { type ConfigLoadResult, type StoredConfig } from "./types"
 
@@ -7,7 +7,7 @@ function storedConfiguration(stored: StoredConfig): Config {
   if (typeof stored.thinking === "string") {
     config.thinking = stored.thinking
   }
-  if (typeof stored.model === "string" && stored.model !== "") {
+  if (typeof stored.model === "string" && isConfiguredModel(stored.model)) {
     config.model = stored.model
   }
   return config
@@ -20,5 +20,5 @@ export function initialConfiguration(loaded: ConfigLoadResult): AdvisorResult {
   if (loaded.kind === "loaded") {
     return { kind: "success", config: storedConfiguration(loaded.config) }
   }
-  return { kind: "success", config: { thinking: DEFAULT_THINKING } }
+  return { kind: "success", config: storedConfiguration({}) }
 }

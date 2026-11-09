@@ -1,8 +1,9 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { type EnvironmentSnapshot, snapshotEnvironment } from "./environment-snapshot"
+import { snapshotEnvironment } from "./environment-snapshot"
 import { restoreVariable } from "./restore-variable"
+import { type EnvironmentSnapshot } from "./types"
 
 export class DistributionEnvironment {
   readonly home: string

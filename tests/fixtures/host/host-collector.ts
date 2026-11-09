@@ -9,7 +9,7 @@ import {
   type AdvisorTurnEndHandler,
   type Unsubscribe,
 } from "#synapse/integration"
-import { type AdvisorEventRegistration, type CommandCompletions } from "./host-types"
+import { type AdvisorEventRegistration, type CommandCompletions } from "./types"
 
 export class AdvisorHostCollector implements AdvisorHost {
   readonly starts: AdvisorSessionStartHandler[] = []

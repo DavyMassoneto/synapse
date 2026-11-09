@@ -1,51 +1,12 @@
-import { readFileSync } from "node:fs"
-import { join, resolve } from "node:path"
-import { fileURLToPath } from "node:url"
-import {
-  DefaultResourceLoader,
-  ExtensionRunner,
-  ModelRuntime,
-  SessionManager,
-  SettingsManager,
-} from "@earendil-works/pi-coding-agent"
-import { Type } from "typebox"
-import { Value } from "typebox/value"
+import { ExtensionRunner, SessionManager } from "@earendil-works/pi-coding-agent"
 import { TestUI } from "../context"
 import { DistributionRegistry } from "./distribution-registry"
-import { type DistributionResult } from "./distribution-result-types"
-
-const manifestSchema = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })
+import { createRuntime, loadExtension, resolveEntrypoint } from "./distribution-setup"
+import { type DistributionResult } from "./types"
 
 export async function runDistribution(home: string): Promise<DistributionResult> {
-  const manifestPath = fileURLToPath(new URL("../../../package.json", import.meta.url))
-  const manifest = Value.Parse(manifestSchema, JSON.parse(readFileSync(manifestPath, "utf8")))
-  const [extension] = manifest.pi.extensions
-  const entrypoint = resolve(fileURLToPath(new URL("../../..", import.meta.url)), extension)
-  const agentDir = join(home, ".pi", "agent")
-  const loader = new DefaultResourceLoader({
-    cwd: home,
-    agentDir,
-    settingsManager: SettingsManager.inMemory(),
-    noExtensions: true,
-    additionalExtensionPaths: [entrypoint],
-    noSkills: true,
-    noPromptTemplates: true,
-    noThemes: true,
-    noContextFiles: true,
-  })
-  await loader.reload()
-  const loaded = loader.getExtensions()
-  if (loaded.errors.length || loaded.extensions.length !== 1) {
-    throw new Error(JSON.stringify(loaded.errors))
-  }
-  const runtime = await ModelRuntime.create({
-    authPath: join(agentDir, "auth.json"),
-    modelsPath: null,
-    modelsStorePath: join(agentDir, "models-store.json"),
-    allowModelNetwork: false,
-    refreshOnCreate: false,
-  })
-  const registry = new DistributionRegistry(runtime)
+  const loaded = await loadExtension(home, resolveEntrypoint())
+  const registry = new DistributionRegistry(await createRuntime(home))
   const runner = new ExtensionRunner(loaded.extensions, loaded.runtime, home, SessionManager.inMemory(home), registry)
   try {
     const ui = new TestUI()

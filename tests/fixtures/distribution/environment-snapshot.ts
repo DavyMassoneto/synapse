@@ -1,7 +1,4 @@
-export interface EnvironmentSnapshot {
-  home?: string
-  profile?: string
-}
+import { type EnvironmentSnapshot } from "./types"
 
 export function snapshotEnvironment(): EnvironmentSnapshot {
   const snapshot: EnvironmentSnapshot = {}

@@ -1,16 +1,16 @@
 # Arquitetura do Synapse
 
-Synapse contém três módulos: **memória**, **pi-web** e **navegador**. Cada módulo é uma unidade de propriedade de código, contratos e estado. A integração os conecta ao pi sem permitir dependências diretas entre eles.
+Synapse contém quatro módulos: **memória**, **pi-web**, **navegador** e **advisor**. Cada módulo é uma unidade de propriedade de código, contratos e estado. A integração os conecta ao pi sem permitir dependências diretas entre eles.
 
 ## Padrão arquitetural
 
 Adota-se **monólito modular com Portas e Adaptadores (arquitetura hexagonal)**, organizado verticalmente por módulo:
 
 - **Monólito modular:** uma composição e uma distribuição como Pi package, sem exigir serviços independentes para separar responsabilidades. Processos auxiliares continuam sob o controle do módulo que os utiliza.
-- **Organização vertical:** código, adaptadores e testes de uma capacidade ficam no diretório da frente responsável, em vez de distribuir as três frentes por pastas globais de controllers, services ou repositories. Isso reduz arquivos compartilhados durante mudanças paralelas.
-- **Portas e Adaptadores:** cada módulo declara as operações externas de que necessita; a composição fornece implementações. Essa inversão de dependência permite desenvolver e testar uma frente sem carregar o pi ou a implementação das outras duas.
+- **Organização vertical:** código, adaptadores e testes de uma capacidade ficam no diretório da frente responsável, em vez de distribuir as quatro frentes por pastas globais de controllers, services ou repositories. Isso reduz arquivos compartilhados durante mudanças paralelas.
+- **Portas e Adaptadores:** cada módulo declara as operações externas de que necessita; a composição fornece implementações. Essa inversão de dependência permite desenvolver e testar uma frente sem carregar o pi ou a implementação das outras frentes.
 
-A composição e a integração são infraestrutura de montagem, não um quarto módulo de produto. O pi permanece proprietário do loop do agente, das sessões, do histórico e da compactação.
+A composição e a integração são infraestrutura de montagem, não um módulo de produto adicional. O pi permanece proprietário do loop do agente, das sessões, do histórico e da compactação.
 
 ## Fronteiras dos módulos
 
@@ -19,18 +19,20 @@ A composição e a integração são infraestrutura de montagem, não um quarto 
 | Memória | Conhecimento persistido e seu controle de processamento, armazenamento e índices | Recebe conteúdo identificado e consultas com escopo; devolve resultados de memória com origem e estado da operação |
 | pi-web | Interface, estado de apresentação e conexão com o runtime | Envia intenções por uma porta de runtime; recebe resultados e eventos para apresentação |
 | Navegador | Contextos de navegação, execução de ações e artefatos associados | Recebe operação e identidade do alvo; devolve resultado, efeitos conhecidos e evidências |
+| Advisor | Configuração, política de lembretes e consulta ao revisor | Expõe operações de configuração e consulta; distingue sucesso, falha e cancelamento |
 
 Nenhum módulo lê ou escreve arquivos, tabelas, caches ou estado mutável privado de outro. Configuração é entregue separadamente a cada módulo; não existe acesso à configuração privada de um vizinho. Compartilhar o processo não torna esses dados públicos.
 
 ## Estrutura de diretórios
 
-Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`, `pi-web` ou `browser`.
+Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`, `pi-web`, `browser` ou `advisor`.
 
 | Caminho | Conteúdo e propriedade |
 | --- | --- |
 | `src/modules/memory/` | Área exclusiva da frente de memória |
 | `src/modules/pi-web/` | Área exclusiva da frente de pi-web |
 | `src/modules/browser/` | Área exclusiva da frente de navegador |
+| `src/modules/advisor/` | Área exclusiva da frente de advisor |
 | `src/modules/<modulo>/public/` | Contratos de entrada e saída, portas requeridas e ponto público de montagem do módulo |
 | `src/modules/<modulo>/internal/` | Núcleo privado de regras e casos de uso; a organização interna pertence à frente |
 | `src/modules/<modulo>/adapters/` | Adaptadores privados de entrada e saída: interface, armazenamento, provedores e engine, conforme o módulo |
@@ -38,7 +40,9 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `src/integration/pi/` | Adaptação ao SDK, eventos e registros do host |
 | `src/integration/bridges/` | Adaptadores que conectam a porta de um módulo ao contrato público de outro |
 | `src/composition/` | Montagem, injeção de dependências, distribuição da configuração e encerramento |
+| `src/entry.ts` | Entrada do pacote Pi que aciona a composição |
 | `tests/integration/` | Verificação dos contratos conectados e da integração com o host |
+| `tests/fixtures/` | Substitutos e dados usados nos testes de integração |
 
 `public/` separa contratos sem dependências concretas do ponto de montagem que instancia a implementação privada. A composição usa esse ponto para obter a interface do módulo; não importa `internal/` nem `adapters/`. Não há uma pasta compartilhada de regras de negócio.
 
@@ -51,7 +55,9 @@ flowchart TD
     composicao["composition/"] --> integracao["integration/pi e bridges"]
     composicao --> memoria["memory/public/"]
     composicao --> web["pi-web/public/"]
+    composicao --> advisor["advisor/public/"]
     composicao --> navegador["browser/public/"]
+    integracao --> advisor
     integracao --> memoria
     integracao --> web
     integracao --> navegador
@@ -79,6 +85,6 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 ## Desenvolvimento paralelo e proteção das fronteiras
 
 - Cada frente modifica seu diretório `src/modules/<modulo>/` e valida o módulo isoladamente, substituindo portas externas por implementações de teste.
-- Para cada mudança que atravesse fronteiras, uma das três frentes assume a integração. Esse responsável concentra alterações em `src/integration/`, `src/composition/`, `tests/integration/` e manifestos, lockfiles e configurações da raiz; esses arquivos não recebem escrita concorrente das frentes.
+- Para cada mudança que atravesse fronteiras, uma das frentes assume a integração. Esse responsável concentra alterações em `src/integration/`, `src/composition/`, `tests/integration/` e manifestos, lockfiles e configurações da raiz; esses arquivos não recebem escrita concorrente das frentes.
 - As bridges são testadas contra os contratos da consumidora e da produtora, permitindo trocar uma implementação sem adaptar a outra frente.
 - A verificação de dependências rejeita imports entre módulos, acesso externo a diretórios privados, dependência do núcleo em adaptadores e uso do SDK do pi fora da integração. Os testes de contrato verificam as fronteiras públicas; testes do host verificam a montagem e o ciclo de vida.

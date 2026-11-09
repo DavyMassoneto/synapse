@@ -164,7 +164,7 @@ export type ParsedReference = ValidReference | InvalidReference
 
 export interface Advisor {
   readonly configuration: AdvisorConfigOperations
-  isEnabled(status: AdvisorResult): boolean
+  isEnabled(): boolean
   readonly reminder: ReminderControl
   consultationInstructions: string
   turn(event: ReminderTurn): ReminderDecision

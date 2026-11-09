@@ -2,8 +2,8 @@ import { type AdvisorContext } from "../host"
 import { CANCELLED_SELECTION, MODEL_SELECTION_LIMIT, PICKER_TEXT } from "./constants"
 import { modelReferences } from "./references"
 import { searchModels } from "./search"
+import { selectInitialModel } from "./select-initial-model"
 import { selectedModel } from "./selected-model"
-import { selectInitialModel } from "./selection-menu"
 import { type ModelSelection } from "./types"
 
 async function chooseMatch(context: AdvisorContext, matches: string[]): Promise<ModelSelection> {

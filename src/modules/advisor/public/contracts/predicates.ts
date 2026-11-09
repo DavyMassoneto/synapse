@@ -5,6 +5,10 @@ export function isThinkingLevel(value: string): value is ThinkingLevel {
   return THINKING_LEVELS.some((level) => level === value)
 }
 
+export function isConfiguredModel(model: string): boolean {
+  return model !== ""
+}
+
 export function hasModel(config: Config): config is ConfiguredConfig {
-  return typeof config.model === "string" && config.model !== ""
+  return typeof config.model === "string" && isConfiguredModel(config.model)
 }

@@ -16,35 +16,23 @@ function cleanup(): void {
 async function chooseModel(): Promise<void> {
   context.ui.selection = "provider/other"
   await host.requireCommand().handler("", context)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBe("provider/other")
+  const status = host.requireConfig()
+  expect(status.model).toBe("provider/other")
 }
 
 async function cancelSelection(): Promise<void> {
   host.advisor.configuration.selectModel("provider/other")
   delete context.ui.selection
   await host.requireCommand().handler("", context)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBe("provider/other")
+  const status = host.requireConfig()
+  expect(status.model).toBe("provider/other")
 }
 
 async function disableAdvisor(): Promise<void> {
   context.ui.selection = "(sem advisor)"
   await host.requireCommand().handler("", context)
-  const status = host.advisor.configuration.status()
-  expect(status.kind).toBe("success")
-  if (status.kind !== "success") {
-    throw new Error("status inválido")
-  }
-  expect(status.config.model).toBeUndefined()
+  const status = host.requireConfig()
+  expect(status.model).toBeUndefined()
 }
 
 function registerTests(): void {
