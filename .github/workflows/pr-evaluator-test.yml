@@ -23,7 +23,7 @@ jobs:
       # Ensaio: o checkout é da branch base (que contém o runner), nunca da cabeça da PR.
       - uses: actions/checkout@v4
         with:
-          ref: ${{ github.event.pull_request.base.sha }}
+          ref: bae0e968157d7efef004607ed534f61a7b27ce1b
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
