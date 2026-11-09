@@ -1,0 +1,14 @@
+export const IGNORED_FILES = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]
+export const DIFF_SEPARATOR = "\ndiff --git "
+export const OLD_FILE_PREFIX = "--- a/"
+export const QUOTED_OLD_FILE_PREFIX = '--- "a/'
+export const NEW_FILE_PREFIX = "+++ b/"
+export const QUOTED_NEW_FILE_PREFIX = '+++ "b/'
+export const DELETED_FILE_MARKER = "+++ /dev/null"
+export const RENAME_TARGET_PREFIX = "rename to "
+export const HUNK_MARKER = "@@"
+export const HUNK_HEADER = /^@@ -\d+(?:,\d+)? \+(\d+)/
+export const ADDED_LINE_MARK = "+"
+export const CONTEXT_LINE_MARK = " "
+export const TIMESTAMP_SEPARATOR = "\t"
+export const QUOTE = '"'

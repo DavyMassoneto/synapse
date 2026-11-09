@@ -153,6 +153,22 @@
     {
       "includes": ["**/*.js", "**/*.jsx", "**/*.mjs", "**/*.cjs"],
       "plugins": ["./biome/no-javascript-file.grit"]
+    },
+    {
+      "includes": ["**/*.ts", "!**/*.d.ts", "!**/*.config.ts", "!**/tests/**", "!**/*.test.ts", "!**/schemas.ts"],
+      "plugins": ["./biome/schemas-file.grit"]
+    },
+    {
+      "includes": [
+        "**/*.ts",
+        "!**/*.d.ts",
+        "!**/*.config.ts",
+        "!**/tests/**",
+        "!**/*.test.ts",
+        "!**/constants.ts",
+        "!**/schemas.ts"
+      ],
+      "plugins": ["./biome/no-string-literal.grit"]
     }
   ],
   "assist": {

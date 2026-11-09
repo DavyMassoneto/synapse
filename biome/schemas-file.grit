@@ -1,0 +1,9 @@
+language js
+
+JsVariableDeclarator(id=$name, initializer=JsInitializerClause(expression=`Type.$method($arguments)`)) as $declarator where {
+  $declarator <: not within or {
+    JsFunctionBody(),
+    JsBlockStatement()
+  },
+  register_diagnostic(span=$name, message="TypeBox schemas belong in the module schemas.ts.")
+}

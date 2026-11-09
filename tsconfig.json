@@ -4,13 +4,17 @@
     "lib": ["es2024"],
     "module": "esnext",
     "moduleResolution": "bundler",
+    "types": ["node"],
     "strict": true,
     "noUncheckedIndexedAccess": true,
     "exactOptionalPropertyTypes": true,
     "noEmit": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "#synapse/*": ["./.github/pr-review/*"]
+    }
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", ".github/**/*.ts", "vitest.config.ts"]
 }

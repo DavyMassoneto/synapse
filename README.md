@@ -12,9 +12,11 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 
 ## Estado do projeto
 
-O repositório contém documentação, sem código de produto, manifesto, toolchain ou testes. As capacidades descritas são contratos de construção, não funcionalidades disponíveis. Ainda não existem comandos de instalação, execução, build ou teste.
+O repositório contém a documentação, a base de qualidade do TypeScript (Biome) e a automação de revisão das PRs, sem código de produto. As capacidades descritas são contratos de construção, não funcionalidades disponíveis.
 
-A primeira base precisa definir runtime, versão suportada do pi e ferramentas de desenvolvimento.
+Para validar o código, rode `npm ci` e `npm run check`, que executa o Biome, o TypeScript estrito e os testes do Vitest.
+
+A primeira base de produto precisa definir runtime, versão suportada do pi e ferramentas de execução.
 
 ## Documentação
 
@@ -23,4 +25,5 @@ A primeira base precisa definir runtime, versão suportada do pi e ferramentas d
 - [Memória](docs/memory.md): observação, cobertura, consolidação, vault e Recall.
 - [Legibilidade](docs/standards/legibilidade.md): regras de legibilidade do código.
 - [Tipagem](docs/standards/tipagem.md): regras de tipagem do TypeScript.
+- [Revisão automática](.github/pr-review/README.md): o revisor de PR que cobre o que o Biome não vê.
 - [AGENTS.md](AGENTS.md): instruções para agentes que trabalham no repositório, distintas dos prompts dos modelos do runtime.

@@ -1,0 +1,12 @@
+language js
+
+JsStringLiteralExpression() as $literal where {
+  $literal <: not "\"\"",
+  $literal <: not within or {
+    JsImport(),
+    JsExport(),
+    JsExportFromClause(),
+    JsImportCallExpression()
+  },
+  register_diagnostic(span=$literal, message="String literals belong in the module constants.ts (empty string excepted): name the identifier or text.")
+}
