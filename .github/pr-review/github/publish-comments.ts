@@ -46,7 +46,11 @@ export async function replaceInlineComments(
   inline: InlineComment[],
   timing: MutationTiming,
 ): Promise<void> {
-  const old = await listOwnComments(runner, buildRoute(PULL_COMMENTS, settings, [settings.prNumber]), timing)
+  const existingInlineComments = await listOwnComments(
+    runner,
+    buildRoute(PULL_COMMENTS, settings, [settings.prNumber]),
+    timing,
+  )
   if (inline.length > 0) {
     await callApi(
       runner,
@@ -56,7 +60,7 @@ export async function replaceInlineComments(
       timing,
     )
   }
-  await deleteComments(runner, settings, PULL_COMMENT, old, timing)
+  await deleteComments(runner, settings, PULL_COMMENT, existingInlineComments, timing)
 }
 
 export function buildReviewPayload(settings: Settings, inline: InlineComment[]): ReviewPayload {

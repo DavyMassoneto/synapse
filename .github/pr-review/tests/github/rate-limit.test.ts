@@ -32,6 +32,22 @@ describe("GitHub rate limit waits", () => {
     expect(isRateLimited(new CommandError("forbidden", "HTTP/2.0 403 Forbidden\n\n{}"))).toBe(false)
   })
 
+  test("prioritizes Retry-After over the exhausted primary quota reset", () => {
+    const error = new CommandError(
+      "rate limit",
+      "HTTP/2.0 403 Forbidden\nRetry-After: 30\nx-ratelimit-remaining: 0\nx-ratelimit-reset: 200\n\n{}",
+    )
+    expect(rateLimitDelay(error, 1, 80000)).toBe(30000)
+  })
+
+  test("floors the delay at zero when the primary quota reset is in the past", () => {
+    const error = new CommandError(
+      "rate limit",
+      "HTTP/2.0 403 Forbidden\nx-ratelimit-remaining: 0\nx-ratelimit-reset: 50\n\n{}",
+    )
+    expect(rateLimitDelay(error, 1, 80000)).toBe(0)
+  })
+
   test("waits before every serial mutation", async () => {
     const waits: number[] = []
     const runner = emptyRunner

@@ -7,10 +7,14 @@ export const RENAME_TARGET_PREFIX = "rename to "
 export const HUNK_MARKER = "@@"
 export const TIMESTAMP_SUFFIX = /\t.*$/
 export const QUOTED_RENAME_TARGET_PREFIX = 'rename to "'
-export const GIT_PATH_ESCAPES = /\\\\|\\"|\\t|\\n|\\r|(?:\\[0-7]{3})+/g
+export const GIT_PATH_ESCAPES = /\\\\|\\"|\\a|\\b|\\f|\\v|\\t|\\n|\\r|(?:\\[0-7]{3})+/g
 export const GIT_ESCAPE_VALUES: ReadonlyMap<string, string> = new Map([
   ["\\\\", "\\"],
   ['\\"', '"'],
+  ["\\a", "\u0007"],
+  ["\\b", "\b"],
+  ["\\f", "\f"],
+  ["\\v", "\v"],
   ["\\t", "\t"],
   ["\\n", "\n"],
   ["\\r", "\r"],

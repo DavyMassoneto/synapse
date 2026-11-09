@@ -13,5 +13,4 @@ export const SETTINGS_FIELDS: ReadonlyMap<string, string> = new Map([
   ["/baseSha", ENV_BASE_SHA],
   ["/headSha", ENV_HEAD_SHA],
 ])
-export const INVALID_FIELD_SEPARATOR = ", "
 export const MISSING_ENV = "Variável de ambiente ausente: "

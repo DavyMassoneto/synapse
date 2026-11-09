@@ -1,4 +1,5 @@
 import { ParseError, Value } from "typebox/value"
+import { LIST_SEPARATOR } from "#synapse/separators"
 import {
   ENV_API_KEY,
   ENV_BASE_SHA,
@@ -9,7 +10,6 @@ import {
   ENV_PR_NUMBER,
   ENV_PR_TITLE,
   ENV_REPO,
-  INVALID_FIELD_SEPARATOR,
   INVALID_SETTINGS,
   MISSING_ENV,
   SETTINGS_FIELDS,
@@ -36,7 +36,7 @@ export function loadSettings(): Settings {
       throw error
     }
     const fields = error.cause.errors.map((failure) => SETTINGS_FIELDS.get(failure.instancePath))
-    throw new Error(INVALID_SETTINGS + fields.join(INVALID_FIELD_SEPARATOR), { cause: error })
+    throw new Error(INVALID_SETTINGS + fields.join(LIST_SEPARATOR), { cause: error })
   }
 }
 

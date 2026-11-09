@@ -6,6 +6,10 @@ test("preserves escaped literal backslashes before escape-like suffixes", () => 
   expect(decodeGitPath(String.raw`"a\\303.ts"`)).toBe(String.raw`a\303.ts`)
 })
 
+test("decodes quoted Git paths containing alert, backspace, form feed and vertical tab escapes", () => {
+  expect(decodeGitPath(String.raw`"b/a\ab\bc\fd\ve.txt"`)).toBe("b/a\u0007b\bc\fd\ve.txt")
+})
+
 describe("diff path regressions", () => {
   test("decodes quoted rename targets and UTF-8 octal escapes", () => {
     const diff =

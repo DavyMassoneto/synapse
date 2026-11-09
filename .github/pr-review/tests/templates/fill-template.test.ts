@@ -2,8 +2,11 @@ import { describe, expect, test } from "vitest"
 import { fillTemplate } from "#synapse/templates"
 
 describe("fillTemplate", () => {
-  test("fills the placeholders in order", () => {
+  test("preserves text without placeholders", () => {
     expect(fillTemplate("texto", [])).toBe("texto")
+  })
+
+  test("fills the placeholders in order", () => {
     expect(fillTemplate("a {} b {} c", ["1", "2"])).toBe("a 1 b 2 c")
   })
 
