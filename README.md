@@ -4,6 +4,7 @@ Synapse é um monólito modular de capacidades para o [pi](https://github.com/ba
 
 ## Capacidades
 
+- **Advisor:** consulta um modelo revisor e lembra o agente de consultá-lo. Veja [configuração](src/modules/advisor/README.md).
 - **Memória:** observações do histórico (Observational Memory), consolidação em um vault Markdown e recuperação de conhecimento com proveniência. O núcleo independe do host.
 - **pi-web:** interface para apresentar e operar o runtime do host pi.
 - **Navegador:** operações de navegação, ações e verificação de resultados.
@@ -12,9 +13,11 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 
 ## Estado do projeto
 
-O repositório contém documentação, sem código de produto, manifesto, toolchain ou testes. As capacidades descritas são contratos de construção, não funcionalidades disponíveis. Ainda não existem comandos de instalação, execução, build ou teste.
+O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. A integração foi verificada com pi 1.5.0. Instale localmente com `pi install ./` e não carregue outra extensão advisor simultaneamente.
 
-A primeira base precisa definir runtime, versão suportada do pi e ferramentas de desenvolvimento.
+## Desenvolvimento
+
+O desenvolvimento foi verificado com Node.js 24. Execute `npm ci` para instalar as dependências e `npm run validate` para executar Biome, verificação de tipos, build e testes Vitest. `npm run format` aplica as correções seguras do Biome. `npm run build` compila CommonJS e seu manifesto em `dist/`, preservando os imports de diretório para carregamento pelo Pi.
 
 ## Documentação
 
