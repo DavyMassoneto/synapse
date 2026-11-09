@@ -1,0 +1,9 @@
+language js
+
+or {
+  TsAsExpression(),
+  TsTypeAssertionExpression(),
+  TsSatisfiesExpression()
+} as $assertion where {
+  register_diagnostic(span=$assertion, message="Type assertions, casts, as const and satisfies are forbidden: give the value its type at the source or validate it at the boundary.")
+}

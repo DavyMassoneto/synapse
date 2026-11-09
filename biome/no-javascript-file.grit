@@ -1,0 +1,17 @@
+language js
+
+or {
+  JsImport(),
+  JsExport(),
+  JsVariableStatement(),
+  JsFunctionDeclaration(),
+  JsClassDeclaration(),
+  JsExpressionStatement()
+} as $statement where {
+  $statement <: not within or {
+    JsFunctionBody(),
+    JsBlockStatement(),
+    JsClassDeclaration()
+  },
+  register_diagnostic(span=$statement, message="Source code is TypeScript: rename the file to .ts.")
+}

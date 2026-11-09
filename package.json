@@ -1,0 +1,12 @@
+{
+  "name": "synapse",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "format": "biome check --write .",
+    "lint": "biome ci ."
+  },
+  "devDependencies": {
+    "@biomejs/biome": "2.6.6"
+  }
+}

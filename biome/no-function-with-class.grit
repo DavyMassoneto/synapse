@@ -1,0 +1,7 @@
+language js
+
+JsClassDeclaration(id=$name) as $class where {
+  $class <: within JsModule() as $module,
+  $module <: contains JsFunctionDeclaration(),
+  register_diagnostic(span=$name, message="A function does not share a file with a class: give the function its own file.")
+}

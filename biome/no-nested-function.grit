@@ -1,0 +1,12 @@
+language js
+
+or {
+  JsFunctionDeclaration(id=$name),
+  JsVariableDeclarator(id=$name, initializer=JsInitializerClause(expression=or {
+    JsArrowFunctionExpression(),
+    JsFunctionExpression()
+  }))
+} as $nested where {
+  $nested <: within JsFunctionBody(),
+  register_diagnostic(span=$name, message="Functions inside functions are forbidden: move it to its own top-level function.")
+}

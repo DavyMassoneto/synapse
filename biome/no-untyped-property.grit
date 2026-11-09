@@ -1,0 +1,5 @@
+language js
+
+JsPropertyClassMember(name=$name, property_annotation=., value=.) where {
+  register_diagnostic(span=$name, message="A class property without a type and without a value is implicitly any: declare its type.")
+}

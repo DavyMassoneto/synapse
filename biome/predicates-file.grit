@@ -1,0 +1,6 @@
+language js
+
+JsFunctionDeclaration(id=$name) where {
+  $name <: r"(?:is|has)[A-Z]\w*",
+  register_diagnostic(span=$name, message="Predicates belong in the module predicates.ts, apart from logic.")
+}

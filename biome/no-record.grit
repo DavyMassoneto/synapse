@@ -1,0 +1,5 @@
+language js
+
+TsReferenceType(name=`Record`) as $type where {
+  register_diagnostic(span=$type, message="Record is forbidden: declare an interface with the known properties in types.ts.")
+}

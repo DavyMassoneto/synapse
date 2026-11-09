@@ -1,0 +1,21 @@
+language js
+
+or {
+  JsImport() as $item,
+  JsExport() as $item where {
+    $item <: not or {
+      r"export \* from .\./[^/]+.",
+      r"export \{ default as \w+ \} from .\./[^/]+."
+    }
+  },
+  or {
+    JsVariableStatement(),
+    JsFunctionDeclaration(),
+    JsClassDeclaration(),
+    TsInterfaceDeclaration(),
+    TsTypeAliasDeclaration(),
+    JsExpressionStatement()
+  } as $item where { $item <: not within JsExport() }
+} where {
+  register_diagnostic(span=$item, message="index.ts only re-exports, with export * from ./file or export { default as Name } from ./file.")
+}

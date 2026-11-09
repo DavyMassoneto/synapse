@@ -1,0 +1,5 @@
+language js
+
+TsNonPrimitiveType() as $type where {
+  register_diagnostic(span=$type, message="`object` accepts any non-primitive value: use a concrete type declared in types.ts.")
+}

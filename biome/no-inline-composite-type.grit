@@ -1,0 +1,14 @@
+language js
+
+or {
+  TsUnionType(),
+  TsIntersectionType(),
+  TsTupleType(),
+  TsMappedType(),
+  TsConditionalType(),
+  TsTemplateLiteralType(),
+  TsConstructorType()
+} as $type where {
+  $type <: not within TsTypeAliasDeclaration(),
+  register_diagnostic(span=$type, message="Inline unions, intersections, tuples, mapped, conditional and template types are forbidden: declare a named type in types.ts.")
+}

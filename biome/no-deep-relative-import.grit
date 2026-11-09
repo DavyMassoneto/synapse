@@ -1,0 +1,9 @@
+language js
+
+JsModuleSource() as $source where {
+  $source <: or {
+    r".\.\./\.\./.*",
+    r".\.{1,2}/[^/]+/.+"
+  },
+  register_diagnostic(span=$source, message="Relative imports reach a file in the same folder (./types) or a neighbor or child folder (../command, ./command). ../../ and files inside another folder are forbidden: import the highest barrel through the alias.")
+}

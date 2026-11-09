@@ -1,0 +1,9 @@
+language js
+
+or {
+  JsFormalParameter(type_annotation=.),
+  JsRestParameter(type_annotation=.)
+} as $parameter where {
+  $parameter <: not within JsCallArguments(),
+  register_diagnostic(span=$parameter, message="Parameters declare their type: without an annotation TypeScript infers any. Only callbacks passed as arguments get their type from the call.")
+}
