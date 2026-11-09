@@ -1,0 +1,9 @@
+language js
+
+JsFunctionDeclaration(id=$name, return_type_annotation=TsReturnTypeAnnotation(ty=or {
+  TsBooleanType(),
+  TsPredicateReturnType()
+})) where {
+  $name <: not r"(?:is|has)[A-Z]\w*",
+  register_diagnostic(span=$name, message="A predicate (a function that returns a boolean) is named isX or hasX.")
+}

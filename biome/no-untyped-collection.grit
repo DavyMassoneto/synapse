@@ -1,0 +1,17 @@
+language js
+
+or {
+  `new Map()`,
+  `new Set()`,
+  `new WeakMap()`,
+  `new WeakSet()`,
+  `new Array()`,
+  `new Promise($executor)`
+} as $creation where {
+  $creation <: within JsInitializerClause(),
+  $creation <: not within or {
+    JsVariableDeclarator(variable_annotation=TsTypeAnnotation()),
+    JsPropertyClassMember(property_annotation=TsTypeAnnotation())
+  },
+  register_diagnostic(span=$creation, message="Collections and promises created without type arguments are inferred as any or unknown: pass the type arguments (new Map<NoteId, Note>()) or annotate the declaration.")
+}

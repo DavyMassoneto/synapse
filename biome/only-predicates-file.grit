@@ -1,0 +1,6 @@
+language js
+
+JsFunctionDeclaration(id=$name) where {
+  $name <: not r"(?:is|has)[A-Z]\w*",
+  register_diagnostic(span=$name, message="predicates.ts only holds predicates (isX, hasX): move the logic to its own file.")
+}

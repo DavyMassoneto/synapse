@@ -1,0 +1,18 @@
+language js
+
+pattern open_key() {
+  contains or {
+    TsStringType(),
+    TsNumberType(),
+    TsSymbolType(),
+    TsReferenceType(name=`PropertyKey`)
+  }
+}
+
+or {
+  TsIndexSignatureTypeMember(),
+  TsIndexSignatureClassMember(),
+  TsMappedType(keys_type=$keys) where { $keys <: open_key() }
+} as $signature where {
+  register_diagnostic(span=$signature, message="Open keys are forbidden (index signatures, { [K in string]: T }): declare an interface with the known properties in types.ts.")
+}

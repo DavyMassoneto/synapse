@@ -1,0 +1,6 @@
+language js
+
+JsModuleSource() as $source where {
+  $source <: r".*\.(?:[cm]?[jt]sx?).",
+  register_diagnostic(span=$source, message="Imports have no file extension: import ./types, not ./types.ts.")
+}

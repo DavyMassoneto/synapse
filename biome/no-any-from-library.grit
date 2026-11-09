@@ -1,0 +1,9 @@
+language js
+
+or {
+  `JSON.parse($text)`,
+  `$response.json()`
+} as $call where {
+  $call <: not within JsCallArguments(),
+  register_diagnostic(span=$call, message="JSON.parse and .json() return any: pass the result straight to the validator that gives it a type.")
+}
