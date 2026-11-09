@@ -14,11 +14,8 @@ function cleanup(): void {
 }
 
 async function chooseModel(): Promise<void> {
-  if (!host.command) {
-    throw new Error("comando ausente")
-  }
   context.ui.selection = "provider/other"
-  await host.command.handler("", context)
+  await host.requireCommand().handler("", context)
   const status = host.advisor.configuration.status()
   expect(status.kind).toBe("success")
   if (status.kind !== "success") {
@@ -28,12 +25,9 @@ async function chooseModel(): Promise<void> {
 }
 
 async function cancelSelection(): Promise<void> {
-  if (!host.command) {
-    throw new Error("comando ausente")
-  }
   host.advisor.configuration.selectModel("provider/other")
   delete context.ui.selection
-  await host.command.handler("", context)
+  await host.requireCommand().handler("", context)
   const status = host.advisor.configuration.status()
   expect(status.kind).toBe("success")
   if (status.kind !== "success") {
@@ -43,11 +37,8 @@ async function cancelSelection(): Promise<void> {
 }
 
 async function disableAdvisor(): Promise<void> {
-  if (!host.command) {
-    throw new Error("comando ausente")
-  }
   context.ui.selection = "(sem advisor)"
-  await host.command.handler("", context)
+  await host.requireCommand().handler("", context)
   const status = host.advisor.configuration.status()
   expect(status.kind).toBe("success")
   if (status.kind !== "success") {

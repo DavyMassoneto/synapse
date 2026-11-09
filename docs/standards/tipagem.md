@@ -32,3 +32,15 @@
 ## 6. Supressões
 
 - `@ts-ignore` é proibido.
+
+## 7. Ausência de valor
+
+- `| undefined` e o tipo `undefined` são proibidos em anotações. Propriedade e parâmetro opcionais usam `?`.
+- Função sem resultado declara `void`, nunca `undefined`.
+- Tipo de uma biblioteca que inclui `undefined` é derivado (`Parameters<...>`, `ReturnType<...>`) em vez de reescrito.
+- Resultado que pode vir sem dado é uma união discriminada por `kind`, como `success`/`failure`/`cancelled`. A ausência é verificada pelo discriminante, conforme [Legibilidade](legibilidade.md).
+
+## 8. Interfaces
+
+- Interface vazia não existe. Uma interface declara membros próprios.
+- Composição de contratos é um `type` com interseção (`type A = B & C`), não uma interface sem corpo.

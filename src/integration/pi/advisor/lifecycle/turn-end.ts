@@ -8,8 +8,7 @@ export function turnEnd(advisor: Advisor, event: TurnEndEvent): TurnEndOutcome {
     completed: event.outcome === "completed",
     usedTools: event.toolResults.length > 0,
   })
-  if (!reminder) {
-    return undefined
+  if (reminder.kind === "due") {
+    return { entries: [...event.entries, reminderEntry(reminder.text)] }
   }
-  return { entries: [...event.entries, reminderEntry(reminder)] }
 }

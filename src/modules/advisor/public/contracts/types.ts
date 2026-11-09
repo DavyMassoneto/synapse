@@ -5,6 +5,10 @@ export interface Config {
   thinking: ThinkingLevel
 }
 
+export interface ConfiguredConfig extends Config {
+  model: string
+}
+
 export interface AdvisorConfigOperations {
   status(): AdvisorResult
   selectModel(model: string): AdvisorResult
@@ -146,23 +150,37 @@ export interface Usage {
   cost: UsageCost
 }
 
-export interface ModelReference {
+export interface ValidReference {
+  kind: "valid"
   provider: string
   id: string
 }
 
-export type ParsedReference = ModelReference | undefined
+export interface InvalidReference {
+  kind: "invalid"
+}
+
+export type ParsedReference = ValidReference | InvalidReference
 
 export interface Advisor {
   readonly configuration: AdvisorConfigOperations
   isEnabled(status: AdvisorResult): boolean
   readonly reminder: ReminderControl
   consultationInstructions: string
-  turn(event: ReminderTurn): ReminderText
+  turn(event: ReminderTurn): ReminderDecision
   consult(input: Consultation, model: ModelPort): Promise<ConsultationResult>
 }
 
-export type ReminderText = string | undefined
+export interface ReminderDue {
+  kind: "due"
+  text: string
+}
+
+export interface ReminderIdle {
+  kind: "idle"
+}
+
+export type ReminderDecision = ReminderDue | ReminderIdle
 
 export interface ReminderControl {
   reset(): void

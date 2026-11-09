@@ -4,10 +4,10 @@ import { type ConfigLoadResult, type StoredConfig } from "./types"
 
 function storedConfiguration(stored: StoredConfig): Config {
   const config: Config = { thinking: DEFAULT_THINKING }
-  if (stored.thinking !== undefined) {
+  if (typeof stored.thinking === "string") {
     config.thinking = stored.thinking
   }
-  if (stored.model) {
+  if (typeof stored.model === "string" && stored.model !== "") {
     config.model = stored.model
   }
   return config

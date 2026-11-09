@@ -1,20 +1,19 @@
 import {
   type Config,
+  type ConfiguredConfig,
   type Consultation,
   type ConsultationResult,
+  hasModel,
   type ModelPort,
 } from "#synapse/modules/advisor/public/contracts"
 import { CONSULTATION_DIAGNOSTICS } from "./constants"
 import { consultResolved } from "./consult-resolved"
 
-export async function consultAdvisor(
+async function consultConfigured(
   input: Consultation,
   model: ModelPort,
-  config: Config,
+  config: ConfiguredConfig,
 ): Promise<ConsultationResult> {
-  if (!config.model) {
-    return { kind: "failure", message: CONSULTATION_DIAGNOSTICS.noModel }
-  }
   try {
     const resolved = await model.resolve(config.model, config.thinking, input.signal)
     return await consultResolved(input, model, resolved)
@@ -28,4 +27,15 @@ export async function consultAdvisor(
     }
     return { kind: "failure", message }
   }
+}
+
+export async function consultAdvisor(
+  input: Consultation,
+  model: ModelPort,
+  config: Config,
+): Promise<ConsultationResult> {
+  if (hasModel(config)) {
+    return consultConfigured(input, model, config)
+  }
+  return { kind: "failure", message: CONSULTATION_DIAGNOSTICS.noModel }
 }

@@ -13,10 +13,7 @@ function cleanup(): void {
 }
 
 async function successfulConsultation(): Promise<void> {
-  if (!host.tool) {
-    throw new Error("ferramenta ausente")
-  }
-  const result = await host.tool.execute("id", {}, undefined, undefined, context)
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toBeTruthy()
   expect(result.usage).toStrictEqual(TEST_USAGE)
   expect(result.details?.model).toBe("provider/model")
@@ -24,19 +21,13 @@ async function successfulConsultation(): Promise<void> {
 
 async function abortedProvider(): Promise<void> {
   context.modelRegistry.stopReason = "aborted"
-  if (!host.tool) {
-    throw new Error("ferramenta ausente")
-  }
-  const result = await host.tool.execute("id", {}, undefined, undefined, context)
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toMatch(/cancelada/)
 }
 
 async function projectionFailure(): Promise<void> {
   context.sessionManager.projectionError = true
-  if (!host.tool) {
-    throw new Error("ferramenta ausente")
-  }
-  const result = await host.tool.execute("id", {}, undefined, undefined, context)
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toMatch(/projection failed/)
   expect(context.modelRegistry.calls).toBe(0)
 }
@@ -45,10 +36,7 @@ async function registeredShutdown(): Promise<void> {
   for (const handler of host.shutdowns) {
     await handler({ type: "session_shutdown", reason: "quit" }, context)
   }
-  if (!host.tool) {
-    throw new Error("ferramenta ausente")
-  }
-  const result = await host.tool.execute("id", {}, undefined, undefined, context)
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toMatch(/cancelada/)
   expect(context.modelRegistry.calls).toBe(0)
 }

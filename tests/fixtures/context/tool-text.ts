@@ -1,9 +1,9 @@
 import { type AdvisorToolOutput } from "#synapse/integration"
 
 export function toolText(result: AdvisorToolOutput): string {
-  const content = result.content[0]
-  if (content === undefined || content.type !== "text") {
-    throw new Error("conteúdo não textual")
+  const [content] = result.content
+  if (content?.type === "text") {
+    return content.text
   }
-  return content.text
+  throw new Error("conteúdo não textual")
 }

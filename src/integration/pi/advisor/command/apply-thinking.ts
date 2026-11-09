@@ -1,6 +1,7 @@
 import { type Advisor } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
-import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
+import { type AdvisorToolActivation } from "../lifecycle"
+import { reportResult } from "./report-result"
 
 export function applyThinking(
   pi: AdvisorToolActivation,
@@ -8,11 +9,5 @@ export function applyThinking(
   context: AdvisorContext,
   level: string,
 ): void {
-  const result = advisor.configuration.setThinking(level)
-  if (result.kind === "failure") {
-    context.ui.notify(result.message, "error")
-    return
-  }
-  syncAdvisor(pi, advisor, context)
-  context.ui.notify(`Advisor thinking: ${level}`, "info")
+  reportResult(pi, advisor, context, advisor.configuration.setThinking(level), `Advisor thinking: ${level}`)
 }

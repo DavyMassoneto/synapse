@@ -9,7 +9,7 @@ export function beforeStart(
   advisor: Advisor,
   event: BeforeAgentStartEvent,
   context: AdvisorContext,
-): undefined {
+): void {
   syncAdvisor(pi, advisor, context)
   if (advisor.isEnabled(advisor.configuration.status())) {
     event.systemPromptOptions.sections.advisor = advisor.consultationInstructions

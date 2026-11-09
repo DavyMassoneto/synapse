@@ -27,7 +27,12 @@
     "./biome/no-fallback.grit",
     "./biome/no-default-values.grit",
     "./biome/predicate-naming.grit",
-    "./biome/no-any-from-library.grit"
+    "./biome/no-any-from-library.grit",
+    "./biome/no-empty-return.grit",
+    "./biome/no-return-undefined.grit",
+    "./biome/no-undefined-type.grit",
+    "./biome/no-undefined-comparison.grit",
+    "./biome/no-empty-interface.grit"
   ],
   "formatter": {
     "enabled": true,

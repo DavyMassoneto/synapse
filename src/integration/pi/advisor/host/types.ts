@@ -17,6 +17,4 @@ export interface AdvisorContext extends AdvisorContextBase {
   sessionManager: AdvisorSession
 }
 
-export type OptionalModel = string | undefined
-
 export type TextBlocks = Array<ImageContent | AssistantMessage["content"][number]>

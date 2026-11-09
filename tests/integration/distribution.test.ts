@@ -1,56 +1,29 @@
-import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
-import { tmpdir } from "node:os"
+import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { CASES, type ConfigCase, type OptionalText, runDistribution } from "../fixtures"
+import { CASES, type ConfigCase, DistributionEnvironment, runDistribution } from "../fixtures"
 
-let home: OptionalText
-let previousHome: OptionalText
-let previousProfile: OptionalText
+let environment: DistributionEnvironment
 
 function prepare(): void {
-  previousHome = process.env.HOME
-  previousProfile = process.env.USERPROFILE
-  home = mkdtempSync(join(tmpdir(), "synapse-config-"))
-  mkdirSync(join(home, ".pi", "agent"), { recursive: true })
-  process.env.HOME = home
-  process.env.USERPROFILE = home
+  environment = new DistributionEnvironment()
 }
 
 function cleanup(): void {
-  try {
-    if (previousHome === undefined) {
-      delete process.env.HOME
-    } else {
-      process.env.HOME = previousHome
-    }
-    if (previousProfile === undefined) {
-      delete process.env.USERPROFILE
-    } else {
-      process.env.USERPROFILE = previousProfile
-    }
-  } finally {
-    if (home !== undefined) {
-      rmSync(home, { recursive: true, force: true })
-      home = undefined
-    }
-  }
+  environment.restore()
 }
 
 async function verifyDistribution(example: ConfigCase): Promise<void> {
-  if (home === undefined) {
-    throw new Error("diretório de teste ausente")
-  }
-  const file = join(home, ".pi", "agent", "advisor.json")
-  if (example.content !== undefined) {
+  const file = join(environment.home, ".pi", "agent", "advisor.json")
+  if (typeof example.content === "string") {
     writeFileSync(file, example.content)
   }
-  const result = await runDistribution(home)
+  const result = await runDistribution(environment.home)
   expect(result.notices.join("\n")).toMatch(example.expected)
-  if (example.content === undefined) {
-    expect(existsSync(file)).toBe(false)
-  } else {
+  if (typeof example.content === "string") {
     expect(readFileSync(file, "utf8")).toBe(example.content)
+  } else {
+    expect(existsSync(file)).toBe(false)
   }
   if (example.invalid) {
     expect(result.lookups).toBe(0)

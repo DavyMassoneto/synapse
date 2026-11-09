@@ -1,5 +1,4 @@
 export * from "./before-start"
-export * from "./configured-model"
 export * from "./constants"
 export * from "./register-events"
 export * from "./reminder-entry"

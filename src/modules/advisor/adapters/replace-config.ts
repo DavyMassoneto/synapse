@@ -1,8 +1,7 @@
 import { randomUUID } from "node:crypto"
-import { mkdirSync, renameSync, writeFileSync } from "node:fs"
+import { mkdirSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { dirname } from "node:path"
 import { type Config } from "#synapse/modules/advisor/public/contracts"
-import { removeTemporaryIfPossible } from "./cleanup-temporary"
 
 export function replaceConfig(path: string, config: Config): void {
   mkdirSync(dirname(path), { recursive: true })
@@ -11,7 +10,7 @@ export function replaceConfig(path: string, config: Config): void {
     writeFileSync(temporary, `${JSON.stringify(config, null, 2)}\n`, { flag: "wx" })
     renameSync(temporary, path)
   } catch (error) {
-    removeTemporaryIfPossible(temporary)
+    rmSync(temporary, { force: true })
     throw error
   }
 }

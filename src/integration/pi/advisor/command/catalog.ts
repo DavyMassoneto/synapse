@@ -1,4 +1,3 @@
-import { type SessionStartEvent } from "@earendil-works/pi-coding-agent"
 import { type AutocompleteItem } from "@earendil-works/pi-tui"
 import { type AdvisorContext } from "../host"
 import { modelReferences } from "../model-picker"
@@ -7,7 +6,7 @@ import { COMPLETION_LIMIT, DISABLE_COMMAND, THINKING_COMMAND } from "./constants
 export class ModelCatalog {
   private models: string[] = []
 
-  refresh(_event: SessionStartEvent, context: AdvisorContext): void {
+  refresh(context: AdvisorContext): void {
     this.models = modelReferences(context)
   }
 

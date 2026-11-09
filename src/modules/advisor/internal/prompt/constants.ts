@@ -37,6 +37,10 @@ export const CONTENT_LIMITS: number[] = [
 
 export const NO_BUDGET = 0
 
+export const PROMPT_DIAGNOSTICS = {
+  windowTooSmall: "A janela do advisor é pequena demais para a consulta.",
+}
+
 export const HEAD_FRACTION = 0.6
 
 export const SEPARATOR = "\n\n"

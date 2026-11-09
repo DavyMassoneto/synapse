@@ -3,7 +3,7 @@ import { type AdvisorContext } from "../host"
 import { TOOL_TEXT } from "./constants"
 import { consultTool } from "./consult"
 import { toolFailure } from "./failure"
-import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolUpdate, type OptionalSignal } from "./types"
+import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
 
 export class AdvisorToolHandler {
   private readonly advisor: Advisor
@@ -17,12 +17,12 @@ export class AdvisorToolHandler {
   async execute(
     _id: string,
     _params: AdvisorToolInput,
-    signal: OptionalSignal,
+    signal: AdvisorToolSignal,
     onUpdate: AdvisorToolUpdate,
     context: AdvisorContext,
   ): AdvisorToolResult {
     let callSignal = this.lifetime
-    if (signal) {
+    if (signal instanceof AbortSignal) {
       callSignal = AbortSignal.any([signal, this.lifetime])
     }
     if (callSignal.aborted) {

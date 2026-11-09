@@ -9,7 +9,7 @@ import {
   type AdvisorTurnEndHandler,
   type Unsubscribe,
 } from "#synapse/integration"
-import { type AdvisorEventRegistration } from "./host-types"
+import { type AdvisorEventRegistration, type CommandCompletions } from "./host-types"
 
 export class AdvisorHostCollector implements AdvisorHost {
   readonly starts: AdvisorSessionStartHandler[] = []
@@ -17,9 +17,9 @@ export class AdvisorHostCollector implements AdvisorHost {
   readonly beforeStarts: AdvisorBeforeStartHandler[] = []
   readonly toolResults: AdvisorToolResultHandler[] = []
   readonly turns: AdvisorTurnEndHandler[] = []
-  tool?: AdvisorTool
-  command?: AdvisorCommandDefinition
   active: string[] = []
+  private tool?: AdvisorTool
+  private command?: AdvisorCommandDefinition
 
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe
@@ -48,6 +48,29 @@ export class AdvisorHostCollector implements AdvisorHost {
   }
 
   unsubscribe(): void {}
+
+  requireTool(): AdvisorTool {
+    if (typeof this.tool === "object") {
+      return this.tool
+    }
+    throw new Error("ferramenta ausente")
+  }
+
+  requireCommand(): AdvisorCommandDefinition {
+    if (typeof this.command === "object") {
+      return this.command
+    }
+    throw new Error("comando ausente")
+  }
+
+  requireCompletions(): CommandCompletions {
+    const command = this.requireCommand()
+    if (typeof command.getArgumentCompletions === "function") {
+      return command.getArgumentCompletions
+    }
+    throw new Error("autocomplete ausente")
+  }
+
   registerTool(tool: AdvisorTool): void {
     this.tool = tool
   }

@@ -4,7 +4,6 @@ import {
   type ModelPort,
   type ResolvedModel,
 } from "#synapse/modules/advisor/public/contracts"
-import { CONSULTATION_DIAGNOSTICS } from "./constants"
 import { ADVISOR_SYSTEM, preparePrompt } from "./prompt"
 
 export async function consultResolved(
@@ -16,12 +15,12 @@ export async function consultResolved(
     return { kind: "cancelled" }
   }
   const prompt = preparePrompt(input, resolved)
-  if (prompt === undefined) {
-    return { kind: "failure", message: CONSULTATION_DIAGNOSTICS.windowTooSmall }
+  if (prompt.kind === "failure") {
+    return prompt
   }
   const response = await model.consult(resolved, {
     system: ADVISOR_SYSTEM,
-    prompt,
+    prompt: prompt.text,
     signal: input.signal,
   })
   if (input.signal.aborted || response.kind === "cancelled") {

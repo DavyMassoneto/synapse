@@ -41,3 +41,28 @@
 
 - No TypeScript não se usa o `!` (não-nulo). Um helper que lança erro com mensagem ocupa o lugar dele.
 - Nos testes Rust não se usa `.unwrap()`. Usa-se `.expect("mensagem")`, e a mensagem diz o que faltou.
+
+## 8. Return vazio
+
+- `return` sem valor é proibido. Estruture o fluxo com `if`/`else`, `switch` ou funções menores, de modo que o fim da função seja o fim natural do fluxo.
+- Um `else` que existe só para sair da função (`else { return }`) é proibido.
+- Função sem resultado não tem `return` e declara `void`.
+- `return undefined` é proibido: se não há valor, a função não retorna nada. Um retorno que ninguém usa é ruído.
+
+## 9. Ausência de valor e validação positiva
+
+- Nunca se valida um dado comparando-o com `undefined` ou `null` (`=== undefined`, `!== undefined`, `== null`, `typeof x === "undefined"`). Isso trata uma única forma de "vazio" e deixa passar `null`, `0`, `""` e qualquer outro tipo de dado.
+- Sempre se valida o dado POSITIVO, isto é, que ele é o dado esperado: `typeof x === "string"`, `Array.isArray(x)`, `instanceof`, o discriminante `kind` de uma união ou um predicado `isX`/`hasX`.
+- Exceção: o `undefined` que a API de uma biblioteca exige como argumento (por exemplo, `setStatus(chave, undefined)` para limpar um status) não é validação.
+- Asserções do Vitest (`toBeUndefined`) verificam o resultado de um teste e não se aplicam a esta regra.
+- Resultado que pode vir sem dado é uma união discriminada por `kind`, não um valor que às vezes é `undefined`.
+
+## 10. Parâmetros e retornos sem uso
+
+- Parâmetro que a função não usa é removido. Só permanece quando a assinatura é imposta pelo host ou pela biblioteca, e o nome começa com `_`.
+- Valor retornado que nenhum chamador usa não é retornado.
+
+## 11. Função que precisa de explicação
+
+- Se o revisor precisa perguntar por que uma função existe ou o que ela faz, o nome ou a estrutura não está claro: renomeie ou simplifique até a resposta estar no código.
+- Laço manual que reimplementa uma operação conhecida (remover itens, filtrar, procurar) é substituído pela operação (`filter`, `find`, `includes`).

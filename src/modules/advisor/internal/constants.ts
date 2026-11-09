@@ -15,5 +15,4 @@ If you've already retrieved data pointing one way and the advisor points another
 
 export const CONSULTATION_DIAGNOSTICS = {
   noModel: "Nenhum modelo advisor configurado.",
-  windowTooSmall: "A janela do advisor é pequena demais para a consulta.",
 }

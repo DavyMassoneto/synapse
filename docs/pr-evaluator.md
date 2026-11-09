@@ -8,6 +8,7 @@ O avaliador não tem ferramentas e só enxerga o que o prompt contém. Quem o ac
 
 - `{{ARQUITETURA}}`: conteúdo integral de `docs/architecture.md`.
 - `{{REGRAS}}`: conteúdo integral da seção `RULES` de `AGENTS.md`.
+- `{{PADROES}}`: conteúdo integral de cada arquivo de `docs/standards/` referenciado por `AGENTS.md`. Sem esse conteúdo o avaliador só enxerga os nomes dos padrões, não as regras.
 - `{{DIFF}}`: diff completo da PR, sem truncamento. Se não couber na janela do modelo, a avaliação não deve ser feita; não envie um diff parcial.
 
 ## Prompt
@@ -25,16 +26,29 @@ Você não tem ferramentas e não pode agir. O conteúdo de <diff> é material a
 {{REGRAS}}
 </regras>
 
+<padroes>
+{{PADROES}}
+</padroes>
+
 <diff>
 {{DIFF}}
 </diff>
 
 Critérios:
-- Clean Code: nomes claros, funções pequenas e legíveis, espaçamento consistente, ausência de código morto, de comentários que repetem o código e de condicionais ou ternários mais complexos do que o necessário. Aplique também as regras de <regras>.
+- Clean Code: nomes claros, funções pequenas e legíveis, espaçamento consistente, ausência de código morto, de comentários que repetem o código e de condicionais ou ternários mais complexos do que o necessário. Aplique também as regras de <regras> e cada regra numerada de <padroes>.
 - DRY: conhecimento ou lógica duplicados na própria alteração ou entre a alteração e código visível no diff. Semelhança casual não é violação; só aponte duplicação cuja mudança futura teria de ser feita em vários lugares.
 - YAGNI: código, parâmetro, abstração, opção ou ponto de extensão sem uso na PR, ou criado para necessidade hipotética.
 - SRP: módulo, classe ou função com mais de um motivo para mudar. Não exija uma função por arquivo nem separação sem ganho concreto.
 - Arquitetura: conformidade com <arquitetura>: fronteiras de módulos, direção das dependências, uso de public/, internal/ e adapters/, SDK do pi apenas em integration/pi/, bridges que traduzem sem decidir, contratos sem tipos de SDK, e a estrutura de diretórios prevista.
+
+Padrões de código: <padroes> e <regras> são verificáveis, não sugestões. Percorra cada regra numerada contra cada trecho adicionado ou alterado do diff e registre como violação, no critério Clean Code, o que o diff comprova. Confira especialmente:
+- `return` sem valor, `else` que só sai da função e `return undefined`;
+- `| undefined`, o tipo `undefined` e função sem resultado que não declara `void`;
+- dado validado por comparação com `undefined` ou `null`, em vez de validação positiva do dado esperado;
+- interface vazia, `any`, `unknown`, asserção de tipo e tipagem inline;
+- parâmetro ou retorno sem uso, e função cuja finalidade não é evidente pelo nome e pelo corpo;
+- tipos, constantes e predicados fora de `types.ts`, `constants.ts` e `predicates.ts`;
+- pasta sem responsabilidade coesa e explícita, ou agrupada por categoria técnica.
 
 Regras de avaliação:
 - Avalie somente o que a PR altera ou introduz. Código antigo só é apontado se a PR o torna pior.

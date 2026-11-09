@@ -1,13 +1,7 @@
-import { type OptionalModel } from "../host"
 import { ADDITIONAL_COLOR, PREVIEW_LINES, RENDER_TEXT, SUCCESS_COLOR } from "./constants"
 import { type AdvisorRenderTheme } from "./types"
 
-export function renderPreview(
-  body: string,
-  model: OptionalModel,
-  expanded: boolean,
-  theme: AdvisorRenderTheme,
-): string {
+export function renderPreview(body: string, expanded: boolean, theme: AdvisorRenderTheme, model?: string): string {
   const lines = body.split("\n")
   let shown = lines
   if (!expanded) {
@@ -19,7 +13,7 @@ export function renderPreview(
     suffix = `\n${theme.fg(ADDITIONAL_COLOR, `... (${remaining} linhas a mais)`)}`
   }
   let title = RENDER_TEXT.success
-  if (model) {
+  if (typeof model === "string") {
     title = `${title} (${model})`
   }
   return `${theme.fg(SUCCESS_COLOR, title)}\n${shown.join("\n")}${suffix}`

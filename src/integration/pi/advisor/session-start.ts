@@ -8,9 +8,9 @@ export function startAdvisorSession(
   pi: AdvisorToolActivation,
   advisor: Advisor,
   catalog: ModelCatalog,
-  event: SessionStartEvent,
+  _event: SessionStartEvent,
   context: AdvisorContext,
 ): void {
-  catalog.refresh(event, context)
-  sessionStart(pi, advisor, event, context)
+  catalog.refresh(context)
+  sessionStart(pi, advisor, context)
 }

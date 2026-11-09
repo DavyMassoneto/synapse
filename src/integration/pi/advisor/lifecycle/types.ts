@@ -1,11 +1,10 @@
 import {
   type BeforeAgentStartEvent,
-  type BeforeAgentStartEventResult,
   type ExtensionAPI,
+  type ExtensionHandler,
   type SessionShutdownEvent,
   type SessionStartEvent,
   type ToolResultEvent,
-  type ToolResultEventResult,
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent"
@@ -19,26 +18,13 @@ export type AdvisorSessionStartHandler = (event: SessionStartEvent, context: Adv
 
 export type AdvisorShutdownHandler = (event: SessionShutdownEvent, context: AdvisorContext) => void | Promise<void>
 
-export type BeforeStartOutcome = BeforeAgentStartEventResult | undefined
+export type AdvisorBeforeStartHandler = (event: BeforeAgentStartEvent, context: AdvisorContext) => void | Promise<void>
 
-export type AdvisorBeforeStartHandler = (
-  event: BeforeAgentStartEvent,
-  context: AdvisorContext,
-) => BeforeStartOutcome | Promise<BeforeStartOutcome>
+export type AdvisorToolResultHandler = (event: ToolResultEvent, context: AdvisorContext) => void | Promise<void>
 
-export type ToolResultOutcome = ToolResultEventResult | undefined
+export type TurnEndOutcome = ReturnType<ExtensionHandler<TurnEndEvent, TurnEndEventResult>>
 
-export type AdvisorToolResultHandler = (
-  event: ToolResultEvent,
-  context: AdvisorContext,
-) => ToolResultOutcome | Promise<ToolResultOutcome>
-
-export type TurnEndOutcome = TurnEndEventResult | undefined
-
-export type AdvisorTurnEndHandler = (
-  event: TurnEndEvent,
-  context: AdvisorContext,
-) => TurnEndOutcome | Promise<TurnEndOutcome>
+export type AdvisorTurnEndHandler = (event: TurnEndEvent, context: AdvisorContext) => TurnEndOutcome
 
 export interface EventSubscriber {
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
@@ -48,4 +34,4 @@ export interface EventSubscriber {
   on(event: "turn_end", handler: AdvisorTurnEndHandler): Unsubscribe
 }
 
-export interface LifecycleHost extends EventSubscriber, AdvisorToolActivation {}
+export type LifecycleHost = EventSubscriber & AdvisorToolActivation

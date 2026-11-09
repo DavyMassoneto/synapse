@@ -1,4 +1,4 @@
-import { type AdvisorUI, type OptionalModel } from "#synapse/integration"
+import { type AdvisorUI } from "#synapse/integration"
 
 export class TestUI implements AdvisorUI {
   notices: string[] = []
@@ -8,7 +8,7 @@ export class TestUI implements AdvisorUI {
     this.notices.push(message)
   }
 
-  async select(): Promise<OptionalModel> {
+  async select(): ReturnType<AdvisorUI["select"]> {
     return this.selection
   }
 

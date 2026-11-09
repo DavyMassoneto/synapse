@@ -12,6 +12,13 @@ export class TestModel implements ModelPort {
   resolved?: ResolvedModel
   resolvedReference?: string
 
+  requireCaptured(): ModelRequest {
+    if (typeof this.captured === "object") {
+      return this.captured
+    }
+    throw new Error("requisição ausente")
+  }
+
   async resolve(reference: string): Promise<ResolvedModel> {
     this.calls += 1
     this.resolvedReference = reference

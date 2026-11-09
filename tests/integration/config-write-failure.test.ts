@@ -14,20 +14,14 @@ function cleanup(): void {
 }
 
 async function reportsFailure(): Promise<void> {
-  if (!host.command) {
-    throw new Error("comando ausente")
-  }
-  await host.command.handler("thinking high", context)
+  await host.requireCommand().handler("thinking high", context)
   expect(context.ui.notices).toHaveLength(1)
   expect(context.ui.notices[0]).toMatch(/salvar/)
   expect(context.ui.notices[0]).not.toMatch(/Advisor thinking: high/)
 }
 
 async function preservesState(): Promise<void> {
-  if (!host.command) {
-    throw new Error("comando ausente")
-  }
-  await host.command.handler("thinking high", context)
+  await host.requireCommand().handler("thinking high", context)
   const status = host.advisor.configuration.status()
   expect(status.kind).toBe("success")
   if (status.kind !== "success") {

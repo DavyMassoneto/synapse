@@ -1,0 +1,5 @@
+language js
+
+TsUndefinedType() as $type where {
+  register_diagnostic(span=$type, message="The undefined type is forbidden: use an optional property or parameter (?), void for a function with no result, or derive the library type.")
+}

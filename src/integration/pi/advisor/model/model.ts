@@ -5,6 +5,7 @@ import {
   parseModelReference,
   type ResolvedModel,
   type ThinkingLevel,
+  type ValidReference,
 } from "#synapse/modules"
 import { type AdvisorModelRegistry } from "../host"
 import { MODEL_DIAGNOSTICS, REASONING_BUDGETS } from "./constants"
@@ -20,19 +21,21 @@ export class AdvisorModel {
 
   private findModel(reference: string): Model<Api> {
     const parsed = parseModelReference(reference)
-    if (!parsed) {
-      throw new Error(MODEL_DIAGNOSTICS.invalidReference)
+    if (parsed.kind === "valid") {
+      return this.authorizedModel(parsed, reference)
     }
+    throw new Error(MODEL_DIAGNOSTICS.invalidReference)
+  }
 
+  private authorizedModel(parsed: ValidReference, reference: string): Model<Api> {
     const model = this.registry.find(parsed.provider, parsed.id)
-    if (!model) {
-      throw new Error(`Modelo advisor não encontrado: ${reference}`)
-    }
-    if (!this.registry.hasConfiguredAuth(model)) {
+    if (typeof model === "object") {
+      if (this.registry.hasConfiguredAuth(model)) {
+        return model
+      }
       throw new Error(`Credenciais ausentes para ${reference}`)
     }
-
-    return model
+    throw new Error(`Modelo advisor não encontrado: ${reference}`)
   }
 
   async resolve(reference: string, thinking: ThinkingLevel, signal: AbortSignal): Promise<ResolvedModel> {

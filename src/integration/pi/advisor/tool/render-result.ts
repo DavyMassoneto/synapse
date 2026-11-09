@@ -22,6 +22,6 @@ export function renderAdvisorResult(
     text.setText(theme.fg(ERROR_COLOR, body))
     return text
   }
-  text.setText(renderPreview(body, result.details?.model, options.expanded, theme))
+  text.setText(renderPreview(body, options.expanded, theme, result.details?.model))
   return text
 }

@@ -1,9 +1,9 @@
-import { type AgentMessage } from "@earendil-works/pi-agent-core"
+import { type TranscriptMessage } from "#synapse/modules"
 import { convertAssistant } from "./assistant"
 import { convertContent } from "./content"
-import { type ConvertedMessage } from "./types"
+import { type ConversationMessage } from "./types"
 
-export function convertMessage(message: AgentMessage): ConvertedMessage {
+export function convertMessage(message: ConversationMessage): TranscriptMessage {
   switch (message.role) {
     case "user":
       return { kind: "user", blocks: convertContent(message.content) }
@@ -32,7 +32,5 @@ export function convertMessage(message: AgentMessage): ConvertedMessage {
     case "branchSummary":
     case "compactionSummary":
       return { kind: "summary", blocks: [{ kind: "text", text: message.summary }] }
-    default:
-      return undefined
   }
 }

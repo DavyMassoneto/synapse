@@ -1,8 +1,9 @@
-import { type Advisor, type AdvisorResult } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
-import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
+import { type AdvisorToolActivation } from "../lifecycle"
 import { type ModelSelection } from "../model-picker"
 import { COMMAND_TEXT } from "./constants"
+import { reportResult } from "./report-result"
 
 export function applySelection(
   pi: AdvisorToolActivation,
@@ -10,21 +11,11 @@ export function applySelection(
   context: AdvisorContext,
   selection: ModelSelection,
 ): void {
-  let result: AdvisorResult
-  let message: string
   if (selection.kind === "disabled") {
-    result = advisor.configuration.disable()
-    message = COMMAND_TEXT.disabled
-  } else if (selection.kind === "selected") {
-    result = advisor.configuration.selectModel(selection.model)
-    message = `Advisor: ${selection.model}`
-  } else {
-    return
+    reportResult(pi, advisor, context, advisor.configuration.disable(), COMMAND_TEXT.disabled)
   }
-  if (result.kind === "failure") {
-    context.ui.notify(result.message, "error")
-    return
+  if (selection.kind === "selected") {
+    const result = advisor.configuration.selectModel(selection.model)
+    reportResult(pi, advisor, context, result, `Advisor: ${selection.model}`)
   }
-  syncAdvisor(pi, advisor, context)
-  context.ui.notify(message, "info")
 }

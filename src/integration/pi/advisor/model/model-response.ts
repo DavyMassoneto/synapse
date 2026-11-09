@@ -4,10 +4,10 @@ import { extractText } from "../host"
 import { MODEL_DIAGNOSTICS } from "./constants"
 
 function failureReason(reply: AssistantMessage): string {
-  if (reply.errorMessage === undefined) {
-    return reply.stopReason
+  if (typeof reply.errorMessage === "string") {
+    return reply.errorMessage
   }
-  return reply.errorMessage
+  return reply.stopReason
 }
 
 export function modelResponse(reply: AssistantMessage): ModelResponse {
@@ -18,7 +18,7 @@ export function modelResponse(reply: AssistantMessage): ModelResponse {
     throw new Error(failureReason(reply))
   }
   const text = extractText(reply.content).trim()
-  if (!text) {
+  if (text.length === 0) {
     throw new Error(MODEL_DIAGNOSTICS.emptyResponse)
   }
   const usage = reply.usage

@@ -28,4 +28,4 @@ export interface CommandRegistry {
   registerCommand(name: string, command: AdvisorCommandDefinition): void
 }
 
-export interface CommandHost extends CommandRegistry, AdvisorToolActivation {}
+export type CommandHost = CommandRegistry & AdvisorToolActivation

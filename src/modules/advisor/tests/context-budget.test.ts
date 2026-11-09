@@ -41,10 +41,8 @@ async function reserveFullOutput(): Promise<void> {
     port,
   )
   expect(result.kind).toBe("success")
-  if (!port.captured) {
-    throw new Error("requisição ausente")
-  }
-  const estimatedInput = Math.ceil(port.captured.system.length / 3) + Math.ceil(port.captured.prompt.length / 3)
+  const captured = port.requireCaptured()
+  const estimatedInput = Math.ceil(captured.system.length / 3) + Math.ceil(captured.prompt.length / 3)
   expect(estimatedInput + 4_096 + 32_000).toBeLessThanOrEqual(128_000)
 }
 

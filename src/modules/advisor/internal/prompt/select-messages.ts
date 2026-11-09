@@ -2,12 +2,7 @@ import { clip } from "./clip"
 import { OMITTED_MESSAGES, SEPARATOR } from "./constants"
 import { selectRecent } from "./select-recent"
 
-export function selectMessages(blocks: string[], budget: number): string {
-  const first = blocks[0]
-  const last = blocks[blocks.length - 1]
-  if (first === undefined || last === undefined) {
-    return ""
-  }
+function selectEdges(first: string, last: string, blocks: string[], budget: number): string {
   const marker = OMITTED_MESSAGES
   if (budget <= marker.length) {
     return clip(last, budget)
@@ -22,4 +17,13 @@ export function selectMessages(blocks: string[], budget: number): string {
   const remaining = budget - clippedFirst.length - marker.length - SEPARATOR.length
   const selected = selectRecent(blocks, remaining)
   return [clippedFirst, marker, ...selected].join(SEPARATOR)
+}
+
+export function selectMessages(blocks: string[], budget: number): string {
+  const first = blocks[0]
+  const last = blocks[blocks.length - 1]
+  if (typeof first === "string" && typeof last === "string") {
+    return selectEdges(first, last, blocks, budget)
+  }
+  return ""
 }

@@ -35,7 +35,7 @@ export class AdvisorConfiguration {
   }
 
   selectModel(model: string): AdvisorResult {
-    if (!parseModelReference(model)) {
+    if (parseModelReference(model).kind === "invalid") {
       return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.invalidModel }
     }
 

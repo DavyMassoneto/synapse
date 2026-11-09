@@ -5,10 +5,9 @@ export function selectRecent(blocks: string[], budget: number): string[] {
   let remaining = budget
   const selected: string[] = []
 
-  for (let index = blocks.length - 1; index > 0; index--) {
+  for (const block of blocks.slice(1).reverse()) {
     const available = remaining - SEPARATOR.length
-    const block = blocks[index]
-    if (available <= 0 || block === undefined) {
+    if (available <= 0) {
       break
     }
 

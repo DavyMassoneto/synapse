@@ -1,10 +1,13 @@
 import {
   type AdvisorBeforeStartHandler,
+  type AdvisorCommandDefinition,
   type AdvisorSessionStartHandler,
   type AdvisorShutdownHandler,
   type AdvisorToolResultHandler,
   type AdvisorTurnEndHandler,
 } from "#synapse/integration"
+
+export type CommandCompletions = NonNullable<AdvisorCommandDefinition["getArgumentCompletions"]>
 
 export type AdvisorEventRegistration =
   | ["session_start", AdvisorSessionStartHandler]

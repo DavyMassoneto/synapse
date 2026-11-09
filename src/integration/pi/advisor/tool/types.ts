@@ -29,9 +29,7 @@ export interface AdvisorToolDetails {
   model?: string
 }
 
-export type AdvisorRenderState = Pick<AdvisorToolDetails, never>
-
-export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, AdvisorRenderState>
+export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, never>
 
 export type AdvisorToolUpdate = Parameters<PiAdvisorTool["execute"]>[3]
 
@@ -43,13 +41,13 @@ export type AdvisorToolInput = Parameters<PiAdvisorTool["execute"]>[1]
 
 export type AdvisorToolBase = Omit<PiAdvisorTool, "execute" | "renderCall" | "renderResult">
 
-export type OptionalSignal = AbortSignal | undefined
+export type AdvisorToolSignal = Parameters<PiAdvisorTool["execute"]>[2]
 
 export interface AdvisorTool extends AdvisorToolBase, AdvisorRenderers {
   execute(
     id: string,
     input: AdvisorToolInput,
-    signal: OptionalSignal,
+    signal: AdvisorToolSignal,
     update: AdvisorToolUpdate,
     context: AdvisorContext,
   ): AdvisorToolResult

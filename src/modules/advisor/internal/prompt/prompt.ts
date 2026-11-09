@@ -7,6 +7,7 @@ import {
   MAX_SYSTEM_CHARACTERS,
   MINIMUM_ANSWER_TOKENS,
   NO_BUDGET,
+  PROMPT_DIAGNOSTICS,
   PROMPT_PREFIX,
   PROMPT_SUFFIX,
   TRANSCRIPT_PREFIX,
@@ -34,11 +35,11 @@ function availableBudget(model: ResolvedModel): number {
 export function preparePrompt(input: Consultation, model: ResolvedModel): PreparedPrompt {
   const budget = availableBudget(model)
   if (budget === NO_BUDGET) {
-    return undefined
+    return { kind: "failure", message: PROMPT_DIAGNOSTICS.windowTooSmall }
   }
   const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(budget / 2))
   const system = clip(input.system, systemLimit)
   const transcriptBudget = budget - system.length
   const transcript = buildTranscript(input.messages, transcriptBudget)
-  return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX
+  return { kind: "ready", text: PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX }
 }
