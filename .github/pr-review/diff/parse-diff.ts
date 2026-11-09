@@ -1,7 +1,7 @@
-import { collectLineNumbers } from "./collect-line-numbers"
-import { findPath } from "./find-path"
+import { collectLineNumbers } from "./lines"
+import { findPath } from "./paths"
 import { isReviewable } from "./predicates"
-import { splitSections } from "./split-sections"
+import { splitSections } from "./sections"
 import { type ChangedFile, type OptionalChangedFile } from "./types"
 
 export function parseFile(section: string): OptionalChangedFile {

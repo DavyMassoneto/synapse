@@ -1,7 +1,6 @@
-import { LINE_BREAK } from "../separators"
-import { ADDED_LINE_MARK, CONTEXT_LINE_MARK } from "./constants"
-import { hunkStart } from "./hunk-start"
-import { type LineNumbers } from "./types"
+import { LINE_BREAK } from "#synapse/separators"
+import { ADDED_LINE_MARK, CONTEXT_LINE_MARK, HUNK_HEADER } from "./constants"
+import { type LineNumbers, type OptionalNumber } from "./types"
 
 export function collectLineNumbers(section: string): LineNumbers {
   const lines: LineNumbers = { added: new Set<number>(), commentable: new Set<number>() }
@@ -20,4 +19,12 @@ export function collectLineNumbers(section: string): LineNumbers {
     }
   }
   return lines
+}
+
+export function hunkStart(diffLine: string): OptionalNumber {
+  const start = HUNK_HEADER.exec(diffLine)?.at(1)
+  if (start === undefined) {
+    return undefined
+  }
+  return Number(start)
 }

@@ -1,4 +1,4 @@
-import { LINE_BREAK } from "../separators"
+import { LINE_BREAK } from "#synapse/separators"
 import { DIFF_SEPARATOR } from "./constants"
 
 export function splitSections(diff: string): string[] {

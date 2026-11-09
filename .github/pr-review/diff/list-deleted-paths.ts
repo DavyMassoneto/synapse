@@ -1,6 +1,5 @@
-import { findOldPath } from "./find-old-path"
-import { isDeleted } from "./predicates"
-import { splitSections } from "./split-sections"
+import { findOldPath, isDeleted } from "./paths"
+import { splitSections } from "./sections"
 
 export function listDeletedPaths(diff: string): string[] {
   const paths: string[] = []
