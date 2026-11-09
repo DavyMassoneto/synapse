@@ -1,6 +1,6 @@
 export const CHUNK_CONCURRENCY = 3
 
-export const NOTE_INCOMPLETE_PART = "Revisão incompleta: a parte {} ainda trazia achados novos depois de {} rodadas."
+export const NOTE_INCOMPLETE_CHUNK = "Revisão incompleta: a parte {} ainda trazia achados novos depois de {} rodadas."
 
 export const NOTE_SKIPPED = "Revisão incompleta: {} parte(s) final(is) da PR não foram revisadas por exceder o limite."
 

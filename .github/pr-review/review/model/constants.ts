@@ -1,8 +1,6 @@
-export const ROLE_SYSTEM = "system"
+export const GENERAL_FINDING_LINE = 0
 
-export const ROLE_USER = "user"
-
-export const ROLE_ASSISTANT = "assistant"
+export const ERROR_DETAIL_SEPARATOR = ": "
 
 export const MAX_PARSE_ATTEMPTS = 2
 

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { decideVerdict } from "#synapse/review"
-import { FINDING_ON_ADDED } from "#synapse/tests/fixtures"
+import { FINDING_ON_ADDED } from "#synapse/tests/fixtures/review"
 
 describe("decideVerdict", () => {
   test("is ok only without findings and notes", () => {

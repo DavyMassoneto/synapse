@@ -1,13 +1,12 @@
 import Type from "typebox"
+import { GENERAL_FINDING_LINE } from "./constants"
 
 export const FindingSchema = Type.Object({
   rule: Type.String(),
   path: Type.String(),
-  line: Type.Integer({ minimum: 0 }),
+  line: Type.Integer({ minimum: GENERAL_FINDING_LINE }),
   body: Type.String({ minLength: 1 }),
 })
-
-export const VerdictsSchema = Type.Object({ refuted: Type.Array(Type.Integer({ minimum: 1 })) })
 
 export const ReplySchema = Type.Object({
   coverage: Type.Array(Type.String()),

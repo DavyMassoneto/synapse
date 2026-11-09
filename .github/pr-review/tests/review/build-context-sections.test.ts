@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { buildContextSections } from "#synapse/review"
-import { RecordedRunner, SETTINGS } from "#synapse/tests/fixtures"
+import { SETTINGS } from "#synapse/tests/fixtures/settings"
+import { RecordedRunner } from "#synapse/tests/fixtures/shell"
 
 function answer(args: readonly string[]): string {
   if (args.includes("ls-tree")) {
@@ -14,6 +15,6 @@ describe("buildContextSections", () => {
     const runner = new RecordedRunner((request) => answer(request.args))
     const sections = buildContextSections((request) => runner.run(request), SETTINGS)
     expect(sections.length).toBe(2)
-    expect(sections.at(0)).toContain("conteudo de base:AGENTS.md")
+    expect(sections.at(0)).toContain(`conteudo de ${SETTINGS.baseSha}:AGENTS.md`)
   })
 })

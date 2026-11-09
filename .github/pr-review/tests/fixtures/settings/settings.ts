@@ -3,8 +3,8 @@ import { type Settings } from "#synapse/settings"
 export const SETTINGS: Settings = {
   repo: "o/r",
   prNumber: "7",
-  baseSha: "base",
-  headSha: "head",
+  baseSha: "a".repeat(40),
+  headSha: "b".repeat(40),
   baseUrl: "http://localhost",
   apiKey: "key",
   model: "model",

@@ -1,7 +1,7 @@
 import { type ChatMessage } from "#synapse/client"
 
-export function sseOf(...parts: string[]): string {
-  const events = parts.map((part) => `data: ${JSON.stringify({ choices: [{ delta: { content: part } }] })}\n\n`)
+export function sseOf(...chunks: string[]): string {
+  const events = chunks.map((chunk) => `data: ${JSON.stringify({ choices: [{ delta: { content: chunk } }] })}\n\n`)
   return `${events.join("")}data: [DONE]\n\n`
 }
 

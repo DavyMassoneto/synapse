@@ -15,6 +15,10 @@ describe("isRetryable", () => {
     expect(isRetryable(new TypeError("fetch failed"))).toBe(true)
   })
 
+  test.each(["TimeoutError", "AbortError"])("retries a %s", (name) => {
+    expect(isRetryable(new DOMException("request interrupted", name))).toBe(true)
+  })
+
   test("does not retry an invalid model answer", () => {
     expect(isRetryable(new ModelError("x"))).toBe(false)
   })

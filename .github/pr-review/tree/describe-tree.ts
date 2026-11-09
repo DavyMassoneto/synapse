@@ -1,27 +1,34 @@
-import { isIgnored } from "../diff"
+import { isIgnored } from "../scope"
 import { LINE_BREAK } from "../separators"
 import { type CommandRunner, runGit } from "../shell"
 import { tryReadTextLines } from "../source"
 import { fillTemplate } from "../templates"
-import { COUNT_WIDTH, LIST_FILES_ARGUMENTS, MAX_TREE_LINES, TREE_LINE, TREE_OMITTED } from "./constants"
+import {
+  COUNT_WIDTH,
+  LIST_FILES_ARGUMENTS,
+  MAX_TREE_LINES,
+  TREE_LINE,
+  TREE_OMITTED,
+  TREE_UNREADABLE,
+} from "./constants"
 
 export function describeTree(runner: CommandRunner): string {
   const paths = listTreePaths(runner)
   const lines = paths
     .slice(0, MAX_TREE_LINES)
-    .map((path) => fillTemplate(TREE_LINE, [String(countLines(path)).padStart(COUNT_WIDTH), path]))
+    .map((path) => fillTemplate(TREE_LINE, [describeLineCount(path).padStart(COUNT_WIDTH), path]))
   if (countOmitted(paths) > 0) {
     lines.push(fillTemplate(TREE_OMITTED, [String(countOmitted(paths))]))
   }
   return lines.join(LINE_BREAK)
 }
 
-export function countLines(path: string): number {
+export function describeLineCount(path: string): string {
   const lines = tryReadTextLines(path)
   if (lines === undefined) {
-    return 0
+    return TREE_UNREADABLE
   }
-  return lines.length
+  return String(lines.length)
 }
 
 export function countOmitted(paths: string[]): number {

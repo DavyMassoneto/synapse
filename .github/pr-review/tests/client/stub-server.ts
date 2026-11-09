@@ -14,7 +14,7 @@ export class StubServer {
 
   answer(request: IncomingMessage, response: ServerResponse): void {
     this.requests.push(String(request.url))
-    request.on("data", (part: Buffer) => this.bodies.push(part.toString()))
+    request.on("data", (chunk: Buffer) => this.bodies.push(chunk.toString()))
     request.on("end", () => this.reply(response))
   }
 

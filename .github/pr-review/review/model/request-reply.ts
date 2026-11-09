@@ -18,8 +18,8 @@ export async function fetchParsedReply(
   messages: ChatMessage[],
   ruleIds: string[],
 ): Promise<ParsedReply> {
-  const raw = await caller(messages)
-  const reply = parseReply(raw)
+  const replyText = await caller(messages)
+  const reply = parseReply(replyText)
   validateReply(reply, ruleIds)
-  return { reply, raw }
+  return { reply, replyText }
 }

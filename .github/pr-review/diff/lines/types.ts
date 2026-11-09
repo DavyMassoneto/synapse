@@ -3,4 +3,4 @@ export interface LineNumbers {
   commentable: Set<number>
 }
 
-export type OptionalNumber = number | undefined
+export type HunkStartLine = number | undefined

@@ -4,7 +4,6 @@ export interface Rule {
 }
 
 export interface RuleGroup {
-  name: string
   text: string
   rules: Rule[]
 }

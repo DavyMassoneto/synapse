@@ -1,5 +1,5 @@
 import { type ChangedFile } from "#synapse/diff"
-import { type Finding } from "#synapse/review"
+import { type Finding, GENERAL_FINDING_LINE } from "#synapse/review"
 import { LOCATION_SEPARATOR } from "./constants"
 import { type LineGroup, type Partition } from "./types"
 
@@ -7,7 +7,7 @@ export function partitionFindings(findings: Finding[], files: ChangedFile[]): Pa
   const commentable = new Map<string, Set<number>>(files.map((file) => [file.path, file.commentableLines]))
   const partition: Partition = { anchored: [], outsideDiff: [], general: [] }
   for (const finding of findings) {
-    if (finding.line === 0) {
+    if (finding.line === GENERAL_FINDING_LINE) {
       partition.general.push(finding)
     } else if (commentable.get(finding.path)?.has(finding.line)) {
       partition.anchored.push(finding)

@@ -1,12 +1,16 @@
-import { type Operation } from "#synapse/retry"
-
 export const TRANSIENT = new Error("transient")
 
-export function failingTimes(failures: number): Operation<string> {
-  let calls = 0
-  return () => {
-    calls += 1
-    if (calls <= failures) {
+export class FailingOperation {
+  calls = 0
+  failures: number
+
+  constructor(failures: number) {
+    this.failures = failures
+  }
+
+  run(): Promise<string> {
+    this.calls += 1
+    if (this.calls <= this.failures) {
       return Promise.reject(TRANSIENT)
     }
     return Promise.resolve("ok")

@@ -1,56 +1,63 @@
 import { describe, expect, test } from "vitest"
+import { CHUNK_CHARS } from "#synapse/chunks"
 import { type ChatMessage } from "#synapse/client"
 import { type ReviewRequest, reviewAll } from "#synapse/review"
-import { FINDING_GENERAL, FINDING_ON_ADDED, RULE_IDS, replyJson, SETTINGS } from "#synapse/tests/fixtures"
+import {
+  FINDING_GENERAL,
+  FINDING_ON_ADDED,
+  REVIEW_INPUT,
+  RULE_IDS,
+  replyJson,
+  SOURCE_A,
+} from "#synapse/tests/fixtures/review"
+import { SETTINGS } from "#synapse/tests/fixtures/settings"
 import { ScriptedCaller } from "#synapse/tests/review"
-
-const NONE_REFUTED = '{"refuted": []}'
-const INPUT = { treeListing: "arvore", deletedPaths: [] }
-const SOURCE = { path: "a.ts", text: "=== a.ts", incomplete: false }
 
 function request(caller: ScriptedCaller, incomplete: boolean): ReviewRequest {
   return {
     caller: (messages: ChatMessage[]) => caller.call(messages),
     settings: SETTINGS,
-    input: INPUT,
+    input: REVIEW_INPUT,
     systemPrompt: "system",
     ruleIds: RULE_IDS,
-    sources: [{ ...SOURCE, incomplete }],
+    sources: [{ ...SOURCE_A, incomplete }],
   }
 }
 
 describe("reviewAll", () => {
+  test("keeps one copy of a finding repeated across two chunks", async () => {
+    const caller = new ScriptedCaller([
+      replyJson([FINDING_GENERAL], RULE_IDS),
+      replyJson([FINDING_GENERAL], RULE_IDS),
+      replyJson([], RULE_IDS),
+      replyJson([], RULE_IDS),
+    ])
+    const reviewRequest = request(caller, false)
+    reviewRequest.sources = [
+      { path: "first.ts", text: "a".repeat(CHUNK_CHARS), incomplete: false },
+      { path: "second.ts", text: "b".repeat(CHUNK_CHARS), incomplete: false },
+    ]
+    const result = await reviewAll(reviewRequest)
+    expect(result.findings).toEqual([FINDING_GENERAL])
+    expect(caller.received.length).toBe(4)
+    expect(caller.received.at(0)?.at(1)?.content).toContain("parte 1 de 2")
+    expect(caller.received.at(1)?.at(1)?.content).toContain("parte 2 de 2")
+  })
+
   test("is ok when no round finds a defect", async () => {
     const caller = new ScriptedCaller([replyJson([], RULE_IDS), replyJson([], RULE_IDS)])
     expect(await reviewAll(request(caller, false))).toEqual({ verdict: "OK", findings: [], notes: [] })
   })
 
-  test("joins every finding in a single result", async () => {
+  test("joins every finding without a second verification pass", async () => {
     const caller = new ScriptedCaller([
       replyJson([FINDING_ON_ADDED, FINDING_GENERAL], RULE_IDS),
       replyJson([], RULE_IDS),
-      NONE_REFUTED,
     ])
     const result = await reviewAll(request(caller, false))
-    expect([result.verdict, result.findings.length]).toEqual(["ATENÇÃO", 2])
-  })
-
-  test("drops the findings the second pass refutes and keeps the others", async () => {
-    const caller = new ScriptedCaller([
-      replyJson([FINDING_ON_ADDED, FINDING_GENERAL], RULE_IDS),
-      replyJson([], RULE_IDS),
-      '{"refuted": [1]}',
-    ])
-    expect((await reviewAll(request(caller, false))).findings).toEqual([FINDING_GENERAL])
-  })
-
-  test("is ok when the second pass refutes every finding", async () => {
-    const caller = new ScriptedCaller([
-      replyJson([FINDING_ON_ADDED], RULE_IDS),
-      replyJson([], RULE_IDS),
-      '{"refuted": [1]}',
-    ])
-    expect((await reviewAll(request(caller, false))).verdict).toBe("OK")
+    expect(result.findings).toEqual([FINDING_ON_ADDED, FINDING_GENERAL])
+    expect(result.verdict).toBe("ATENÇÃO")
+    expect(caller.received.length).toBe(2)
   })
 
   test("is attention when a file was left incomplete", async () => {

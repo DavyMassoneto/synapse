@@ -1,9 +1,30 @@
+import { ParseError } from "typebox/value"
 import { describe, expect, test } from "vitest"
 import { ModelError } from "#synapse/errors"
 import { parseReply, validateReply } from "#synapse/review"
-import { RULE_IDS } from "#synapse/tests/fixtures"
+import { RULE_IDS } from "#synapse/tests/fixtures/review"
 
 describe("parseReply", () => {
+  test("preserves the schema failure cause and field details", () => {
+    expect(() => parseReply('{"coverage":1,"findings":[]}')).toThrow(/\/coverage.*must be array/)
+    try {
+      parseReply('{"coverage":1,"findings":[]}')
+    } catch (error) {
+      expect(error).toBeInstanceOf(ModelError)
+      expect(error).toHaveProperty("cause", expect.any(ParseError))
+    }
+  })
+
+  test("preserves the syntax error without using the reply as its reason", () => {
+    try {
+      parseReply("{private-reply}")
+      expect.fail("expected invalid JSON to fail")
+    } catch (error) {
+      expect(error).toBeInstanceOf(ModelError)
+      expect(error).toHaveProperty("cause", expect.any(SyntaxError))
+    }
+  })
+
   test("reads the json between other text", () => {
     const reply = parseReply('antes {"coverage": ["C01"], "findings": []} depois')
     expect(reply.coverage).toEqual(["C01"])

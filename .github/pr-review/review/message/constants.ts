@@ -8,7 +8,7 @@ export const LABEL_DESCRIPTION = "Descrição da PR (afirmações dela devem ser
 
 export const LABEL_DELETED = "Arquivos apagados pela PR: "
 
-export const LABEL_PART = "Esta é a parte {} de {} da revisão; as outras partes são revisadas à parte."
+export const LABEL_CHUNK = "Esta é a parte {} de {} da revisão; as outras partes são revisadas à parte."
 
 export const LABEL_TREE = "Árvore do repositório na PR (linhas, arquivo):"
 

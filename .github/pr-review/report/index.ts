@@ -1,5 +1,6 @@
 export * from "./constants"
 export * from "./labels"
+export * from "./paginate"
 export * from "./placement"
 export * from "./render-bullets"
 export * from "./render-inline"

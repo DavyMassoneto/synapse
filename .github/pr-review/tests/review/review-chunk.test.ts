@@ -2,7 +2,13 @@ import { describe, expect, test } from "vitest"
 import { type ChatMessage } from "#synapse/client"
 import { ModelError } from "#synapse/errors"
 import { reviewChunk } from "#synapse/review"
-import { FINDING_GENERAL, FINDING_OFF_DIFF, FINDING_ON_ADDED, RULE_IDS, replyJson } from "#synapse/tests/fixtures"
+import {
+  FINDING_GENERAL,
+  FINDING_OFF_DIFF,
+  FINDING_ON_ADDED,
+  RULE_IDS,
+  replyJson,
+} from "#synapse/tests/fixtures/review"
 import { ScriptedCaller } from "#synapse/tests/review"
 
 const COMPLETE = RULE_IDS

@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { excludeKnown } from "#synapse/review"
-import { FINDING_GENERAL, FINDING_OFF_DIFF, FINDING_ON_ADDED } from "#synapse/tests/fixtures"
+import { FINDING_GENERAL, FINDING_OFF_DIFF, FINDING_ON_ADDED } from "#synapse/tests/fixtures/review"
 
 describe("excludeKnown", () => {
   test("drops the findings that were already listed", () => {

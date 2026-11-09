@@ -1,6 +1,8 @@
 import { readFileSync } from "node:fs"
+import { fileURLToPath } from "node:url"
 import { describe, expect, test } from "vitest"
 import { loadRuleGroups } from "#synapse/rules"
+import { TEXT_ENCODING } from "#synapse/separators"
 
 describe("loadRuleGroups", () => {
   const groups = loadRuleGroups()
@@ -20,6 +22,8 @@ describe("loadRuleGroups", () => {
   })
 
   test("keeps the format file in sync with the response schema", () => {
-    expect(readFileSync(".github/pr-review/prompts/format.md", "utf8")).toContain('"coverage"')
+    expect(readFileSync(fileURLToPath(new URL("../../prompts/format.md", import.meta.url)), TEXT_ENCODING)).toContain(
+      '"coverage"',
+    )
   })
 })

@@ -5,7 +5,7 @@ import { type Source } from "#synapse/source"
 const BIG_SOURCE: Source = { path: "a.ts", text: "x".repeat(100_000), incomplete: false }
 
 describe("splitChunks", () => {
-  test("reports the parts beyond the chunk limit", () => {
+  test("reports the chunks beyond the chunk limit", () => {
     const split = splitChunks(Array.from({ length: 40 }, () => BIG_SOURCE))
     expect([split.chunks.length, split.skipped]).toEqual([10, 4])
   })

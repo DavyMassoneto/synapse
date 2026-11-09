@@ -7,7 +7,7 @@ import {
   QUOTED_SECTION,
   RENAME_SECTION,
   SECTION_WITH_CONTEXT,
-} from "#synapse/tests/fixtures"
+} from "#synapse/tests/fixtures/diff"
 
 const DIFF = joinSections(SECTION_WITH_CONTEXT, LOCK_SECTION, DELETED_SECTION)
 

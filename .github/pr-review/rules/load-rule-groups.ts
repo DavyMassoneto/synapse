@@ -9,7 +9,7 @@ export function loadRuleGroups(): RuleGroup[] {
 
 export function loadRuleGroup(name: string): RuleGroup {
   const text = readText(join(RULES_DIR, name + RULES_SUFFIX))
-  return { name, text, rules: parseRules(text) }
+  return { text, rules: parseRules(text) }
 }
 
 export function parseRules(text: string): Rule[] {

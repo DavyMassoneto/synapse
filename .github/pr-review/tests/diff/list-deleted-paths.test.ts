@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vitest"
 import { listDeletedPaths } from "#synapse/diff"
-import { DELETED_SECTION, joinSections, QUOTED_DELETED_SECTION, SECTION_WITH_CONTEXT } from "#synapse/tests/fixtures"
+import {
+  DELETED_SECTION,
+  joinSections,
+  QUOTED_DELETED_SECTION,
+  SECTION_WITH_CONTEXT,
+} from "#synapse/tests/fixtures/diff"
 
 describe("listDeletedPaths", () => {
   test("lists only the deleted files", () => {

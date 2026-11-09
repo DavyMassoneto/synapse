@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./decode-git-path"
 export * from "./find-paths"
 export * from "./predicates"
 export * from "./types"

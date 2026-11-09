@@ -10,7 +10,7 @@ import {
 } from "#synapse/report"
 import { type ReviewResult } from "#synapse/review"
 import { loadRuleGroups } from "#synapse/rules"
-import { FINDING_GENERAL, FINDING_OFF_DIFF, FINDING_ON_ADDED } from "#synapse/tests/fixtures"
+import { FINDING_GENERAL, FINDING_OFF_DIFF, FINDING_ON_ADDED } from "#synapse/tests/fixtures/review"
 
 const FILES: ChangedFile[] = [{ path: "src/a.ts", addedLines: new Set([11]), commentableLines: new Set([10, 11]) }]
 const RESULT: ReviewResult = {

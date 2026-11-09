@@ -3,7 +3,7 @@ import { callModel } from "#synapse/client"
 import { ModelError } from "#synapse/errors"
 import { type Settings } from "#synapse/settings"
 import { MESSAGES, type StubReply, StubServer, sseOf } from "#synapse/tests/client"
-import { SETTINGS } from "#synapse/tests/fixtures"
+import { SETTINGS } from "#synapse/tests/fixtures/settings"
 
 const stubs: StubServer[] = []
 
@@ -37,6 +37,12 @@ describe("callModel", () => {
   test("rejects an event that is not a chat chunk", async () => {
     const settings = await settingsFor([{ status: 200, body: 'data: {"error": "x"}\n\n' }])
     await expect(callModel(settings, MESSAGES)).rejects.toThrow(ModelError)
+  })
+
+  test("rejects a response without a body without retrying", async () => {
+    const settings = await settingsFor([{ status: 204, body: "" }])
+    await expect(callModel(settings, MESSAGES)).rejects.toThrow("resposta vazia")
+    expect(stubs.at(0)?.requests.length).toBe(1)
   })
 
   test("does not retry a client error", async () => {

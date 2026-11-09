@@ -1,8 +1,8 @@
-import { type ChangedFile, listDeletedPaths, parseDiff } from "../diff"
+import { listDeletedPaths, parseDiff } from "../diff"
 import { CommandError, ModelError } from "../errors"
 import { fetchDiff, publishSummary, replaceInlineComments } from "../github"
 import { buildLabels, groupByLine, partitionFindings, renderFailure, renderInline, renderSummaryPages } from "../report"
-import { buildSystemPrompt, type ReviewResult, reviewAll, VERDICT_OK, type Verdict } from "../review"
+import { buildSystemPrompt, reviewAll, VERDICT_OK, type Verdict } from "../review"
 import { loadRuleGroups, type RuleGroup } from "../rules"
 import { renderSources } from "../source"
 import { describeTree } from "../tree"
@@ -13,20 +13,29 @@ export async function executeReview(execution: Execution): Promise<number> {
   const groups = loadRuleGroups()
   try {
     const collected = await collectReview(execution, groups)
-    await publishReview(execution, groups, collected.files, collected.result)
+    await publishReview(execution, groups, collected)
     return exitCodeOf(collected.result.verdict)
   } catch (error) {
     if (!(error instanceof ModelError || error instanceof CommandError)) {
       throw error
     }
-    await publishSummary(execution.ports.runner, execution.settings, [renderFailure(error.message)])
+    try {
+      await publishSummary(
+        execution.ports.runner,
+        execution.settings,
+        [renderFailure(error.message)],
+        execution.ports.timing,
+      )
+    } catch (publicationError) {
+      throw new AggregateError([error, publicationError], error.message)
+    }
     return EXIT_FAILURE
   }
 }
 
 export async function collectReview(execution: Execution, groups: RuleGroup[]): Promise<Collected> {
   const { settings, ports } = execution
-  const diff = await fetchDiff(ports.runner, settings)
+  const diff = await fetchDiff(ports.runner, settings, ports.timing)
   const files = parseDiff(diff)
   const input = { treeListing: describeTree(ports.runner), deletedPaths: listDeletedPaths(diff) }
   const result = await reviewAll({
@@ -40,12 +49,8 @@ export async function collectReview(execution: Execution, groups: RuleGroup[]): 
   return { files, result }
 }
 
-export async function publishReview(
-  execution: Execution,
-  groups: RuleGroup[],
-  files: ChangedFile[],
-  result: ReviewResult,
-): Promise<void> {
+export async function publishReview(execution: Execution, groups: RuleGroup[], collected: Collected): Promise<void> {
+  const { files, result } = collected
   const labels = buildLabels(groups)
   const anchored = partitionFindings(result.findings, files).anchored
   const inline = groupByLine(anchored).map((group) => ({
@@ -53,8 +58,13 @@ export async function publishReview(
     line: group.line,
     body: renderInline(labels, group),
   }))
-  await replaceInlineComments(execution.ports.runner, execution.settings, inline)
-  await publishSummary(execution.ports.runner, execution.settings, renderSummaryPages(result, labels, files))
+  await replaceInlineComments(execution.ports.runner, execution.settings, inline, execution.ports.timing)
+  await publishSummary(
+    execution.ports.runner,
+    execution.settings,
+    renderSummaryPages(result, labels, files),
+    execution.ports.timing,
+  )
 }
 
 export function exitCodeOf(verdict: Verdict): number {

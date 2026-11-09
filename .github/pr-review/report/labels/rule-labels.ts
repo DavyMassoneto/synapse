@@ -1,6 +1,6 @@
 import { type RuleGroup } from "#synapse/rules"
 import { fillTemplate } from "#synapse/templates"
-import { RULE_LABEL } from "./constants"
+import { MISSING_RULE_LABEL, RULE_LABEL } from "./constants"
 import { type RuleLabels } from "./types"
 
 export function buildLabels(groups: RuleGroup[]): RuleLabels {
@@ -16,7 +16,7 @@ export function buildLabels(groups: RuleGroup[]): RuleLabels {
 export function labelOf(labels: RuleLabels, ruleId: string): string {
   const label = labels.get(ruleId)
   if (label === undefined) {
-    return ruleId
+    throw new Error(MISSING_RULE_LABEL + ruleId)
   }
   return label
 }

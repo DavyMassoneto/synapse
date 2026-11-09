@@ -1,4 +1,6 @@
 export * from "./constants"
 export * from "./predicates"
+export * from "./rate-limit"
 export * from "./run-gh"
+export * from "./timing"
 export * from "./types"

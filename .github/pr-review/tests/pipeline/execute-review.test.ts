@@ -4,7 +4,10 @@ import { CommandError } from "#synapse/errors"
 import { type Execution, executeReview } from "#synapse/pipeline"
 import { loadRuleGroups } from "#synapse/rules"
 import { type CommandRequest } from "#synapse/shell"
-import { joinSections, PACKAGE_SECTION, RecordedRunner, replyJson, SETTINGS } from "#synapse/tests/fixtures"
+import { joinSections, PACKAGE_SECTION } from "#synapse/tests/fixtures/diff"
+import { replyJson } from "#synapse/tests/fixtures/review"
+import { SETTINGS } from "#synapse/tests/fixtures/settings"
+import { RecordedRunner } from "#synapse/tests/fixtures/shell"
 import { ScriptedCaller } from "#synapse/tests/review"
 
 const RULE_IDS = loadRuleGroups().flatMap((group) => group.rules.map((rule) => rule.id))
@@ -24,10 +27,12 @@ function answerFor(request: CommandRequest, failing: boolean): string {
 }
 
 function execution(recorded: RecordedRunner, caller: ScriptedCaller): Execution {
+  const runner = recorded.run.bind(recorded)
   return {
     settings: SETTINGS,
     ports: {
-      runner: (request: CommandRequest) => recorded.run(request),
+      timing: { now: () => 0, wait: async () => {}, hasMutation: false },
+      runner,
       caller: (messages: ChatMessage[]) => caller.call(messages),
     },
   }
@@ -38,9 +43,61 @@ function postedBodies(recorded: RecordedRunner): string[] {
 }
 
 describe("executeReview", () => {
+  test("respects rate limit cooldown before publishing the failure summary", async () => {
+    const events: string[] = []
+    const recorded = new RecordedRunner((request) => {
+      if (request.args.includes("diff")) {
+        events.push("403")
+        throw new CommandError("secondary rate limit", "HTTP/2.0 403 Forbidden\nRetry-After: 120\n\n{}")
+      }
+      if (request.args.includes("--paginate")) {
+        return "[[]]"
+      }
+      if (request.args.includes("POST")) {
+        events.push("summary")
+      }
+      return ""
+    })
+    const run = execution(recorded, new ScriptedCaller([]))
+    run.ports.timing = {
+      hasMutation: false,
+      now: () => 0,
+      wait: async (ms) => {
+        events.push(`wait:${ms}`)
+      },
+    }
+    expect(await executeReview(run)).toBe(1)
+    expect(events).toEqual([
+      "403",
+      "wait:120000",
+      "403",
+      "wait:120000",
+      "403",
+      "wait:120000",
+      "403",
+      "wait:120000",
+      "403",
+      "wait:120000",
+      "summary",
+    ])
+  })
+  test("preserves the original failure when failure publication also fails", async () => {
+    const recorded = new RecordedRunner((request) => {
+      throw new CommandError(request.args.includes("diff") ? "original-A" : "publication-B")
+    })
+    await expect(executeReview(execution(recorded, new ScriptedCaller([])))).rejects.toThrow("original-A")
+  })
+
+  test("rethrows unrelated errors without publishing a summary", async () => {
+    const recorded = new RecordedRunner(() => {
+      throw new Error("unrelated")
+    })
+    await expect(executeReview(execution(recorded, new ScriptedCaller([])))).rejects.toThrow("unrelated")
+    expect(postedBodies(recorded)).toEqual([])
+  })
   test("publishes the inline comment and the summary and exits with failure when it finds a defect", async () => {
     const recorded = new RecordedRunner((request) => answerFor(request, false))
-    const caller = new ScriptedCaller([replyJson([FINDING], RULE_IDS), replyJson([], RULE_IDS), '{"refuted": []}'])
+    const caller = new ScriptedCaller([replyJson([FINDING], RULE_IDS), replyJson([], RULE_IDS)])
     expect(await executeReview(execution(recorded, caller))).toBe(1)
     const bodies = postedBodies(recorded).join("")
     expect(bodies).toContain("pr-review-bot:inline")

@@ -1,0 +1,26 @@
+import { expect, test } from "vitest"
+import { CommandError } from "#synapse/errors"
+import { runCommand } from "#synapse/shell"
+
+test("returns command stdout", () => {
+  expect(runCommand({ command: process.execPath, args: ["-e", 'process.stdout.write("ok")'], input: "" })).toBe("ok")
+})
+
+test("preserves failure stdout in CommandError for included HTTP headers", () => {
+  try {
+    runCommand({
+      command: process.execPath,
+      args: [
+        "-e",
+        'process.stdout.write("HTTP/2.0 403 Forbidden\\r\\nRetry-After: 120\\r\\n\\r\\n{}");process.exit(3)',
+      ],
+      input: "",
+    })
+    expect.fail("expected command failure")
+  } catch (error) {
+    expect(error).toBeInstanceOf(CommandError)
+    if (error instanceof CommandError) {
+      expect(error.response).toContain("Retry-After: 120")
+    }
+  }
+})

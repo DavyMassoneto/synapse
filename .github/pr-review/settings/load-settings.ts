@@ -1,3 +1,4 @@
+import { ParseError, Value } from "typebox/value"
 import {
   ENV_API_KEY,
   ENV_BASE_SHA,
@@ -8,12 +9,16 @@ import {
   ENV_PR_NUMBER,
   ENV_PR_TITLE,
   ENV_REPO,
+  INVALID_FIELD_SEPARATOR,
+  INVALID_SETTINGS,
   MISSING_ENV,
+  SETTINGS_FIELDS,
 } from "./constants"
+import { SettingsSchema } from "./schemas"
 import { type Settings } from "./types"
 
 export function loadSettings(): Settings {
-  return {
+  const settings = {
     repo: readEnv(ENV_REPO),
     prNumber: readEnv(ENV_PR_NUMBER),
     baseSha: readEnv(ENV_BASE_SHA),
@@ -23,6 +28,15 @@ export function loadSettings(): Settings {
     model: readEnv(ENV_MODEL),
     prTitle: readEnv(ENV_PR_TITLE),
     prBody: readEnv(ENV_PR_BODY),
+  }
+  try {
+    return Value.Parse(SettingsSchema, settings)
+  } catch (error) {
+    if (!(error instanceof ParseError)) {
+      throw error
+    }
+    const fields = error.cause.errors.map((failure) => SETTINGS_FIELDS.get(failure.instancePath))
+    throw new Error(INVALID_SETTINGS + fields.join(INVALID_FIELD_SEPARATOR), { cause: error })
   }
 }
 

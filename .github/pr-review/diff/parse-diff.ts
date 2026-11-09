@@ -1,6 +1,6 @@
+import { isIgnored } from "../scope"
 import { collectLineNumbers } from "./lines"
 import { findPath } from "./paths"
-import { isReviewable } from "./predicates"
 import { splitSections } from "./sections"
 import { type ChangedFile, type OptionalChangedFile } from "./types"
 
@@ -17,7 +17,7 @@ export function parseDiff(diff: string): ChangedFile[] {
   const files: ChangedFile[] = []
   for (const section of splitSections(diff)) {
     const file = parseFile(section)
-    if (file !== undefined && isReviewable(file)) {
+    if (file !== undefined && !isIgnored(file.path)) {
       files.push(file)
     }
   }
