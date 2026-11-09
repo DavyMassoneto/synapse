@@ -32,6 +32,13 @@ jobs:
       - run: npm ci
       - name: Buscar a cabeça da PR como dado
         run: git fetch --no-tags origin "+refs/pull/${{ github.event.pull_request.number }}/head"
+      - name: Listar modelos permitidos para a chave do secret
+        run: |
+          curl -sS -H "Authorization: Bearer $OMNIROUTE_API_KEY" "$OMNIROUTE_BASE_URL/models" -o models.json -w "models http %{http_code}\n"
+          node -e 'const j=JSON.parse(require("fs").readFileSync("models.json","utf8"));const ids=(j.data||[]).map(m=>m.id);console.log(ids.length+" modelos permitidos");console.log(ids.filter(i=>/claude|gpt-6/.test(i)).join("\n"))'
+        env:
+          OMNIROUTE_API_KEY: ${{ secrets.OMNIROUTE_API_KEY }}
+          OMNIROUTE_BASE_URL: https://omniroute.dmassoneto.com.br/v1
       - name: Avaliar
         run: npm run evaluate
         env:
