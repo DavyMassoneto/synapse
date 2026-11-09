@@ -3,7 +3,11 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { type ChangedFile } from "#synapse/diff"
+import { buildNotes, reviewAll } from "#synapse/review"
 import { renderSources } from "#synapse/source"
+import { REVIEW_INPUT, RULE_IDS, replyJson } from "#synapse/tests/fixtures/review"
+import { SETTINGS } from "#synapse/tests/fixtures/settings"
+import { ScriptedCaller } from "#synapse/tests/review"
 
 let directory = ""
 
@@ -51,8 +55,22 @@ describe("renderSources", () => {
     expect(renderSources([changedFile("a.ts", [])]).at(0)?.incomplete).toBe(true)
   })
 
-  test("flags a file beyond the size limit as incomplete", () => {
-    writeFileSync(join(directory, "a.ts"), "x".repeat(120_000))
-    expect(renderSources([changedFile("a.ts", [])]).at(0)?.incomplete).toBe(true)
+  test("sends the last line beyond 100000 characters to the model without incomplete notes", async () => {
+    const marker = "UNIQUE_LAST_LINE_INPUT_INTEGRITY"
+    writeFileSync(join(directory, "a.ts"), `${"x".repeat(120_000)}\n${marker}\n`)
+    const sources = renderSources([changedFile("a.ts", [2])])
+    const caller = new ScriptedCaller([replyJson([], RULE_IDS)])
+    const result = await reviewAll({
+      caller: (messages) => caller.call(messages),
+      settings: SETTINGS,
+      input: REVIEW_INPUT,
+      systemPrompt: "system",
+      ruleIds: RULE_IDS,
+      sources,
+    })
+    expect(caller.received.at(0)?.at(1)?.content).toContain(marker)
+    expect(sources.at(0)?.incomplete).toBe(false)
+    expect(buildNotes({ findings: [], complete: true }, sources)).toEqual([])
+    expect(result.notes).toEqual([])
   })
 })

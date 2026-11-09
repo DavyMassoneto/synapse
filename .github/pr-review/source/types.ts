@@ -3,8 +3,3 @@ export interface Source {
   text: string
   incomplete: boolean
 }
-
-export interface TruncatedText {
-  text: string
-  truncated: boolean
-}

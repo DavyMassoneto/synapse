@@ -3,7 +3,7 @@ import { buildNotes } from "#synapse/review"
 import { type Source } from "#synapse/source"
 
 const COMPLETE: Source = { path: "a.ts", text: "x", incomplete: false }
-const TRUNCATED: Source = { path: "b.ts", text: "x", incomplete: true }
+const UNREADABLE: Source = { path: "b.ts", text: "x", incomplete: true }
 
 describe("buildNotes", () => {
   test("has no note for a complete review", () => {
@@ -17,6 +17,6 @@ describe("buildNotes", () => {
   })
 
   test("lists the incomplete files", () => {
-    expect(buildNotes({ findings: [], complete: true }, [COMPLETE, TRUNCATED])[0]).toContain("b.ts")
+    expect(buildNotes({ findings: [], complete: true }, [COMPLETE, UNREADABLE])[0]).toContain("b.ts")
   })
 })

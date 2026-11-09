@@ -1,10 +1,11 @@
 import { fileURLToPath } from "node:url"
 import { describe, expect, test } from "vitest"
-import { type ChatMessage } from "#synapse/client"
+import { type ChatMessage, callModel } from "#synapse/client"
 import { CommandError } from "#synapse/errors"
 import { type Execution, executeReview } from "#synapse/pipeline"
 import { loadRuleGroups } from "#synapse/rules"
 import { type CommandRequest } from "#synapse/shell"
+import { StubServer, sseWithFinish } from "#synapse/tests/client"
 import { joinSections, PACKAGE_SECTION } from "#synapse/tests/fixtures/diff"
 import { replyJson } from "#synapse/tests/fixtures/review"
 import { SETTINGS } from "#synapse/tests/fixtures/settings"
@@ -117,6 +118,50 @@ describe("executeReview", () => {
     const recorded = new RecordedRunner((request) => answerFor(request, true))
     expect(await executeReview(execution(recorded, new ScriptedCaller([])))).toBe(1)
     expect(recorded.calls.at(-1)?.input).toContain("FALHA")
+  })
+
+  test("publishes a failure when the provider rejects input with HTTP 400", async () => {
+    const stub = new StubServer([
+      { status: 400, body: "context too long" },
+      { status: 400, body: "context too long" },
+    ])
+    const settings = { ...SETTINGS, baseUrl: await stub.start() }
+    try {
+      const recorded = new RecordedRunner((request) => answerFor(request, false))
+      const run = execution(recorded, new ScriptedCaller([]))
+      run.ports.caller = (messages) => callModel(settings, messages)
+      expect(await executeReview(run)).toBe(1)
+      const bodies = postedBodies(recorded).join("")
+      expect(bodies).toContain("**Veredito: FALHA**")
+      expect(bodies).toContain("HTTP 400")
+      expect(bodies).not.toContain("**Veredito: OK**")
+      expect(stub.requests).toHaveLength(2)
+    } finally {
+      await stub.stop()
+    }
+  })
+
+  test("retries length errors and publishes only a failure after the final attempt", async () => {
+    const body = sseWithFinish("length", replyJson([], RULE_IDS))
+    const stub = new StubServer([
+      { status: 200, body },
+      { status: 200, body },
+    ])
+    const settings = { ...SETTINGS, baseUrl: await stub.start() }
+    try {
+      const recorded = new RecordedRunner((request) => answerFor(request, false))
+      const run = execution(recorded, new ScriptedCaller([]))
+      run.ports.caller = (messages) => callModel(settings, messages)
+      expect(await executeReview(run)).toBe(1)
+      const bodies = postedBodies(recorded).join("")
+      expect(bodies).toContain("**Veredito: FALHA**")
+      expect(bodies).toContain("finish_reason=length")
+      expect(bodies).not.toContain("**Veredito: OK**")
+      expect(bodies).not.toContain("**Veredito: ATENÇÃO**")
+      expect(stub.requests).toHaveLength(2)
+    } finally {
+      await stub.stop()
+    }
   })
 
   test("publishes the failure when the model never covers every rule", async () => {

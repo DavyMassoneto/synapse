@@ -1,8 +1,4 @@
-export const SOURCE_LIMIT_CHARS = 100_000
-
 export const UNCHANGED_MARK = " "
-
-export const TRUNCATED_NOTE = "[arquivo truncado: o restante não foi enviado à revisão]"
 
 export const UNREADABLE_SECTION = "=== {} (arquivo não pôde ser lido como texto UTF-8)"
 

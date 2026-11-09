@@ -2,7 +2,7 @@ import { afterEach, describe, expect, test } from "vitest"
 import { callModel } from "#synapse/client"
 import { ModelError } from "#synapse/errors"
 import { type Settings } from "#synapse/settings"
-import { MESSAGES, type StubReply, StubServer, sseOf } from "#synapse/tests/client"
+import { MESSAGES, type StubReply, StubServer, sseOf, sseWithFinish } from "#synapse/tests/client"
 import { SETTINGS } from "#synapse/tests/fixtures/settings"
 
 const stubs: StubServer[] = []
@@ -21,6 +21,14 @@ describe("callModel", () => {
   test("joins the streamed pieces and trims the text", async () => {
     const settings = await settingsFor([{ status: 200, body: sseOf("  res", "posta  ") }])
     expect(await callModel(settings, MESSAGES)).toBe("resposta")
+  })
+
+  test("rejects length termination from the provider without a transport retry", async () => {
+    const settings = await settingsFor([
+      { status: 200, body: sseWithFinish("length", '{"coverage":[],"findings":[]}') },
+    ])
+    await expect(callModel(settings, MESSAGES)).rejects.toThrow(ModelError)
+    expect(stubs.at(0)?.requests).toHaveLength(1)
   })
 
   test("sends a streaming request", async () => {
