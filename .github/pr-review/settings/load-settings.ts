@@ -8,8 +8,8 @@ import {
   ENV_PR_NUMBER,
   ENV_PR_TITLE,
   ENV_REPO,
+  MISSING_ENV,
 } from "./constants"
-import { readEnv } from "./read-env"
 import { type Settings } from "./types"
 
 export function loadSettings(): Settings {
@@ -24,4 +24,12 @@ export function loadSettings(): Settings {
     prTitle: readEnv(ENV_PR_TITLE),
     prBody: readEnv(ENV_PR_BODY),
   }
+}
+
+export function readEnv(name: string): string {
+  const value = process.env[name]
+  if (typeof value !== "string") {
+    throw new Error(MISSING_ENV + name)
+  }
+  return value
 }

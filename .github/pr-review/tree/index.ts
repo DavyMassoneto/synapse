@@ -1,5 +1,2 @@
 export * from "./constants"
-export * from "./count-lines"
-export * from "./count-omitted"
 export * from "./describe-tree"
-export * from "./list-tree-paths"

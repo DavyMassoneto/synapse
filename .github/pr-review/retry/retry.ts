@@ -1,4 +1,3 @@
-import { sleep } from "./sleep"
 import { type Operation, type RetryPolicy } from "./types"
 
 export async function retry<Result>(operation: Operation<Result>, policy: RetryPolicy): Promise<Result> {
@@ -12,4 +11,8 @@ export async function retry<Result>(operation: Operation<Result>, policy: RetryP
       await sleep(policy.backoffMs * attempt)
     }
   }
+}
+
+export function sleep(milliseconds: number): Promise<void> {
+  return new Promise<void>((resolve) => setTimeout(resolve, milliseconds))
 }

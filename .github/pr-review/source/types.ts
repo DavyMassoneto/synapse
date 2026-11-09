@@ -8,5 +8,3 @@ export interface TruncatedText {
   text: string
   truncated: boolean
 }
-
-export type OptionalLines = string[] | undefined

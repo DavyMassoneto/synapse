@@ -1,10 +1,10 @@
 import { ModelError } from "../errors"
-import { retry } from "../retry"
+import { type RetryPolicy, retry } from "../retry"
 import { type Settings } from "../settings"
-import { buildRetryPolicy } from "./build-retry-policy"
-import { ERROR_EMPTY } from "./constants"
-import { requestOnce } from "./request-once"
-import { type ChatMessage } from "./types"
+import { BACKOFF_MS, MAX_ATTEMPTS } from "./constants"
+import { isRetryable } from "./predicates"
+import { type ChatMessage, ERROR_EMPTY, requestOnce } from "./request"
+import { type ModelCaller } from "./types"
 
 export async function callModel(settings: Settings, messages: ChatMessage[]): Promise<string> {
   let text: string
@@ -20,4 +20,12 @@ export async function callModel(settings: Settings, messages: ChatMessage[]): Pr
     throw new ModelError(ERROR_EMPTY)
   }
   return text.trim()
+}
+
+export function buildRetryPolicy(): RetryPolicy {
+  return { attempts: MAX_ATTEMPTS, backoffMs: BACKOFF_MS, isRetryable }
+}
+
+export function createModelCaller(settings: Settings): ModelCaller {
+  return (messages: ChatMessage[]) => callModel(settings, messages)
 }

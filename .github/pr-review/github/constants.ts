@@ -1,22 +1,17 @@
-export const GH_COMMAND = "gh"
-export const API_ARGUMENTS = ["api"]
-export const METHOD_FLAG = "-X"
-export const INPUT_ARGUMENTS = ["--input", "-"]
-export const PAGINATE_ARGUMENTS = ["--paginate", "--slurp"]
-export const DIFF_ARGUMENTS = ["pr", "diff"]
-export const REPO_FLAG = "--repo"
-export const METHOD_GET = "GET"
 export const METHOD_POST = "POST"
+
 export const METHOD_PATCH = "PATCH"
-export const METHOD_DELETE = "DELETE"
-export const BOT_LOGIN = "github-actions[bot]"
+
 export const COMMENT_SIDE = "RIGHT"
+
 export const REVIEW_EVENT = "COMMENT"
-export const RATE_LIMIT_MARKER = "rate limit"
-export const RATE_LIMIT_ATTEMPTS = 5
-export const RATE_LIMIT_BACKOFF_MS = 60_000
+
 export const ISSUE_COMMENTS = "repos/{}/issues/{}/comments"
+
 export const ISSUE_COMMENT = "repos/{}/issues/comments/{}"
+
 export const PULL_COMMENTS = "repos/{}/pulls/{}/comments"
+
 export const PULL_COMMENT = "repos/{}/pulls/comments/{}"
+
 export const PULL_REVIEWS = "repos/{}/pulls/{}/reviews"

@@ -1,18 +1,31 @@
 export const INLINE_MARKER = "<!-- pr-review-bot:inline -->"
+
 export const SUMMARY_MARKER = "<!-- pr-review-bot:summary:{} -->"
+
 export const MARKER_PREFIX = "<!-- pr-review-bot:"
-export const LOCATION_SEPARATOR = ":"
+
 export const MAX_PAGE_CHARS = 60_000
+
 export const TITLE = "### 🤖 Revisão"
+
 export const TITLE_CONTINUATION = "### 🤖 Revisão (continuação {})"
+
 export const LINE_VERDICT = "**Veredito: {}**"
+
 export const LINE_COUNTS = "{} achado(s): {}."
+
 export const LINE_NO_FINDINGS = "Nenhum defeito encontrado."
+
 export const LINE_FAILURE = "A revisão não terminou: {}."
+
 export const HEADER_GENERAL = "#### Achados da PR inteira"
+
 export const HEADER_OUTSIDE = "#### Achados fora das linhas comentáveis do diff"
+
 export const LINE_ANCHORED = "{} achado(s) estão comentados na linha do diff."
+
 export const BULLET_FINDING = "- **[{}]** {}"
+
 export const BULLET_LOCATED = "- `{}:{}` **[{}]** {}"
+
 export const COUNT_ENTRY = "{} ({})"
-export const RULE_LABEL = "{} {}"
