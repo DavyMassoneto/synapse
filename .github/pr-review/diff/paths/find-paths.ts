@@ -23,9 +23,9 @@ export function findPath(section: string): OptionalPath {
     return undefined
   }
   for (const diffLine of section.split(LINE_BREAK)) {
-    const binaryPath = BINARY_NEW_PATH.exec(diffLine)?.at(1)
+    const binaryPath = readBinaryPath(diffLine, BINARY_NEW_PATH)
     if (binaryPath !== undefined) {
-      return decodeGitPath(binaryPath).slice(DIFF_SIDE_PREFIX_LENGTH)
+      return binaryPath
     }
     if (diffLine === DELETED_FILE_MARKER || diffLine.startsWith(HUNK_MARKER)) {
       return undefined
@@ -43,9 +43,9 @@ export function findPath(section: string): OptionalPath {
 
 export function findOldPath(section: string): OptionalPath {
   for (const diffLine of section.split(LINE_BREAK)) {
-    const binaryPath = BINARY_OLD_PATH.exec(diffLine)?.at(1)
+    const binaryPath = readBinaryPath(diffLine, BINARY_OLD_PATH)
     if (binaryPath !== undefined) {
-      return decodeGitPath(binaryPath).slice(DIFF_SIDE_PREFIX_LENGTH)
+      return binaryPath
     }
     const path = readPrefixedPath(diffLine, OLD_FILE_PREFIX, QUOTED_OLD_FILE_PREFIX)
     if (path !== undefined) {
@@ -64,6 +64,14 @@ export function readPrefixedPath(diffLine: string, prefix: string, quotedPrefix:
     return stripTimestamp(diffLine.slice(prefix.length))
   }
   return undefined
+}
+
+export function readBinaryPath(diffLine: string, pattern: RegExp): OptionalPath {
+  const path = pattern.exec(diffLine)?.at(1)
+  if (path === undefined) {
+    return undefined
+  }
+  return decodeGitPath(path).slice(DIFF_SIDE_PREFIX_LENGTH)
 }
 
 export function stripTimestamp(path: string): string {

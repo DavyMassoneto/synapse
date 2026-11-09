@@ -1,6 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { listDeletedPaths, parseDiff } from "#synapse/diff"
-import { decodeGitPath } from "#synapse/diff/paths"
+import { decodeGitPath, listDeletedPaths, parseDiff } from "#synapse/diff"
 
 test("preserves escaped literal backslashes before escape-like suffixes", () => {
   expect(decodeGitPath(String.raw`"a\\tb"`)).toBe(String.raw`a\tb`)
@@ -20,6 +19,14 @@ describe("diff path regressions", () => {
       "diff --git a/img.bin b/img.bin\nnew file mode 100644\nBinary files /dev/null and b/img.bin differ",
     )
     expect(files.map((file) => file.path)).toEqual(["img.bin"])
+    expect(files.at(0)?.commentableLines.size).toBe(0)
+  })
+
+  test("decodes a quoted binary addition before removing its side prefix", () => {
+    const files = parseDiff(String.raw`diff --git "a/caf\303\243.bin" "b/caf\303\243.bin"
+new file mode 100644
+Binary files /dev/null and "b/caf\303\243.bin" differ`)
+    expect(files.map((file) => file.path)).toEqual(["cafã.bin"])
     expect(files.at(0)?.commentableLines.size).toBe(0)
   })
 

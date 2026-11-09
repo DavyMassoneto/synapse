@@ -13,9 +13,7 @@ export function createExecution(): Execution {
       caller: createModelCaller(settings),
       timing: {
         now: Date.now,
-        wait: async (milliseconds: number) => {
-          await setTimeout(milliseconds)
-        },
+        wait: setTimeout,
         hasMutation: false,
       },
     },

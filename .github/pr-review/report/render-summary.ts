@@ -14,7 +14,6 @@ import {
   LINE_VERDICT,
   SUMMARY_MARKER,
   TITLE,
-  TITLE_CONTINUATION,
 } from "./constants"
 import { labelOf, type RuleLabels } from "./labels"
 import { paginate } from "./paginate"
@@ -23,10 +22,7 @@ import { renderBullet } from "./render-bullets"
 
 export function renderSummaryPages(result: ReviewResult, labels: RuleLabels, files: ChangedFile[]): string[] {
   const lines = renderLines(result, labels, partitionFindings(result.findings, files))
-  return paginate(lines).map((page, index) => {
-    const heading = index === 0 ? page : fillTemplate(TITLE_CONTINUATION, [String(index + 1)]) + PARAGRAPH_BREAK + page
-    return fillTemplate(SUMMARY_MARKER, [String(index)]) + PARAGRAPH_BREAK + heading
-  })
+  return paginate(lines)
 }
 
 export function renderLines(result: ReviewResult, labels: RuleLabels, partition: Partition): string[] {

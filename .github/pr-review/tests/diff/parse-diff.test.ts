@@ -20,8 +20,8 @@ describe("parseDiff", () => {
     expect(parseDiff(DIFF).at(0)?.commentableLines).toEqual(new Set([10, 11, 12, 13, 30, 31]))
   })
 
-  test("ignores lock files and deleted files", () => {
-    expect(parseDiff(DIFF).map((file) => file.path)).toEqual(["src/a.ts"])
+  test("keeps lock files and excludes deleted files", () => {
+    expect(parseDiff(DIFF).map((file) => file.path)).toEqual(["src/a.ts", "package-lock.json"])
   })
 
   test("reads a quoted path without the timestamp", () => {

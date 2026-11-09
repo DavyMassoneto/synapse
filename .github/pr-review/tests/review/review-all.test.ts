@@ -1,7 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { type ChatMessage } from "#synapse/client"
-import { type ReviewRequest, reviewAll } from "#synapse/review"
-import { CONTINUE_MESSAGE } from "#synapse/review/rounds"
+import { CONTINUE_MESSAGE, type ReviewRequest, reviewAll } from "#synapse/review"
 import {
   FINDING_GENERAL,
   FINDING_ON_ADDED,

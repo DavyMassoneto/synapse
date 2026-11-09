@@ -2,14 +2,20 @@ import { fileURLToPath } from "node:url"
 import { describe, expect, test } from "vitest"
 import { type ChatMessage, callModel } from "#synapse/client"
 import { CommandError } from "#synapse/errors"
-import { type Execution, executeReview } from "#synapse/pipeline"
+import { collectReview, type Execution, executeReview } from "#synapse/pipeline"
 import { loadRuleGroups } from "#synapse/rules"
 import { type CommandRequest } from "#synapse/shell"
 import { StubServer, sseWithFinish } from "#synapse/tests/client"
-import { joinSections, PACKAGE_SECTION } from "#synapse/tests/fixtures/diff"
-import { replyJson } from "#synapse/tests/fixtures/review"
-import { SETTINGS } from "#synapse/tests/fixtures/settings"
-import { RecordedRunner } from "#synapse/tests/fixtures/shell"
+import {
+  createTiming,
+  joinSections,
+  LOCK_SECTION,
+  noWait,
+  PACKAGE_SECTION,
+  RecordedRunner,
+  replyJson,
+  SETTINGS,
+} from "#synapse/tests/fixtures"
 import { ScriptedCaller } from "#synapse/tests/review"
 
 const RULE_IDS = loadRuleGroups().flatMap((group) => group.rules.map((rule) => rule.id))
@@ -34,7 +40,7 @@ function execution(recorded: RecordedRunner, caller: ScriptedCaller): Execution 
   return {
     settings: SETTINGS,
     ports: {
-      timing: { now: () => 0, wait: async () => {}, hasMutation: false },
+      timing: createTiming(noWait),
       runner,
       caller: (messages: ChatMessage[]) => caller.call(messages),
     },
@@ -44,6 +50,24 @@ function execution(recorded: RecordedRunner, caller: ScriptedCaller): Execution 
 function postedBodies(recorded: RecordedRunner): string[] {
   return recorded.calls.filter((call) => call.args.includes("POST")).map((call) => call.input)
 }
+
+describe("collectReview", () => {
+  test("excludes lock files from collected files and caller sources", async () => {
+    const recorded = new RecordedRunner((request) => {
+      if (request.args.includes("diff")) {
+        return joinSections(LOCK_SECTION, PACKAGE_SECTION.replaceAll("package.json", PACKAGE_PATH))
+      }
+      return answerFor(request, false)
+    })
+    const caller = new ScriptedCaller([replyJson([], RULE_IDS)])
+    const collected = await collectReview(execution(recorded, caller), loadRuleGroups())
+    const sources = caller.received.flat().filter((message) => message.role === "user")
+    expect.soft(collected.files.map((file) => file.path)).toEqual([PACKAGE_PATH])
+    expect(sources).not.toHaveLength(0)
+    expect.soft(sources.map((message) => message.content).join("\n")).not.toContain("package-lock.json")
+    expect(sources.map((message) => message.content).join("\n")).toContain(PACKAGE_PATH)
+  })
+})
 
 describe("executeReview", () => {
   test("respects rate limit cooldown before publishing the failure summary", async () => {
@@ -62,13 +86,9 @@ describe("executeReview", () => {
       return ""
     })
     const run = execution(recorded, new ScriptedCaller([]))
-    run.ports.timing = {
-      hasMutation: false,
-      now: () => 0,
-      wait: async (ms) => {
-        events.push(`wait:${ms}`)
-      },
-    }
+    run.ports.timing = createTiming(async (ms) => {
+      events.push(`wait:${ms}`)
+    })
     expect(await executeReview(run)).toBe(1)
     expect(events).toEqual([
       "403",

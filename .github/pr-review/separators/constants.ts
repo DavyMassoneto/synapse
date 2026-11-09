@@ -1,6 +1,5 @@
 export const LINE_BREAK = "\n"
 export const PARAGRAPH_BREAK = "\n\n"
 export const LIST_SEPARATOR = ", "
-export const SPACE = " "
 export const NO_TEXT = ""
 export const TEXT_ENCODING = "utf-8"

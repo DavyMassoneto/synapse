@@ -1,14 +1,7 @@
-import { readFileSync } from "node:fs"
 import { describe, expect, test } from "vitest"
 import { buildSystemPrompt } from "#synapse/review"
 import { loadRuleGroups } from "#synapse/rules"
-import { TEXT_ENCODING } from "#synapse/separators"
-import { SETTINGS } from "#synapse/tests/fixtures/settings"
-import { RecordedRunner } from "#synapse/tests/fixtures/shell"
-
-function promptFile(name: string): string {
-  return readFileSync(new URL(`../../prompts/${name}.md`, import.meta.url), TEXT_ENCODING)
-}
+import { promptFile, RecordedRunner, SETTINGS } from "#synapse/tests/fixtures"
 
 describe("buildSystemPrompt", () => {
   test("orders instructions, rules, base context and the response format", () => {

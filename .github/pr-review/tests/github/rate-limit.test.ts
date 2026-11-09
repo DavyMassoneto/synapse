@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { CommandError } from "#synapse/errors"
 import { callApiWithoutBody, isRateLimited, rateLimitDelay } from "#synapse/github"
-import { RecordedRunner } from "#synapse/tests/fixtures/shell"
+import { createTiming, RecordedRunner } from "#synapse/tests/fixtures"
 
 function emptyRunner(): string {
   return ""
@@ -10,13 +10,9 @@ function emptyRunner(): string {
 describe("GitHub rate limit waits", () => {
   test("keeps mutation pacing isolated between executions sharing a runner", async () => {
     const waits: number[] = []
-    const timing = {
-      now: () => 0,
-      wait: async (ms: number) => {
-        waits.push(ms)
-      },
-      hasMutation: false,
-    }
+    const timing = createTiming(async (ms) => {
+      waits.push(ms)
+    })
     const independent = { ...timing }
     await callApiWithoutBody(emptyRunner, "POST", "one", timing)
     await callApiWithoutBody(emptyRunner, "POST", "two", independent)
@@ -39,13 +35,9 @@ describe("GitHub rate limit waits", () => {
   test("waits before every serial mutation", async () => {
     const waits: number[] = []
     const runner = emptyRunner
-    const timing = {
-      hasMutation: false,
-      now: () => 0,
-      wait: async (ms: number) => {
-        waits.push(ms)
-      },
-    }
+    const timing = createTiming(async (ms) => {
+      waits.push(ms)
+    })
     await callApiWithoutBody(runner, "POST", "route", timing)
     await callApiWithoutBody(runner, "DELETE", "route/1", timing)
     await callApiWithoutBody(runner, "DELETE", "route/2", timing)
@@ -61,13 +53,9 @@ describe("GitHub rate limit waits", () => {
       return ""
     })
     const runner = recorded.run.bind(recorded)
-    const timing = {
-      hasMutation: false,
-      now: () => 0,
-      wait: async (ms: number) => {
-        waits.push(ms)
-      },
-    }
+    const timing = createTiming(async (ms) => {
+      waits.push(ms)
+    })
     await expect(callApiWithoutBody(runner, "POST", "review", timing)).rejects.toThrow("rate limit")
     await callApiWithoutBody(runner, "PATCH", "summary", timing)
     expect(waits).toEqual([60000, 120000, 240000, 480000, 960000])
@@ -82,13 +70,9 @@ describe("GitHub rate limit waits", () => {
       return "HTTP/2.0 204 No Content\r\n\r\n"
     })
     const runner = recorded.run.bind(recorded)
-    const timing = {
-      hasMutation: false,
-      now: () => 0,
-      wait: async (ms: number) => {
-        waits.push(ms)
-      },
-    }
+    const timing = createTiming(async (ms) => {
+      waits.push(ms)
+    })
     await callApiWithoutBody(runner, "DELETE", "route", timing)
     expect(recorded.calls.every((call) => call.args.includes("-i"))).toBe(true)
     expect(waits).toEqual([120000])

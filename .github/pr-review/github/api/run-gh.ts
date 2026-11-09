@@ -50,12 +50,7 @@ export async function callApi(
   payload: ApiPayload,
   timing: MutationTiming,
 ): Promise<void> {
-  await runGh(
-    runner,
-    [...API_ARGUMENTS, INCLUDE_ARGUMENT, METHOD_FLAG, method, route, ...INPUT_ARGUMENTS],
-    JSON.stringify(payload),
-    timing,
-  )
+  await runGh(runner, [...mutationArguments(method, route), ...INPUT_ARGUMENTS], JSON.stringify(payload), timing)
 }
 
 export async function callApiWithoutBody(
@@ -64,7 +59,11 @@ export async function callApiWithoutBody(
   route: string,
   timing: MutationTiming,
 ): Promise<void> {
-  await runGh(runner, [...API_ARGUMENTS, INCLUDE_ARGUMENT, METHOD_FLAG, method, route], NO_TEXT, timing)
+  await runGh(runner, mutationArguments(method, route), NO_TEXT, timing)
+}
+
+export function mutationArguments(method: string, route: string): string[] {
+  return [...API_ARGUMENTS, INCLUDE_ARGUMENT, METHOD_FLAG, method, route]
 }
 
 export function buildRoute(template: string, settings: Settings, extra: string[]): string {

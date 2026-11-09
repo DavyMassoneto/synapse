@@ -4,6 +4,7 @@ import { fetchDiff, publishSummary, replaceInlineComments } from "../github"
 import { buildLabels, groupByLine, partitionFindings, renderFailure, renderInline, renderSummaryPages } from "../report"
 import { buildSystemPrompt, reviewAll, VERDICT_OK, type Verdict } from "../review"
 import { loadRuleGroups, type RuleGroup } from "../rules"
+import { isIgnored } from "../scope"
 import { renderSources } from "../source"
 import { describeTree } from "../tree"
 import { EXIT_FAILURE, EXIT_SUCCESS } from "./constants"
@@ -36,7 +37,7 @@ export async function executeReview(execution: Execution): Promise<number> {
 export async function collectReview(execution: Execution, groups: RuleGroup[]): Promise<Collected> {
   const { settings, ports } = execution
   const diff = await fetchDiff(ports.runner, settings, ports.timing)
-  const files = parseDiff(diff)
+  const files = parseDiff(diff).filter((file) => !isIgnored(file.path))
   const input = { treeListing: describeTree(ports.runner), deletedPaths: listDeletedPaths(diff) }
   const result = await reviewAll({
     caller: ports.caller,

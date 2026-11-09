@@ -20,11 +20,8 @@ export type ApiPayload = BodyPayload | ReviewPayload
 export type GithubNow = () => number
 export type GithubWait = (milliseconds: number) => Promise<void>
 
-export interface GithubTiming {
+export interface MutationTiming {
   now: GithubNow
   wait: GithubWait
-}
-
-export interface MutationTiming extends GithubTiming {
   hasMutation: boolean
 }

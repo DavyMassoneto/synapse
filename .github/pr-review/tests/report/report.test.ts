@@ -3,6 +3,7 @@ import { type ChangedFile } from "#synapse/diff"
 import {
   buildLabels,
   groupByLine,
+  MAX_PAGE_CHARS,
   partitionFindings,
   renderFailure,
   renderInline,
@@ -62,6 +63,25 @@ describe("renderSummaryPages", () => {
 
   test("carries the incomplete note", () => {
     expect(page).toContain("Revisão incompleta: teste.")
+  })
+
+  test("counts separators and page headings when paginating 3000 short notes", () => {
+    const notes = Array.from({ length: 3000 }, (_, index) => `note ${index}: ${"x".repeat(18)}`)
+    const pages = renderSummaryPages({ ...RESULT, notes }, LABELS, FILES)
+    expect(pages.length).toBeGreaterThan(1)
+    for (const page of pages) {
+      expect(page.length).toBeLessThanOrEqual(MAX_PAGE_CHARS)
+    }
+    const rendered = pages.join("\n\n")
+    for (const note of notes) {
+      expect(rendered).toContain(note)
+    }
+  })
+
+  test("preserves a single note that exceeds the page limit", () => {
+    const note = "x".repeat(70000)
+    const pages = renderSummaryPages({ ...RESULT, notes: [note] }, LABELS, FILES)
+    expect(pages.some((page) => page.includes(note))).toBe(true)
   })
 
   test("splits a long report in pages with their own markers", () => {

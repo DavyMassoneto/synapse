@@ -1,15 +1,8 @@
 import { describe, expect, test } from "vitest"
 import { CommandError } from "#synapse/errors"
-import {
-  buildReviewPayload,
-  listPaginated,
-  type MutationTiming,
-  publishSummary,
-  replaceInlineComments,
-} from "#synapse/github"
+import { buildReviewPayload, listPaginated, publishSummary, replaceInlineComments } from "#synapse/github"
 import { type CommandRequest, type CommandRunner } from "#synapse/shell"
-import { SETTINGS } from "#synapse/tests/fixtures/settings"
-import { RecordedRunner } from "#synapse/tests/fixtures/shell"
+import { createTiming, noWait, RecordedRunner, SETTINGS } from "#synapse/tests/fixtures"
 
 const OWN_BODY = "<!-- pr-review-bot:summary:0 -->\ncorpo"
 const COMMENT_PAGES = JSON.stringify([
@@ -30,10 +23,6 @@ function runnerWithComments(): RecordedRunner {
   })
 }
 
-function timing(): MutationTiming {
-  return { now: () => 0, wait: async () => {}, hasMutation: false }
-}
-
 function recordedRunner(recorded: RecordedRunner): CommandRunner {
   const runner = recorded.run.bind(recorded)
   return runner
@@ -48,23 +37,29 @@ function methodsOf(recorded: RecordedRunner): string[] {
   return recorded.calls.filter((call) => call.args.includes("-X")).map((call) => methodOf(call))
 }
 
-describe("publishSummary", () => {
-  test("reads all pages and rejects malformed comment pages", async () => {
+describe("listPaginated", () => {
+  test("reads all pages", async () => {
     const comment = { id: 1, body: OWN_BODY, user: { login: "github-actions[bot]" } }
     expect(
-      await listPaginated(() => JSON.stringify([[comment], [{ ...comment, id: 2 }]]), "route", timing()),
+      await listPaginated(() => JSON.stringify([[comment], [{ ...comment, id: 2 }]]), "route", createTiming(noWait)),
     ).toHaveLength(2)
-    await expect(listPaginated(() => '[{"x":1}]', "route", timing())).rejects.toThrow()
   })
+
+  test("rejects malformed comment pages", async () => {
+    await expect(listPaginated(() => '[{"x":1}]', "route", createTiming(noWait))).rejects.toThrow()
+  })
+})
+
+describe("publishSummary", () => {
   test("updates the first own comment and deletes the surplus ones", async () => {
     const recorded = runnerWithComments()
-    await publishSummary(recordedRunner(recorded), SETTINGS, ["pagina"], timing())
+    await publishSummary(recordedRunner(recorded), SETTINGS, ["pagina"], createTiming(noWait))
     expect(methodsOf(recorded)).toEqual(["PATCH", "DELETE"])
   })
 
   test("creates the pages that have no comment yet", async () => {
     const recorded = runnerWithComments()
-    await publishSummary(recordedRunner(recorded), SETTINGS, ["a", "b", "c"], timing())
+    await publishSummary(recordedRunner(recorded), SETTINGS, ["a", "b", "c"], createTiming(noWait))
     expect(methodsOf(recorded)).toEqual(["PATCH", "PATCH", "POST"])
   })
 })
@@ -96,9 +91,9 @@ describe("replaceInlineComments", () => {
     })
     const runner = recorded.run.bind(recorded)
     const inline = [{ path: "a.ts", line: 1, body: "x" }]
-    await expect(replaceInlineComments(runner, SETTINGS, inline, timing())).rejects.toThrow("500")
+    await expect(replaceInlineComments(runner, SETTINGS, inline, createTiming(noWait))).rejects.toThrow("500")
     expect(ids).toEqual([2, 3])
-    await replaceInlineComments(runner, SETTINGS, inline, timing())
+    await replaceInlineComments(runner, SETTINGS, inline, createTiming(noWait))
     expect(ids).toEqual([4])
     expect(posts).toBe(2)
   })
@@ -123,13 +118,9 @@ describe("replaceInlineComments", () => {
     })
     const waits: number[] = []
     const runner = recorded.run.bind(recorded)
-    const clock: MutationTiming = {
-      hasMutation: false,
-      now: () => 0,
-      wait: async (ms) => {
-        waits.push(ms)
-      },
-    }
+    const clock = createTiming(async (ms) => {
+      waits.push(ms)
+    })
     await replaceInlineComments(runner, SETTINGS, [{ path: "a.ts", line: 1, body: "x" }], clock)
     expect(methodsOf(recorded)).toEqual(["POST", "POST", "DELETE", "DELETE"])
     expect(successfulPosts).toBe(1)
@@ -137,7 +128,12 @@ describe("replaceInlineComments", () => {
   })
   test("posts the new review before deleting the old comments", async () => {
     const recorded = runnerWithComments()
-    await replaceInlineComments(recordedRunner(recorded), SETTINGS, [{ path: "a.ts", line: 1, body: "x" }], timing())
+    await replaceInlineComments(
+      recordedRunner(recorded),
+      SETTINGS,
+      [{ path: "a.ts", line: 1, body: "x" }],
+      createTiming(noWait),
+    )
     expect(methodsOf(recorded)).toEqual(["POST", "DELETE", "DELETE"])
   })
 
@@ -149,14 +145,19 @@ describe("replaceInlineComments", () => {
       throw new CommandError("HTTP 422")
     })
     await expect(
-      replaceInlineComments(recordedRunner(recorded), SETTINGS, [{ path: "a.ts", line: 1, body: "x" }], timing()),
+      replaceInlineComments(
+        recordedRunner(recorded),
+        SETTINGS,
+        [{ path: "a.ts", line: 1, body: "x" }],
+        createTiming(noWait),
+      ),
     ).rejects.toThrow("HTTP 422")
     expect(methodsOf(recorded)).toEqual(["POST"])
   })
 
   test("only deletes when there is nothing to post", async () => {
     const recorded = runnerWithComments()
-    await replaceInlineComments(recordedRunner(recorded), SETTINGS, [], timing())
+    await replaceInlineComments(recordedRunner(recorded), SETTINGS, [], createTiming(noWait))
     expect(methodsOf(recorded)).toEqual(["DELETE", "DELETE"])
   })
 })

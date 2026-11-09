@@ -1,4 +1,3 @@
-import { isIgnored } from "../scope"
 import { collectLineNumbers } from "./lines"
 import { findPath } from "./paths"
 import { splitSections } from "./sections"
@@ -17,7 +16,7 @@ export function parseDiff(diff: string): ChangedFile[] {
   const files: ChangedFile[] = []
   for (const section of splitSections(diff)) {
     const file = parseFile(section)
-    if (file !== undefined && !isIgnored(file.path)) {
+    if (file !== undefined) {
       files.push(file)
     }
   }

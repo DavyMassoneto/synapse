@@ -1,4 +1,6 @@
 export * from "./diff"
+export * from "./prompts"
 export * from "./review"
 export * from "./settings"
 export * from "./shell"
+export * from "./timing"

@@ -12,7 +12,7 @@ export async function callModel(settings: Settings, messages: ChatMessage[]): Pr
     text = await retry(() => requestOnce(settings, messages), buildRetryPolicy())
   } catch (error) {
     if (error instanceof Error) {
-      throw new ModelError(error.message)
+      throw new ModelError(error.message, { cause: error })
     }
     throw error
   }
