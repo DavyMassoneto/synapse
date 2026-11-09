@@ -19,21 +19,17 @@ export async function collectContent(body: ReadableStream<Uint8Array>): Promise<
     const lines = pending.split(LINE_BREAK)
     pending = lines.splice(-1).join(NO_TEXT)
     for (const line of lines) {
-      content += readContentEvent(line, content.length)
+      content += readEvent(line, content.length)
     }
   }
-  content += readContentEvent(pending + decoder.decode(), content.length)
+  content += readEvent(pending + decoder.decode(), content.length)
   if (content.trim().length === 0) {
     throw new ModelError(fillTemplate(ERROR_EMPTY_STREAM, [head]))
   }
   return content
 }
 
-export function readEvent(line: string): string {
-  return readContentEvent(line, 0)
-}
-
-function readContentEvent(line: string, receivedChars: number): string {
+export function readEvent(line: string, receivedChars: number): string {
   if (!isDataLine(line)) {
     return NO_TEXT
   }
