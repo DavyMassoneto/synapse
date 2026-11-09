@@ -43,9 +43,7 @@ export const DONE_PAYLOAD = "[DONE]"
 
 export const STOP_FINISH = "stop"
 
-export const JSON_START = "{"
-
-export const JSON_END = "}"
+export const CODE_FENCE = "```"
 
 export const MAX_OUTPUT_TOKENS = 32_000
 

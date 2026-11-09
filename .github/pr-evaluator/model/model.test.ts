@@ -34,8 +34,14 @@ test("erro enviado pelo provedor no fluxo falha com a mensagem dele", async () =
 
 const REPLY = '{"verdict":"approve","summary":"ok","findings":[]}'
 
-test("aceita o JSON cercado de texto e de cercas de código", () => {
-  expect(parseReply(`Segue:\n\`\`\`json\n${REPLY}\n\`\`\`\n`).verdict).toBe("approve")
+test("aceita o JSON puro e o JSON dentro de uma única cerca de código", () => {
+  expect(parseReply(REPLY).verdict).toBe("approve")
+  expect(parseReply(`\`\`\`json\n${REPLY}\n\`\`\`\n`).verdict).toBe("approve")
+})
+
+test("rejeita texto fora do JSON", () => {
+  expect(() => parseReply(`Segue: ${REPLY}`)).toThrow(/fora do formato/)
+  expect(() => parseReply(`${REPLY} Espero ter ajudado.`)).toThrow(/fora do formato/)
 })
 
 test("rejeita JSON que não segue o formato", () => {

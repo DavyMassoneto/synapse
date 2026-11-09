@@ -21,7 +21,12 @@ export async function listBotReviewBodies(settings: GithubSettings): Promise<str
       ReviewListSchema,
     )
     for (const review of reviews) {
-      if (typeof review.body === "string" && review.user instanceof Object && review.user.login === BOT_LOGIN) {
+      if (
+        typeof review.body === "string" &&
+        review.commit_id === settings.headSha &&
+        review.user instanceof Object &&
+        review.user.login === BOT_LOGIN
+      ) {
         bodies.push(review.body)
       }
     }

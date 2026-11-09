@@ -16,13 +16,22 @@ export const TAB = "\t"
 
 export const QUOTE = '"'
 
-export const ESCAPE_PATTERN = /\\[\\"tn]/g
+export const ESCAPE_PATTERN = /\\(?:[0-7]{3}|[\\"abfnrtv])/g
+
+export const OCTAL_ESCAPE_LENGTH = 4
+
+export const OCTAL_RADIX = 8
 
 export const ESCAPES = new Map<string, string>([
   ["\\\\", "\\"],
   ['\\"', '"'],
-  ["\\t", "\t"],
+  ["\\a", "\x07"],
+  ["\\b", "\b"],
+  ["\\f", "\f"],
   ["\\n", "\n"],
+  ["\\r", "\r"],
+  ["\\t", "\t"],
+  ["\\v", "\v"],
 ])
 
 export const ADDED = "+"
