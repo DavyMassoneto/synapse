@@ -41,7 +41,7 @@ export const DATA_PREFIX = "data:"
 
 export const DONE_PAYLOAD = "[DONE]"
 
-export const LENGTH_FINISH = "length"
+export const STOP_FINISH = "stop"
 
 export const JSON_START = "{"
 

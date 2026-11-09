@@ -8,12 +8,14 @@ O avaliador roda sozinho em toda PR e aponta cada problema na linha em que ele o
 
 ## Execução
 
-- O workflow `.github/workflows/pr-evaluator.yml` dispara em `pull_request_target` (PR aberta, atualizada, reaberta ou marcada como pronta) para PRs do próprio repositório que não são rascunho. Ele roda mesmo se o lint falhar.
-- O código do avaliador, as dependências e os documentos de contexto vêm da branch base da PR, nunca da cabeça da PR. O workflow não executa código da PR: lê apenas o diff.
-- O avaliador monta o diff entre o commit base e o commit avaliado, numera cada linha, chama o modelo com streaming e publica uma única review por commit avaliado, com todos os comentários em lote. Reexecuções do mesmo commit não duplicam a review.
+- O workflow `.github/workflows/pr-evaluator.yml` dispara em `pull_request_target` (PR aberta, atualizada, reaberta ou marcada como pronta) para PRs do próprio repositório que não são rascunho. Esse evento roda no contexto da **branch padrão**: o workflow só dispara depois de estar na branch padrão, para PRs com qualquer base. Ele roda mesmo se o lint falhar.
+- O código do avaliador, as dependências e os documentos de contexto vêm da branch padrão, nunca da cabeça da PR. O workflow não executa código da PR: lê apenas o diff.
+- O avaliador monta o diff entre o commit base e o commit avaliado, numera cada linha, chama o modelo com streaming e publica uma única review por commit avaliado, com todos os comentários em lote. A review é identificada por um marcador com o SHA e só conta se foi publicada por `github-actions[bot]`: reexecutar o mesmo commit, ou uma publicação concorrente, não duplica a review.
 - Antes de publicar, confere se a cabeça da PR ainda é o commit avaliado. Se a PR recebeu um commit novo, descarta a avaliação.
-- Um apontamento cuja linha o diff não mostra nunca vira comentário em outra linha: entra na lista "sem linha no diff" do resumo da review.
-- Resposta inválida, truncada ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado.
+- Comentário em outra linha nunca substitui o apontamento: se a linha do apontamento não está no diff, ele entra na lista "sem linha no diff" do resumo da review. Se só o intervalo (`startLine`) não está inteiro no diff, o comentário fica na linha final do apontamento, sem intervalo.
+- Resposta truncada (término diferente de `stop`), fora do formato ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado.
+- O job termina com sucesso quando a avaliação é publicada, qualquer que seja o veredito. Não é uma barreira de merge: o veredito `pedir mudanças` aparece na review, não no status do check.
+- O modelo é o configurado em `REVIEW_MODEL` no workflow e precisa estar liberado para a chave do secret `OMNIROUTE_API_KEY`.
 
 ## Entradas
 

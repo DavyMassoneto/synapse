@@ -78,3 +78,86 @@ test("intervalo não cruza trechos nem linhas fora do diff", () => {
   expect(hasDiffRange(lines, "src/a.ts", "RIGHT", 3, 9)).toBe(false)
   expect(hasDiffRange(lines, "src/a.ts", "RIGHT", 6, 3)).toBe(false)
 })
+
+const RENAMED = [
+  "diff --git a/old.ts b/new.ts",
+  "similarity index 90%",
+  "rename from old.ts",
+  "rename to new.ts",
+  "--- a/old.ts",
+  "+++ b/new.ts",
+  "@@ -1,2 +1,2 @@",
+  " same",
+  "-before",
+  "+after",
+  "",
+].join("\n")
+
+const SPACED = [
+  "diff --git a/dir with space/f.ts b/dir with space/f.ts",
+  "--- a/dir with space/f.ts\t",
+  "+++ b/dir with space/f.ts\t",
+  "@@ -1 +1 @@",
+  "-x",
+  "+y",
+  "",
+].join("\n")
+
+const QUOTED = [
+  'diff --git "a/dir/q\\"uote.ts" "b/dir/q\\"uote.ts"',
+  '--- "a/dir/q\\"uote.ts"',
+  '+++ "b/dir/q\\"uote.ts"',
+  "@@ -1 +1 @@",
+  "-x",
+  "+y",
+  "",
+].join("\n")
+
+const TWO_HUNKS = [
+  "diff --git a/m.ts b/m.ts",
+  "--- a/m.ts",
+  "+++ b/m.ts",
+  "@@ -1,2 +1,2 @@",
+  " a",
+  "-b",
+  "+c",
+  "@@ -40,2 +40,3 @@",
+  " far",
+  "+extra",
+  " end",
+  "",
+].join("\n")
+
+const BINARY = [
+  "diff --git a/x.png b/x.png",
+  "index 111..222 100644",
+  "Binary files a/x.png and b/x.png differ",
+  "",
+].join("\n")
+
+test("renomeação usa o caminho novo para os dois lados", () => {
+  const { lines } = annotateDiff(RENAMED)
+  expect(hasDiffLine(lines, "new.ts", "RIGHT", 2)).toBe(true)
+  expect(hasDiffLine(lines, "new.ts", "LEFT", 2)).toBe(true)
+  expect(hasDiffLine(lines, "old.ts", "RIGHT", 2)).toBe(false)
+})
+
+test("caminho com espaço e sufixo de tabulação do git", () => {
+  expect(hasDiffLine(annotateDiff(SPACED).lines, "dir with space/f.ts", "RIGHT", 1)).toBe(true)
+})
+
+test("caminho entre aspas com escapes do git", () => {
+  expect(hasDiffLine(annotateDiff(QUOTED).lines, 'dir/q"uote.ts', "RIGHT", 1)).toBe(true)
+})
+
+test("o segundo trecho recomeça a numeração e não liga os trechos", () => {
+  const { lines, text } = annotateDiff(TWO_HUNKS)
+  expect(text).toContain("R41 +extra")
+  expect(text).toContain("L2 -b")
+  expect(hasDiffRange(lines, "m.ts", "RIGHT", 2, 41)).toBe(false)
+  expect(hasDiffRange(lines, "m.ts", "RIGHT", 40, 42)).toBe(true)
+})
+
+test("arquivo binário não tem linhas comentáveis", () => {
+  expect(annotateDiff(BINARY).lines.size).toBe(0)
+})

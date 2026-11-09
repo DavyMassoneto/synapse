@@ -2,11 +2,11 @@ import { setTimeout as delay } from "node:timers/promises"
 import { type ModelSettings } from "../settings"
 import {
   ERROR_BODY_CHARACTERS,
-  LENGTH_FINISH,
   MAX_OUTPUT_TOKENS,
   MODEL_ATTEMPTS,
   MODEL_TIMEOUT_MS,
   RETRY_DELAY_MS,
+  STOP_FINISH,
 } from "./constants"
 import { ModelHttpError } from "./model-http-error"
 import { isRetryable } from "./predicates"
@@ -37,8 +37,8 @@ async function requestOnce(settings: ModelSettings, prompt: string): Promise<str
     throw new Error("O modelo respondeu sem corpo")
   }
   const result = await readStream(response.body)
-  if (result.finishReason === LENGTH_FINISH) {
-    throw new Error("O modelo cortou a resposta no limite de tokens de saída")
+  if (result.finishReason !== STOP_FINISH) {
+    throw new Error(`A resposta do modelo não terminou normalmente (término: ${result.finishReason})`)
   }
   if (result.content.trim().length === 0) {
     throw new Error("O modelo não devolveu texto")

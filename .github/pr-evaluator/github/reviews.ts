@@ -1,5 +1,5 @@
 import { type GithubSettings } from "../settings"
-import { MAX_PAGES, PER_PAGE, PublishedReviewSchema, PullSchema, ReviewListSchema } from "./constants"
+import { BOT_LOGIN, MAX_PAGES, PER_PAGE, PublishedReviewSchema, PullSchema, ReviewListSchema } from "./constants"
 import { getJson, postJson } from "./request"
 import { type PublishedReview, type ReviewPayload } from "./types"
 
@@ -12,7 +12,7 @@ export async function currentHeadSha(settings: GithubSettings): Promise<string> 
   return pull.head.sha
 }
 
-export async function listReviewBodies(settings: GithubSettings): Promise<string[]> {
+export async function listBotReviewBodies(settings: GithubSettings): Promise<string[]> {
   const bodies: string[] = []
   for (let page = 1; page <= MAX_PAGES; page += 1) {
     const reviews = await getJson(
@@ -21,7 +21,7 @@ export async function listReviewBodies(settings: GithubSettings): Promise<string
       ReviewListSchema,
     )
     for (const review of reviews) {
-      if (typeof review.body === "string") {
+      if (typeof review.body === "string" && review.user instanceof Object && review.user.login === BOT_LOGIN) {
         bodies.push(review.body)
       }
     }

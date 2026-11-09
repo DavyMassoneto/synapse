@@ -1,10 +1,16 @@
 import { type AnnotatedDiff, annotateDiff, readDiff } from "../diff"
-import { currentHeadSha, listReviewBodies, publishReview } from "../github"
+import { currentHeadSha, listBotReviewBodies, publishReview } from "../github"
 import { callModel, parseReply, type Reply } from "../model"
 import { buildPrompt, loadContext } from "../prompt"
 import { placeFindings, reviewBody, reviewMarker } from "../review"
 import { type Settings } from "../settings"
-import { MESSAGE_ALREADY_REVIEWED, MESSAGE_EMPTY_DIFF, MESSAGE_SUPERSEDED } from "./constants"
+import { MESSAGE_ALREADY_REVIEWED, MESSAGE_EMPTY_DIFF, MESSAGE_NO_TEXT_LINES, MESSAGE_SUPERSEDED } from "./constants"
+
+async function wasReviewed(settings: Settings): Promise<boolean> {
+  const marker = reviewMarker(settings.github.headSha)
+  const bodies = await listBotReviewBodies(settings.github)
+  return bodies.some((body) => body.includes(marker))
+}
 
 async function publish(settings: Settings, diff: AnnotatedDiff, reply: Reply): Promise<void> {
   const { github } = settings
@@ -20,10 +26,12 @@ async function publish(settings: Settings, diff: AnnotatedDiff, reply: Reply): P
 }
 
 async function publishIfCurrent(settings: Settings, diff: AnnotatedDiff, reply: Reply): Promise<void> {
-  if ((await currentHeadSha(settings.github)) === settings.github.headSha) {
-    await publish(settings, diff, reply)
-  } else {
+  if ((await currentHeadSha(settings.github)) !== settings.github.headSha) {
     console.log(MESSAGE_SUPERSEDED)
+  } else if (await wasReviewed(settings)) {
+    console.log(MESSAGE_ALREADY_REVIEWED)
+  } else {
+    await publish(settings, diff, reply)
   }
 }
 
@@ -35,13 +43,14 @@ async function evaluate(settings: Settings, diff: AnnotatedDiff): Promise<void> 
 }
 
 export async function runEvaluation(settings: Settings): Promise<void> {
-  const marker = reviewMarker(settings.github.headSha)
-  const bodies = await listReviewBodies(settings.github)
-  const diff = annotateDiff(readDiff(settings.github.baseSha, settings.github.headSha))
-  if (bodies.some((body) => body.includes(marker))) {
+  const text = readDiff(settings.github.baseSha, settings.github.headSha)
+  const diff = annotateDiff(text)
+  if (await wasReviewed(settings)) {
     console.log(MESSAGE_ALREADY_REVIEWED)
-  } else if (diff.lines.size === 0) {
+  } else if (text.trim().length === 0) {
     console.log(MESSAGE_EMPTY_DIFF)
+  } else if (diff.lines.size === 0) {
+    console.log(MESSAGE_NO_TEXT_LINES)
   } else {
     await evaluate(settings, diff)
   }

@@ -14,6 +14,17 @@ export const NEW_PREFIX = "b/"
 
 export const TAB = "\t"
 
+export const QUOTE = '"'
+
+export const ESCAPE_PATTERN = /\\[\\"tn]/g
+
+export const ESCAPES = new Map<string, string>([
+  ["\\\\", "\\"],
+  ['\\"', '"'],
+  ["\\t", "\t"],
+  ["\\n", "\n"],
+])
+
 export const ADDED = "+"
 
 export const REMOVED = "-"

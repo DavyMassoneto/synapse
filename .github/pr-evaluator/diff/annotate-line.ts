@@ -10,8 +10,8 @@ import {
   OLD_PREFIX,
   OLD_START_PATTERN,
   REMOVED,
-  TAB,
 } from "./constants"
+import { decodePath } from "./decode-path"
 import { isHunkHeader, isHunkLine } from "./predicates"
 import { linesOf } from "./state"
 import { type DiffState } from "./types"
@@ -45,8 +45,7 @@ function annotateHunkLine(state: DiffState, line: string): string {
 }
 
 function pathOf(header: string, prefix: string): string {
-  const tab = header.indexOf(TAB)
-  const name = tab === -1 ? header : header.slice(0, tab)
+  const name = decodePath(header)
   return name.startsWith(prefix) ? name.slice(prefix.length) : name
 }
 
