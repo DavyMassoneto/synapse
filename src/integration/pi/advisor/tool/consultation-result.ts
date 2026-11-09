@@ -1,7 +1,7 @@
 import { type ConsultationResult } from "#synapse/modules"
-import { type AdvisorToolOutput } from "../host"
 import { TOOL_TEXT } from "./constants"
 import { toolFailure } from "./failure"
+import { type AdvisorToolOutput } from "./types"
 
 export function consultationResult(result: ConsultationResult): AdvisorToolOutput {
   if (result.kind === "cancelled") {

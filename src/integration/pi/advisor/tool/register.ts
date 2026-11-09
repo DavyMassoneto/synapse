@@ -1,11 +1,18 @@
 import { type Advisor } from "#synapse/modules"
-import { ADVISOR_NAME, type AdvisorHost, advisorParameters } from "../host"
-import { ADVISOR_EXECUTION_MODE, ADVISOR_LABEL, ADVISOR_TOOL_DESCRIPTION, ADVISOR_TOOL_SNIPPET } from "./constants"
+import { ADVISOR_NAME } from "../host"
+import {
+  ADVISOR_EXECUTION_MODE,
+  ADVISOR_LABEL,
+  ADVISOR_TOOL_DESCRIPTION,
+  ADVISOR_TOOL_SNIPPET,
+  advisorParameters,
+} from "./constants"
 import { renderAdvisorCall } from "./render-call"
 import { renderAdvisorResult } from "./render-result"
 import { AdvisorToolHandler } from "./tool"
+import { type ToolRegistry } from "./types"
 
-export function registerTool(pi: AdvisorHost, advisor: Advisor, lifetime: AbortSignal): void {
+export function registerTool(pi: ToolRegistry, advisor: Advisor, lifetime: AbortSignal): void {
   const handler = new AdvisorToolHandler(advisor, lifetime)
   pi.registerTool({
     name: ADVISOR_NAME,

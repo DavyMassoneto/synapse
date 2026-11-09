@@ -1,9 +1,9 @@
 import { type Advisor } from "#synapse/modules"
 import { ModelCatalog, registerCommand } from "./command"
-import { type AdvisorHost, type AdvisorShutdownHandler } from "./host"
-import { registerEvents } from "./lifecycle"
+import { type AdvisorShutdownHandler, registerEvents } from "./lifecycle"
 import { startAdvisorSession } from "./session-start"
 import { registerTool } from "./tool"
+import { type AdvisorHost } from "./types"
 
 export function registerAdvisor(
   pi: AdvisorHost,

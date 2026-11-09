@@ -1,5 +1,6 @@
-import { type AdvisorRenderTheme, type OptionalModel } from "../host"
+import { type OptionalModel } from "../host"
 import { ADDITIONAL_COLOR, PREVIEW_LINES, RENDER_TEXT, SUCCESS_COLOR } from "./constants"
+import { type AdvisorRenderTheme } from "./types"
 
 export function renderPreview(
   body: string,

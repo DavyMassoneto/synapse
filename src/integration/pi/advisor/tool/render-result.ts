@@ -1,9 +1,10 @@
 import { type AgentToolResult, type ToolRenderResultOptions } from "@earendil-works/pi-coding-agent"
 import { type Component } from "@earendil-works/pi-tui"
-import { type AdvisorRenderContext, type AdvisorRenderTheme, type AdvisorToolDetails, extractText } from "../host"
+import { extractText } from "../host"
 import { ERROR_COLOR, PENDING_COLOR, RENDER_TEXT } from "./constants"
 import { renderPreview } from "./render-preview"
 import { textComponent } from "./text-component"
+import { type AdvisorRenderContext, type AdvisorRenderTheme, type AdvisorToolDetails } from "./types"
 
 export function renderAdvisorResult(
   result: AgentToolResult<AdvisorToolDetails>,

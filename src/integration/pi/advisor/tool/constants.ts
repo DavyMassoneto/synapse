@@ -1,9 +1,11 @@
-import { type ThemeColor } from "@earendil-works/pi-coding-agent"
-import { type AdvisorExecutionMode } from "../host"
+import { type ThemeColor, type ToolExecutionMode } from "@earendil-works/pi-coding-agent"
+import { Type } from "typebox"
+
+export const advisorParameters = Type.Object({})
 
 export const ADVISOR_LABEL = "Advisor"
 
-export const ADVISOR_EXECUTION_MODE: AdvisorExecutionMode = "sequential"
+export const ADVISOR_EXECUTION_MODE: ToolExecutionMode = "sequential"
 
 export const PREVIEW_LINES = 8
 

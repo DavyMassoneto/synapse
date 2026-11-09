@@ -1,14 +1,9 @@
 import { type Advisor } from "#synapse/modules"
-import {
-  type AdvisorContext,
-  type AdvisorToolInput,
-  type AdvisorToolResult,
-  type AdvisorToolUpdate,
-  type OptionalSignal,
-} from "../host"
+import { type AdvisorContext } from "../host"
 import { TOOL_TEXT } from "./constants"
 import { consultTool } from "./consult"
 import { toolFailure } from "./failure"
+import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolUpdate, type OptionalSignal } from "./types"
 
 export class AdvisorToolHandler {
   private readonly advisor: Advisor

@@ -1,10 +1,11 @@
 import { type BeforeAgentStartEvent } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorHost } from "../host"
+import { type AdvisorContext } from "../host"
 import { syncAdvisor } from "./sync-advisor"
+import { type AdvisorToolActivation } from "./types"
 
 export function beforeStart(
-  pi: AdvisorHost,
+  pi: AdvisorToolActivation,
   advisor: Advisor,
   event: BeforeAgentStartEvent,
   context: AdvisorContext,

@@ -1,5 +1,6 @@
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorHost } from "../host"
+import { type AdvisorContext } from "../host"
+import { type AdvisorToolActivation } from "../lifecycle"
 import { chooseModel } from "../model-picker"
 import { applySelection } from "./apply-selection"
 import { applyThinking } from "./apply-thinking"
@@ -7,10 +8,10 @@ import { currentModel } from "./current-model"
 import { parseAdvisorCommand } from "./parser"
 
 export class AdvisorCommand {
-  private readonly pi: AdvisorHost
+  private readonly pi: AdvisorToolActivation
   private readonly advisor: Advisor
 
-  constructor(pi: AdvisorHost, advisor: Advisor) {
+  constructor(pi: AdvisorToolActivation, advisor: Advisor) {
     this.pi = pi
     this.advisor = advisor
   }

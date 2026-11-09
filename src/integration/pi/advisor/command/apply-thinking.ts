@@ -1,8 +1,13 @@
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorHost } from "../host"
-import { syncAdvisor } from "../lifecycle"
+import { type AdvisorContext } from "../host"
+import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 
-export function applyThinking(pi: AdvisorHost, advisor: Advisor, context: AdvisorContext, level: string): void {
+export function applyThinking(
+  pi: AdvisorToolActivation,
+  advisor: Advisor,
+  context: AdvisorContext,
+  level: string,
+): void {
   const result = advisor.configuration.setThinking(level)
   if (result.kind === "failure") {
     context.ui.notify(result.message, "error")

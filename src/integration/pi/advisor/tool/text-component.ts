@@ -1,6 +1,6 @@
 import { Text } from "@earendil-works/pi-tui"
-import { type AdvisorRenderContext } from "../host"
 import { TEXT_PADDING } from "./constants"
+import { type AdvisorRenderContext } from "./types"
 
 export function textComponent(context: AdvisorRenderContext): Text {
   if (context.lastComponent instanceof Text) {

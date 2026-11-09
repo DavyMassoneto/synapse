@@ -1,10 +1,11 @@
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorToolOutput, type AdvisorToolUpdate } from "../host"
+import { type AdvisorContext } from "../host"
 import { AdvisorModel } from "../model"
 import { captureTranscript } from "../transcript"
 import { TOOL_TEXT } from "./constants"
 import { consultationResult } from "./consultation-result"
 import { toolFailure } from "./failure"
+import { type AdvisorToolOutput, type AdvisorToolUpdate } from "./types"
 
 export async function consultTool(
   advisor: Advisor,
