@@ -1,0 +1,19 @@
+import { Type } from "typebox"
+
+export const DATA_PREFIX = "data:"
+
+export const DONE_PAYLOAD = "[DONE]"
+
+export const STOP_FINISH = "stop"
+
+export const StreamChunkSchema = Type.Object({
+  error: Type.Optional(Type.Object({ message: Type.Optional(Type.String()) })),
+  choices: Type.Optional(
+    Type.Array(
+      Type.Object({
+        delta: Type.Object({ content: Type.Optional(Type.Union([Type.String(), Type.Null()])) }),
+        finish_reason: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+      }),
+    ),
+  ),
+})

@@ -1,8 +1,8 @@
-import { runEvaluation } from "./pipeline"
-import { readSettings } from "./settings"
+import { readConfiguration } from "./configuration"
+import { runEvaluation } from "./evaluation"
 
 try {
-  await runEvaluation(readSettings())
+  await runEvaluation(readConfiguration())
 } catch (error) {
   console.error(error)
   process.exitCode = 1
