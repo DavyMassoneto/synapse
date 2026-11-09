@@ -6,7 +6,7 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules"
-import { type AdvisorModelRegistry } from "../contracts"
+import { type AdvisorModelRegistry } from "../host"
 import { MODEL_DIAGNOSTICS, REASONING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"

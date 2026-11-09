@@ -1,6 +1,6 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
 import { type ModelResponse } from "#synapse/modules"
-import { extractText } from "../text"
+import { extractText } from "../host"
 import { MODEL_DIAGNOSTICS } from "./constants"
 
 function failureReason(reply: AssistantMessage): string {

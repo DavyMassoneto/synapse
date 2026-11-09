@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest"
 import { AdvisorService } from "../internal"
-import { TestStorage } from "./test-storage"
+import { TestStorage } from "./doubles"
 
 let storage: TestStorage
 let advisor: AdvisorService

@@ -1,8 +1,8 @@
 import { type SessionStartEvent } from "@earendil-works/pi-coding-agent"
 import { type AutocompleteItem } from "@earendil-works/pi-tui"
-import { type AdvisorContext } from "../contracts"
+import { type AdvisorContext } from "../host"
+import { modelReferences } from "../model-picker"
 import { COMPLETION_LIMIT, DISABLE_COMMAND, THINKING_COMMAND } from "./constants"
-import { modelReferences } from "./references"
 
 export class ModelCatalog {
   private models: string[] = []

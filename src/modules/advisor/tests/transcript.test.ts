@@ -1,8 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { AdvisorService, buildTranscript } from "../internal"
 import { type TranscriptMessage } from "../public"
-import { TestModel } from "./test-model"
-import { TestStorage } from "./test-storage"
+import { TestModel, TestStorage } from "./doubles"
 
 function emptyTranscript(): void {
   expect(buildTranscript([], 200)).toBe("")

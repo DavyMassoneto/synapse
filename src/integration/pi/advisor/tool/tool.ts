@@ -5,8 +5,8 @@ import {
   type AdvisorToolResult,
   type AdvisorToolUpdate,
   type OptionalSignal,
-} from "../contracts"
-import { TOOL_TEXT } from "../presentation"
+} from "../host"
+import { TOOL_TEXT } from "./constants"
 import { consultTool } from "./consult"
 import { toolFailure } from "./failure"
 

@@ -1,0 +1,34 @@
+import { type AdvisorContext } from "../host"
+import { CANCELLED_SELECTION, MODEL_SELECTION_LIMIT, PICKER_TEXT } from "./constants"
+import { modelReferences } from "./references"
+import { searchModels } from "./search"
+import { selectInitialModel } from "./selection-menu"
+import { type ModelSelection } from "./types"
+
+async function chooseMatch(context: AdvisorContext, matches: string[]): Promise<ModelSelection> {
+  if (!context.hasUI) {
+    context.ui.notify(PICKER_TEXT.ambiguousModel, "warning")
+    return CANCELLED_SELECTION
+  }
+  const choice = await context.ui.select(PICKER_TEXT.title, matches.slice(0, MODEL_SELECTION_LIMIT))
+  if (choice === undefined) {
+    return CANCELLED_SELECTION
+  }
+  return { kind: "selected", model: choice }
+}
+
+export async function chooseModel(context: AdvisorContext, input: string): Promise<ModelSelection> {
+  if (!input) {
+    return selectInitialModel(context, modelReferences(context))
+  }
+  const matches = searchModels(modelReferences(context), input)
+  if (matches.length === 0) {
+    context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error")
+    return CANCELLED_SELECTION
+  }
+  const [match] = matches
+  if (matches.length === 1 && match !== undefined) {
+    return { kind: "selected", model: match }
+  }
+  return chooseMatch(context, matches)
+}

@@ -1,4 +1,4 @@
-export * from "./config"
-export * from "./format"
+export * from "./configuration"
+export * from "./prompt"
 export * from "./reminder"
 export * from "./service"

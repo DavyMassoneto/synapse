@@ -1,6 +1,6 @@
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorHost } from "../contracts"
-import { syncAdvisor } from "../sync"
+import { type AdvisorContext, type AdvisorHost } from "../host"
+import { syncAdvisor } from "../lifecycle"
 
 export function applyThinking(pi: AdvisorHost, advisor: Advisor, context: AdvisorContext, level: string): void {
   const result = advisor.configuration.setThinking(level)

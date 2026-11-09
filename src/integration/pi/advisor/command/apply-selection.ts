@@ -1,8 +1,8 @@
 import { type Advisor, type AdvisorResult } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorHost } from "../contracts"
-import { COMMAND_TEXT } from "../presentation"
-import { syncAdvisor } from "../sync"
-import { type ModelSelection } from "./types"
+import { type AdvisorContext, type AdvisorHost } from "../host"
+import { syncAdvisor } from "../lifecycle"
+import { type ModelSelection } from "../model-picker"
+import { COMMAND_TEXT } from "./constants"
 
 export function applySelection(
   pi: AdvisorHost,

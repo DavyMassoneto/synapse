@@ -1,7 +1,7 @@
 import { type Advisor } from "#synapse/modules"
 import { ModelCatalog, registerCommand } from "./command"
-import { type AdvisorHost, type AdvisorShutdownHandler } from "./contracts"
-import { registerEvents } from "./events"
+import { type AdvisorHost, type AdvisorShutdownHandler } from "./host"
+import { registerEvents } from "./lifecycle"
 import { startAdvisorSession } from "./session-start"
 import { registerTool } from "./tool"
 

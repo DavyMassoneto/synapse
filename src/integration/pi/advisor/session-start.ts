@@ -1,8 +1,8 @@
 import { type SessionStartEvent } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules"
 import { type ModelCatalog } from "./command"
-import { type AdvisorContext, type AdvisorHost } from "./contracts"
-import { sessionStart } from "./events"
+import { type AdvisorContext, type AdvisorHost } from "./host"
+import { sessionStart } from "./lifecycle"
 
 export function startAdvisorSession(
   pi: AdvisorHost,

@@ -1,8 +1,8 @@
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorHost } from "../contracts"
+import { type AdvisorContext, type AdvisorHost } from "../host"
+import { chooseModel } from "../model-picker"
 import { applySelection } from "./apply-selection"
 import { applyThinking } from "./apply-thinking"
-import { chooseModel } from "./choose-model"
 import { currentModel } from "./current-model"
 import { parseAdvisorCommand } from "./parser"
 

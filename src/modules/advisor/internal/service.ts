@@ -7,7 +7,7 @@ import {
   type ReminderText,
   type ReminderTurn,
 } from "#synapse/modules/advisor/public/contracts"
-import { AdvisorConfiguration, type ConfigLoadResult, type ConfigPort } from "./config"
+import { AdvisorConfiguration, type ConfigLoadResult, type ConfigPort } from "./configuration"
 import { CONSULTATION_INSTRUCTIONS } from "./constants"
 import { consultAdvisor } from "./consultation"
 import { REMINDER, ReminderCounter } from "./reminder"

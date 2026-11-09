@@ -1,9 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest"
 import { AdvisorService } from "../internal"
-import { FailingModel } from "./failing-model"
-import { TestModel } from "./test-model"
-import { TestStorage } from "./test-storage"
-import { WaitingModel } from "./waiting-model"
+import { FailingModel, TestModel, TestStorage, WaitingModel } from "./doubles"
 
 let storage: TestStorage
 let advisor: AdvisorService

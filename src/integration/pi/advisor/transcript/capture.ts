@@ -1,5 +1,5 @@
 import { type TranscriptMessage } from "#synapse/modules"
-import { type AdvisorContext } from "../contracts"
+import { type AdvisorContext } from "../host"
 import { convertMessage } from "./message"
 
 export function captureTranscript(context: AdvisorContext): TranscriptMessage[] {

@@ -4,7 +4,7 @@ import {
   type ConsultationResult,
   type ModelPort,
 } from "#synapse/modules/advisor/public/contracts"
-import { ADVISOR_DIAGNOSTICS } from "./constants"
+import { CONSULTATION_DIAGNOSTICS } from "./constants"
 import { consultResolved } from "./consult-resolved"
 
 export async function consultAdvisor(
@@ -13,7 +13,7 @@ export async function consultAdvisor(
   config: Config,
 ): Promise<ConsultationResult> {
   if (!config.model) {
-    return { kind: "failure", message: ADVISOR_DIAGNOSTICS.noModel }
+    return { kind: "failure", message: CONSULTATION_DIAGNOSTICS.noModel }
   }
   try {
     const resolved = await model.resolve(config.model, config.thinking, input.signal)
