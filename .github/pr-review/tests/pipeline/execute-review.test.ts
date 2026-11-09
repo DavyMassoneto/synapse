@@ -1,3 +1,4 @@
+import { fileURLToPath } from "node:url"
 import { describe, expect, test } from "vitest"
 import { type ChatMessage } from "#synapse/client"
 import { CommandError } from "#synapse/errors"
@@ -11,19 +12,20 @@ import { RecordedRunner } from "#synapse/tests/fixtures/shell"
 import { ScriptedCaller } from "#synapse/tests/review"
 
 const RULE_IDS = loadRuleGroups().flatMap((group) => group.rules.map((rule) => rule.id))
-const FINDING = { rule: "C01", path: "package.json", line: 1, body: "problema" }
+const PACKAGE_PATH = fileURLToPath(new URL("../../../../package.json", import.meta.url))
+const FINDING = { rule: "C01", path: PACKAGE_PATH, line: 1, body: "problema" }
 
 function answerFor(request: CommandRequest, failing: boolean): string {
   if (failing && request.args.includes("diff")) {
     throw new CommandError("gh quebrou")
   }
   if (request.args.includes("diff")) {
-    return joinSections(PACKAGE_SECTION)
+    return joinSections(PACKAGE_SECTION.replaceAll("package.json", PACKAGE_PATH))
   }
   if (request.args.includes("--paginate")) {
     return "[[]]"
   }
-  return "package.json"
+  return PACKAGE_PATH
 }
 
 function execution(recorded: RecordedRunner, caller: ScriptedCaller): Execution {

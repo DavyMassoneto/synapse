@@ -7,7 +7,7 @@ Um único revisor lê cada PR de `DavyMassoneto`, `rafaeleduardo381` e `SergioTa
 1. Cada arquivo da PR vai ao modelo inteiro, com número de linha e a coluna `+` nas linhas alteradas, junto com o título, a descrição, a árvore do repositório e os arquivos apagados.
 2. O modelo avalia as 29 regras de `prompts/rules/` (`C` código, `D` desenho, `E` entrega), cada defeito com uma única regra dona, e devolve todas na lista `coverage` como prova de que avaliou cada uma. Resposta sem a lista completa é descartada e pedida de novo.
 3. Depois da primeira resposta, o revisor pergunta de novo, com o histórico, até uma rodada não trazer nenhum achado novo. Não há limite de achados por resposta nem amostragem. Se as rodadas acabam antes disso, a revisão é marcada como incompleta.
-4. Os achados de todas as partes são unidos sem repetição. Achados da mesma linha viram um comentário só, com um item por regra.
+4. Os achados são acumulados sem repetição na mesma conversa, com todos os arquivos no contexto. Achados da mesma linha viram um comentário só, com um item por regra.
 
 ## Publicação
 

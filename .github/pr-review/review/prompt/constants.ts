@@ -1,4 +1,6 @@
-export const PROMPTS_DIR = ".github/pr-review/prompts"
+import { fileURLToPath } from "node:url"
+
+export const PROMPTS_DIR = fileURLToPath(new URL("../../prompts", import.meta.url))
 
 export const PROMPT_FILES = ["method.md", "standards.md"]
 

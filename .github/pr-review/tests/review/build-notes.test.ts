@@ -7,18 +7,16 @@ const TRUNCATED: Source = { path: "b.ts", text: "x", incomplete: true }
 
 describe("buildNotes", () => {
   test("has no note for a complete review", () => {
-    expect(buildNotes([{ findings: [], complete: true }], 0, [COMPLETE])).toEqual([])
+    expect(buildNotes({ findings: [], complete: true }, [COMPLETE])).toEqual([])
   })
 
-  test("notes the part that ran out of rounds", () => {
-    expect(buildNotes([{ findings: [], complete: false }], 0, [COMPLETE])[0]).toContain("parte 1")
-  })
-
-  test("notes the skipped parts", () => {
-    expect(buildNotes([], 2, [])[0]).toContain("2 parte(s)")
+  test("notes when the review ran out of rounds", () => {
+    expect(buildNotes({ findings: [], complete: false }, [COMPLETE])).toEqual([
+      "Revisão incompleta: a PR ainda trazia achados novos depois de 8 rodadas.",
+    ])
   })
 
   test("lists the incomplete files", () => {
-    expect(buildNotes([], 0, [COMPLETE, TRUNCATED])[0]).toContain("b.ts")
+    expect(buildNotes({ findings: [], complete: true }, [COMPLETE, TRUNCATED])[0]).toContain("b.ts")
   })
 })
