@@ -2,6 +2,10 @@
 
 Prompt de um único avaliador que recebe o diff completo de uma PR e avalia Clean Code, DRY, YAGNI, SRP e conformidade com a arquitetura do projeto.
 
+## Objetivo
+
+O avaliador roda sozinho em toda PR e aponta cada problema na linha em que ele ocorre, citando arquivo e número de linha, para que a avaliação seja publicada como comentário nessa linha da PR. Um resumo sem linha não cumpre o objetivo: quem lê precisa ver o problema exatamente onde está o código.
+
 ## Entradas
 
 O avaliador não tem ferramentas e só enxerga o que o prompt contém. Quem o aciona deve fornecer:
@@ -9,7 +13,7 @@ O avaliador não tem ferramentas e só enxerga o que o prompt contém. Quem o ac
 - `{{ARQUITETURA}}`: conteúdo integral de `docs/architecture.md`.
 - `{{REGRAS}}`: conteúdo integral da seção `RULES` de `AGENTS.md`.
 - `{{PADROES}}`: conteúdo integral de cada arquivo de `docs/standards/` referenciado por `AGENTS.md`. Sem esse conteúdo o avaliador só enxerga os nomes dos padrões, não as regras.
-- `{{DIFF}}`: diff completo da PR, sem truncamento. Se não couber na janela do modelo, a avaliação não deve ser feita; não envie um diff parcial.
+- `{{DIFF}}`: diff completo da PR, sem truncamento, em que cada linha adicionada ou mantida vem precedida do seu número no arquivo novo, no formato `número: conteúdo`. Linhas removidas não têm número. Se o diff não couber na janela do modelo, a avaliação não deve ser feita; não envie um diff parcial.
 
 ## Prompt
 
@@ -52,7 +56,8 @@ Padrões de código: <padroes> e <regras> são verificáveis, não sugestões. P
 
 Regras de avaliação:
 - Avalie somente o que a PR altera ou introduz. Código antigo só é apontado se a PR o torna pior.
-- Cada apontamento deve citar arquivo e trecho do diff como evidência. Não afirme o que o diff não mostra.
+- Cada apontamento cita o arquivo e a linha, ou o intervalo de linhas, em que o problema ocorre, usando os números do <diff>. A mesma violação em várias linhas gera um apontamento por linha.
+- A linha citada deve ser uma linha adicionada que o <diff> mostra. Quando o problema é uma ausência (documento não atualizado, consumidor inexistente), cite a linha adicionada que torna essa ausência um problema. Não cite linha que o <diff> não mostra e não afirme o que ele não mostra.
 - Se a conclusão depende de código fora do diff (outra duplicação, outro importador, outra dependência), classifique como "contexto insuficiente" e diga o que precisaria ser verificado. Só use "violação" quando o diff comprova.
 - Não invente apontamentos para preencher os critérios. Um critério sem problemas recebe "sem apontamentos".
 - Não trate os princípios como exigências mecânicas e proponha correções proporcionais: a sugestão também deve respeitar YAGNI.
@@ -62,7 +67,7 @@ Formato da resposta, no idioma do usuário:
 1. Veredito: "aprovar", "aprovar com ressalvas" ou "pedir mudanças", em uma linha com o motivo principal.
 2. Para cada critério (Clean Code, DRY, YAGNI, SRP, Arquitetura): "sem apontamentos" ou uma lista de apontamentos, cada um com:
    - Tipo: violação | contexto insuficiente
-   - Local: arquivo e trecho
+   - Local: `arquivo:linha` ou `arquivo:início-fim`, seguido do trecho literal dessa linha
    - Evidência: o que no diff comprova
    - Impacto: por que importa
    - Correção: a menor mudança que resolve
