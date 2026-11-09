@@ -7,14 +7,28 @@ or {
   `$value != undefined`,
   `undefined === $value`,
   `undefined !== $value`,
+  `undefined == $value`,
+  `undefined != $value`,
   `$value === null`,
   `$value !== null`,
   `$value == null`,
   `$value != null`,
   `null === $value`,
   `null !== $value`,
+  `null == $value`,
+  `null != $value`,
+  `$value === void 0`,
+  `$value !== void 0`,
+  `$value == void 0`,
+  `$value != void 0`,
   `typeof $value === "undefined"`,
-  `typeof $value !== "undefined"`
+  `typeof $value !== "undefined"`,
+  `typeof $value == "undefined"`,
+  `typeof $value != "undefined"`,
+  `"undefined" === typeof $value`,
+  `"undefined" !== typeof $value`,
+  `"undefined" == typeof $value`,
+  `"undefined" != typeof $value`
 } as $comparison where {
   register_diagnostic(span=$comparison, message="Never validate a value by comparing it with undefined or null: validate the positive, expected data (typeof, instanceof, Array.isArray, kind, isX/hasX predicate).")
 }

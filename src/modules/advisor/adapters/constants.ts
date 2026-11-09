@@ -12,4 +12,5 @@ export const configSchema = Type.Object({
 export const CONFIG_DIAGNOSTICS = {
   readFailed: "Não foi possível ler a configuração do advisor.",
   invalid: "Configuração do advisor inválida; revise advisor.json.",
+  writeAndCleanupFailed: "Falha ao gravar a configuração do advisor e ao remover o arquivo temporário.",
 }

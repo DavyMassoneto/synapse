@@ -50,14 +50,14 @@ export class AdvisorHostCollector implements AdvisorHost {
   unsubscribe(): void {}
 
   requireTool(): AdvisorTool {
-    if (typeof this.tool === "object") {
+    if (this.tool instanceof Object) {
       return this.tool
     }
     throw new Error("ferramenta ausente")
   }
 
   requireCommand(): AdvisorCommandDefinition {
-    if (typeof this.command === "object") {
+    if (this.command instanceof Object) {
       return this.command
     }
     throw new Error("comando ausente")

@@ -8,5 +8,5 @@ export async function selectInitialModel(context: AdvisorContext, models: string
   if (choice === PICKER_TEXT.disabledOption) {
     return { kind: "disabled" }
   }
-  return selectedModel(choice)
+  return selectedModel(choice, models)
 }

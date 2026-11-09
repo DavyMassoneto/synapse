@@ -29,7 +29,7 @@ export class AdvisorModel {
 
   private authorizedModel(parsed: ValidReference, reference: string): Model<Api> {
     const model = this.registry.find(parsed.provider, parsed.id)
-    if (typeof model === "object") {
+    if (model instanceof Object) {
       if (this.registry.hasConfiguredAuth(model)) {
         return model
       }

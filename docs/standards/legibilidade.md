@@ -22,7 +22,7 @@
 
 **Predicado** é uma função que recebe um valor e devolve `bool`.
 
-- O nome de um predicado começa com `is_` ou `has_`.
+- O nome de um predicado começa com `is` ou `has` (`is_`/`has_` nas linguagens que usam `snake_case`, como Rust; em TypeScript, `isX`/`hasX`).
 - Predicado não fica misturado com lógica no mesmo arquivo.
 
 ## 5. Duplicação
@@ -53,6 +53,8 @@
 
 - Nunca se valida um dado comparando-o com `undefined` ou `null` (`=== undefined`, `!== undefined`, `== null`, `typeof x === "undefined"`). Isso trata uma única forma de "vazio" e deixa passar `null`, `0`, `""` e qualquer outro tipo de dado.
 - Sempre se valida o dado POSITIVO, isto é, que ele é o dado esperado: `typeof x === "string"`, `Array.isArray(x)`, `instanceof`, o discriminante `kind` de uma união ou um predicado `isX`/`hasX`.
+- A validação positiva inclui as restrições do dado, e não só o seu tipo. `typeof x === "string"` aceita `""`: um texto vazio pode ser válido como conteúdo, mas não como referência de modelo, que exige o formato `provedor/id`. `typeof x === "object"` aceita `null`: para objetos use `instanceof Object` ou valide as propriedades esperadas. Uma escolha feita entre opções apresentadas deve ser uma dessas opções.
+- Dado vindo de fora do programa é validado uma vez, na fronteira; os consumidores internos confiam no tipo já validado e não repetem a validação completa.
 - Exceção: o `undefined` que a API de uma biblioteca exige como argumento (por exemplo, `setStatus(chave, undefined)` para limpar um status) não é validação.
 - Asserções do Vitest (`toBeUndefined`) verificam o resultado de um teste e não se aplicam a esta regra.
 - Resultado que pode vir sem dado é uma união discriminada por `kind`, não um valor que às vezes é `undefined`.
@@ -60,7 +62,7 @@
 ## 10. Parâmetros e retornos sem uso
 
 - Parâmetro que a função não usa é removido. Só permanece quando a assinatura é imposta pelo host ou pela biblioteca, e o nome começa com `_`.
-- Valor retornado que nenhum chamador usa não é retornado.
+- Valor retornado que nenhum chamador usa não é retornado. Exceção: o retorno que o contrato do host ou da biblioteca exige, mesmo sem consumidor no repositório.
 
 ## 11. Função que precisa de explicação
 

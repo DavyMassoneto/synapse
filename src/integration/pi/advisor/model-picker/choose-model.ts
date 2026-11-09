@@ -8,7 +8,8 @@ import { type ModelSelection } from "./types"
 
 async function chooseMatch(context: AdvisorContext, matches: string[]): Promise<ModelSelection> {
   if (context.hasUI) {
-    return selectedModel(await context.ui.select(PICKER_TEXT.title, matches.slice(0, MODEL_SELECTION_LIMIT)))
+    const options = matches.slice(0, MODEL_SELECTION_LIMIT)
+    return selectedModel(await context.ui.select(PICKER_TEXT.title, options), options)
   }
   context.ui.notify(PICKER_TEXT.ambiguousModel, "warning")
   return CANCELLED_SELECTION
