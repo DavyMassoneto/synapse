@@ -1,9 +1,32 @@
-import { ESCAPE_PATTERN, ESCAPES, OCTAL_RADIX, QUOTED_PATTERN, TAB_SUFFIX_PATTERN } from "./constants"
+import { ESCAPE_PATTERN, ESCAPED_CHARACTERS, OCTAL_RADIX, QUOTED_PATTERN, TAB_SUFFIX_PATTERN } from "./constants"
 
 function decodeEscape(sequence: string): string {
-  const character = ESCAPES.get(sequence)
-  if (character) {
-    return character
+  if (sequence === "\\\\") {
+    return ESCAPED_CHARACTERS.backslash
+  }
+  if (sequence === '\\"') {
+    return ESCAPED_CHARACTERS.quote
+  }
+  if (sequence === "\\a") {
+    return ESCAPED_CHARACTERS.bell
+  }
+  if (sequence === "\\b") {
+    return ESCAPED_CHARACTERS.backspace
+  }
+  if (sequence === "\\f") {
+    return ESCAPED_CHARACTERS.formFeed
+  }
+  if (sequence === "\\n") {
+    return ESCAPED_CHARACTERS.lineFeed
+  }
+  if (sequence === "\\r") {
+    return ESCAPED_CHARACTERS.carriageReturn
+  }
+  if (sequence === "\\t") {
+    return ESCAPED_CHARACTERS.tab
+  }
+  if (sequence === "\\v") {
+    return ESCAPED_CHARACTERS.verticalTab
   }
   return String.fromCharCode(Number.parseInt(sequence.slice(1), OCTAL_RADIX))
 }

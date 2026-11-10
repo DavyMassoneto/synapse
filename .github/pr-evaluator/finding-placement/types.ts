@@ -20,7 +20,9 @@ export interface Group {
   findings: Finding[]
 }
 
+export type GroupsByAnchor = Map<string, Group>
+
 export interface Placement {
-  groups: Map<string, Group>
+  groups: GroupsByAnchor
   unplaced: Finding[]
 }

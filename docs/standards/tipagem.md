@@ -20,7 +20,10 @@
 
 - Objeto e função tipados no ponto de uso são proibidos: o contrato vira `interface` ou `type` com nome.
 - Chaves abertas são proibidas: assinatura de índice, `{ [K in string]: T }` e `Record`.
-- Conjunto fechado de chaves vira `interface` com propriedades nomeadas.
+- Conjunto fechado de chaves vira `interface` com propriedades nomeadas, declarada em `types.ts`. O objeto que guarda o conjunto declara essa interface: a anotação é o contrato do conjunto e não conta como tipo inferível.
+- Trocar a forma não cumpre a regra. Chaves escritas no código e guardadas em `Map<string, T>`, em lista de pares chave e valor ou em `Object.fromEntries` são chaves abertas, tanto quanto `Record`.
+- `Map` só guarda chaves que só existem em execução, como caminhos de arquivo e identificadores recebidos.
+- Todo tipo responde à pergunta "o que este tipo representa?". `Map<string, string>`, `string[][]` e pares soltos dizem o formato, não o significado, e não respondem. O nome do tipo e os nomes das propriedades dizem o que cada valor é. Um `Map` de chaves de execução ganha um tipo com nome em `types.ts` (`DiffLines`, não `Map<string, FileLines>` no ponto de uso).
 
 ## 4. Asserções
 

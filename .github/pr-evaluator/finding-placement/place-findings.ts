@@ -1,9 +1,9 @@
 import { type DiffLines } from "#evaluator/diff-annotation"
 import { type Finding } from "#evaluator/review-result"
 import { anchorOf } from "./anchor-of"
-import { type Anchored, type Group, type Placement } from "./types"
+import { type Anchored, type GroupsByAnchor, type Placement } from "./types"
 
-function addToGroup(groups: Map<string, Group>, anchor: Anchored, finding: Finding): void {
+function addToGroup(groups: GroupsByAnchor, anchor: Anchored, finding: Finding): void {
   const key = `${anchor.path}:${anchor.side}:${anchor.startLine}:${anchor.line}`
   const group = groups.get(key)
   if (group) {
@@ -14,7 +14,7 @@ function addToGroup(groups: Map<string, Group>, anchor: Anchored, finding: Findi
 }
 
 export function placeFindings(lines: DiffLines, findings: Finding[]): Placement {
-  const groups = new Map<string, Group>()
+  const groups: GroupsByAnchor = new Map()
   const unplaced: Finding[] = []
   for (const finding of findings) {
     const anchor = anchorOf(lines, finding)
