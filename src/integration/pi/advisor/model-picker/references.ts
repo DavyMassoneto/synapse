@@ -1,4 +1,4 @@
-import { formatModelReference } from "#synapse/modules/advisor/public"
+import { formatModelReference } from "#synapse/modules"
 import { type AdvisorContext } from "../host-context"
 
 export function modelReferences(context: AdvisorContext): string[] {

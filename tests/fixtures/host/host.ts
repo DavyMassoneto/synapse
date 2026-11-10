@@ -1,7 +1,7 @@
 import { rmSync } from "node:fs"
 import { join } from "node:path"
 import { registerAdvisor } from "#synapse/integration"
-import { type Advisor, type Config, createAdvisor } from "#synapse/modules/advisor/public"
+import { type Advisor, type Config, createAdvisor } from "#synapse/modules"
 import { AdvisorHostCollector } from "./host-collector"
 
 export class TypedAdvisorHost extends AdvisorHostCollector {

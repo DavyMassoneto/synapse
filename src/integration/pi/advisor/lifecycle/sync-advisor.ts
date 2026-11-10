@@ -1,4 +1,4 @@
-import { type ActiveModel, type Advisor } from "#synapse/modules/advisor/public"
+import { type ActiveModel, type Advisor } from "#synapse/modules"
 import { type AdvisorContext } from "../host-context"
 import { ADVISOR_NAME } from "../tool"
 import { STATUS_PREFIX } from "./constants"

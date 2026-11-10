@@ -1,4 +1,4 @@
-import { type Advisor } from "#synapse/modules/advisor/public"
+import { type Advisor } from "#synapse/modules"
 import { renderAdvisorCall, renderAdvisorResult } from "../tool-rendering"
 import {
   ADVISOR_EXECUTION_MODE,

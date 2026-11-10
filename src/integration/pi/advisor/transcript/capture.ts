@@ -1,5 +1,5 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
-import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules/advisor/public"
+import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules"
 import { type AdvisorContext } from "../host-context"
 import { type ContentBlock, type ConversationMessage, type MessageContent } from "./types"
 

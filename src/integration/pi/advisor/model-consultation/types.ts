@@ -1,5 +1,5 @@
 import { type Api, type Model } from "@earendil-works/pi-ai"
-import { type Failure } from "#synapse/modules/advisor/public"
+import { type Failure } from "#synapse/modules"
 
 export interface PiThinkingBudgets {
   off: number

@@ -1,4 +1,4 @@
-import { type ModelRequest, type ModelResponse, type ResolvedModel } from "#synapse/modules/advisor/public"
+import { type ModelRequest, type ModelResponse, type ResolvedModel } from "#synapse/modules"
 import { TestModel } from "./test-model"
 
 export class CancelledModel extends TestModel {

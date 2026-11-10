@@ -1,4 +1,4 @@
-import { type ModelResolution, type ResolvedModel } from "#synapse/modules/advisor/public"
+import { type ModelResolution, type ResolvedModel } from "#synapse/modules"
 import { TestModel } from "./test-model"
 
 export class BudgetModel extends TestModel {

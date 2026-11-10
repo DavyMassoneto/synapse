@@ -1,4 +1,4 @@
-import { type Cancelled } from "#synapse/modules/advisor/public"
+import { type Cancelled } from "#synapse/modules"
 
 export const MODEL_SELECTION_LIMIT = 100
 

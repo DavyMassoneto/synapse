@@ -1,4 +1,4 @@
-import { type Advisor, type ConsultationResult } from "#synapse/modules/advisor/public"
+import { type Advisor, type ConsultationResult } from "#synapse/modules"
 import { type AdvisorContext } from "../host-context"
 import { AdvisorModel } from "../model-consultation"
 import { captureTranscript } from "../transcript"

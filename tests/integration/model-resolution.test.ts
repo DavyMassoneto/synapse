@@ -10,7 +10,7 @@ import {
   type ResolvedModel,
   THINKING_LEVELS,
   type ThinkingLevel,
-} from "#synapse/modules/advisor/public"
+} from "#synapse/modules"
 import { TestRegistry } from "../fixtures"
 
 let registry: TestRegistry
