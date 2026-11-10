@@ -4,7 +4,8 @@ import { hasReviewMarker } from "./predicates"
 import { type ReviewState } from "./types"
 
 export async function readReviewState(configuration: GithubConfiguration, marker: string): Promise<ReviewState> {
-  if (hasReviewMarker(await listBotReviewBodies(configuration), marker)) {
+  const bodies = await listBotReviewBodies(configuration)
+  if (hasReviewMarker(bodies, marker)) {
     return { kind: "reviewed" }
   }
   return { kind: "unreviewed" }

@@ -17,8 +17,4 @@ export interface DeletedPathHeader {
   kind: "deleted"
 }
 
-export interface NoPathHeader {
-  kind: "none"
-}
-
-export type PathHeader = OldPathHeader | NewPathHeader | DeletedPathHeader | NoPathHeader
+export type PathHeader = OldPathHeader | NewPathHeader | DeletedPathHeader

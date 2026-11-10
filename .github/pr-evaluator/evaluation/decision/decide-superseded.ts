@@ -4,7 +4,8 @@ import { MESSAGE_SUPERSEDED } from "./constants"
 import { type EvaluationDecision } from "./types"
 
 export async function decideSuperseded(github: GithubConfiguration): Promise<EvaluationDecision> {
-  if ((await currentHeadSha(github)) !== github.headSha) {
+  const currentSha = await currentHeadSha(github)
+  if (currentSha !== github.headSha) {
     return { kind: "skip", message: MESSAGE_SUPERSEDED }
   }
   return { kind: "proceed" }

@@ -1,6 +1,6 @@
 import { isMultiLine } from "#evaluator/changes"
 import { commentBody } from "../comment-text"
-import { type ReviewComment } from "../reviews"
+import { type ReviewComment } from "../review-publication"
 import { type Group } from "./types"
 
 export function toComment(group: Group): ReviewComment {

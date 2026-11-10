@@ -1,9 +1,3 @@
-export const OLD_PREFIX = "a/"
-
-export const NEW_PREFIX = "b/"
-
-export const NO_FILE = "/dev/null"
-
 export const TAB_SUFFIX_PATTERN = /\t.*$/s
 
 export const QUOTED_PATTERN = /^"(.*)"$/s

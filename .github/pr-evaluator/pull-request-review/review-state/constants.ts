@@ -13,5 +13,3 @@ export const ReviewListSchema = Type.Array(
     user: Type.Optional(Type.Union([Type.Object({ login: Type.String() }), Type.Null()])),
   }),
 )
-
-export const PublishedReviewSchema = Type.Object({ id: Type.Integer(), html_url: Type.String() })

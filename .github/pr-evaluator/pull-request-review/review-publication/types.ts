@@ -1,6 +1,6 @@
 import { type Static } from "typebox"
 import { type Side } from "#evaluator/changes"
-import { type PublishedReviewSchema, type ReviewListSchema } from "./constants"
+import { type PublishedReviewSchema } from "./constants"
 
 export interface ReviewComment {
   path: string
@@ -18,20 +18,4 @@ export interface ReviewPayload {
   comments: ReviewComment[]
 }
 
-export type ListedReview = Static<typeof ReviewListSchema>[number]
-
 export type PublishedReview = Static<typeof PublishedReviewSchema>
-
-export interface Reviewed {
-  kind: "reviewed"
-}
-
-export interface Unreviewed {
-  kind: "unreviewed"
-}
-
-export type ReviewState = Reviewed | Unreviewed
-
-export interface ReviewWithBody extends ListedReview {
-  body: string
-}
