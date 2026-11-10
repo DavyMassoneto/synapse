@@ -59,14 +59,7 @@ function rejectsDirectoryDestination(): void {
   mkdirSync(blockedPath)
   writeFileSync(join(blockedPath, "keep"), "original")
   const storage = new FileConfig(blockedPath)
-  let failed = false
-  try {
-    storage.save({ thinking: "high" })
-  } catch (error) {
-    expect(error).toBeInstanceOf(Error)
-    failed = true
-  }
-  expect(failed).toBe(true)
+  expect(() => storage.save({ thinking: "high" })).toThrow(Error)
   expect(readFileSync(join(blockedPath, "keep"), "utf8")).toBe("original")
   expect(readdirSync(directory)).toStrictEqual(["blocked"])
 }
