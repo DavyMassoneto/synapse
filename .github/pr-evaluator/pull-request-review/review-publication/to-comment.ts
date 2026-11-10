@@ -1,7 +1,7 @@
 import { commentBody } from "#evaluator/comment-text"
 import { isMultiLine } from "#evaluator/diff-annotation"
-import { type ReviewComment } from "#evaluator/pull-request-review"
-import { type Group } from "./types"
+import { type Group } from "#evaluator/finding-placement"
+import { type ReviewComment } from "./types"
 
 export function toComment(group: Group): ReviewComment {
   const { anchor } = group

@@ -93,7 +93,7 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 | `finding-placement/` | Posicionar cada apontamento na linha do diff e agrupar os da mesma linha |
 | `comment-text/` | Escrever o texto do comentário de um apontamento |
 | `review-text/` | Escrever o resumo da review, o marcador do commit e a seção dos apontamentos sem linha |
-| `pull-request-review/` | Consultar a PR, ler as reviews já publicadas e publicar a review |
+| `pull-request-review/` | Consultar a PR, ler as reviews já publicadas e publicar a review, com um comentário por grupo de apontamentos |
 | `evaluation/` | Coordenar os passos de uma avaliação; nenhuma outra capacidade o importa |
 
 O modelo usado é fixo no workflow. A automação não tem testes unitários: é verificada ao executá-la no GitHub Actions.
