@@ -1,14 +1,18 @@
-import { BOT_LOGIN } from "./constants"
-import { type ListedReview, type ReviewWithBody } from "./types"
+import { BOT_LOGIN, PER_PAGE } from "./constants"
+import { type ListedReview } from "./types"
 
 export function isBotReview(review: ListedReview, headSha: string): boolean {
   return review.commit_id === headSha && review.user?.login === BOT_LOGIN
 }
 
-export function hasReviewMarker(bodies: string[], marker: string): boolean {
-  return bodies.some((body) => body.includes(marker))
+export function hasMarker(review: ListedReview, marker: string): boolean {
+  return typeof review.body === "string" && review.body.includes(marker)
 }
 
-export function hasBody(review: ListedReview): review is ReviewWithBody {
-  return typeof review.body === "string"
+export function hasMarkedReview(reviews: ListedReview[], headSha: string, marker: string): boolean {
+  return reviews.some((review) => isBotReview(review, headSha) && hasMarker(review, marker))
+}
+
+export function isLastPage(reviews: ListedReview[]): boolean {
+  return reviews.length < PER_PAGE
 }

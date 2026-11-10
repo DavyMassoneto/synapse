@@ -15,9 +15,17 @@ export function hasEveryLine(lines: Set<number>, start: number, end: number): bo
 }
 
 export function hasDiffLine(lines: DiffLines, path: string, side: Side, line: number): boolean {
-  return linesOnSide(lines, path, side).has(line)
+  const file = lines.get(path)
+  if (file) {
+    return linesOnSide(file, side).has(line)
+  }
+  return false
 }
 
 export function hasDiffRange(lines: DiffLines, path: string, side: Side, start: number, end: number): boolean {
-  return isMultiLine(start, end) && hasEveryLine(linesOnSide(lines, path, side), start, end)
+  const file = lines.get(path)
+  if (file) {
+    return isMultiLine(start, end) && hasEveryLine(linesOnSide(file, side), start, end)
+  }
+  return false
 }

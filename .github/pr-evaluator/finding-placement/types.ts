@@ -21,7 +21,7 @@ export interface Group {
 }
 
 export interface Placement {
-  groups: Group[]
+  groups: Map<string, Group>
   unplaced: Finding[]
 }
 

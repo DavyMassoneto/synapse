@@ -8,6 +8,8 @@ export const DONE_PAYLOAD = "[DONE]"
 
 export const STOP_FINISH = "stop"
 
+export const NON_BLANK_PATTERN = /\S/
+
 export const PROVIDER_ERROR_PREFIX = "Erro do provedor"
 
 export const PROVIDER_ERROR_WITHOUT_MESSAGE = "Erro do provedor sem mensagem"

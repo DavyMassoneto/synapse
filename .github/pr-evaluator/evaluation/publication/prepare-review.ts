@@ -8,7 +8,7 @@ import { type PreparedReview } from "./types"
 
 export function prepareReview(github: GithubConfiguration, diff: AnnotatedDiff, result: ReviewResult): PreparedReview {
   const placement = placeFindings(diff.lines, result.findings)
-  const comments = placement.groups.map(toComment)
+  const comments = Array.from(placement.groups.values(), toComment)
   return {
     unplacedCount: placement.unplaced.length,
     payload: {

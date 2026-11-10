@@ -15,5 +15,5 @@ export function placeFindings(lines: DiffLines, findings: Finding[]): Placement 
       unplaced.push(finding)
     }
   }
-  return { groups: Array.from(groups.values()), unplaced }
+  return { groups, unplaced }
 }
