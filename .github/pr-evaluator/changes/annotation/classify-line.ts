@@ -1,6 +1,7 @@
 import { isFileHeader, isHunkHeader, isPathHeader } from "../headers"
 import { type DiffState, type LineKind } from "../position-tracking"
 import { ADDED, CONTEXT, NO_NEWLINE, REMOVED } from "./constants"
+import { isHunkBody } from "./predicates"
 
 function classifyHunkMarker(marker: string): LineKind {
   if (marker === ADDED) {
@@ -20,7 +21,7 @@ function classifyHunkMarker(marker: string): LineKind {
 
 export function classifyLine(state: DiffState, line: string): LineKind {
   const hunkKind = classifyHunkMarker(line.charAt(0))
-  if (state.inHunk && hunkKind !== "other") {
+  if (isHunkBody(state, hunkKind)) {
     return hunkKind
   }
   if (isFileHeader(line)) {
