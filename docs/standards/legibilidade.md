@@ -52,8 +52,8 @@
 ## 9. Ausência de valor e validação positiva
 
 - Nunca se valida um dado comparando-o com `undefined` ou `null` (`=== undefined`, `!== undefined`, `== null`, `typeof x === "undefined"`). Isso trata uma única forma de "vazio" e deixa passar `null`, `0`, `""` e qualquer outro tipo de dado.
-- Sempre se valida o dado POSITIVO, isto é, que ele é o dado esperado: `typeof x === "string"`, `Array.isArray(x)`, `instanceof`, o discriminante `kind` de uma união ou um predicado `isX`/`hasX`.
-- A validação positiva inclui as restrições do dado, e não só o seu tipo. `typeof x === "string"` aceita `""`: um texto vazio pode ser válido como conteúdo, mas não como referência de modelo, que exige o formato `provedor/id`. `typeof x === "object"` aceita `null`: para objetos use `instanceof Object` ou valide as propriedades esperadas. Uma escolha feita entre opções apresentadas deve ser uma dessas opções.
+- Sempre se valida o dado POSITIVO, isto é, que ele é o dado esperado. Quando o tipo declarado já diz o que o valor é e só falta saber se ele veio, a condição direta (`if (valor)`) é a validação positiva, conforme [Tipagem](tipagem.md). Quando o formato é desconhecido, valida-se com esquema na fronteira, com `typeof`, com `Array.isArray` ou com o discriminante `kind` de uma união.
+- A validação positiva inclui as restrições do dado, e não só o seu tipo. `typeof x === "string"` aceita `""`: um texto vazio pode ser válido como conteúdo, mas não como referência de modelo, que exige o formato `provedor/id`. `typeof x === "object"` aceita `null`: valide as propriedades esperadas ou use um esquema. Uma escolha feita entre opções apresentadas deve ser uma dessas opções.
 - Dado vindo de fora do programa é validado uma vez, na fronteira; os consumidores internos confiam no tipo já validado e não repetem a validação completa.
 - Exceção: o `undefined` que a API de uma biblioteca exige como argumento (por exemplo, `setStatus(chave, undefined)` para limpar um status) não é validação.
 - Asserções do Vitest (`toBeUndefined`) verificam o resultado de um teste e não se aplicam a esta regra.
@@ -67,4 +67,4 @@
 ## 11. Função que precisa de explicação
 
 - Se o revisor precisa perguntar por que uma função existe ou o que ela faz, o nome ou a estrutura não está claro: renomeie ou simplifique até a resposta estar no código.
-- Laço manual que reimplementa uma operação conhecida (remover itens, filtrar, procurar) é substituído pela operação (`filter`, `find`, `includes`).
+- Laço manual que reimplementa uma única operação conhecida (remover itens, filtrar, procurar) é substituído pela operação (`filter`, `find`, `includes`). O laço que filtra, limita e transforma na mesma passagem não é reimplementação: encadear `filter`, `slice` e `map` para isso cria coleções intermediárias, conforme [Desempenho](desempenho.md).

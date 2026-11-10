@@ -7,10 +7,8 @@ import {
   ModelRuntime,
   SettingsManager,
 } from "@earendil-works/pi-coding-agent"
-import { Type } from "typebox"
 import { Value } from "typebox/value"
-
-const manifestSchema = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })
+import { manifestSchema } from "./constants"
 
 export function resolveEntrypoint(): string {
   const manifestPath = fileURLToPath(new URL("../../../package.json", import.meta.url))

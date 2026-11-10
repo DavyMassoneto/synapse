@@ -13,7 +13,7 @@ export async function runDistribution(home: string): Promise<DistributionResult>
     runner.getUIContext().notify = ui.notify.bind(ui)
     const command = runner.getCommand("advisor")
     const tool = runner.getToolDefinition("advisor")
-    if (command instanceof Object && tool instanceof Object) {
+    if (command && tool) {
       await command.handler("", runner.createCommandContext())
       const result = await tool.execute("id", {}, undefined, undefined, runner.createToolContext("id", undefined))
       return { notices: ui.notices, lookups: registry.fake.calls, isError: result.isError === true }

@@ -1,9 +1,11 @@
-import { isTextBlock } from "./predicates"
 import { type TextBlocks } from "./types"
 
 export function extractText(blocks: TextBlocks): string {
-  return blocks
-    .filter(isTextBlock)
-    .map((block) => block.text)
-    .join("\n")
+  const texts: string[] = []
+  for (const block of blocks) {
+    if (block.type === "text") {
+      texts.push(block.text)
+    }
+  }
+  return texts.join("\n")
 }

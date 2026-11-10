@@ -1,9 +1,8 @@
-import { type Advisor, type Config } from "#synapse/modules"
+import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
-import { type AdvisorToolActivation } from "../lifecycle"
-import { chooseModel } from "../model-picker"
-import { applySelection } from "./apply-selection"
-import { applyThinking } from "./apply-thinking"
+import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
+import { chooseModel, type ModelSelection } from "../model-picker"
+import { COMMAND_TEXT } from "./constants"
 import { currentModel } from "./current-model"
 import { parseAdvisorCommand } from "./parser"
 import { type AdvisorCommandInput } from "./types"
@@ -28,19 +27,34 @@ export class AdvisorCommand {
 
   private async execute(input: AdvisorCommandInput, config: Config, context: AdvisorContext): Promise<void> {
     if (input.kind === "disable") {
-      applySelection(this.pi, this.advisor, context, { kind: "disabled" })
+      this.disable(context)
     } else if (input.kind === "thinking") {
-      applyThinking(this.pi, this.advisor, context, input.level)
+      this.report(context, this.advisor.configuration.setThinking(input.level), `Advisor thinking: ${input.level}`)
+    } else if (input.query.length === 0 && !context.hasUI) {
+      context.ui.notify(`Advisor: ${currentModel(config)}, thinking ${config.thinking}`, "info")
     } else {
-      await this.select(input.query, config, context)
+      this.applySelection(context, await chooseModel(context, input.query))
     }
   }
 
-  private async select(query: string, config: Config, context: AdvisorContext): Promise<void> {
-    if (query.length === 0 && !context.hasUI) {
-      context.ui.notify(`Advisor: ${currentModel(config)}, thinking ${config.thinking}`, "info")
+  private applySelection(context: AdvisorContext, selection: ModelSelection): void {
+    if (selection.kind === "disabled") {
+      this.disable(context)
+    } else if (selection.kind === "selected") {
+      this.report(context, this.advisor.configuration.selectModel(selection.model), `Advisor: ${selection.model}`)
+    }
+  }
+
+  private disable(context: AdvisorContext): void {
+    this.report(context, this.advisor.configuration.disable(), COMMAND_TEXT.disabled)
+  }
+
+  private report(context: AdvisorContext, result: AdvisorResult, success: string): void {
+    if (result.kind === "failure") {
+      context.ui.notify(result.message, "error")
     } else {
-      applySelection(this.pi, this.advisor, context, await chooseModel(context, query))
+      syncAdvisor(this.pi, this.advisor, context)
+      context.ui.notify(success, "info")
     }
   }
 }

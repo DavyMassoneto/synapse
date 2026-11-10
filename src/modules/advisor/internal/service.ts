@@ -2,7 +2,6 @@ import {
   type Advisor,
   type Consultation,
   type ConsultationResult,
-  hasModel,
   type ModelPort,
   type ReminderDecision,
   type ReminderTurn,
@@ -23,7 +22,7 @@ export class AdvisorService implements Advisor {
 
   isEnabled(): boolean {
     const status = this.configuration.status()
-    return status.kind === "success" && hasModel(status.config)
+    return status.kind === "success" && typeof status.config.model === "string"
   }
 
   turn(event: ReminderTurn): ReminderDecision {

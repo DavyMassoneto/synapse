@@ -1,7 +1,8 @@
 import { fuzzyFilter } from "@earendil-works/pi-tui"
 
 export function searchModels(models: string[], input: string): string[] {
-  const exact = models.filter((model) => model.toLowerCase() === input.toLowerCase())
+  const normalized = input.toLowerCase()
+  const exact = models.filter((model) => model.toLowerCase() === normalized)
   if (exact.length > 0) {
     return exact
   }

@@ -1,4 +1,4 @@
-export * from "./distribution-cases"
+export * from "./constants"
 export * from "./distribution-environment"
 export * from "./distribution-host"
 export * from "./distribution-registry"

@@ -1,11 +1,24 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor, type ConsultationResult } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
-import { AdvisorModel } from "../model"
+import { AdvisorModel } from "../model-consultation"
 import { captureTranscript } from "../transcript"
 import { TOOL_TEXT } from "./constants"
-import { consultationResult } from "./consultation-result"
 import { toolFailure } from "./failure"
 import { type AdvisorToolOutput, type AdvisorToolUpdate } from "./types"
+
+function consultationOutput(result: ConsultationResult): AdvisorToolOutput {
+  if (result.kind === "cancelled") {
+    return toolFailure(TOOL_TEXT.cancelled)
+  }
+  if (result.kind === "failure") {
+    return toolFailure(result.message)
+  }
+  return {
+    content: [{ type: "text", text: result.response.text }],
+    details: { model: result.model },
+    usage: result.response.usage,
+  }
+}
 
 export async function consultTool(
   advisor: Advisor,
@@ -15,20 +28,18 @@ export async function consultTool(
 ): Promise<AdvisorToolOutput> {
   try {
     onUpdate?.({ content: [{ type: "text", text: TOOL_TEXT.progress }], details: {} })
-    const model = new AdvisorModel(context.modelRegistry)
     const result = await advisor.consult(
       { system: context.getSystemPrompt(), messages: captureTranscript(context), signal },
-      model,
+      new AdvisorModel(context.modelRegistry),
     )
-    return consultationResult(result)
+    return consultationOutput(result)
   } catch (error) {
     if (signal.aborted) {
       return toolFailure(TOOL_TEXT.cancelled)
     }
-    let message = String(error)
     if (error instanceof Error) {
-      message = error.message
+      return toolFailure(`Advisor indisponível: ${error.message}.`)
     }
-    return toolFailure(`Advisor indisponível: ${message}.`)
+    throw error
   }
 }

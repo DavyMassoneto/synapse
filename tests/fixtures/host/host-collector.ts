@@ -50,14 +50,14 @@ export class AdvisorHostCollector implements AdvisorHost {
   unsubscribe(): void {}
 
   requireTool(): AdvisorTool {
-    if (this.tool instanceof Object) {
+    if (this.tool) {
       return this.tool
     }
     throw new Error("ferramenta ausente")
   }
 
   requireCommand(): AdvisorCommandDefinition {
-    if (this.command instanceof Object) {
+    if (this.command) {
       return this.command
     }
     throw new Error("comando ausente")
@@ -65,7 +65,7 @@ export class AdvisorHostCollector implements AdvisorHost {
 
   requireCompletions(): CommandCompletions {
     const command = this.requireCommand()
-    if (typeof command.getArgumentCompletions === "function") {
+    if (command.getArgumentCompletions) {
       return command.getArgumentCompletions
     }
     throw new Error("autocomplete ausente")

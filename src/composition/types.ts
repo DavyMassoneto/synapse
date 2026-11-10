@@ -1,10 +1,7 @@
 import { type Advisor } from "../modules"
 
-export interface AdvisorLifecycle {
+export interface AdvisorComposition {
+  advisor: Advisor
   signal: AbortSignal
   shutdown(): void
-}
-
-export interface AdvisorComposition extends AdvisorLifecycle {
-  advisor: Advisor
 }

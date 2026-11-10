@@ -13,16 +13,14 @@ export class FileConfig {
   }
 
   load(): ConfigLoadResult {
-    let content: string
     try {
-      content = readFileSync(this.path, "utf8")
+      return parseConfig(readFileSync(this.path, "utf8"))
     } catch (error) {
       if (error instanceof Error && "code" in error && error.code === "ENOENT") {
         return { kind: "missing" }
       }
       return { kind: "invalid", message: CONFIG_DIAGNOSTICS.readFailed }
     }
-    return parseConfig(content)
   }
 
   save(config: Config): void {

@@ -14,6 +14,13 @@ export class AdvisorToolHandler {
     this.lifetime = lifetime
   }
 
+  private callSignal(signal: AdvisorToolSignal): AbortSignal {
+    if (signal) {
+      return AbortSignal.any([signal, this.lifetime])
+    }
+    return this.lifetime
+  }
+
   async execute(
     _id: string,
     _params: AdvisorToolInput,
@@ -21,10 +28,7 @@ export class AdvisorToolHandler {
     onUpdate: AdvisorToolUpdate,
     context: AdvisorContext,
   ): AdvisorToolResult {
-    let callSignal = this.lifetime
-    if (signal instanceof AbortSignal) {
-      callSignal = AbortSignal.any([signal, this.lifetime])
-    }
+    const callSignal = this.callSignal(signal)
     if (callSignal.aborted) {
       return toolFailure(TOOL_TEXT.cancelled)
     }

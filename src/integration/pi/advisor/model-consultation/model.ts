@@ -8,10 +8,9 @@ import {
   type ValidReference,
 } from "#synapse/modules"
 import { type AdvisorModelRegistry } from "../host"
-import { MODEL_DIAGNOSTICS } from "./constants"
+import { MODEL_DIAGNOSTICS, REASONING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
-import { reasoningTokens } from "./reasoning-tokens"
 
 export class AdvisorModel {
   private readonly registry: AdvisorModelRegistry
@@ -30,7 +29,7 @@ export class AdvisorModel {
 
   private authorizedModel(parsed: ValidReference, reference: string): Model<Api> {
     const model = this.registry.find(parsed.provider, parsed.id)
-    if (model instanceof Object) {
+    if (model) {
       if (this.registry.hasConfiguredAuth(model)) {
         return model
       }
@@ -47,7 +46,7 @@ export class AdvisorModel {
       reference,
       contextWindow: model.contextWindow,
       maxOutputTokens: model.maxTokens,
-      reasoningTokens: reasoningTokens(level),
+      reasoningTokens: REASONING_BUDGETS[level],
       effectiveThinking: level,
     }
   }

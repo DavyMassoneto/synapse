@@ -5,10 +5,6 @@ export interface Config {
   thinking: ThinkingLevel
 }
 
-export interface ConfiguredConfig extends Config {
-  model: string
-}
-
 export interface AdvisorConfigOperations {
   status(): AdvisorResult
   selectModel(model: string): AdvisorResult

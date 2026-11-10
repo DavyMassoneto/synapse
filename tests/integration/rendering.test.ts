@@ -52,6 +52,24 @@ function errorRendering(): void {
   expect(component.render(100).join("")).toMatch(/line0/)
 }
 
+function imageBlocksAreIgnored(): void {
+  const component = host.requireTool().renderResult(
+    {
+      content: [
+        { type: "image", data: "AA==", mimeType: "image/png" },
+        { type: "text", text: "só texto" },
+      ],
+      details: {},
+    },
+    { isPartial: false, expanded: true },
+    new PlainTheme(),
+    {},
+  )
+  const rendered = component.render(100).join("")
+  expect(rendered).toMatch(/só texto/)
+  expect(rendered).not.toMatch(/AA==/)
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -61,6 +79,7 @@ function registerTests(): void {
   test("reutiliza componente ao expandir", expandedRendering)
   test("preserva modelo histórico", historicalModel)
   test("renderiza erro", errorRendering)
+  test("bloco de imagem não entra no texto", imageBlocksAreIgnored)
 }
 
 describe("rendering", registerTests)

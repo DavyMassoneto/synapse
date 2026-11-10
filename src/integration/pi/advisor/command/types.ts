@@ -1,6 +1,6 @@
 import { type RegisteredCommand } from "@earendil-works/pi-coding-agent"
 import { type AdvisorContext } from "../host"
-import { type AdvisorToolActivation } from "../lifecycle"
+import { type LifecycleHost } from "../lifecycle"
 
 export interface DisableCommand {
   kind: "disable"
@@ -28,4 +28,4 @@ export interface CommandRegistry {
   registerCommand(name: string, command: AdvisorCommandDefinition): void
 }
 
-export type CommandHost = CommandRegistry & AdvisorToolActivation
+export type CommandHost = CommandRegistry & LifecycleHost

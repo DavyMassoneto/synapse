@@ -57,12 +57,38 @@ async function changedCapabilities(): Promise<void> {
   await expect(adapter.consult(first, { system: "review", prompt: "question", signal })).rejects.toThrow(/capacidades/)
 }
 
+async function missingModel(): Promise<void> {
+  registry.missing = true
+  await expect(adapter.resolve("provider/absent", "high", signal)).rejects.toThrow(/não encontrado: provider\/absent/)
+}
+
+async function missingCredentials(): Promise<void> {
+  registry.authorized = false
+  await expect(adapter.resolve("provider/first", "high", signal)).rejects.toThrow(
+    /Credenciais ausentes para provider\/first/,
+  )
+}
+
+async function invalidReference(): Promise<void> {
+  await expect(adapter.resolve("sem-barra", "high", signal)).rejects.toThrow(/inválida/)
+}
+
+async function reasoningBudgets(): Promise<void> {
+  expect((await adapter.resolve("provider/first", "off", signal)).reasoningTokens).toBe(0)
+  expect((await adapter.resolve("provider/first", "minimal", signal)).reasoningTokens).toBe(1_024)
+  expect((await adapter.resolve("provider/first", "high", signal)).reasoningTokens).toBe(16_384)
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
   test("resoluções intercaladas preservam modelos", independentResolutions)
   test("consulta usa modelo configurado", serviceConsultation)
   test("mudança de capacidade é rejeitada", changedCapabilities)
+  test("modelo ausente é rejeitado", missingModel)
+  test("credenciais ausentes são rejeitadas", missingCredentials)
+  test("referência sem provedor é rejeitada", invalidReference)
+  test("nível de raciocínio define a reserva", reasoningBudgets)
 }
 
 describe("model resolution", registerTests)

@@ -16,7 +16,7 @@ function hiddenNotice(hidden: number, theme: AdvisorRenderTheme): string {
 }
 
 function previewTitle(model?: string): string {
-  if (typeof model === "string") {
+  if (model) {
     return `${RENDER_TEXT.success} (${model})`
   }
   return RENDER_TEXT.success

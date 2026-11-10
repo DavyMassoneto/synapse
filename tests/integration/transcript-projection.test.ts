@@ -5,6 +5,7 @@ import { TestContext } from "../fixtures"
 function preservesProjectedMessages(): void {
   const context = new TestContext()
   context.sessionManager.messages = [
+    { role: "system", content: "instruções do sistema", timestamp: 0 },
     {
       role: "user",
       content: [
@@ -29,7 +30,7 @@ function preservesProjectedMessages(): void {
 }
 
 function registerTests(): void {
-  test("captura mensagens e imagens sem alterar ordem", preservesProjectedMessages)
+  test("captura mensagens e imagens sem alterar ordem e ignora a mensagem de sistema", preservesProjectedMessages)
 }
 
 describe("transcript projection", registerTests)

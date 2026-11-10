@@ -1,8 +1,13 @@
 import { type TranscriptMessage } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
 import { convertMessage } from "./message"
-import { isConversationMessage } from "./predicates"
 
 export function captureTranscript(context: AdvisorContext): TranscriptMessage[] {
-  return context.sessionManager.buildSessionProjection().messages.filter(isConversationMessage).map(convertMessage)
+  const transcript: TranscriptMessage[] = []
+  for (const message of context.sessionManager.buildSessionProjection().messages) {
+    if (message.role !== "system") {
+      transcript.push(convertMessage(message))
+    }
+  }
+  return transcript
 }

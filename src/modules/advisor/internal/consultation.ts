@@ -1,31 +1,54 @@
 import {
   type Config,
-  type ConfiguredConfig,
   type Consultation,
   type ConsultationResult,
-  hasModel,
   type ModelPort,
+  type ResolvedModel,
+  type ThinkingLevel,
 } from "#synapse/modules/advisor/public/contracts"
 import { CONSULTATION_DIAGNOSTICS } from "./constants"
-import { consultResolved } from "./consult-resolved"
+import { ADVISOR_SYSTEM, preparePrompt } from "./prompt"
 
-async function consultConfigured(
+async function consultResolved(
   input: Consultation,
   model: ModelPort,
-  config: ConfiguredConfig,
+  resolved: ResolvedModel,
+): Promise<ConsultationResult> {
+  if (input.signal.aborted) {
+    return { kind: "cancelled" }
+  }
+  const prompt = preparePrompt(input, resolved)
+  if (prompt.kind === "failure") {
+    return prompt
+  }
+  const response = await model.consult(resolved, {
+    system: ADVISOR_SYSTEM,
+    prompt: prompt.text,
+    signal: input.signal,
+  })
+  if (input.signal.aborted || response.kind === "cancelled") {
+    return { kind: "cancelled" }
+  }
+  return { kind: "success", model: resolved.reference, response }
+}
+
+async function consultModel(
+  input: Consultation,
+  model: ModelPort,
+  reference: string,
+  thinking: ThinkingLevel,
 ): Promise<ConsultationResult> {
   try {
-    const resolved = await model.resolve(config.model, config.thinking, input.signal)
+    const resolved = await model.resolve(reference, thinking, input.signal)
     return await consultResolved(input, model, resolved)
   } catch (error) {
     if (input.signal.aborted) {
       return { kind: "cancelled" }
     }
-    let message = String(error)
     if (error instanceof Error) {
-      message = error.message
+      return { kind: "failure", message: error.message }
     }
-    return { kind: "failure", message }
+    throw error
   }
 }
 
@@ -34,8 +57,8 @@ export async function consultAdvisor(
   model: ModelPort,
   config: Config,
 ): Promise<ConsultationResult> {
-  if (hasModel(config)) {
-    return consultConfigured(input, model, config)
+  if (config.model) {
+    return consultModel(input, model, config.model, config.thinking)
   }
   return { kind: "failure", message: CONSULTATION_DIAGNOSTICS.noModel }
 }

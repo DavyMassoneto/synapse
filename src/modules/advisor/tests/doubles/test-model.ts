@@ -13,7 +13,7 @@ export class TestModel implements ModelPort {
   resolvedReference?: string
 
   requireCaptured(): ModelRequest {
-    if (this.captured instanceof Object) {
+    if (this.captured) {
       return this.captured
     }
     throw new Error("requisição ausente")

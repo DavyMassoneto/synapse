@@ -1,6 +1,6 @@
 import { type AssistantMessage, createAssistantMessageEventStream } from "@earendil-works/pi-ai"
+import { TEST_USAGE } from "./constants"
 import { type TestStopReason } from "./types"
-import { TEST_USAGE } from "./usage"
 
 export function assistantStream(model: string, text: string, stopReason: TestStopReason) {
   const stream = createAssistantMessageEventStream()

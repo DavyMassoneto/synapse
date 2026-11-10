@@ -1,3 +1,4 @@
+import { Type } from "typebox"
 import { type ConfigCase } from "./types"
 
 export const CASES: ConfigCase[] = [
@@ -26,3 +27,5 @@ export const CASES: ConfigCase[] = [
     invalid: true,
   },
 ]
+
+export const manifestSchema = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })

@@ -21,7 +21,7 @@ function selectEdges(first: string, last: string, blocks: string[], budget: numb
 export function selectMessages(blocks: string[], budget: number): string {
   const first = blocks[0]
   const last = blocks[blocks.length - 1]
-  if (typeof first === "string" && typeof last === "string") {
+  if (first && last) {
     return selectEdges(first, last, blocks, budget)
   }
   return ""

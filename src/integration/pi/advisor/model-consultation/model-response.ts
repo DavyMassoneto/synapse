@@ -4,7 +4,7 @@ import { extractText } from "../host"
 import { MODEL_DIAGNOSTICS } from "./constants"
 
 function failureReason(reply: AssistantMessage): string {
-  if (typeof reply.errorMessage === "string") {
+  if (reply.errorMessage) {
     return reply.errorMessage
   }
   return reply.stopReason

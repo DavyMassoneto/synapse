@@ -1,19 +1,19 @@
 import {
   type AdvisorResult,
   type Config,
-  isThinkingLevel,
   parseModelReference,
+  THINKING_LEVELS,
 } from "#synapse/modules/advisor/public/contracts"
 import { CONFIGURATION_DIAGNOSTICS } from "./constants"
 import { initialConfiguration } from "./initialize"
 import { type ConfigLoadResult, type ConfigPort } from "./types"
 
 export class AdvisorConfiguration {
-  private readonly config: ConfigPort
+  private readonly storage: ConfigPort
   private current: AdvisorResult
 
-  constructor(config: ConfigPort, loaded: ConfigLoadResult) {
-    this.config = config
+  constructor(storage: ConfigPort, loaded: ConfigLoadResult) {
+    this.storage = storage
     this.current = initialConfiguration(loaded)
   }
 
@@ -24,10 +24,10 @@ export class AdvisorConfiguration {
     return { kind: "success", config: { ...this.current.config } }
   }
 
-  private persist(status: Config): AdvisorResult {
+  private persist(config: Config): AdvisorResult {
     try {
-      this.config.save(status)
-      this.current = { kind: "success", config: status }
+      this.storage.save(config)
+      this.current = { kind: "success", config }
       return this.status()
     } catch {
       return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.saveFailed }
@@ -38,7 +38,6 @@ export class AdvisorConfiguration {
     if (parseModelReference(model).kind === "invalid") {
       return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.invalidModel }
     }
-
     if (this.current.kind === "failure") {
       return this.status()
     }
@@ -53,12 +52,13 @@ export class AdvisorConfiguration {
   }
 
   setThinking(requested: string): AdvisorResult {
-    if (!isThinkingLevel(requested)) {
+    const level = THINKING_LEVELS.find((candidate) => candidate === requested)
+    if (!level) {
       return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.invalidThinking }
     }
     if (this.current.kind === "failure") {
       return this.status()
     }
-    return this.persist({ ...this.current.config, thinking: requested })
+    return this.persist({ ...this.current.config, thinking: level })
   }
 }

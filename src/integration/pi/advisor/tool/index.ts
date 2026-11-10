@@ -1,6 +1,5 @@
 export * from "./constants"
 export * from "./consult"
-export * from "./consultation-result"
 export * from "./failure"
 export * from "./register"
 export * from "./render-call"

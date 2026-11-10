@@ -3,18 +3,24 @@ import { type AdvisorContext } from "../host"
 import { modelReferences } from "../model-picker"
 import { COMPLETION_LIMIT, DISABLE_COMMAND, THINKING_COMMAND } from "./constants"
 
-export class ModelCatalog {
-  private models: string[] = []
+export class CompletionCatalog {
+  private values = [DISABLE_COMMAND, THINKING_COMMAND]
 
   refresh(context: AdvisorContext): void {
-    this.models = modelReferences(context)
+    this.values = [DISABLE_COMMAND, THINKING_COMMAND, ...modelReferences(context)]
   }
 
   completions(prefix: string): AutocompleteItem[] {
     const normalized = prefix.toLowerCase()
-    return [DISABLE_COMMAND, THINKING_COMMAND, ...this.models]
-      .filter((value) => value.toLowerCase().startsWith(normalized))
-      .slice(0, COMPLETION_LIMIT)
-      .map((value) => ({ value, label: value }))
+    const items: AutocompleteItem[] = []
+    for (const value of this.values) {
+      if (items.length === COMPLETION_LIMIT) {
+        break
+      }
+      if (value.toLowerCase().startsWith(normalized)) {
+        items.push({ value, label: value })
+      }
+    }
+    return items
   }
 }
