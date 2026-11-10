@@ -1,5 +1,5 @@
+import { SECTION_BREAK } from "#evaluator/comment-text"
 import { type Finding, type ReviewResult } from "#evaluator/review-result"
-import { SECTION_BREAK } from "../comment-text"
 import { VERDICT_LABELS } from "./constants"
 import { reviewMarker } from "./review-marker"
 import { unplacedSection } from "./unplaced-section"

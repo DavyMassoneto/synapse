@@ -1,6 +1,6 @@
 import { type Side } from "#evaluator/changes"
+import { type ReviewComment } from "#evaluator/pull-request-review"
 import { type Finding } from "#evaluator/review-result"
-import { type ReviewComment } from "../review-publication"
 
 export interface Anchored {
   kind: "anchored"

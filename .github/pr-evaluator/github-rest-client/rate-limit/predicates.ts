@@ -7,3 +7,7 @@ export function hasRateLimitSignal(response: Response): boolean {
 export function isRateLimited(response: Response): boolean {
   return response.status === RATE_LIMIT_STATUS || (response.status === FORBIDDEN_STATUS && hasRateLimitSignal(response))
 }
+
+export function hasRetryAfterSeconds(seconds: number): boolean {
+  return Number.isFinite(seconds) && seconds > 0
+}

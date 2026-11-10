@@ -1,7 +1,8 @@
 import { type AnnotatedDiff } from "#evaluator/changes"
 import { type GithubConfiguration } from "#evaluator/configuration"
-import { placeFindings, reviewBody } from "#evaluator/pull-request-review"
+import { placeFindings } from "#evaluator/finding-placement"
 import { type ReviewResult } from "#evaluator/review-result"
+import { reviewBody } from "#evaluator/review-text"
 import { type PreparedReview } from "./types"
 
 export function prepareReview(github: GithubConfiguration, diff: AnnotatedDiff, result: ReviewResult): PreparedReview {

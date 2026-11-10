@@ -88,7 +88,12 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 | `http-failure/` | Ler o detalhe de uma resposta HTTP que falhou, para as mensagens de erro dos dois clientes HTTP |
 | `provider-client/` | Chamar o modelo no provedor, ler a resposta em streaming e repetir a chamada em falhas de servidor |
 | `review-result/` | Validar a resposta: veredito e apontamentos |
-| `pull-request-review/` | Consultar a PR e publicar a review com um comentário por linha |
+| `presence/` | Dizer, com validação positiva, se um valor opcional existe |
+| `github-rest-client/` | Chamar a API REST do GitHub e esperar o limite de taxa |
+| `finding-placement/` | Posicionar cada apontamento na linha do diff e agrupar os da mesma linha |
+| `comment-text/` | Escrever o texto do comentário de um apontamento |
+| `review-text/` | Escrever o resumo da review, o marcador do commit e a seção dos apontamentos sem linha |
+| `pull-request-review/` | Consultar a PR, ler as reviews já publicadas e publicar a review |
 | `evaluation/` | Coordenar os passos de uma avaliação; nenhuma outra capacidade o importa |
 
 O modelo usado é fixo no workflow. A automação não tem testes unitários: é verificada ao executá-la no GitHub Actions.

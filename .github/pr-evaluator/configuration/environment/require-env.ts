@@ -1,6 +1,8 @@
+import { hasText } from "./predicates"
+
 export function requireEnv(name: string): string {
   const value = process.env[name]
-  if (typeof value === "string" && value.length > 0) {
+  if (hasText(value)) {
     return value
   }
   throw new Error(`Variável de ambiente ausente: ${name}`)

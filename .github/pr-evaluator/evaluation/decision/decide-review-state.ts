@@ -1,5 +1,6 @@
 import { type GithubConfiguration } from "#evaluator/configuration"
-import { readReviewState, reviewMarker } from "#evaluator/pull-request-review"
+import { readReviewState } from "#evaluator/pull-request-review"
+import { reviewMarker } from "#evaluator/review-text"
 import { MESSAGE_ALREADY_REVIEWED } from "./constants"
 import { type EvaluationDecision } from "./types"
 

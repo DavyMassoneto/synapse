@@ -1,6 +1,6 @@
 import { type GithubConfiguration } from "#evaluator/configuration"
+import { getJson } from "#evaluator/github-rest-client"
 import { pullPath } from "../pull-lookup"
-import { getJson } from "../rest-client"
 import { PER_PAGE, ReviewListSchema } from "./constants"
 import { type ListedReview } from "./types"
 
