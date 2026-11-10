@@ -88,7 +88,6 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 | `http-failure/` | Ler o detalhe de uma resposta HTTP que falhou, para as mensagens de erro dos dois clientes HTTP |
 | `provider-client/` | Chamar o modelo no provedor, ler a resposta em streaming e repetir a chamada em falhas de servidor |
 | `review-result/` | Validar a resposta: veredito e apontamentos |
-| `presence/` | Dizer, com validação positiva, se um valor opcional existe |
 | `github-rest-client/` | Chamar a API REST do GitHub e esperar o limite de taxa |
 | `finding-placement/` | Posicionar cada apontamento na linha do diff e agrupar os da mesma linha |
 | `comment-text/` | Escrever o texto do comentário de um apontamento |

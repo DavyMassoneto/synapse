@@ -12,5 +12,5 @@ export async function listBotReviewBodies(configuration: GithubConfiguration): P
       return bodies
     }
   }
-  return bodies
+  throw new Error(`A PR tem mais de ${MAX_PAGES * PER_PAGE} reviews; a leitura do estado foi interrompida`)
 }

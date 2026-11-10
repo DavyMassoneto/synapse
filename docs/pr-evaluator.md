@@ -8,7 +8,7 @@ O avaliador roda sozinho em toda PR e aponta cada problema na linha em que ele o
 
 ## Execução
 
-- O workflow `.github/workflows/pr-evaluator.yml` dispara em `pull_request_target` (PR aberta, atualizada, reaberta ou marcada como pronta) para PRs do próprio repositório que não são rascunho. Esse evento roda no contexto da **branch padrão**: o workflow só dispara depois de estar na branch padrão, para PRs com qualquer base. Ele roda mesmo se o lint falhar.
+- O workflow `.github/workflows/pr-evaluator.yml` dispara em `pull_request_target` (PR aberta, atualizada, reaberta ou marcada como pronta) para PRs do próprio repositório que não são rascunho. Esse evento usa o arquivo de workflow da branch base da PR: uma PR cuja base não contém o workflow não é avaliada. Ele roda mesmo se o lint falhar.
 - O código do avaliador, as dependências e os documentos de contexto vêm da branch padrão, nunca da cabeça da PR. O workflow não executa código da PR: lê apenas o diff.
 - O avaliador monta o diff entre o commit base e o commit avaliado, numera cada linha, chama o modelo com streaming e publica uma única review por commit avaliado, com todos os comentários em lote. A review é identificada por um marcador com o SHA e só conta se foi publicada por `github-actions[bot]` para o commit avaliado: reexecutar o mesmo commit, ou uma publicação concorrente, não duplica a review.
 - Antes de publicar, confere se a cabeça da PR ainda é o commit avaliado. Se a PR recebeu um commit novo, descarta a avaliação.

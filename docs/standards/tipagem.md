@@ -11,7 +11,6 @@
 
 - Tipo inferível não se anota. Anotação que repete o que o TypeScript já infere é proibida.
 - Parâmetros declaram o tipo. Só o callback passado como argumento recebe o tipo da chamada.
-- O retorno de uma função declara o tipo, inclusive `void`: é o contrato da função e não conta como tipo inferido.
 - Propriedade de classe sem valor declara o tipo.
 
 ## 3. Tipagem inline

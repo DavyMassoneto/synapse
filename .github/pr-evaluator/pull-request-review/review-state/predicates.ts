@@ -1,9 +1,8 @@
-import { isPresentObject } from "#evaluator/presence"
 import { BOT_LOGIN } from "./constants"
 import { type ListedReview, type ReviewWithBody } from "./types"
 
 export function isBotReview(review: ListedReview, headSha: string): boolean {
-  return review.commit_id === headSha && isPresentObject(review.user) && review.user.login === BOT_LOGIN
+  return review.commit_id === headSha && review.user?.login === BOT_LOGIN
 }
 
 export function hasReviewMarker(bodies: string[], marker: string): boolean {

@@ -25,3 +25,5 @@ export interface SplitText {
 }
 
 export type StreamChunk = Static<typeof StreamChunkSchema>
+
+export type ProviderError = NonNullable<StreamChunk["error"]>

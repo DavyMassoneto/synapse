@@ -8,8 +8,12 @@ export const DONE_PAYLOAD = "[DONE]"
 
 export const STOP_FINISH = "stop"
 
+export const PROVIDER_ERROR_PREFIX = "Erro do provedor"
+
+export const PROVIDER_ERROR_WITHOUT_MESSAGE = "Erro do provedor sem mensagem"
+
 export const StreamChunkSchema = Type.Object({
-  error: Type.Optional(Type.Object({ message: Type.String() })),
+  error: Type.Optional(Type.Object({ message: Type.Optional(Type.String()) })),
   choices: Type.Optional(
     Type.Array(
       Type.Object({
