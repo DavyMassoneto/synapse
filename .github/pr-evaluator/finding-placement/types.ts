@@ -1,4 +1,4 @@
-import { type Side } from "#evaluator/changes"
+import { type Side } from "#evaluator/diff-annotation"
 import { type ReviewComment } from "#evaluator/pull-request-review"
 import { type Finding } from "#evaluator/review-result"
 

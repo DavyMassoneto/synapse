@@ -1,5 +1,6 @@
-import { annotateDiff, readDiff } from "#evaluator/changes"
 import { type Configuration } from "#evaluator/configuration"
+import { annotateDiff } from "#evaluator/diff-annotation"
+import { readDiff } from "#evaluator/diff-reading"
 import { applyDecision, decideEvaluation } from "./decision"
 import { evaluate } from "./evaluate"
 

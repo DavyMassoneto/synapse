@@ -1,5 +1,5 @@
-import { type AnnotatedDiff } from "#evaluator/changes"
 import { type GithubConfiguration } from "#evaluator/configuration"
+import { type AnnotatedDiff } from "#evaluator/diff-annotation"
 import { placeFindings } from "#evaluator/finding-placement"
 import { type ReviewResult } from "#evaluator/review-result"
 import { reviewBody } from "#evaluator/review-text"

@@ -83,7 +83,8 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 | Pasta | Responsabilidade |
 | --- | --- |
 | `configuration/` | Ler e validar as variáveis de ambiente |
-| `changes/` | Obter o diff do git e registrar as linhas que ele mostra, com a posição de cada uma |
+| `diff-reading/` | Obter o diff do git, com um limite de leitura explícito |
+| `diff-annotation/` | Numerar as linhas do diff e registrar as que ele mostra, com a posição de cada uma |
 | `review-request/` | Carregar arquitetura, regras e padrões e montar a solicitação ao avaliador |
 | `http-failure/` | Ler o detalhe de uma resposta HTTP que falhou, para as mensagens de erro dos dois clientes HTTP |
 | `provider-client/` | Chamar o modelo no provedor, ler a resposta em streaming e repetir a chamada em falhas de servidor |

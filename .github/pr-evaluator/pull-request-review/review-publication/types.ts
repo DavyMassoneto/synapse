@@ -1,5 +1,5 @@
 import { type Static } from "typebox"
-import { type Side } from "#evaluator/changes"
+import { type Side } from "#evaluator/diff-annotation"
 import { type PublishedReviewSchema } from "./constants"
 
 export interface ReviewComment {

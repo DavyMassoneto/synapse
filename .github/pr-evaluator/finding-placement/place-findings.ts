@@ -1,4 +1,4 @@
-import { type DiffLines } from "#evaluator/changes"
+import { type DiffLines } from "#evaluator/diff-annotation"
 import { type Finding } from "#evaluator/review-result"
 import { partitionFindings } from "./partition-findings"
 import { toComment } from "./to-comment"

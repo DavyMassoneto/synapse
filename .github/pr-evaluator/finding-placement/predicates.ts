@@ -1,4 +1,4 @@
-import { type DiffLines, hasDiffRange } from "#evaluator/changes"
+import { type DiffLines, hasDiffRange } from "#evaluator/diff-annotation"
 import { type Finding } from "#evaluator/review-result"
 import { type RangedFinding } from "./types"
 

@@ -1,5 +1,5 @@
-import { type AnnotatedDiff } from "#evaluator/changes"
 import { type Configuration } from "#evaluator/configuration"
+import { type AnnotatedDiff } from "#evaluator/diff-annotation"
 import { askReviewer } from "./ask-reviewer"
 import { publishIfCurrent } from "./publication"
 import { reportVerdict } from "./report-verdict"

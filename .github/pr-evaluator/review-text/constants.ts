@@ -7,3 +7,7 @@ export const VERDICT_LABELS = {
 export const MARKER_PREFIX = "<!-- pr-evaluator:"
 
 export const MARKER_SUFFIX = " -->"
+
+export const UNPLACED_TITLE = "### Apontamentos sem linha no diff"
+
+export const ITEM_BREAK = "\n"

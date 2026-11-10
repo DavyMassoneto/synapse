@@ -1,4 +1,4 @@
-import { type AnnotatedDiff } from "#evaluator/changes"
+import { type AnnotatedDiff } from "#evaluator/diff-annotation"
 import { MESSAGE_EMPTY_DIFF, MESSAGE_NO_TEXT_LINES } from "./constants"
 import { type EvaluationDecision } from "./types"
 

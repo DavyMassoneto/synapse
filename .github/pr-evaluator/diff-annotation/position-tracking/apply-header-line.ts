@@ -20,7 +20,6 @@ function leaveHunk(state: DiffState): void {
 
 function readPaths(state: DiffState, line: string): void {
   const header = readPathHeader(line)
-  leaveHunk(state)
   if (header.kind === "old") {
     state.oldPath = header.path
   }

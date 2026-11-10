@@ -1,5 +1,5 @@
-import { isMultiLine } from "#evaluator/changes"
 import { commentBody } from "#evaluator/comment-text"
+import { isMultiLine } from "#evaluator/diff-annotation"
 import { type ReviewComment } from "#evaluator/pull-request-review"
 import { type Group } from "./types"
 

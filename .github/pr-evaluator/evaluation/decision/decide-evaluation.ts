@@ -1,5 +1,5 @@
-import { type AnnotatedDiff } from "#evaluator/changes"
 import { type GithubConfiguration } from "#evaluator/configuration"
+import { type AnnotatedDiff } from "#evaluator/diff-annotation"
 import { decideContent } from "./decide-content"
 import { decideReviewState } from "./decide-review-state"
 import { type EvaluationDecision } from "./types"
