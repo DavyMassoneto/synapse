@@ -1,0 +1,44 @@
+name: PR evaluator (ensaio)
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+permissions:
+  contents: read
+  pull-requests: write
+
+concurrency:
+  group: pr-evaluator-ensaio-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  evaluate:
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: 903e7859fab966103aa058af9c07fd49251b4a8e
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - name: Buscar a cabeça da PR como dado
+        run: git fetch --no-tags origin "+refs/pull/${{ github.event.pull_request.number }}/head"
+      - name: Avaliar
+        run: npm run evaluate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          OMNIROUTE_API_KEY: ${{ secrets.OMNIROUTE_API_KEY }}
+          OMNIROUTE_BASE_URL: https://omniroute.dmassoneto.com.br/v1
+          REVIEW_MODEL: cc/claude-sonnet-5-5
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}

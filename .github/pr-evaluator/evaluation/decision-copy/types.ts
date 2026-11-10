@@ -1,0 +1,12 @@
+export interface SkipEvaluation {
+  kind: "skip"
+  message: string
+}
+
+export interface ProceedEvaluation {
+  kind: "proceed"
+}
+
+export type EvaluationDecision = SkipEvaluation | ProceedEvaluation
+
+export type Proceed = () => Promise<void>
