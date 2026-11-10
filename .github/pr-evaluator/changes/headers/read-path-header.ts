@@ -1,4 +1,4 @@
-import { NEW_PREFIX, NO_FILE, OLD_PREFIX, pathOf } from "../paths"
+import { NEW_PREFIX, NO_FILE, OLD_PREFIX, pathOf } from "../path-decoding"
 import { NEW_FILE_HEADER, OLD_FILE_HEADER } from "./constants"
 import { type PathHeader } from "./types"
 

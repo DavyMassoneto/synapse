@@ -15,11 +15,9 @@ export function hasEveryLine(lines: Set<number>, start: number, end: number): bo
 }
 
 export function hasDiffLine(lines: DiffLines, path: string, side: Side, line: number): boolean {
-  const file = lines.get(path)
-  return file instanceof Object && linesOnSide(file, side).has(line)
+  return linesOnSide(lines, path, side).has(line)
 }
 
 export function hasDiffRange(lines: DiffLines, path: string, side: Side, start: number, end: number): boolean {
-  const file = lines.get(path)
-  return isMultiLine(start, end) && file instanceof Object && hasEveryLine(linesOnSide(file, side), start, end)
+  return isMultiLine(start, end) && hasEveryLine(linesOnSide(lines, path, side), start, end)
 }

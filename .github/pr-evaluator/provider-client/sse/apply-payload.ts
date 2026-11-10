@@ -1,10 +1,9 @@
-import { Value } from "typebox/value"
 import { applyChoice } from "./apply-choice"
-import { StreamChunkSchema } from "./constants"
+import { parseChunk } from "./parse-chunk"
 import { type StreamResult } from "./types"
 
 export function applyPayload(result: StreamResult, payload: string): void {
-  const chunk = Value.Parse(StreamChunkSchema, JSON.parse(payload))
+  const chunk = parseChunk(payload)
   if (chunk.error instanceof Object) {
     throw new Error(`Erro do provedor: ${chunk.error.message}`)
   }

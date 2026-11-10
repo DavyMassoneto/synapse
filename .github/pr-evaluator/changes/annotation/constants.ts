@@ -1,4 +1,4 @@
-export const LINE_BREAK = "\n"
+export const DIFF_LINE_BREAK = "\n"
 
 export const ADDED = "+"
 

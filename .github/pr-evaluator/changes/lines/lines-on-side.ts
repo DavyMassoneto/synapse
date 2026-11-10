@@ -1,8 +1,12 @@
-import { type FileLines, type Side } from "./types"
+import { type DiffLines, type Side } from "./types"
 
-export function linesOnSide(file: FileLines, side: Side): Set<number> {
-  if (side === "RIGHT") {
+export function linesOnSide(lines: DiffLines, path: string, side: Side): Set<number> {
+  const file = lines.get(path)
+  if (file instanceof Object && side === "RIGHT") {
     return file.right
   }
-  return file.left
+  if (file instanceof Object) {
+    return file.left
+  }
+  return new Set<number>()
 }

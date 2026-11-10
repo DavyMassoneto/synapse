@@ -6,7 +6,7 @@ export function linesOf(state: DiffState): FileLines {
   if (existing instanceof Object) {
     return existing
   }
-  const created: FileLines = { left: new Set<number>(), right: new Set<number>() }
+  const created = { left: new Set<number>(), right: new Set<number>() }
   state.lines.set(state.path, created)
   return created
 }

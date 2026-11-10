@@ -1,8 +1,7 @@
 import { type AnnotatedDiff } from "#evaluator/changes"
 import { type Configuration } from "#evaluator/configuration"
 import { type ReviewResult } from "#evaluator/review-result"
-import { applyDecision } from "./apply-decision"
-import { decidePublication } from "./decide-publication"
+import { applyDecision, decidePublication } from "../decision"
 import { publishEvaluation } from "./publish-evaluation"
 
 export async function publishIfCurrent(

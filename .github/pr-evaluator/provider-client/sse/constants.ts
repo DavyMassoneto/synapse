@@ -1,6 +1,6 @@
 import { Type } from "typebox"
 
-export const LINE_BREAK = "\n"
+export const EVENT_LINE_BREAK = "\n"
 
 export const DATA_PREFIX = "data:"
 

@@ -1,7 +1,6 @@
 import { annotateDiff, readDiff } from "#evaluator/changes"
 import { type Configuration } from "#evaluator/configuration"
-import { applyDecision } from "./apply-decision"
-import { decideEvaluation } from "./decide-evaluation"
+import { applyDecision, decideEvaluation } from "./decision"
 import { evaluate } from "./evaluate"
 
 export async function runEvaluation(configuration: Configuration): Promise<void> {

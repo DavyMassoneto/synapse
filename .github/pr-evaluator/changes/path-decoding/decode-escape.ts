@@ -9,5 +9,5 @@ export function decodeEscape(sequence: string): string {
   if (typeof decoded === "string") {
     return decoded
   }
-  return sequence
+  throw new Error(`Escape do git não previsto: ${sequence}`)
 }
