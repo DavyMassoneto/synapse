@@ -1,26 +1,31 @@
-import { MAX_PROMPT_CHARACTERS, PLACEHOLDER_PATTERN } from "./constants"
-import { isPlaceholder } from "./predicates"
-import { type PlaceholderTexts, type PromptContext } from "./types"
+import {
+  MAX_PROMPT_CHARACTERS,
+  PLACEHOLDER_ARCHITECTURE,
+  PLACEHOLDER_DIFF,
+  PLACEHOLDER_PATTERN,
+  PLACEHOLDER_RULES,
+  PLACEHOLDER_STANDARDS,
+} from "./constants"
+import { type PromptContext } from "./types"
 
-function placeholderTexts(context: PromptContext, diff: string): PlaceholderTexts {
-  return {
-    "{{ARQUITETURA}}": context.architecture,
-    "{{REGRAS}}": context.rules,
-    "{{PADROES}}": context.standards,
-    "{{DIFF}}": diff,
+function placeholderText(context: PromptContext, diff: string, marker: string): string {
+  if (marker === PLACEHOLDER_ARCHITECTURE) {
+    return context.architecture
   }
-}
-
-function placeholderText(texts: PlaceholderTexts, marker: string): string {
-  if (isPlaceholder(texts, marker)) {
-    return texts[marker]
+  if (marker === PLACEHOLDER_RULES) {
+    return context.rules
+  }
+  if (marker === PLACEHOLDER_STANDARDS) {
+    return context.standards
+  }
+  if (marker === PLACEHOLDER_DIFF) {
+    return diff
   }
   throw new Error(`Marcador desconhecido no modelo do prompt: ${marker}`)
 }
 
 function fillTemplate(context: PromptContext, diff: string): string {
-  const texts = placeholderTexts(context, diff)
-  return context.template.replace(PLACEHOLDER_PATTERN, (marker) => placeholderText(texts, marker))
+  return context.template.replace(PLACEHOLDER_PATTERN, (marker) => placeholderText(context, diff, marker))
 }
 
 function ensureWithinLimit(prompt: string): string {
