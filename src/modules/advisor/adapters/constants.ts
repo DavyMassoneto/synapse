@@ -1,11 +1,9 @@
 import { Type } from "typebox"
-import { THINKING_LEVELS } from "#synapse/modules/advisor/public/contracts"
-
-export const thinkingSchema = Type.Union(THINKING_LEVELS.map((level) => Type.Literal(level)))
+import { thinkingLevelSchema } from "#synapse/modules/advisor/public/contracts"
 
 export const configSchema = Type.Object({
   model: Type.Optional(Type.String()),
-  thinking: Type.Optional(thinkingSchema),
+  thinking: Type.Optional(thinkingLevelSchema),
 })
 
 export const CONFIG_READ_FAILED = "Não foi possível ler a configuração do advisor."
