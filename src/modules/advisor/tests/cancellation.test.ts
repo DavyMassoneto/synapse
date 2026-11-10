@@ -1,19 +1,26 @@
 import { beforeEach, describe, expect, test } from "vitest"
-import { AdvisorService } from "../internal"
-import { CancelledModel, CancelOnConsultModel, CancelOnResolveModel, TestStorage } from "./doubles"
+import { type AdvisorService } from "../internal"
+import {
+  CancelledModel,
+  CancelOnConsultModel,
+  CancelOnResolveModel,
+  emptyConsultation,
+  serviceFor,
+  TestStorage,
+} from "./doubles"
 
 let storage: TestStorage
 let advisor: AdvisorService
 
 function prepare(): void {
   storage = new TestStorage()
-  advisor = new AdvisorService(storage, storage.load())
+  advisor = serviceFor(storage)
 }
 
 async function cancellationDuringResolution() {
   const controller = new AbortController()
   const port = new CancelOnResolveModel(controller)
-  const result = await advisor.consult({ system: "", messages: [], signal: controller.signal }, port)
+  const result = await advisor.consult(emptyConsultation(controller.signal), port)
   expect(result.kind).toBe("cancelled")
   expect(port.captured).toBeUndefined()
 }
@@ -21,15 +28,12 @@ async function cancellationDuringResolution() {
 async function cancellationDuringExecution() {
   const controller = new AbortController()
   const port = new CancelOnConsultModel(controller)
-  const result = await advisor.consult({ system: "", messages: [], signal: controller.signal }, port)
+  const result = await advisor.consult(emptyConsultation(controller.signal), port)
   expect(result.kind).toBe("cancelled")
 }
 
 async function cancellationFromProvider() {
-  const result = await advisor.consult(
-    { system: "", messages: [], signal: new AbortController().signal },
-    new CancelledModel(),
-  )
+  const result = await advisor.consult(emptyConsultation(new AbortController().signal), new CancelledModel())
   expect(result.kind).toBe("cancelled")
 }
 

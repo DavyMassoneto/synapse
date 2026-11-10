@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "vitest"
-import { AdvisorService } from "../internal"
-import { BudgetModel, TestStorage } from "./doubles"
+import { type AdvisorService } from "../internal"
+import { BudgetModel, emptyConsultation, serviceFor, TestStorage } from "./doubles"
 
 let advisor: AdvisorService
 
 function prepare(): void {
   const storage = new TestStorage()
   storage.thinking = "high"
-  advisor = new AdvisorService(storage, storage.load())
+  advisor = serviceFor(storage)
 }
 
 async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
@@ -18,7 +18,7 @@ async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
     reasoningTokens: 16_384,
     effectiveThinking: "high",
   })
-  const result = await advisor.consult({ system: "", messages: [], signal: new AbortController().signal }, port)
+  const result = await advisor.consult(emptyConsultation(new AbortController().signal), port)
   expect(result.kind).toBe("failure")
   expect(port.calls).toBe(1)
   expect(port.captured).toBeUndefined()
@@ -54,7 +54,7 @@ async function noReasoningFits(): Promise<void> {
     reasoningTokens: 0,
     effectiveThinking: "off",
   })
-  const result = await advisor.consult({ system: "", messages: [], signal: new AbortController().signal }, port)
+  const result = await advisor.consult(emptyConsultation(new AbortController().signal), port)
   expect(result.kind).toBe("success")
 }
 

@@ -1,13 +1,13 @@
 import { beforeEach, describe, expect, test } from "vitest"
-import { AdvisorService } from "../internal"
-import { TestStorage } from "./doubles"
+import { type AdvisorService } from "../internal"
+import { serviceFor, TestStorage } from "./doubles"
 
 let storage: TestStorage
 let advisor: AdvisorService
 
 function prepare(): void {
   storage = new TestStorage()
-  advisor = new AdvisorService(storage, storage.load())
+  advisor = serviceFor(storage)
 }
 
 function invalidModelDoesNotSave(): void {
@@ -24,7 +24,7 @@ function failedSavePreservesState(): void {
   const storage = new TestStorage()
   storage.model = "provider/original"
   storage.failSave = true
-  const advisor = new AdvisorService(storage, storage.load())
+  const advisor = serviceFor(storage)
   expect(storage.loads).toBe(1)
   expect(advisor.configuration.selectModel("provider/novo").kind).toBe("failure")
   expect(advisor.configuration.status()).toStrictEqual({

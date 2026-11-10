@@ -41,8 +41,11 @@ function selectEdges(first: string, last: string, blocks: string[], budget: numb
 export function selectMessages(blocks: string[], budget: number): string {
   const first = blocks[0]
   const last = blocks[blocks.length - 1]
-  if (first && last) {
+  if (first && last && blocks.length > 1) {
     return selectEdges(first, last, blocks, budget)
+  }
+  if (first) {
+    return clip(first, budget)
   }
   return ""
 }

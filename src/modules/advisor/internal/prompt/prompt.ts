@@ -23,7 +23,8 @@ function availableBudget(model: ResolvedModel): PromptBudget {
   if (inputTokens <= 0) {
     return { kind: "insufficient" }
   }
-  const available = inputTokens * ESTIMATED_CHARACTERS_PER_TOKEN - ADVISOR_SYSTEM.length
+  const systemTokens = Math.ceil(ADVISOR_SYSTEM.length / ESTIMATED_CHARACTERS_PER_TOKEN)
+  const available = (inputTokens - systemTokens) * ESTIMATED_CHARACTERS_PER_TOKEN
   const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length
   if (available <= fixedLength) {
     return { kind: "insufficient" }

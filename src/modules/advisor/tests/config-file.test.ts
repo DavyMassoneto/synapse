@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { FileConfig } from "../adapters"
 import { AdvisorService } from "../internal"
+import { serviceFor } from "./doubles"
 
 let directory = ""
 
@@ -28,7 +29,7 @@ function disabledConfiguration(): void {
   const path = join(directory, "advisor.json")
   writeFileSync(path, JSON.stringify({ model: "", thinking: "low" }))
   const storage = new FileConfig(path)
-  expect(new AdvisorService(storage, storage.load()).configuration.status()).toStrictEqual({
+  expect(serviceFor(storage).configuration.status()).toStrictEqual({
     kind: "success",
     config: { thinking: "low" },
   })
@@ -38,7 +39,7 @@ function defaultThinking(): void {
   const path = join(directory, "advisor.json")
   writeFileSync(path, JSON.stringify({ model: "provider/model" }))
   const storage = new FileConfig(path)
-  expect(new AdvisorService(storage, storage.load()).configuration.status()).toStrictEqual({
+  expect(serviceFor(storage).configuration.status()).toStrictEqual({
     kind: "success",
     config: { model: "provider/model", thinking: "high" },
   })

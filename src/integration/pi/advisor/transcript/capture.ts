@@ -1,21 +1,20 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
 import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules/advisor/public"
 import { type AdvisorContext } from "../host"
-import { type ConversationMessage, type MessageContent } from "./types"
+import { type ContentBlock, type ConversationMessage, type MessageContent } from "./types"
+
+function convertBlock(block: ContentBlock): TranscriptBlock {
+  if (block.type === "text") {
+    return { kind: "text", text: block.text }
+  }
+  return { kind: "image" }
+}
 
 function convertContent(content: MessageContent): TranscriptBlock[] {
   if (typeof content === "string") {
     return [{ kind: "text", text: content }]
   }
-  const blocks: TranscriptBlock[] = []
-  for (const block of content) {
-    if (block.type === "text") {
-      blocks.push({ kind: "text", text: block.text })
-    } else {
-      blocks.push({ kind: "image" })
-    }
-  }
-  return blocks
+  return content.map(convertBlock)
 }
 
 function convertAssistant(message: AssistantMessage): TranscriptMessage {

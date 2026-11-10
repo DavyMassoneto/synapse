@@ -1,22 +1,22 @@
 import { beforeEach, describe, expect, test } from "vitest"
-import { AdvisorService } from "../internal"
-import { FailingModel, TestModel, TestStorage, WaitingModel } from "./doubles"
+import { type AdvisorService } from "../internal"
+import { emptyConsultation, FailingModel, serviceFor, TestModel, TestStorage, WaitingModel } from "./doubles"
 
 let storage: TestStorage
 let advisor: AdvisorService
 
 function prepare(): void {
   storage = new TestStorage()
-  advisor = new AdvisorService(storage, storage.load())
+  advisor = serviceFor(storage)
 }
 
 async function snapshotIsStable() {
   const storage = new TestStorage()
   storage.model = "provider/first"
-  const advisor = new AdvisorService(storage, storage.load())
+  const advisor = serviceFor(storage)
   const gate = Promise.withResolvers<void>()
   const port = new WaitingModel(gate.promise)
-  const pending = advisor.consult({ system: "", messages: [], signal: new AbortController().signal }, port)
+  const pending = advisor.consult(emptyConsultation(new AbortController().signal), port)
   advisor.configuration.selectModel("provider/second")
   advisor.configuration.setThinking("high")
   gate.resolve()
@@ -35,7 +35,7 @@ async function cancellationBeforeResolution() {
   const controller = new AbortController()
   controller.abort()
   const port = new TestModel()
-  expect(await advisor.consult({ system: "", messages: [], signal: controller.signal }, port)).toStrictEqual({
+  expect(await advisor.consult(emptyConsultation(controller.signal), port)).toStrictEqual({
     kind: "cancelled",
   })
   expect(port.calls).toBe(0)
@@ -43,12 +43,10 @@ async function cancellationBeforeResolution() {
 
 async function providerFailure() {
   const port = new FailingModel()
-  expect(await advisor.consult({ system: "", messages: [], signal: new AbortController().signal }, port)).toStrictEqual(
-    {
-      kind: "failure",
-      message: "provider error",
-    },
-  )
+  expect(await advisor.consult(emptyConsultation(new AbortController().signal), port)).toStrictEqual({
+    kind: "failure",
+    message: "provider error",
+  })
 }
 
 function registerTests(): void {

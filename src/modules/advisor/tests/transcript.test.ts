@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
-import { AdvisorService, buildTranscript, selectMessages } from "../internal"
+import { buildTranscript, selectMessages } from "../internal"
 import { type TranscriptMessage } from "../public"
-import { TestModel, TestStorage } from "./doubles"
+import { emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
 
 function emptyTranscript(): void {
   expect(buildTranscript([], 200)).toBe("")
@@ -53,10 +53,10 @@ function oversizedLastFits(): void {
 
 async function smallContextFails(): Promise<void> {
   const storage = new TestStorage()
-  const advisor = new AdvisorService(storage, storage.load())
+  const advisor = serviceFor(storage)
   const model = new TestModel()
   model.window = 100
-  const result = await advisor.consult({ system: "", messages: [], signal: new AbortController().signal }, model)
+  const result = await advisor.consult(emptyConsultation(new AbortController().signal), model)
   expect(result.kind).toBe("failure")
   expect(model.captured).toBeUndefined()
 }
@@ -79,6 +79,15 @@ function recentMessagesKeepOrder(): void {
   )
 }
 
+function singleOversizedMessage(): void {
+  const block = `INICIO${"x".repeat(1_000)}FIM`
+  const text = selectMessages([block], 200)
+  expect(text.length).toBeLessThanOrEqual(200)
+  expect(text.startsWith("INICIO")).toBe(true)
+  expect(text.endsWith("FIM")).toBe(true)
+  expect(text).not.toContain("mensagens anteriores omitidas")
+}
+
 function nothingToSelect(): void {
   expect(selectMessages([], 120)).toBe("")
 }
@@ -94,6 +103,7 @@ function registerTests(): void {
   test("só a saída de ferramenta é cortada", clipsOnlyToolOutput)
   test("mensagens recentes mantêm a ordem e a mais antiga é omitida", recentMessagesKeepOrder)
   test("sem mensagens não há seleção", nothingToSelect)
+  test("mensagem única maior que o orçamento é cortada sem aviso de omissão", singleOversizedMessage)
 }
 
 describe("transcript", registerTests)
