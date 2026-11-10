@@ -1,4 +1,4 @@
-import { applyLine, type DiffState } from "../cursor"
+import { applyLine, type DiffState } from "../position-tracking"
 import { classifyLine } from "./classify-line"
 import { renderLine } from "./render-line"
 

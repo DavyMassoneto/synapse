@@ -1,5 +1,5 @@
-import { type DiffState, type LineKind } from "../cursor"
 import { isFileHeader, isHunkHeader, isPathHeader } from "../headers"
+import { type DiffState, type LineKind } from "../position-tracking"
 import { ADDED, CONTEXT, NO_NEWLINE, REMOVED } from "./constants"
 
 function classifyHunkMarker(marker: string): LineKind {

@@ -21,6 +21,11 @@ export interface Group {
   findings: Finding[]
 }
 
+export interface Partition {
+  groups: Map<string, Group>
+  unplaced: Finding[]
+}
+
 export interface Placement {
   comments: ReviewComment[]
   unplaced: Finding[]

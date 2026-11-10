@@ -9,7 +9,7 @@ export const DONE_PAYLOAD = "[DONE]"
 export const STOP_FINISH = "stop"
 
 export const StreamChunkSchema = Type.Object({
-  error: Type.Optional(Type.Object({ message: Type.Optional(Type.String()) })),
+  error: Type.Optional(Type.Object({ message: Type.String() })),
   choices: Type.Optional(
     Type.Array(
       Type.Object({
