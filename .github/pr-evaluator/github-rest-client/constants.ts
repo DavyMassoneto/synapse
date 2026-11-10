@@ -12,6 +12,10 @@ export const FORBIDDEN_STATUS = 403
 
 export const DEFAULT_RETRY_SECONDS = 60
 
+export const MAX_RETRY_SECONDS = 3600
+
+export const REQUEST_TIMEOUT_MS = 60_000
+
 export const MILLISECONDS_PER_SECOND = 1000
 
 export const NO_REMAINING = "0"

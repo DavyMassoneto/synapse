@@ -16,4 +16,4 @@ export const ENV_MODEL_NAME = "REVIEW_MODEL"
 
 export const COMMIT_SHA_PATTERN = /^[0-9a-f]{40}$/
 
-export const PULL_NUMBER_PATTERN = /^[1-9][0-9]{0,14}$/
+export const PULL_NUMBER_PATTERN = /^[1-9][0-9]*$/

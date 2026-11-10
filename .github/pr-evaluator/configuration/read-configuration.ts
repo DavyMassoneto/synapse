@@ -30,8 +30,9 @@ function requireSha(name: string): string {
 
 function requirePullNumber(): number {
   const value = requireEnv(ENV_PULL_NUMBER)
-  if (PULL_NUMBER_PATTERN.test(value)) {
-    return Number(value)
+  const pullNumber = Number(value)
+  if (PULL_NUMBER_PATTERN.test(value) && Number.isSafeInteger(pullNumber)) {
+    return pullNumber
   }
   throw new Error(`${ENV_PULL_NUMBER} não é um número de PR`)
 }
