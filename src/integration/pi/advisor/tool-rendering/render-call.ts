@@ -1,10 +1,10 @@
 import { type Component } from "@earendil-works/pi-tui"
 import { RENDER_TITLE, TITLE_COLOR } from "./constants"
 import { textComponent } from "./text-component"
-import { type AdvisorRenderContext, type AdvisorRenderTheme, type AdvisorToolInput } from "./types"
+import { type AdvisorRenderContext, type AdvisorRenderTheme } from "./types"
 
-export function renderAdvisorCall(
-  _input: AdvisorToolInput,
+export function renderAdvisorCall<Input>(
+  _input: Input,
   theme: AdvisorRenderTheme,
   context: AdvisorRenderContext,
 ): Component {

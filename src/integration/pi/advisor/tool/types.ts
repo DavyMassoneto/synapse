@@ -1,33 +1,7 @@
-import {
-  type AgentToolResult,
-  type Theme,
-  type ToolDefinition,
-  type ToolRenderResultOptions,
-} from "@earendil-works/pi-coding-agent"
-import { type Component } from "@earendil-works/pi-tui"
+import { type ToolDefinition } from "@earendil-works/pi-coding-agent"
 import { type AdvisorContext } from "../host-context"
+import { type AdvisorRenderers, type AdvisorToolDetails } from "../tool-rendering"
 import { type advisorParameters } from "./constants"
-
-export type AdvisorRenderTheme = Pick<Theme, "fg" | "bold">
-
-export interface AdvisorRenderContext {
-  lastComponent?: Component
-  isError?: boolean
-}
-
-export interface AdvisorRenderers {
-  renderCall(input: AdvisorToolInput, theme: AdvisorRenderTheme, context: AdvisorRenderContext): Component
-  renderResult(
-    result: AgentToolResult<AdvisorToolDetails>,
-    options: ToolRenderResultOptions,
-    theme: AdvisorRenderTheme,
-    context: AdvisorRenderContext,
-  ): Component
-}
-
-export interface AdvisorToolDetails {
-  model?: string
-}
 
 export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, never>
 
@@ -43,7 +17,7 @@ export type AdvisorToolBase = Omit<PiAdvisorTool, "execute" | "renderCall" | "re
 
 export type AdvisorToolSignal = Parameters<PiAdvisorTool["execute"]>[2]
 
-export interface AdvisorTool extends AdvisorToolBase, AdvisorRenderers {
+export interface AdvisorTool extends AdvisorToolBase, AdvisorRenderers<AdvisorToolInput> {
   execute(
     id: string,
     input: AdvisorToolInput,
