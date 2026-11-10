@@ -1,7 +1,14 @@
-import { createState } from "../position-tracking"
-import { annotateLine } from "./annotate-line"
+import { applyLine, createState, type DiffState } from "../position-tracking"
+import { classifyLine } from "./classify-line"
 import { DIFF_LINE_BREAK } from "./constants"
+import { renderLine } from "./render-line"
 import { type AnnotatedDiff } from "./types"
+
+function annotateLine(state: DiffState, line: string): string {
+  const kind = classifyLine(state, line)
+  const position = applyLine(state, kind, line)
+  return renderLine(position, line)
+}
 
 export function annotateDiff(diff: string): AnnotatedDiff {
   const state = createState()

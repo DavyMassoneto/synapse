@@ -12,6 +12,8 @@
 - Tipo inferível não se anota. Anotação que repete o que o TypeScript já infere é proibida.
 - Parâmetros declaram o tipo. Só o callback passado como argumento recebe o tipo da chamada.
 - Propriedade de classe sem valor declara o tipo.
+- O que o tipo declarado já garante não se verifica de novo. Quando o tipo diz que o valor é um `string` opcional, um objeto opcional ou uma união com `null`, a condição direta estreita (`if (valor)`): função `valor is T`, `typeof` e `instanceof` para isso são proibidos. Type guard só existe para dado de formato desconhecido, na fronteira.
+- Um parâmetro só é opcional (`?`) quando existe uma chamada que o omite.
 
 ## 3. Tipagem inline
 

@@ -24,7 +24,3 @@ export interface Placement {
   groups: Map<string, Group>
   unplaced: Finding[]
 }
-
-export interface RangedFinding extends Finding {
-  startLine: number
-}

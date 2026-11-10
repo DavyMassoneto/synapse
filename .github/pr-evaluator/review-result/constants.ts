@@ -27,3 +27,5 @@ export const ReviewResultSchema = Type.Object({
 })
 
 export const FENCE_PATTERN = /^```[^\n]*\n([\s\S]*)```$/
+
+export const ISSUE_BREAK = "; "

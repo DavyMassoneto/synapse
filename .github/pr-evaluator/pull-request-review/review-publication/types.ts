@@ -11,11 +11,4 @@ export interface ReviewComment {
   body: string
 }
 
-export interface ReviewPayload {
-  commit_id: string
-  event: "COMMENT"
-  body: string
-  comments: ReviewComment[]
-}
-
 export type PublishedReview = Static<typeof PublishedReviewSchema>

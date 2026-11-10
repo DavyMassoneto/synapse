@@ -8,6 +8,7 @@ SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única res
 - Passos que mudam sempre juntos são uma responsabilidade só. Um parser lê e avança a sua posição; uma validação compara várias condições do mesmo dado; uma política de repetição decide e repete; "buscar ou criar" é uma operação. Nada disso, sozinho, é violação.
 - Uma função ou coordena, chamando outras funções em sequência, ou executa o seu passo. Uma função que coordena não contém a lógica dos passos.
 - Não se divide uma função apenas para ter funções menores: uma função que só esconde uma linha de outra não é uma responsabilidade.
+- Uma função cujo corpo é uma única chamada a outra função ou a uma API, sem decisão, formato ou efeito próprio, não é uma responsabilidade: o chamador faz a chamada. Dar nome a uma linha só se justifica quando o nome expressa um conceito que a linha esconde. A regra inclui a função que só chama `console.log`, só espera, só repassa os argumentos ou só testa um padrão que uma constante já nomeia.
 
 ## 2. Sinais de que uma função tem mais de um motivo para mudar
 
@@ -21,6 +22,11 @@ SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única res
 
 - Um arquivo contém uma função, ou funções que mudam sempre pelo mesmo motivo.
 - Uma pasta reúne arquivos de uma só capacidade, e o nome da pasta diz qual.
+- Uma pasta que guarda mais de um fluxo independente (por exemplo, decisões tomadas em momentos diferentes, ou leitura e escrita de formatos distintos) divide-se por fluxo ou por capacidade, cada parte com o nome do que faz.
+- Uma pasta fragmentada demais também é violação. Para julgar, conte quantos arquivos é preciso abrir, em sequência, para entender uma única operação. Muitos arquivos curtos para um mesmo fluxo indicam fragmentação: funções que mudam sempre pelo mesmo motivo ficam no mesmo arquivo, e a navegação entre arquivos não pode ser maior que a complexidade do que eles fazem.
+- Um arquivo que só repassa a chamada para outra função, sem decisão, formato ou efeito próprio, não é uma responsabilidade e deve ser removido.
+- Dividir por responsabilidade não é criar uma função por arquivo. Uma função auxiliar que só o seu chamador usa, e que muda com ele, fica no arquivo do chamador.
+- Não existe um número máximo de arquivos por pasta. O apontamento cita a evidência concreta: os arquivos do fluxo, o caminho que se percorre para entendê-lo e o motivo de mudança que cada um carrega.
 
 ## 4. Classe
 

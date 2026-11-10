@@ -4,7 +4,7 @@ import { type GithubConfiguration } from "#evaluator/configuration"
 import { FIRST_ATTEMPT } from "./constants"
 import { sendWithRetry } from "./send-with-retry"
 
-export async function requestJson<Schema extends TSchema>(
+async function requestJson<Schema extends TSchema>(
   configuration: GithubConfiguration,
   path: string,
   init: RequestInit,
@@ -12,4 +12,21 @@ export async function requestJson<Schema extends TSchema>(
 ): Promise<Static<Schema>> {
   const response = await sendWithRetry(configuration, path, init, FIRST_ATTEMPT)
   return Value.Parse(schema, await response.json())
+}
+
+export function getJson<Schema extends TSchema>(
+  configuration: GithubConfiguration,
+  path: string,
+  schema: Schema,
+): Promise<Static<Schema>> {
+  return requestJson(configuration, path, { method: "GET" }, schema)
+}
+
+export function postJson<Schema extends TSchema>(
+  configuration: GithubConfiguration,
+  path: string,
+  body: string,
+  schema: Schema,
+): Promise<Static<Schema>> {
+  return requestJson(configuration, path, { method: "POST", body }, schema)
 }

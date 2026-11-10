@@ -8,5 +8,3 @@ export interface ProceedEvaluation {
 }
 
 export type EvaluationDecision = SkipEvaluation | ProceedEvaluation
-
-export type Proceed = () => Promise<void>

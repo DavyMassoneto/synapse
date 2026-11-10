@@ -7,7 +7,3 @@ export function isRetryable(error: Error): boolean {
   }
   return error instanceof TypeError
 }
-
-export function isRetryAllowed(error: Error, remaining: number): boolean {
-  return remaining > 0 && isRetryable(error)
-}

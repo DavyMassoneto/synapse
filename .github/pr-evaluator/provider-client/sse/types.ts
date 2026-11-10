@@ -1,29 +1,13 @@
 import { type Static } from "typebox"
 import { type StreamChunkSchema } from "./constants"
 
-export type StreamChoice = NonNullable<Static<typeof StreamChunkSchema>["choices"]>[number]
+export type StreamChunk = Static<typeof StreamChunkSchema>
+
+export type StreamChoice = NonNullable<StreamChunk["choices"]>[number]
+
+export type ProviderError = NonNullable<StreamChunk["error"]>
 
 export interface StreamResult {
   content: string
   finishReason?: string
 }
-
-export interface EventData {
-  kind: "data"
-  payload: string
-}
-
-export interface NoEvent {
-  kind: "none"
-}
-
-export type EventPayload = EventData | NoEvent
-
-export interface SplitText {
-  lines: string[]
-  rest: string
-}
-
-export type StreamChunk = Static<typeof StreamChunkSchema>
-
-export type ProviderError = NonNullable<StreamChunk["error"]>

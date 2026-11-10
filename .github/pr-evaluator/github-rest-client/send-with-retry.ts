@@ -1,9 +1,17 @@
+import { setTimeout as delay } from "node:timers/promises"
 import { type GithubConfiguration } from "#evaluator/configuration"
-import { ensureOk } from "./ensure-ok"
+import { readFailureDetail } from "#evaluator/http-failure"
+import { REQUEST_ATTEMPTS } from "./constants"
 import { fetchGithub } from "./fetch-github"
-import { isRetryableResponse } from "./predicates"
-import { reportRateLimit } from "./report-rate-limit"
-import { waitForRateLimit } from "./wait-for-rate-limit"
+import { isRateLimited } from "./predicates"
+import { retryDelayMs } from "./retry-delay"
+
+async function ensureOk(response: Response, path: string): Promise<Response> {
+  if (response.ok) {
+    return response
+  }
+  throw new Error(`GitHub respondeu ${response.status} em ${path}: ${await readFailureDetail(response)}`)
+}
 
 export async function sendWithRetry(
   configuration: GithubConfiguration,
@@ -12,9 +20,9 @@ export async function sendWithRetry(
   attempt: number,
 ): Promise<Response> {
   const response = await fetchGithub(configuration, path, init)
-  if (isRetryableResponse(response, attempt)) {
-    reportRateLimit(response)
-    await waitForRateLimit(response)
+  if (isRateLimited(response) && attempt < REQUEST_ATTEMPTS) {
+    console.log(`GitHub limitou a taxa (${response.status}); nova tentativa`)
+    await delay(retryDelayMs(response))
     return sendWithRetry(configuration, path, init, attempt + 1)
   }
   return ensureOk(response, path)

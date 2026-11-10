@@ -1,6 +1,6 @@
-import { commentBody } from "#evaluator/comment-text"
 import { isMultiLine } from "#evaluator/diff-annotation"
 import { type Group } from "#evaluator/finding-placement"
+import { commentBody } from "#evaluator/review-text"
 import { type ReviewComment } from "./types"
 
 export function toComment(group: Group): ReviewComment {

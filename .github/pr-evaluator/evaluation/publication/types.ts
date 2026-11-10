@@ -1,6 +1,7 @@
-import { type ReviewPayload } from "#evaluator/pull-request-review"
+import { type ReviewComment } from "#evaluator/pull-request-review"
 
 export interface PreparedReview {
-  payload: ReviewPayload
+  body: string
+  comments: ReviewComment[]
   unplacedCount: number
 }
