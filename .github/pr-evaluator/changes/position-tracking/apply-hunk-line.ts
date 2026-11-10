@@ -16,6 +16,7 @@ function takeNewLine(state: DiffState): LinePosition {
 }
 
 function takeContextLine(state: DiffState): LinePosition {
+  linesOf(state).left.add(state.oldLine)
   state.oldLine += 1
   return takeNewLine(state)
 }
