@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { buildTranscript, selectMessages } from "../internal"
-import { type TranscriptMessage } from "../public"
+import { type TranscriptBlock, type TranscriptMessage } from "../public"
 import { emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
 
 function emptyTranscript(): void {
@@ -88,6 +88,41 @@ function singleOversizedMessage(): void {
   expect(text).not.toContain("mensagens anteriores omitidas")
 }
 
+function fixedMessagePreparedOnce(): void {
+  let reads = 0
+  const blocks: TranscriptBlock[] = [{ kind: "text", text: "u".repeat(20_000) }]
+  const messages: TranscriptMessage[] = [
+    {
+      kind: "user",
+      get blocks() {
+        reads += 1
+        return blocks
+      },
+    },
+    { kind: "toolResult", tool: "read", error: false, blocks: [{ kind: "text", text: "t".repeat(20_000) }] },
+  ]
+  const text = buildTranscript(messages, 300)
+  expect(text.length).toBeLessThanOrEqual(300)
+  expect(reads).toBe(2)
+}
+
+function reducesToolOutputToFit(): void {
+  const messages: TranscriptMessage[] = [
+    { kind: "user", blocks: [{ kind: "text", text: "PEDIDO" }] },
+    { kind: "toolResult", tool: "read", error: false, blocks: [{ kind: "text", text: "t".repeat(13_000) }] },
+  ]
+  const text = buildTranscript(messages, 5_000)
+  expect(text.length).toBeLessThanOrEqual(5_000)
+  expect(text).toContain("PEDIDO")
+  expect(text).toContain("conteúdo omitido")
+  expect(text).not.toContain("mensagens anteriores omitidas")
+}
+
+function noBudget(): void {
+  const messages: TranscriptMessage[] = [{ kind: "user", blocks: [{ kind: "text", text: "PEDIDO" }] }]
+  expect(buildTranscript(messages, 0)).toBe("")
+}
+
 function nothingToSelect(): void {
   expect(selectMessages([], 120)).toBe("")
 }
@@ -103,6 +138,9 @@ function registerTests(): void {
   test("só a saída de ferramenta é cortada", clipsOnlyToolOutput)
   test("mensagens recentes mantêm a ordem e a mais antiga é omitida", recentMessagesKeepOrder)
   test("sem mensagens não há seleção", nothingToSelect)
+  test("mensagem que não depende do limite é preparada uma vez", fixedMessagePreparedOnce)
+  test("saída de ferramenta é reduzida até caber", reducesToolOutputToFit)
+  test("orçamento zero devolve transcrição vazia", noBudget)
   test("mensagem única maior que o orçamento é cortada sem aviso de omissão", singleOversizedMessage)
 }
 

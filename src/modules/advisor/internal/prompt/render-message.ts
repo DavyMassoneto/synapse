@@ -52,9 +52,6 @@ function renderBlock(message: TranscriptMessage, block: TranscriptBlock, limit: 
 }
 
 export function renderMessage(message: TranscriptMessage, limit: number): string {
-  if (message.kind === "shell" && message.hidden) {
-    return ""
-  }
   const parts = [messageLabel(message)]
   for (const block of message.blocks) {
     parts.push(renderBlock(message, block, limit))
