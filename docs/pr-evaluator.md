@@ -16,7 +16,7 @@ O avaliador roda sozinho em toda PR do próprio repositório que não é rascunh
 - Resposta truncada (término diferente de `stop`), maior que 32 MiB, com texto fora do JSON (é aceita no máximo uma cerca de código em volta dele), fora do formato ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado: acima de 8 MiB, a leitura falha antes da avaliação.
 - Mudar a base da PR, sem commit novo, não dispara outra avaliação.
 - O job termina com sucesso quando a avaliação é publicada, qualquer que seja o veredito. Não é uma barreira de merge: o veredito `pedir mudanças` aparece na review, não no status do check.
-- Sem o cabeçalho `retry-after`, o avaliador espera 60 segundos antes de repetir uma requisição limitada pelo GitHub, o intervalo mínimo que a documentação do GitHub recomenda para limites secundários.
+- Quando o GitHub limita a taxa, o avaliador espera o tempo do cabeçalho `retry-after` e repete, até três tentativas. Sem o cabeçalho, espera 60 segundos, o intervalo mínimo que a documentação do GitHub recomenda para limites secundários. Se a espera pedida passa de 10 minutos, o job falha em vez de repetir antes do prazo.
 - O modelo é o configurado em `REVIEW_MODEL` no workflow e precisa estar liberado para a chave do secret `OMNIROUTE_API_KEY`.
 
 ## Entradas
