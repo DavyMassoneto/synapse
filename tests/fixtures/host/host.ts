@@ -1,7 +1,6 @@
 import { rmSync } from "node:fs"
 import { join } from "node:path"
 import { compose } from "#synapse/composition"
-import { registerAdvisor } from "#synapse/integration"
 import { type Advisor, type Config } from "#synapse/modules/advisor/public"
 import { AdvisorHostCollector } from "./host-collector"
 
@@ -14,10 +13,9 @@ export class TypedAdvisorHost extends AdvisorHostCollector {
     super()
     this.directory = directory
     try {
-      const composition = compose(join(directory, "advisor.json"))
+      const composition = compose(this, join(directory, "advisor.json"))
       this.advisor = composition.advisor
       this.signal = composition.signal
-      registerAdvisor(this, composition.advisor, composition.signal, composition.shutdown)
     } catch (error) {
       rmSync(directory, { recursive: true, force: true })
       throw error

@@ -1,5 +1,5 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
-import { type ModelResponse } from "#synapse/modules/advisor/public"
+import { type ModelResponse, type Usage } from "#synapse/modules/advisor/public"
 import { EMPTY_RESPONSE } from "./constants"
 import { extractText } from "./extract-text"
 
@@ -8,6 +8,23 @@ function failureReason(reply: AssistantMessage): string {
     return reply.errorMessage
   }
   return reply.stopReason
+}
+
+function contractUsage(usage: AssistantMessage["usage"]): Usage {
+  return {
+    input: usage.input,
+    output: usage.output,
+    cacheRead: usage.cacheRead,
+    cacheWrite: usage.cacheWrite,
+    totalTokens: usage.totalTokens,
+    cost: {
+      input: usage.cost.input,
+      output: usage.cost.output,
+      cacheRead: usage.cost.cacheRead,
+      cacheWrite: usage.cost.cacheWrite,
+      total: usage.cost.total,
+    },
+  }
 }
 
 export function modelResponse(reply: AssistantMessage): ModelResponse {
@@ -21,23 +38,5 @@ export function modelResponse(reply: AssistantMessage): ModelResponse {
   if (text.length === 0) {
     return { kind: "failure", message: EMPTY_RESPONSE }
   }
-  const usage = reply.usage
-  return {
-    kind: "success",
-    text,
-    usage: {
-      input: usage.input,
-      output: usage.output,
-      cacheRead: usage.cacheRead,
-      cacheWrite: usage.cacheWrite,
-      totalTokens: usage.totalTokens,
-      cost: {
-        input: usage.cost.input,
-        output: usage.cost.output,
-        cacheRead: usage.cost.cacheRead,
-        cacheWrite: usage.cost.cacheWrite,
-        total: usage.cost.total,
-      },
-    },
-  }
+  return { kind: "success", text, usage: contractUsage(reply.usage) }
 }

@@ -31,10 +31,29 @@ async function verifyDistribution(example: ConfigCase): Promise<void> {
   }
 }
 
+function restoresEmptyVariable(): void {
+  environment.restore()
+  const original = process.env.USERPROFILE
+  process.env.USERPROFILE = ""
+  environment = new DistributionEnvironment()
+  expect(process.env.USERPROFILE).not.toBe("")
+  environment.restore()
+  expect(process.env.USERPROFILE).toBe("")
+  delete process.env.USERPROFILE
+  environment = new DistributionEnvironment()
+  environment.restore()
+  expect(process.env.USERPROFILE).toBeUndefined()
+  if (original) {
+    process.env.USERPROFILE = original
+  }
+  environment = new DistributionEnvironment()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
   test.each(CASES)("distribuição: $name", verifyDistribution)
+  test("ambiente restaura variável vazia como vazia e ausente como ausente", restoresEmptyVariable)
 }
 
 describe("distribution", registerTests)

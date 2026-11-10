@@ -1,7 +1,6 @@
 import { advisorConfigPath, compose } from "./composition"
-import { type AdvisorHost, registerAdvisor } from "./integration"
+import { type AdvisorHost } from "./integration"
 
 export default function registerSynapse(pi: AdvisorHost): void {
-  const composition = compose(advisorConfigPath())
-  registerAdvisor(pi, composition.advisor, composition.signal, composition.shutdown)
+  compose(pi, advisorConfigPath())
 }
