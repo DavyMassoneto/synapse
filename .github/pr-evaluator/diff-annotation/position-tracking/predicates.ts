@@ -1,9 +1,6 @@
-import { type DiffState, type LineKind } from "./types"
+import { HUNK_MARKER_KINDS } from "./constants"
+import { type HunkMarker } from "./types"
 
-export function isHunkBody(state: DiffState, kind: LineKind): boolean {
-  return state.inHunk && kind !== "other"
-}
-
-export function isHunkLineKind(kind: LineKind): boolean {
-  return kind === "removed" || kind === "added" || kind === "context" || kind === "no-newline"
+export function isHunkMarker(marker: string): marker is HunkMarker {
+  return Object.hasOwn(HUNK_MARKER_KINDS, marker)
 }

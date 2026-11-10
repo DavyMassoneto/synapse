@@ -1,5 +1,5 @@
-import { readHunkStart, readPathHeader } from "../headers"
-import { type DiffState, type LineKind, type LinePosition } from "./types"
+import { DIFF_FILE_HEADER, HUNK_START_PATTERN, isPathHeader, readHunkStart, readPathHeader } from "../headers"
+import { type DiffState } from "./types"
 
 function startFile(state: DiffState): void {
   state.oldPath = ""
@@ -18,24 +18,21 @@ function recordPaths(state: DiffState, line: string): void {
   const header = readPathHeader(line)
   if (header.kind === "old") {
     state.oldPath = header.path
-  }
-  if (header.kind === "new") {
+  } else if (header.kind === "new") {
     state.path = header.path
-  }
-  if (header.kind === "deleted") {
+  } else {
     state.path = state.oldPath
   }
 }
 
-export function applyHeaderLine(state: DiffState, kind: LineKind, line: string): LinePosition {
-  if (kind === "file-header") {
+export function applyHeaderLine(state: DiffState, line: string): void {
+  if (line.startsWith(DIFF_FILE_HEADER)) {
     startFile(state)
-  } else if (kind === "hunk-header") {
+  } else if (HUNK_START_PATTERN.test(line)) {
     startHunk(state, line)
-  } else if (kind === "path-header") {
+  } else if (isPathHeader(line)) {
     recordPaths(state, line)
   } else {
     state.inHunk = false
   }
-  return { kind: "none" }
 }

@@ -24,13 +24,13 @@ export async function sendWithRetry(
   configuration: GithubConfiguration,
   path: string,
   init: RequestInit,
-  attempt: number,
 ): Promise<Response> {
-  const response = await fetchGithub(configuration, path, init)
-  if (isRateLimited(response) && attempt < REQUEST_ATTEMPTS) {
+  let response = await fetchGithub(configuration, path, init)
+  for (let attempt = 1; attempt < REQUEST_ATTEMPTS && isRateLimited(response); attempt += 1) {
     console.log(`GitHub limitou a taxa (${response.status}); nova tentativa`)
+    await response.body?.cancel()
     await delay(retryDelayMs(response))
-    return sendWithRetry(configuration, path, init, attempt + 1)
+    response = await fetchGithub(configuration, path, init)
   }
   return ensureOk(response, path)
 }

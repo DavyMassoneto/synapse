@@ -9,15 +9,16 @@ export interface DiffState {
   lines: DiffLines
 }
 
-export type LineKind =
-  | "file-header"
-  | "hunk-header"
-  | "path-header"
-  | "removed"
-  | "added"
-  | "context"
-  | "no-newline"
-  | "other"
+export type HunkLineKind = "removed" | "added" | "context" | "no-newline"
+
+export interface HunkMarkerKinds {
+  "+": HunkLineKind
+  "-": HunkLineKind
+  " ": HunkLineKind
+  "\\": HunkLineKind
+}
+
+export type HunkMarker = keyof HunkMarkerKinds
 
 export interface LeftPosition {
   kind: "left"

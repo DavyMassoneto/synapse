@@ -1,5 +1,5 @@
 import { type FileLines } from "../lines"
-import { type DiffState, type LineKind, type LinePosition } from "./types"
+import { type DiffState, type HunkLineKind, type LinePosition } from "./types"
 
 function linesOf(state: DiffState): FileLines {
   const existing = state.lines.get(state.path)
@@ -35,7 +35,7 @@ function takeContextLine(state: DiffState): LinePosition {
   return { kind: "right", line }
 }
 
-export function applyHunkLine(state: DiffState, kind: LineKind): LinePosition {
+export function applyHunkLine(state: DiffState, kind: HunkLineKind): LinePosition {
   if (kind === "removed") {
     return takeOldLine(state)
   }

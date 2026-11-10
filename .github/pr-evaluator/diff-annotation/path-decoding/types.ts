@@ -1,11 +1,13 @@
-export interface EscapedCharacters {
-  backslash: string
-  quote: string
-  bell: string
-  backspace: string
-  formFeed: string
-  lineFeed: string
-  carriageReturn: string
-  tab: string
-  verticalTab: string
+export interface GitEscapeCharacters {
+  "\\\\": string
+  '\\"': string
+  "\\a": string
+  "\\b": string
+  "\\f": string
+  "\\n": string
+  "\\r": string
+  "\\t": string
+  "\\v": string
 }
+
+export type GitEscape = keyof GitEscapeCharacters

@@ -1,7 +1,8 @@
-export const ADDED = "+"
+import { type HunkMarkerKinds } from "./types"
 
-export const REMOVED = "-"
-
-export const CONTEXT = " "
-
-export const NO_NEWLINE = "\\"
+export const HUNK_MARKER_KINDS: HunkMarkerKinds = {
+  "+": "added",
+  "-": "removed",
+  " ": "context",
+  "\\": "no-newline",
+}

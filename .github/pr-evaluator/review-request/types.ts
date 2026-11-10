@@ -4,3 +4,12 @@ export interface PromptContext {
   rules: string
   standards: string
 }
+
+export interface PlaceholderTexts {
+  "{{ARQUITETURA}}": string
+  "{{REGRAS}}": string
+  "{{PADROES}}": string
+  "{{DIFF}}": string
+}
+
+export type Placeholder = keyof PlaceholderTexts

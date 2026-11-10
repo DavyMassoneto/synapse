@@ -12,14 +12,6 @@ export const STANDARD_BREAK = "\n\n"
 
 export const TEMPLATE_PATTERN = /```text\n([\s\S]*?)\n```/
 
-export const PLACEHOLDER_ARCHITECTURE = "{{ARQUITETURA}}"
-
-export const PLACEHOLDER_RULES = "{{REGRAS}}"
-
-export const PLACEHOLDER_STANDARDS = "{{PADROES}}"
-
-export const PLACEHOLDER_DIFF = "{{DIFF}}"
-
 export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
 
 export const MAX_PROMPT_CHARACTERS = 420_000

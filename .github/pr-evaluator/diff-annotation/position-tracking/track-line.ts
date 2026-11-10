@@ -1,13 +1,14 @@
 import { applyHeaderLine } from "./apply-header-line"
 import { applyHunkLine } from "./apply-hunk-line"
-import { classifyLine } from "./classify-line"
-import { isHunkLineKind } from "./predicates"
+import { HUNK_MARKER_KINDS } from "./constants"
+import { isHunkMarker } from "./predicates"
 import { type DiffState, type LinePosition } from "./types"
 
 export function trackLine(state: DiffState, line: string): LinePosition {
-  const kind = classifyLine(state, line)
-  if (isHunkLineKind(kind)) {
-    return applyHunkLine(state, kind)
+  const marker = line.charAt(0)
+  if (state.inHunk && isHunkMarker(marker)) {
+    return applyHunkLine(state, HUNK_MARKER_KINDS[marker])
   }
-  return applyHeaderLine(state, kind, line)
+  applyHeaderLine(state, line)
+  return { kind: "none" }
 }
