@@ -1,6 +1,1 @@
 export const MESSAGE_ALREADY_REVIEWED = "Este commit já foi avaliado; nada a fazer."
-
-export const MESSAGE_NO_TEXT_LINES =
-  "A PR não altera linhas de texto (nenhum arquivo alterado, ou só arquivos binários); nada a avaliar."
-
-export const MESSAGE_SUPERSEDED = "A PR recebeu um commit novo durante a avaliação; esta avaliação não será publicada."
