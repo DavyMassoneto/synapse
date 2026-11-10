@@ -18,4 +18,6 @@ export const PLACEHOLDER_STANDARDS = "{{PADROES}}"
 
 export const PLACEHOLDER_DIFF = "{{DIFF}}"
 
+export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
+
 export const MAX_PROMPT_CHARACTERS = 420_000

@@ -6,5 +6,5 @@ import { type Placement } from "./types"
 
 export function placeFindings(lines: DiffLines, findings: Finding[]): Placement {
   const { groups, unplaced } = partitionFindings(lines, findings)
-  return { comments: [...groups.values()].map(toComment), unplaced }
+  return { comments: Array.from(groups.values(), toComment), unplaced }
 }

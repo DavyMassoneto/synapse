@@ -3,6 +3,7 @@ export const CRITERION_LABELS = {
   dry: "DRY",
   yagni: "YAGNI",
   srp: "SRP",
+  performance: "Desempenho",
   architecture: "Arquitetura",
 }
 

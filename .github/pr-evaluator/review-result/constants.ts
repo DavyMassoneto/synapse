@@ -6,6 +6,7 @@ export const FindingSchema = Type.Object({
     Type.Literal("dry"),
     Type.Literal("yagni"),
     Type.Literal("srp"),
+    Type.Literal("performance"),
     Type.Literal("architecture"),
   ]),
   kind: Type.Union([Type.Literal("violation"), Type.Literal("insufficient_context")]),
