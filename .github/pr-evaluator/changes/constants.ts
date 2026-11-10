@@ -1,4 +1,4 @@
-export const GIT_DIFF_ARGUMENTS: string[] = [
+export const GIT_DIFF_ARGUMENTS = [
   "-c",
   "core.quotepath=false",
   "diff",

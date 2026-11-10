@@ -1,8 +1,8 @@
 import { type AnnotatedDiff } from "#evaluator/changes"
 import { type Configuration } from "#evaluator/configuration"
-import { currentHeadSha, reviewMarker, wasReviewedByBot } from "#evaluator/pull-request-review"
 import { type ReviewResult } from "#evaluator/review-result"
-import { MESSAGE_ALREADY_REVIEWED, MESSAGE_SUPERSEDED } from "./constants"
+import { applyDecision } from "./apply-decision"
+import { decidePublication } from "./decide-publication"
 import { publishEvaluation } from "./publish-evaluation"
 
 export async function publishIfCurrent(
@@ -10,12 +10,6 @@ export async function publishIfCurrent(
   diff: AnnotatedDiff,
   result: ReviewResult,
 ): Promise<void> {
-  const { github } = configuration
-  if ((await currentHeadSha(github)) !== github.headSha) {
-    console.log(MESSAGE_SUPERSEDED)
-  } else if (await wasReviewedByBot(github, reviewMarker(github.headSha))) {
-    console.log(MESSAGE_ALREADY_REVIEWED)
-  } else {
-    await publishEvaluation(configuration, diff, result)
-  }
+  const decision = await decidePublication(configuration.github)
+  await applyDecision(decision, () => publishEvaluation(configuration, diff, result))
 }

@@ -4,13 +4,13 @@ export const NEW_PREFIX = "b/"
 
 export const NO_FILE = "/dev/null"
 
-export const TAB = "\t"
+export const TAB_SUFFIX_PATTERN = /\t.*$/s
 
-export const QUOTE = '"'
+export const QUOTED_PATTERN = /^"(.*)"$/s
 
 export const ESCAPE_PATTERN = /\\(?:[0-7]{3}|[\\"abfnrtv])/g
 
-export const OCTAL_ESCAPE_LENGTH = 4
+export const OCTAL_ESCAPE_PATTERN = /^\\[0-7]{3}$/
 
 export const OCTAL_RADIX = 8
 

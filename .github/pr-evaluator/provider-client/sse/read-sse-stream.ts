@@ -1,4 +1,5 @@
-import { applyLine } from "./apply-line"
+import { LINE_BREAK } from "./constants"
+import { consumeText } from "./consume-text"
 import { type StreamResult } from "./types"
 
 export async function readSseStream(body: ReadableStream<Uint8Array>): Promise<StreamResult> {
@@ -6,13 +7,8 @@ export async function readSseStream(body: ReadableStream<Uint8Array>): Promise<S
   const result: StreamResult = { content: "" }
   let pending = ""
   for await (const bytes of body) {
-    pending += decoder.decode(bytes, { stream: true })
-    const lastBreak = pending.lastIndexOf("\n")
-    for (const line of pending.slice(0, lastBreak + 1).split("\n")) {
-      applyLine(result, line)
-    }
-    pending = pending.slice(lastBreak + 1)
+    pending = consumeText(result, pending + decoder.decode(bytes, { stream: true }))
   }
-  applyLine(result, pending + decoder.decode())
+  consumeText(result, `${pending}${decoder.decode()}${LINE_BREAK}`)
   return result
 }

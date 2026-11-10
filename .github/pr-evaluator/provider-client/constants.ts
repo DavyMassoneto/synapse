@@ -7,5 +7,3 @@ export const MODEL_ATTEMPTS = 2
 export const RETRY_DELAY_MS = 20_000
 
 export const SERVER_ERROR_STATUS = 500
-
-export const ERROR_BODY_CHARACTERS = 500

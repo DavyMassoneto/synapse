@@ -1,10 +1,10 @@
 import { applyPayload } from "./apply-payload"
-import { DATA_PREFIX, DONE_PAYLOAD } from "./constants"
+import { readEventPayload } from "./read-event-payload"
 import { type StreamResult } from "./types"
 
 export function applyLine(result: StreamResult, line: string): void {
-  const payload = line.slice(DATA_PREFIX.length).trim()
-  if (line.startsWith(DATA_PREFIX) && payload !== DONE_PAYLOAD) {
-    applyPayload(result, payload)
+  const event = readEventPayload(line)
+  if (event.kind === "data") {
+    applyPayload(result, event.payload)
   }
 }

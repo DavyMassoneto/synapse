@@ -7,3 +7,21 @@ export interface StreamResult {
   content: string
   finishReason?: string
 }
+
+export interface EventData {
+  kind: "data"
+  payload: string
+}
+
+export interface NoEvent {
+  kind: "none"
+}
+
+export type EventPayload = EventData | NoEvent
+
+export interface SplitText {
+  lines: string[]
+  rest: string
+}
+
+export type StreamChunk = Static<typeof StreamChunkSchema>

@@ -21,3 +21,17 @@ export interface ReviewPayload {
 export type ListedReview = Static<typeof ReviewListSchema>[number]
 
 export type PublishedReview = Static<typeof PublishedReviewSchema>
+
+export interface Reviewed {
+  kind: "reviewed"
+}
+
+export interface Unreviewed {
+  kind: "unreviewed"
+}
+
+export type ReviewState = Reviewed | Unreviewed
+
+export interface ReviewWithBody extends ListedReview {
+  body: string
+}

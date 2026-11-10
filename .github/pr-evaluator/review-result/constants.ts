@@ -25,4 +25,4 @@ export const ReviewResultSchema = Type.Object({
   findings: Type.Array(FindingSchema),
 })
 
-export const CODE_FENCE = "```"
+export const FENCE_PATTERN = /^```[^\n]*\n([\s\S]*)```$/

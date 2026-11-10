@@ -1,5 +1,7 @@
 import { Type } from "typebox"
 
+export const LINE_BREAK = "\n"
+
 export const DATA_PREFIX = "data:"
 
 export const DONE_PAYLOAD = "[DONE]"

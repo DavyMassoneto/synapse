@@ -8,9 +8,7 @@ export const STANDARDS_DIRECTORY = "docs/standards"
 
 export const MARKDOWN_EXTENSION = ".md"
 
-export const TEMPLATE_FENCE_OPEN = "```text\n"
-
-export const TEMPLATE_FENCE_CLOSE = "\n```"
+export const TEMPLATE_PATTERN = /^[\s\S]*?```text\n([\s\S]*?)\n```[\s\S]*$/
 
 export const PLACEHOLDER_ARCHITECTURE = "{{ARQUITETURA}}"
 
