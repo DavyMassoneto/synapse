@@ -1,3 +1,7 @@
 export * from "./annotate-diff"
+export * from "./constants"
 export * from "./lines"
+export * from "./path-decoding"
+export * from "./position-tracking"
+export * from "./render-line"
 export * from "./types"
