@@ -1,7 +1,7 @@
 import { type Consultation, type ResolvedModel } from "#synapse/modules/advisor/public/contracts"
-import { ADVISOR_SYSTEM } from "../constants"
 import { buildTranscript, clip } from "../transcript"
 import {
+  ADVISOR_SYSTEM,
   ESTIMATED_CHARACTERS_PER_TOKEN,
   HOST_SAFETY_TOKENS,
   MAX_SYSTEM_CHARACTERS,

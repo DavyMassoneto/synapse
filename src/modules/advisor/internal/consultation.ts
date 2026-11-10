@@ -6,8 +6,8 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules/advisor/public/contracts"
-import { ADVISOR_SYSTEM, NO_MODEL_CONFIGURED } from "./constants"
-import { preparePrompt } from "./prompt"
+import { NO_MODEL_CONFIGURED } from "./constants"
+import { ADVISOR_SYSTEM, preparePrompt } from "./prompt"
 
 async function consultResolved(
   input: Consultation,
