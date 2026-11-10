@@ -21,6 +21,11 @@ SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única res
 
 - Um arquivo contém uma função, ou funções que mudam sempre pelo mesmo motivo.
 - Uma pasta reúne arquivos de uma só capacidade, e o nome da pasta diz qual.
+- Uma pasta que guarda mais de um fluxo independente (por exemplo, decisões tomadas em momentos diferentes, ou leitura e escrita de formatos distintos) divide-se por fluxo ou por capacidade, cada parte com o nome do que faz.
+- Uma pasta fragmentada demais também é violação. Para julgar, conte quantos arquivos é preciso abrir, em sequência, para entender uma única operação. Muitos arquivos curtos para um mesmo fluxo indicam fragmentação: funções que mudam sempre pelo mesmo motivo ficam no mesmo arquivo, e a navegação entre arquivos não pode ser maior que a complexidade do que eles fazem.
+- Um arquivo que só repassa a chamada para outra função, sem decisão, formato ou efeito próprio, não é uma responsabilidade e deve ser removido.
+- Dividir por responsabilidade não é criar uma função por arquivo. Uma função auxiliar que só o seu chamador usa, e que muda com ele, fica no arquivo do chamador.
+- Não existe um número máximo de arquivos por pasta. O apontamento cita a evidência concreta: os arquivos do fluxo, o caminho que se percorre para entendê-lo e o motivo de mudança que cada um carrega.
 
 ## 4. Classe
 

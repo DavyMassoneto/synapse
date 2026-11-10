@@ -6,5 +6,3 @@ export const MESSAGE_NO_TEXT_LINES =
   "A PR não altera linhas de texto (por exemplo, só arquivos binários); nada a comentar."
 
 export const MESSAGE_SUPERSEDED = "A PR recebeu um commit novo durante a avaliação; esta avaliação não será publicada."
-
-export const NON_BLANK_PATTERN = /\S/
