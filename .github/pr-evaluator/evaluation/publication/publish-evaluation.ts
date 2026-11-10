@@ -11,5 +11,6 @@ export async function publishEvaluation(
   result: ReviewResult,
 ): Promise<void> {
   const prepared = prepareReview(configuration.github, diff, result)
-  reportPublication(await publishReview(configuration.github, prepared.payload), prepared)
+  const published = await publishReview(configuration.github, prepared.payload)
+  reportPublication(published, prepared)
 }

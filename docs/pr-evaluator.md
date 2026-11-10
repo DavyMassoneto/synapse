@@ -15,6 +15,7 @@ O avaliador roda sozinho em toda PR e aponta cada problema na linha em que ele o
 - Comentário em outra linha nunca substitui o apontamento: se a linha do apontamento não está no diff, ele entra na lista "sem linha no diff" do resumo da review. Se só o intervalo (`startLine`) não está inteiro no diff, o comentário fica na linha final do apontamento, sem intervalo.
 - Resposta truncada (término diferente de `stop`), com texto fora do JSON (é aceita no máximo uma cerca de código em volta dele), fora do formato ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado.
 - O job termina com sucesso quando a avaliação é publicada, qualquer que seja o veredito. Não é uma barreira de merge: o veredito `pedir mudanças` aparece na review, não no status do check.
+- Caracteres invisíveis (por exemplo, U+200D) no caminho de um apontamento são removidos antes de ele ser validado contra as linhas do diff.
 - Sem o cabeçalho `retry-after`, o avaliador espera 60 segundos antes de repetir uma requisição limitada pelo GitHub, o intervalo mínimo que a documentação do GitHub recomenda para limites secundários.
 - O modelo é o configurado em `REVIEW_MODEL` no workflow e precisa estar liberado para a chave do secret `OMNIROUTE_API_KEY`.
 

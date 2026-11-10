@@ -14,9 +14,13 @@ function startHunk(state: DiffState, line: string): void {
   state.inHunk = true
 }
 
+function leaveHunk(state: DiffState): void {
+  state.inHunk = false
+}
+
 function readPaths(state: DiffState, line: string): void {
   const header = readPathHeader(line)
-  state.inHunk = false
+  leaveHunk(state)
   if (header.kind === "old") {
     state.oldPath = header.path
   }
@@ -36,7 +40,7 @@ export function applyHeaderLine(state: DiffState, kind: LineKind, line: string):
   } else if (kind === "path-header") {
     readPaths(state, line)
   } else {
-    state.inHunk = false
+    leaveHunk(state)
   }
   return { kind: "none" }
 }

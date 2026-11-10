@@ -6,5 +6,6 @@ import { ensureCompleted, readSseStream } from "./sse"
 
 export async function sendRequest(configuration: ModelConfiguration, prompt: string): Promise<string> {
   const response = await ensureSuccess(await postChat(configuration, prompt))
-  return ensureCompleted(await readSseStream(requireBody(response)))
+  const streamed = await readSseStream(requireBody(response))
+  return ensureCompleted(streamed)
 }
