@@ -1,3 +1,5 @@
+import { type AssistantMessage, type ImageContent } from "@earendil-works/pi-ai"
+
 export interface PiThinkingBudgets {
   off: number
   minimal: number
@@ -7,3 +9,5 @@ export interface PiThinkingBudgets {
   xhigh: number
   max: number
 }
+
+export type TextBlocks = Array<ImageContent | AssistantMessage["content"][number]>

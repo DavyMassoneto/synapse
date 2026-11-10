@@ -1,4 +1,4 @@
-import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
+import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules/advisor/public"
 import { type AdvisorContext } from "../host"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
@@ -29,10 +29,17 @@ export class AdvisorCommand {
       this.disable(context)
     } else if (input.kind === "thinking") {
       this.report(context, this.advisor.configuration.setThinking(input.level), `Advisor thinking: ${input.level}`)
-    } else if (input.query.length === 0 && !context.hasUI) {
+    } else {
+      await this.select(input.query, config, context)
+    }
+  }
+
+  private async select(query: string, config: Config, context: AdvisorContext): Promise<void> {
+    const cannotChoose = query.length === 0 && !context.hasUI
+    if (cannotChoose) {
       context.ui.notify(`Advisor: ${this.modelLabel(config)}, thinking ${config.thinking}`, "info")
     } else {
-      this.applySelection(context, await chooseModel(context, input.query))
+      this.applySelection(context, await chooseModel(context, query))
     }
   }
 

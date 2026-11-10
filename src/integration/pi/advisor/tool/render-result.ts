@@ -1,6 +1,6 @@
 import { type AgentToolResult, type ToolRenderResultOptions } from "@earendil-works/pi-coding-agent"
 import { type Component } from "@earendil-works/pi-tui"
-import { extractText } from "../host"
+import { extractText } from "../model-consultation"
 import { ERROR_COLOR, PENDING_COLOR, RENDER_PENDING } from "./constants"
 import { renderPreview } from "./render-preview"
 import { textComponent } from "./text-component"

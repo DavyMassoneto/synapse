@@ -1,7 +1,7 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
-import { type ModelResponse } from "#synapse/modules"
-import { extractText } from "../host"
+import { type ModelResponse } from "#synapse/modules/advisor/public"
 import { EMPTY_RESPONSE } from "./constants"
+import { extractText } from "./extract-text"
 
 function failureReason(reply: AssistantMessage): string {
   if (reply.errorMessage) {

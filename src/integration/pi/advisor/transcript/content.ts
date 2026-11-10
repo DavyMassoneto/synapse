@@ -1,4 +1,4 @@
-import { type TranscriptBlock } from "#synapse/modules"
+import { type TranscriptBlock } from "#synapse/modules/advisor/public"
 import { type MessageContent } from "./types"
 
 export function convertContent(content: MessageContent): TranscriptBlock[] {

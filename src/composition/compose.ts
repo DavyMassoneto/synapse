@@ -1,4 +1,4 @@
-import { createAdvisor } from "../modules"
+import { createAdvisor } from "#synapse/modules/advisor/public"
 import { type AdvisorComposition } from "./types"
 
 export function compose(configPath: string): AdvisorComposition {
@@ -6,6 +6,6 @@ export function compose(configPath: string): AdvisorComposition {
   return {
     advisor: createAdvisor(configPath),
     signal: controller.signal,
-    shutdown: controller.abort.bind(controller),
+    shutdown: () => controller.abort(),
   }
 }

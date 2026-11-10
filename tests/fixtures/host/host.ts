@@ -1,20 +1,23 @@
 import { rmSync } from "node:fs"
 import { join } from "node:path"
+import { compose } from "#synapse/composition"
 import { registerAdvisor } from "#synapse/integration"
-import { type Advisor, type Config, createAdvisor } from "#synapse/modules"
+import { type Advisor, type Config } from "#synapse/modules/advisor/public"
 import { AdvisorHostCollector } from "./host-collector"
 
 export class TypedAdvisorHost extends AdvisorHostCollector {
-  readonly lifetime = new AbortController()
   readonly advisor: Advisor
+  readonly signal: AbortSignal
   readonly directory: string
 
   constructor(directory: string) {
     super()
     this.directory = directory
     try {
-      this.advisor = createAdvisor(join(directory, "advisor.json"))
-      registerAdvisor(this, this.advisor, this.lifetime.signal, this.lifetime.abort.bind(this.lifetime))
+      const composition = compose(join(directory, "advisor.json"))
+      this.advisor = composition.advisor
+      this.signal = composition.signal
+      registerAdvisor(this, composition.advisor, composition.signal, composition.shutdown)
     } catch (error) {
       rmSync(directory, { recursive: true, force: true })
       throw error

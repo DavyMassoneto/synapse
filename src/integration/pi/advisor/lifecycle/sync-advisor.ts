@@ -1,4 +1,4 @@
-import { type Advisor, type AdvisorResult } from "#synapse/modules"
+import { type Advisor, type AdvisorResult } from "#synapse/modules/advisor/public"
 import { ADVISOR_NAME, type AdvisorContext } from "../host"
 import { STATUS_PREFIX } from "./constants"
 import { type AdvisorToolActivation } from "./types"

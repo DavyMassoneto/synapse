@@ -1,4 +1,3 @@
-import { type AssistantMessage, type ImageContent } from "@earendil-works/pi-ai"
 import { type ExtensionContext, type ExtensionUIContext, type ModelRegistry } from "@earendil-works/pi-coding-agent"
 
 export type AdvisorUI = Pick<ExtensionUIContext, "notify" | "select" | "setStatus">
@@ -16,5 +15,3 @@ export interface AdvisorContext extends AdvisorContextBase {
   modelRegistry: AdvisorRegistry
   sessionManager: AdvisorSession
 }
-
-export type TextBlocks = Array<ImageContent | AssistantMessage["content"][number]>

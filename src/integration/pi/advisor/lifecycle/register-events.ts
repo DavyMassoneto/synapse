@@ -1,4 +1,4 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor/public"
 import { AdvisorEvents } from "./events"
 import { type AdvisorShutdownHandler, type LifecycleHost } from "./types"
 

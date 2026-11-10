@@ -1,9 +1,15 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor, type ConsultationResult } from "#synapse/modules/advisor/public"
 import { type AdvisorContext } from "../host"
-import { TOOL_CANCELLED } from "./constants"
-import { consultTool } from "./consult"
-import { toolFailure } from "./failure"
-import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
+import { AdvisorModel } from "../model-consultation"
+import { captureTranscript } from "../transcript"
+import { TOOL_CANCELLED, TOOL_PROGRESS } from "./constants"
+import {
+  type AdvisorToolInput,
+  type AdvisorToolOutput,
+  type AdvisorToolResult,
+  type AdvisorToolSignal,
+  type AdvisorToolUpdate,
+} from "./types"
 
 export class AdvisorToolHandler {
   private readonly advisor: Advisor
@@ -12,13 +18,6 @@ export class AdvisorToolHandler {
   constructor(advisor: Advisor, lifetime: AbortSignal) {
     this.advisor = advisor
     this.lifetime = lifetime
-  }
-
-  private callSignal(signal: AdvisorToolSignal): AbortSignal {
-    if (signal) {
-      return AbortSignal.any([signal, this.lifetime])
-    }
-    return this.lifetime
   }
 
   async execute(
@@ -30,8 +29,51 @@ export class AdvisorToolHandler {
   ): AdvisorToolResult {
     const callSignal = this.callSignal(signal)
     if (callSignal.aborted) {
-      return toolFailure(TOOL_CANCELLED)
+      return this.failure(TOOL_CANCELLED)
     }
-    return consultTool(this.advisor, callSignal, context, onUpdate)
+    try {
+      onUpdate?.({ content: [{ type: "text", text: TOOL_PROGRESS }], details: {} })
+      return this.output(await this.consult(callSignal, context))
+    } catch (error) {
+      if (callSignal.aborted) {
+        return this.failure(TOOL_CANCELLED)
+      }
+      if (error instanceof Error) {
+        return this.failure(`Advisor indisponível: ${error.message}.`)
+      }
+      throw error
+    }
+  }
+
+  private callSignal(signal: AdvisorToolSignal): AbortSignal {
+    if (signal) {
+      return AbortSignal.any([signal, this.lifetime])
+    }
+    return this.lifetime
+  }
+
+  private consult(signal: AbortSignal, context: AdvisorContext): Promise<ConsultationResult> {
+    return this.advisor.consult(
+      { system: context.getSystemPrompt(), messages: captureTranscript(context), signal },
+      new AdvisorModel(context.modelRegistry),
+    )
+  }
+
+  private output(result: ConsultationResult): AdvisorToolOutput {
+    if (result.kind === "cancelled") {
+      return this.failure(TOOL_CANCELLED)
+    }
+    if (result.kind === "failure") {
+      return this.failure(result.message)
+    }
+    return {
+      content: [{ type: "text", text: result.response.text }],
+      details: { model: result.model },
+      usage: result.response.usage,
+    }
+  }
+
+  private failure(message: string): AdvisorToolOutput {
+    return { content: [{ type: "text", text: message }], details: {}, isError: true }
   }
 }

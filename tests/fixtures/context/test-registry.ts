@@ -7,6 +7,12 @@ import { type TestStopReason } from "./types"
 export class TestRegistry implements AdvisorRegistry {
   calls = 0
   stopReason: TestStopReason = "stop"
+  window = 40_000
+  missing = false
+  authorized = true
+  used?: Model<Api>
+  options?: ModelsSimpleStreamOptions
+  context?: Context
   readonly model = fixtureModel("provider", "model", 40_000)
 
   getAvailable(): Model<Api>[] {
@@ -16,14 +22,24 @@ export class TestRegistry implements AdvisorRegistry {
       { ...this.model, id: "thinkingx", name: "thinkingx" },
     ]
   }
-  find(): Model<Api> {
+
+  find(provider: string, id: string): ReturnType<AdvisorRegistry["find"]> {
     this.calls += 1
-    return this.model
+    if (!this.missing) {
+      return fixtureModel(provider, id, this.window)
+    }
   }
+
   hasConfiguredAuth(): boolean {
-    return true
+    return this.authorized
   }
-  streamSimple(_model: Model<Api>, _context: Context, _options?: ModelsSimpleStreamOptions) {
-    return assistantStream("model", "conselho", this.stopReason)
+
+  streamSimple(model: Model<Api>, context: Context, options?: ModelsSimpleStreamOptions) {
+    this.used = model
+    this.context = context
+    if (options) {
+      this.options = options
+    }
+    return assistantStream(model.id, "conselho", this.stopReason)
   }
 }

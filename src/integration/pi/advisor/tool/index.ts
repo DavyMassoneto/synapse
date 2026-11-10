@@ -1,6 +1,4 @@
 export * from "./constants"
-export * from "./consult"
-export * from "./failure"
 export * from "./register"
 export * from "./render-call"
 export * from "./render-preview"

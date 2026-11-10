@@ -1,4 +1,4 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor/public"
 import { registerCommand } from "./command"
 import { type AdvisorShutdownHandler, registerEvents } from "./lifecycle"
 import { registerTool } from "./tool"

@@ -8,6 +8,7 @@ import {
 } from "#synapse/modules/advisor/public/contracts"
 import { CONFIG_SAVE_FAILED, INVALID_MODEL, INVALID_THINKING } from "./constants"
 import { initialConfiguration } from "./initialize"
+import { type ConfigChange } from "./types"
 
 export class AdvisorConfiguration {
   private readonly storage: ConfigPort
@@ -35,21 +36,22 @@ export class AdvisorConfiguration {
     }
   }
 
+  private change(next: ConfigChange): AdvisorResult {
+    if (this.current.kind === "failure") {
+      return this.status()
+    }
+    return this.persist(next(this.current.config))
+  }
+
   selectModel(model: string): AdvisorResult {
     if (parseModelReference(model).kind === "invalid") {
       return { kind: "failure", message: INVALID_MODEL }
     }
-    if (this.current.kind === "failure") {
-      return this.status()
-    }
-    return this.persist({ model, thinking: this.current.config.thinking })
+    return this.change((config) => ({ model, thinking: config.thinking }))
   }
 
   disable(): AdvisorResult {
-    if (this.current.kind === "failure") {
-      return this.status()
-    }
-    return this.persist({ thinking: this.current.config.thinking })
+    return this.change((config) => ({ thinking: config.thinking }))
   }
 
   setThinking(requested: string): AdvisorResult {
@@ -57,9 +59,6 @@ export class AdvisorConfiguration {
     if (!level) {
       return { kind: "failure", message: INVALID_THINKING }
     }
-    if (this.current.kind === "failure") {
-      return this.status()
-    }
-    return this.persist({ ...this.current.config, thinking: level })
+    return this.change((config) => ({ ...config, thinking: level }))
   }
 }

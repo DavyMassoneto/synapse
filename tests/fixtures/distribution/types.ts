@@ -10,8 +10,3 @@ export interface DistributionResult {
   lookups: number
   isError: boolean
 }
-
-export interface EnvironmentSnapshot {
-  home?: string
-  profile?: string
-}

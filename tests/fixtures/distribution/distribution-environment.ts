@@ -1,16 +1,19 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { snapshotEnvironment } from "./environment-snapshot"
-import { restoreVariable } from "./restore-variable"
-import { type EnvironmentSnapshot } from "./types"
 
 export class DistributionEnvironment {
   readonly home: string
-  private readonly previous: EnvironmentSnapshot
+  private readonly previousHome?: string
+  private readonly previousProfile?: string
 
   constructor() {
-    this.previous = snapshotEnvironment()
+    if (typeof process.env.HOME === "string") {
+      this.previousHome = process.env.HOME
+    }
+    if (typeof process.env.USERPROFILE === "string") {
+      this.previousProfile = process.env.USERPROFILE
+    }
     this.home = mkdtempSync(join(tmpdir(), "synapse-config-"))
     mkdirSync(join(this.home, ".pi", "agent"), { recursive: true })
     process.env.HOME = this.home
@@ -19,10 +22,18 @@ export class DistributionEnvironment {
 
   restore(): void {
     try {
-      restoreVariable("HOME", this.previous.home)
-      restoreVariable("USERPROFILE", this.previous.profile)
+      this.restoreVariable("HOME", this.previousHome)
+      this.restoreVariable("USERPROFILE", this.previousProfile)
     } finally {
       rmSync(this.home, { recursive: true, force: true })
+    }
+  }
+
+  private restoreVariable(name: string, previous?: string): void {
+    if (typeof previous === "string") {
+      process.env[name] = previous
+    } else {
+      delete process.env[name]
     }
   }
 }

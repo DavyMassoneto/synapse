@@ -3,16 +3,16 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { AdvisorModel } from "#synapse/integration"
-import { createAdvisor, type ModelRequest } from "#synapse/modules"
-import { RegistryFixture } from "../fixtures"
+import { createAdvisor, type ModelRequest } from "#synapse/modules/advisor/public"
+import { TestRegistry } from "../fixtures"
 
-let registry: RegistryFixture
+let registry: TestRegistry
 let adapter: AdvisorModel
 let directory = ""
 const signal = new AbortController().signal
 
 function prepare(): void {
-  registry = new RegistryFixture()
+  registry = new TestRegistry()
   adapter = new AdvisorModel(registry)
   directory = mkdtempSync(join(tmpdir(), "advisor-model-"))
 }

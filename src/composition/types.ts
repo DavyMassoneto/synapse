@@ -1,4 +1,4 @@
-import { type Advisor } from "../modules"
+import { type Advisor } from "#synapse/modules/advisor/public"
 
 export interface AdvisorComposition {
   advisor: Advisor

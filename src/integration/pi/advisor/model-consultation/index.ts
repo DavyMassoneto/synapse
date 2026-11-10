@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./extract-text"
 export * from "./model"
 export * from "./model-request"
 export * from "./model-response"

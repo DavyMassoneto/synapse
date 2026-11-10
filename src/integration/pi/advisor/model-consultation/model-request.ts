@@ -1,5 +1,5 @@
 import { type Context, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
-import { type ModelRequest, type ResolvedModel } from "#synapse/modules"
+import { type ModelRequest, type ResolvedModel } from "#synapse/modules/advisor/public"
 
 export function consultationContext(request: ModelRequest): Context {
   return {

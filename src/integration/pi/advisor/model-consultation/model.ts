@@ -6,7 +6,7 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
   type ValidReference,
-} from "#synapse/modules"
+} from "#synapse/modules/advisor/public"
 import { type AdvisorModelRegistry } from "../host"
 import { CAPABILITIES_CHANGED, INVALID_REFERENCE, PI_THINKING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"

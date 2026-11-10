@@ -1,4 +1,4 @@
-import { type TranscriptMessage } from "#synapse/modules"
+import { type TranscriptMessage } from "#synapse/modules/advisor/public"
 import { type AdvisorContext } from "../host"
 import { convertMessage } from "./message"
 

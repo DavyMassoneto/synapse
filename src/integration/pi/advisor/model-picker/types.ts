@@ -1,4 +1,4 @@
-import { type Cancelled } from "#synapse/modules"
+import { type Cancelled } from "#synapse/modules/advisor/public"
 import { type AdvisorUI } from "../host"
 
 export interface ModelSelected {

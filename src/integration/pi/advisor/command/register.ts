@@ -1,4 +1,4 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor/public"
 import { ADVISOR_NAME } from "../host"
 import { CompletionCatalog } from "./catalog"
 import { AdvisorCommand } from "./command"

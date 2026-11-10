@@ -39,6 +39,7 @@ async function registeredShutdown(): Promise<void> {
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toMatch(/cancelada/)
   expect(context.modelRegistry.calls).toBe(0)
+  expect(host.signal.reason).toBeInstanceOf(Error)
 }
 
 function registerTests(): void {
