@@ -1,4 +1,4 @@
-import { type ResolvedModel } from "#synapse/modules/advisor/public"
+import { type ModelResolution } from "#synapse/modules/advisor/public"
 import { TestModel } from "./test-model"
 
 export class WaitingModel extends TestModel {
@@ -9,7 +9,7 @@ export class WaitingModel extends TestModel {
     this.gate = gate
   }
 
-  override async resolve(reference: string): Promise<ResolvedModel> {
+  override async resolve(reference: string): Promise<ModelResolution> {
     const resolved = await super.resolve(reference)
     await this.gate
     return resolved

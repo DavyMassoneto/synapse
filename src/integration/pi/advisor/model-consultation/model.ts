@@ -1,16 +1,17 @@
-import { type Api, clampThinkingLevel, type Model } from "@earendil-works/pi-ai"
+import { clampThinkingLevel } from "@earendil-works/pi-ai"
 import {
   type ModelRequest,
+  type ModelResolution,
   type ModelResponse,
   parseModelReference,
   type ResolvedModel,
   type ThinkingLevel,
-  type ValidReference,
 } from "#synapse/modules/advisor/public"
 import { type AdvisorModelRegistry } from "../host"
 import { CAPABILITIES_CHANGED, INVALID_REFERENCE, PI_THINKING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
+import { type ModelLookup } from "./types"
 
 export class AdvisorModel {
   private readonly registry: AdvisorModelRegistry
@@ -19,42 +20,50 @@ export class AdvisorModel {
     this.registry = registry
   }
 
-  private findModel(reference: string): Model<Api> {
+  private findModel(reference: string): ModelLookup {
     const parsed = parseModelReference(reference)
-    if (parsed.kind === "valid") {
-      return this.authorizedModel(parsed, reference)
+    if (parsed.kind === "invalid") {
+      return { kind: "failure", message: INVALID_REFERENCE }
     }
-    throw new Error(INVALID_REFERENCE)
-  }
-
-  private authorizedModel(parsed: ValidReference, reference: string): Model<Api> {
     const model = this.registry.find(parsed.provider, parsed.id)
-    if (model) {
-      if (this.registry.hasConfiguredAuth(model)) {
-        return model
-      }
-      throw new Error(`Credenciais ausentes para ${reference}`)
+    if (!model) {
+      return { kind: "failure", message: `Modelo advisor não encontrado: ${reference}` }
     }
-    throw new Error(`Modelo advisor não encontrado: ${reference}`)
+    if (!this.registry.hasConfiguredAuth(model)) {
+      return { kind: "failure", message: `Credenciais ausentes para ${reference}` }
+    }
+    return { kind: "found", model }
   }
 
-  async resolve(reference: string, thinking: ThinkingLevel, signal: AbortSignal): Promise<ResolvedModel> {
-    signal.throwIfAborted()
-    const model = this.findModel(reference)
-    const level = clampThinkingLevel(model, thinking)
+  async resolve(reference: string, thinking: ThinkingLevel, signal: AbortSignal): Promise<ModelResolution> {
+    if (signal.aborted) {
+      return { kind: "cancelled" }
+    }
+    const lookup = this.findModel(reference)
+    if (lookup.kind === "failure") {
+      return lookup
+    }
+    const level = clampThinkingLevel(lookup.model, thinking)
     return {
-      reference,
-      contextWindow: model.contextWindow,
-      maxOutputTokens: model.maxTokens,
-      reasoningTokens: PI_THINKING_BUDGETS[level],
-      effectiveThinking: level,
+      kind: "resolved",
+      model: {
+        reference,
+        contextWindow: lookup.model.contextWindow,
+        maxOutputTokens: lookup.model.maxTokens,
+        reasoningTokens: PI_THINKING_BUDGETS[level],
+        effectiveThinking: level,
+      },
     }
   }
 
   async consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
-    const model = this.findModel(resolved.reference)
+    const lookup = this.findModel(resolved.reference)
+    if (lookup.kind === "failure") {
+      return lookup
+    }
+    const { model } = lookup
     if (model.contextWindow !== resolved.contextWindow || model.maxTokens !== resolved.maxOutputTokens) {
-      throw new Error(CAPABILITIES_CHANGED)
+      return { kind: "failure", message: CAPABILITIES_CHANGED }
     }
     const reply = await this.registry
       .streamSimple(model, consultationContext(request), consultationOptions(resolved, request))

@@ -25,6 +25,14 @@ async function abortedProvider(): Promise<void> {
   expect(toolText(result)).toMatch(/cancelada/)
 }
 
+async function providerError(): Promise<void> {
+  context.modelRegistry.stopReason = "error"
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
+  expect(result.isError).toBe(true)
+  expect(toolText(result)).not.toMatch(/conselho/)
+  expect(toolText(result)).not.toMatch(/cancelada/)
+}
+
 async function projectionFailure(): Promise<void> {
   context.sessionManager.projectionError = true
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
@@ -48,6 +56,7 @@ function registerTests(): void {
 
   test("consulta registrada preserva uso e modelo", successfulConsultation)
   test("provedor abortado devolve cancelamento", abortedProvider)
+  test("erro do provedor devolve falha, não cancelamento", providerError)
   test("falha de projeção não consulta provedor", projectionFailure)
   test("shutdown registrado impede consulta", registeredShutdown)
 }

@@ -1,6 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
-import { join } from "node:path"
+import { dirname, join } from "node:path"
+import { advisorConfigPath } from "#synapse/composition"
 
 export class DistributionEnvironment {
   readonly home: string
@@ -8,16 +9,16 @@ export class DistributionEnvironment {
   private readonly previousProfile?: string
 
   constructor() {
-    if (typeof process.env.HOME === "string") {
+    if (process.env.HOME) {
       this.previousHome = process.env.HOME
     }
-    if (typeof process.env.USERPROFILE === "string") {
+    if (process.env.USERPROFILE) {
       this.previousProfile = process.env.USERPROFILE
     }
     this.home = mkdtempSync(join(tmpdir(), "synapse-config-"))
-    mkdirSync(join(this.home, ".pi", "agent"), { recursive: true })
     process.env.HOME = this.home
     process.env.USERPROFILE = this.home
+    mkdirSync(dirname(advisorConfigPath()), { recursive: true })
   }
 
   restore(): void {
@@ -30,7 +31,7 @@ export class DistributionEnvironment {
   }
 
   private restoreVariable(name: string, previous?: string): void {
-    if (typeof previous === "string") {
+    if (previous) {
       process.env[name] = previous
     } else {
       delete process.env[name]

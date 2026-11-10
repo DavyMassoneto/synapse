@@ -1,4 +1,4 @@
-import { type ResolvedModel } from "#synapse/modules/advisor/public"
+import { type ModelResolution } from "#synapse/modules/advisor/public"
 import { TestModel } from "./test-model"
 
 export class CancelOnResolveModel extends TestModel {
@@ -9,7 +9,7 @@ export class CancelOnResolveModel extends TestModel {
     this.controller = controller
   }
 
-  override async resolve(reference: string): Promise<ResolvedModel> {
+  override async resolve(reference: string): Promise<ModelResolution> {
     const resolved = await super.resolve(reference)
     this.controller.abort()
     return resolved

@@ -29,6 +29,9 @@ async function consultResolved(
   if (input.signal.aborted || response.kind === "cancelled") {
     return { kind: "cancelled" }
   }
+  if (response.kind === "failure") {
+    return response
+  }
   return { kind: "success", model: resolved.reference, response }
 }
 
@@ -38,18 +41,11 @@ async function consultModel(
   reference: string,
   thinking: ThinkingLevel,
 ): Promise<ConsultationResult> {
-  try {
-    const resolved = await model.resolve(reference, thinking, input.signal)
-    return await consultResolved(input, model, resolved)
-  } catch (error) {
-    if (input.signal.aborted) {
-      return { kind: "cancelled" }
-    }
-    if (error instanceof Error) {
-      return { kind: "failure", message: error.message }
-    }
-    throw error
+  const resolution = await model.resolve(reference, thinking, input.signal)
+  if (resolution.kind === "resolved") {
+    return consultResolved(input, model, resolution.model)
   }
+  return resolution
 }
 
 export async function consultAdvisor(

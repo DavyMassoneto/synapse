@@ -35,11 +35,8 @@ export class AdvisorToolHandler {
       onUpdate?.({ content: [{ type: "text", text: TOOL_PROGRESS }], details: {} })
       return this.output(await this.consult(callSignal, context))
     } catch (error) {
-      if (callSignal.aborted) {
-        return this.failure(TOOL_CANCELLED)
-      }
       if (error instanceof Error) {
-        return this.failure(`Advisor indisponível: ${error.message}.`)
+        return this.unavailable(error, callSignal)
       }
       throw error
     }
@@ -71,6 +68,13 @@ export class AdvisorToolHandler {
       details: { model: result.model },
       usage: result.response.usage,
     }
+  }
+
+  private unavailable(error: Error, signal: AbortSignal): AdvisorToolOutput {
+    if (signal.aborted) {
+      return this.failure(TOOL_CANCELLED)
+    }
+    return this.failure(`Advisor indisponível: ${error.message}.`)
   }
 
   private failure(message: string): AdvisorToolOutput {

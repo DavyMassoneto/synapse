@@ -1,6 +1,7 @@
 import {
   type ModelPort,
   type ModelRequest,
+  type ModelResolution,
   type ModelResponse,
   type ResolvedModel,
 } from "#synapse/modules/advisor/public"
@@ -19,15 +20,18 @@ export class TestModel implements ModelPort {
     throw new Error("requisição ausente")
   }
 
-  async resolve(reference: string): Promise<ResolvedModel> {
+  async resolve(reference: string): Promise<ModelResolution> {
     this.calls += 1
     this.resolvedReference = reference
     return {
-      reference,
-      contextWindow: this.window,
-      maxOutputTokens: 32_000,
-      reasoningTokens: 2_048,
-      effectiveThinking: "low",
+      kind: "resolved",
+      model: {
+        reference,
+        contextWindow: this.window,
+        maxOutputTokens: 32_000,
+        reasoningTokens: 2_048,
+        effectiveThinking: "low",
+      },
     }
   }
 

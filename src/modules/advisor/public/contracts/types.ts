@@ -103,7 +103,7 @@ export interface Consultation {
 }
 
 export interface ModelPort {
-  resolve(model: string, thinking: ThinkingLevel, signal: AbortSignal): Promise<ResolvedModel>
+  resolve(model: string, thinking: ThinkingLevel, signal: AbortSignal): Promise<ModelResolution>
   consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse>
 }
 
@@ -127,7 +127,14 @@ export interface ModelSuccess {
   usage: Usage
 }
 
-export type ModelResponse = ModelSuccess | Cancelled
+export type ModelResponse = ModelSuccess | Failure | Cancelled
+
+export interface ModelResolved {
+  kind: "resolved"
+  model: ResolvedModel
+}
+
+export type ModelResolution = ModelResolved | Failure | Cancelled
 
 export interface UsageCost {
   input: number

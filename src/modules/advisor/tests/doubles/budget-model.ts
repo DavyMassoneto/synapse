@@ -1,4 +1,4 @@
-import { type ResolvedModel } from "#synapse/modules/advisor/public"
+import { type ModelResolution, type ResolvedModel } from "#synapse/modules/advisor/public"
 import { TestModel } from "./test-model"
 
 export class BudgetModel extends TestModel {
@@ -9,8 +9,8 @@ export class BudgetModel extends TestModel {
     this.descriptor = descriptor
   }
 
-  override async resolve(reference: string): Promise<ResolvedModel> {
+  override async resolve(reference: string): Promise<ModelResolution> {
     await super.resolve(reference)
-    return this.descriptor
+    return { kind: "resolved", model: this.descriptor }
   }
 }

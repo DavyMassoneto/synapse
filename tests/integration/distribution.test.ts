@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
-import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
+import { advisorConfigPath } from "#synapse/composition"
 import { CASES, type ConfigCase, DistributionEnvironment, runDistribution } from "../fixtures"
 
 let environment: DistributionEnvironment
@@ -14,13 +14,13 @@ function cleanup(): void {
 }
 
 async function verifyDistribution(example: ConfigCase): Promise<void> {
-  const file = join(environment.home, ".pi", "agent", "advisor.json")
-  if (typeof example.content === "string") {
+  const file = advisorConfigPath()
+  if (example.content) {
     writeFileSync(file, example.content)
   }
   const result = await runDistribution(environment.home)
   expect(result.notices.join("\n")).toMatch(example.expected)
-  if (typeof example.content === "string") {
+  if (example.content) {
     expect(readFileSync(file, "utf8")).toBe(example.content)
   } else {
     expect(existsSync(file)).toBe(false)

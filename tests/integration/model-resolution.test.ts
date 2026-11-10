@@ -3,7 +3,12 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { AdvisorModel } from "#synapse/integration"
-import { createAdvisor, type ModelRequest } from "#synapse/modules/advisor/public"
+import {
+  createAdvisor,
+  type ModelRequest,
+  type ResolvedModel,
+  type ThinkingLevel,
+} from "#synapse/modules/advisor/public"
 import { TestRegistry } from "../fixtures"
 
 let registry: TestRegistry
@@ -20,9 +25,17 @@ function cleanup(): void {
   rmSync(directory, { recursive: true, force: true })
 }
 
+async function resolved(reference: string, thinking: ThinkingLevel): Promise<ResolvedModel> {
+  const resolution = await adapter.resolve(reference, thinking, signal)
+  if (resolution.kind === "resolved") {
+    return resolution.model
+  }
+  throw new Error("modelo não resolvido")
+}
+
 async function independentResolutions(): Promise<void> {
-  const first = await adapter.resolve("provider/first", "high", signal)
-  const second = await adapter.resolve("provider/second", "low", signal)
+  const first = await resolved("provider/first", "high")
+  const second = await resolved("provider/second", "low")
   const request: ModelRequest = { system: "review", prompt: "question", signal }
   await adapter.consult(first, request)
   expect(registry.used?.id).toBe("first")
@@ -52,31 +65,46 @@ async function serviceConsultation(): Promise<void> {
 }
 
 async function changedCapabilities(): Promise<void> {
-  const first = await adapter.resolve("provider/first", "high", signal)
+  const first = await resolved("provider/first", "high")
   registry.window = 64_000
-  await expect(adapter.consult(first, { system: "review", prompt: "question", signal })).rejects.toThrow(/capacidades/)
+  const response = await adapter.consult(first, { system: "review", prompt: "question", signal })
+  expect(response.kind).toBe("failure")
+  expect(registry.used).toBeUndefined()
 }
 
 async function missingModel(): Promise<void> {
   registry.missing = true
-  await expect(adapter.resolve("provider/absent", "high", signal)).rejects.toThrow(/não encontrado: provider\/absent/)
+  expect(await adapter.resolve("provider/absent", "high", signal)).toStrictEqual({
+    kind: "failure",
+    message: "Modelo advisor não encontrado: provider/absent",
+  })
 }
 
 async function missingCredentials(): Promise<void> {
   registry.authorized = false
-  await expect(adapter.resolve("provider/first", "high", signal)).rejects.toThrow(
-    /Credenciais ausentes para provider\/first/,
-  )
+  expect(await adapter.resolve("provider/first", "high", signal)).toStrictEqual({
+    kind: "failure",
+    message: "Credenciais ausentes para provider/first",
+  })
 }
 
 async function invalidReference(): Promise<void> {
-  await expect(adapter.resolve("sem-barra", "high", signal)).rejects.toThrow(/inválida/)
+  const resolution = await adapter.resolve("sem-barra", "high", signal)
+  expect(resolution.kind).toBe("failure")
+  expect(registry.calls).toBe(0)
+}
+
+async function cancelledBeforeResolution(): Promise<void> {
+  const controller = new AbortController()
+  controller.abort()
+  expect(await adapter.resolve("provider/first", "high", controller.signal)).toStrictEqual({ kind: "cancelled" })
+  expect(registry.calls).toBe(0)
 }
 
 async function reasoningBudgets(): Promise<void> {
-  expect((await adapter.resolve("provider/first", "off", signal)).reasoningTokens).toBe(0)
-  expect((await adapter.resolve("provider/first", "minimal", signal)).reasoningTokens).toBe(1_024)
-  expect((await adapter.resolve("provider/first", "high", signal)).reasoningTokens).toBe(16_384)
+  expect((await resolved("provider/first", "off")).reasoningTokens).toBe(0)
+  expect((await resolved("provider/first", "minimal")).reasoningTokens).toBe(1_024)
+  expect((await resolved("provider/first", "high")).reasoningTokens).toBe(16_384)
 }
 
 function registerTests(): void {
@@ -88,6 +116,7 @@ function registerTests(): void {
   test("modelo ausente é rejeitado", missingModel)
   test("credenciais ausentes são rejeitadas", missingCredentials)
   test("referência sem provedor é rejeitada", invalidReference)
+  test("sinal já cancelado não consulta o registry", cancelledBeforeResolution)
   test("nível de raciocínio define a reserva", reasoningBudgets)
 }
 

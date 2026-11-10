@@ -15,11 +15,11 @@ export function modelResponse(reply: AssistantMessage): ModelResponse {
     return { kind: "cancelled" }
   }
   if (reply.stopReason === "error") {
-    throw new Error(failureReason(reply))
+    return { kind: "failure", message: failureReason(reply) }
   }
   const text = extractText(reply.content).trim()
   if (text.length === 0) {
-    throw new Error(EMPTY_RESPONSE)
+    return { kind: "failure", message: EMPTY_RESPONSE }
   }
   const usage = reply.usage
   return {
