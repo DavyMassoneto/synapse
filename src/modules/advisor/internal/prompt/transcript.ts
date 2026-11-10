@@ -3,7 +3,7 @@ import { LARGE_CONTENT_LIMIT, MINIMAL_CONTENT_LIMIT, ROOMY_CONTENT_LIMITS, SEPAR
 import { hasResizableContent, isHiddenShell } from "./predicates"
 import { renderMessage } from "./render-message"
 import { selectMessages } from "./select-messages"
-import { type PreparedMessage } from "./types"
+import { type FittedTranscript, type PreparedMessage } from "./types"
 
 function prepareMessage(message: TranscriptMessage): PreparedMessage {
   if (hasResizableContent(message)) {
@@ -37,20 +37,28 @@ function joinedLength(blocks: string[]): number {
   return Math.max(0, length - SEPARATOR.length)
 }
 
+function fitAt(prepared: PreparedMessage[], limit: number, budget: number): FittedTranscript {
+  const blocks = prepared.map((entry) => renderPrepared(entry, limit))
+  if (joinedLength(blocks) <= budget) {
+    return { kind: "fits", text: blocks.join(SEPARATOR) }
+  }
+  return { kind: "overflow", blocks }
+}
+
 export function buildTranscript(messages: TranscriptMessage[], budget: number): string {
   if (budget <= 0) {
     return ""
   }
   const prepared = prepareMessages(messages)
   for (const limit of ROOMY_CONTENT_LIMITS) {
-    const blocks = prepared.map((entry) => renderPrepared(entry, limit))
-    if (joinedLength(blocks) <= budget) {
-      return blocks.join(SEPARATOR)
+    const fitted = fitAt(prepared, limit, budget)
+    if (fitted.kind === "fits") {
+      return fitted.text
     }
   }
-  const blocks = prepared.map((entry) => renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
-  if (joinedLength(blocks) <= budget) {
-    return blocks.join(SEPARATOR)
+  const smallest = fitAt(prepared, MINIMAL_CONTENT_LIMIT, budget)
+  if (smallest.kind === "fits") {
+    return smallest.text
   }
-  return selectMessages(blocks, budget)
+  return selectMessages(smallest.blocks, budget)
 }

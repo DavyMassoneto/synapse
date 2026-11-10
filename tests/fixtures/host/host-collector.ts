@@ -1,6 +1,7 @@
 import {
   type AdvisorBeforeStartHandler,
   type AdvisorCommandDefinition,
+  type AdvisorContext,
   type AdvisorHost,
   type AdvisorSessionStartHandler,
   type AdvisorShutdownHandler,
@@ -48,6 +49,12 @@ export class AdvisorHostCollector implements AdvisorHost {
   }
 
   unsubscribe(): void {}
+
+  async startSession(context: AdvisorContext): Promise<void> {
+    for (const handler of this.starts) {
+      await handler({ type: "session_start", reason: "startup" }, context)
+    }
+  }
 
   requireTool(): AdvisorTool {
     if (this.tool) {

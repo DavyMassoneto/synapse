@@ -26,7 +26,10 @@ function failedSavePreservesState(): void {
   failingStorage.failSave = true
   const failingAdvisor = serviceFor(failingStorage)
   expect(failingStorage.loads).toBe(1)
-  expect(failingAdvisor.configuration.selectModel("provider/novo").kind).toBe("failure")
+  expect(failingAdvisor.configuration.selectModel("provider/novo")).toStrictEqual({
+    kind: "failure",
+    message: "Não foi possível salvar a configuração do advisor. Causa: disco indisponível",
+  })
   expect(failingAdvisor.configuration.status()).toStrictEqual({
     kind: "success",
     config: { model: "provider/original", thinking: "low" },

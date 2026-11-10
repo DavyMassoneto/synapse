@@ -20,9 +20,7 @@ function cleanup(): void {
 }
 
 async function sessionStart(): Promise<void> {
-  for (const handler of host.starts) {
-    await handler({ type: "session_start", reason: "startup" }, context)
-  }
+  await host.startSession(context)
   expect(host.advisor.activeModel().kind).toBe("active")
   expect(host.active).toContain("advisor")
 }

@@ -29,3 +29,15 @@ export interface ResizableMessage {
 }
 
 export type PreparedMessage = FixedMessage | ResizableMessage
+
+export interface TranscriptFits {
+  kind: "fits"
+  text: string
+}
+
+export interface TranscriptOverflow {
+  kind: "overflow"
+  blocks: string[]
+}
+
+export type FittedTranscript = TranscriptFits | TranscriptOverflow

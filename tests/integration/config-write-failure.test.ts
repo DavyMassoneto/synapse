@@ -17,6 +17,8 @@ async function reportsFailure(): Promise<void> {
   await host.requireCommand().handler("thinking high", context)
   expect(context.ui.notices).toHaveLength(1)
   expect(context.ui.notices[0]).toMatch(/salvar/)
+  expect(context.ui.notices[0]).toContain("Causa: ")
+  expect(context.ui.notices[0]).toContain("advisor.json")
   expect(context.ui.notices[0]).not.toMatch(/Advisor thinking: high/)
 }
 

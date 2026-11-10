@@ -31,8 +31,11 @@ export class AdvisorConfiguration {
       this.storage.save(config)
       this.current = { kind: "success", config }
       return this.status()
-    } catch {
-      return { kind: "failure", message: CONFIG_SAVE_FAILED }
+    } catch (error) {
+      if (error instanceof Error) {
+        return { kind: "failure", message: `${CONFIG_SAVE_FAILED} Causa: ${error.message}` }
+      }
+      throw error
     }
   }
 
