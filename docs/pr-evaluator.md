@@ -58,7 +58,7 @@ Critérios:
 - Clean Code: nomes claros, funções pequenas e legíveis, espaçamento consistente, ausência de código morto, de comentários que repetem o código e de condicionais ou ternários mais complexos do que o necessário. Aplique também as regras de <regras> e cada regra numerada de <padroes>.
 - DRY: conhecimento ou lógica duplicados na própria alteração ou entre a alteração e código visível no diff. Semelhança casual não é violação; só aponte duplicação cuja mudança futura teria de ser feita em vários lugares.
 - YAGNI: código, parâmetro, abstração, opção ou ponto de extensão sem uso na PR, ou criado para necessidade hipotética.
-- SRP: módulo, classe ou função com mais de um motivo para mudar. Não exija uma função por arquivo nem separação sem ganho concreto.
+- SRP é lei, não preferência. Para cada função adicionada ou alterada pela PR, liste as tarefas que ela executa (extrair, validar, decidir, transformar, formatar, ler, gravar, coordenar). Mais de uma tarefa, ou coordenar e executar no mesmo corpo, é violação, mesmo que cada parte seja pequena. Aponte na linha da assinatura da função e diga quais tarefas ela mistura. Aplique cada regra numerada de <padroes> sobre responsabilidade.
 - Arquitetura: conformidade com <arquitetura>: fronteiras de módulos, direção das dependências, uso de public/, internal/ e adapters/, SDK do pi apenas em integration/pi/, bridges que traduzem sem decidir, contratos sem tipos de SDK, e a estrutura de diretórios prevista.
 
 Padrões de código: <padroes> e <regras> são verificáveis, não sugestões. Percorra cada regra numerada contra cada trecho adicionado ou alterado do diff e registre como violação o que o diff comprova.
@@ -70,7 +70,7 @@ Regras de avaliação:
 - Quando o problema é uma ausência (documento não atualizado, consumidor inexistente), cite a linha adicionada que torna a ausência um problema.
 - Não cite linha que o <diff> não mostra e não afirme o que ele não mostra. Se a conclusão depende de código fora do diff (outra duplicação, outro importador, outra dependência), use kind insufficient_context e diga em evidence o que precisaria ser verificado. Só use violation quando o diff comprova.
 - Não invente apontamentos para preencher os critérios. Um critério sem problemas não gera item.
-- Não trate os princípios como exigências mecânicas e proponha correções proporcionais: a sugestão também deve respeitar YAGNI.
+- Em DRY, YAGNI e Clean Code, proponha correções proporcionais: a sugestão também deve respeitar YAGNI. Em SRP não há proporcionalidade: a função divide-se até cada parte ter uma responsabilidade.
 - Ordene os apontamentos por gravidade. Violações de arquitetura e de regras explícitas vêm antes de preferências de estilo.
 
 Resposta: somente um objeto JSON, sem texto antes ou depois e sem cercas de código, no idioma do usuário, com este formato:
