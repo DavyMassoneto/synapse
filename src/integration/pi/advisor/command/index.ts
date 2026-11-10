@@ -1,7 +1,6 @@
 export * from "./catalog"
 export * from "./command"
 export * from "./constants"
-export * from "./current-model"
 export * from "./parser"
 export * from "./register"
 export * from "./types"

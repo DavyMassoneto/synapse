@@ -1,6 +1,7 @@
 import { type Api, type Context, type Model, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
 import { type AdvisorModelRegistry } from "#synapse/integration"
 import { assistantStream } from "./assistant-stream"
+import { fixtureModel } from "./fixture-model"
 
 export class RegistryFixture implements AdvisorModelRegistry {
   used?: Model<Api>
@@ -12,18 +13,7 @@ export class RegistryFixture implements AdvisorModelRegistry {
 
   find(provider: string, id: string): ReturnType<AdvisorModelRegistry["find"]> {
     if (!this.missing) {
-      return {
-        provider,
-        id,
-        name: id,
-        api: "anthropic-messages",
-        baseUrl: "https://example.invalid",
-        input: ["text"],
-        cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-        reasoning: true,
-        contextWindow: this.window,
-        maxTokens: 32_000,
-      }
+      return fixtureModel(provider, id, this.window)
     }
   }
 

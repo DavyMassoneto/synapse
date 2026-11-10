@@ -51,6 +51,19 @@ async function scopedSuggestions(): Promise<void> {
   expect(suggestions?.map(suggestionValue)).toStrictEqual(["off", "thinking", "provider/scoped"])
 }
 
+async function suggestionsBeforeSession(): Promise<void> {
+  const suggestions = await host.requireCompletions()("")
+  expect(suggestions?.map(suggestionValue)).toStrictEqual(["off", "thinking"])
+}
+
+async function unmatchedPrefix(): Promise<void> {
+  for (const handler of host.starts) {
+    await handler({ type: "session_start", reason: "startup" }, context)
+  }
+  expect(await host.requireCompletions()("zzz")).toStrictEqual([])
+  expect((await host.requireCompletions()("TH"))?.map(suggestionValue)).toStrictEqual(["thinking"])
+}
+
 function suggestionValue(item: AutocompleteItem): string {
   return item.value
 }
@@ -91,6 +104,8 @@ function registerTests(): void {
   test("referência ambígua", ambiguousModel)
   test("autocomplete respeita escopo", scopedSuggestions)
   test("autocomplete limita sugestões", completionLimit)
+  test("autocomplete antes da sessão só tem os subcomandos", suggestionsBeforeSession)
+  test("autocomplete ignora prefixo sem correspondência", unmatchedPrefix)
   test("busca respeita escopo e correspondência exata", scopedSearch)
 }
 

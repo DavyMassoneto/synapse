@@ -1,4 +1,4 @@
-export interface ReasoningBudgets {
+export interface PiThinkingBudgets {
   off: number
   minimal: number
   low: number

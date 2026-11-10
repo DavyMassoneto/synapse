@@ -1,13 +1,13 @@
 import { type AutocompleteItem } from "@earendil-works/pi-tui"
 import { type AdvisorContext } from "../host"
 import { modelReferences } from "../model-picker"
-import { COMPLETION_LIMIT, DISABLE_COMMAND, THINKING_COMMAND } from "./constants"
+import { COMPLETION_LIMIT, SUBCOMMANDS } from "./constants"
 
 export class CompletionCatalog {
-  private values = [DISABLE_COMMAND, THINKING_COMMAND]
+  private values = SUBCOMMANDS
 
   refresh(context: AdvisorContext): void {
-    this.values = [DISABLE_COMMAND, THINKING_COMMAND, ...modelReferences(context)]
+    this.values = [...SUBCOMMANDS, ...modelReferences(context)]
   }
 
   completions(prefix: string): AutocompleteItem[] {

@@ -1,6 +1,7 @@
 export * from "./assistant-stream"
 export * from "./constants"
 export * from "./context"
+export * from "./fixture-model"
 export * from "./model-registry"
 export * from "./plain-theme"
 export * from "./test-registry"

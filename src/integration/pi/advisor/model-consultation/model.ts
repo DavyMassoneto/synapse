@@ -8,7 +8,7 @@ import {
   type ValidReference,
 } from "#synapse/modules"
 import { type AdvisorModelRegistry } from "../host"
-import { CAPABILITIES_CHANGED, INVALID_REFERENCE, REASONING_BUDGETS } from "./constants"
+import { CAPABILITIES_CHANGED, INVALID_REFERENCE, PI_THINKING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
 
@@ -46,7 +46,7 @@ export class AdvisorModel {
       reference,
       contextWindow: model.contextWindow,
       maxOutputTokens: model.maxTokens,
-      reasoningTokens: REASONING_BUDGETS[level],
+      reasoningTokens: PI_THINKING_BUDGETS[level],
       effectiveThinking: level,
     }
   }
