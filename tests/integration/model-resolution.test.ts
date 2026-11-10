@@ -1,6 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { thinkingBudgetForLevel } from "@earendil-works/pi-ai/api/simple-options"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { AdvisorModel, PI_THINKING_BUDGETS } from "#synapse/integration"
 import {
@@ -104,12 +105,20 @@ async function cancelledBeforeResolution(): Promise<void> {
 
 async function reasoningBudgets(): Promise<void> {
   expect((await resolved("provider/first", "off")).reasoningTokens).toBe(0)
-  expect((await resolved("provider/first", "minimal")).reasoningTokens).toBe(1_024)
-  expect((await resolved("provider/first", "high")).reasoningTokens).toBe(16_384)
+  expect((await resolved("provider/first", "minimal")).reasoningTokens).toBe(PI_THINKING_BUDGETS.minimal)
+  expect((await resolved("provider/first", "high")).reasoningTokens).toBe(PI_THINKING_BUDGETS.high)
 }
 
 function budgetsCoverContractLevels(): void {
   expect(Object.keys(PI_THINKING_BUDGETS)).toStrictEqual(THINKING_LEVELS)
+}
+
+function budgetMatchesPiAi(level: ThinkingLevel): void {
+  if (level === "off") {
+    expect(PI_THINKING_BUDGETS.off).toBe(0)
+  } else {
+    expect(PI_THINKING_BUDGETS[level]).toBe(thinkingBudgetForLevel(level))
+  }
 }
 
 function registerTests(): void {
@@ -124,6 +133,7 @@ function registerTests(): void {
   test("sinal já cancelado não consulta o registry", cancelledBeforeResolution)
   test("nível de raciocínio define a reserva", reasoningBudgets)
   test("a tabela de reservas tem exatamente os níveis do contrato", budgetsCoverContractLevels)
+  test.each(THINKING_LEVELS)("reserva de %s segue o pi-ai", budgetMatchesPiAi)
 }
 
 describe("model resolution", registerTests)
