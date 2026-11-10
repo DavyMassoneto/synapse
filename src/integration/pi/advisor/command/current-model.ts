@@ -1,9 +1,9 @@
 import { type Config } from "#synapse/modules"
-import { COMMAND_TEXT } from "./constants"
+import { DISABLED_STATUS } from "./constants"
 
 export function currentModel(config: Config): string {
   if (config.model) {
     return config.model
   }
-  return COMMAND_TEXT.disabledStatus
+  return DISABLED_STATUS
 }

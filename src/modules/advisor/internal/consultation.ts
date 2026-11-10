@@ -6,7 +6,7 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules/advisor/public/contracts"
-import { CONSULTATION_DIAGNOSTICS } from "./constants"
+import { NO_MODEL_CONFIGURED } from "./constants"
 import { ADVISOR_SYSTEM, preparePrompt } from "./prompt"
 
 async function consultResolved(
@@ -60,5 +60,5 @@ export async function consultAdvisor(
   if (config.model) {
     return consultModel(input, model, config.model, config.thinking)
   }
-  return { kind: "failure", message: CONSULTATION_DIAGNOSTICS.noModel }
+  return { kind: "failure", message: NO_MODEL_CONFIGURED }
 }

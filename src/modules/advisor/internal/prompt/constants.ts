@@ -35,9 +35,7 @@ export const CONTENT_LIMITS: number[] = [
   MINIMAL_CONTENT_LIMIT,
 ]
 
-export const PROMPT_DIAGNOSTICS = {
-  windowTooSmall: "A janela do advisor é pequena demais para a consulta.",
-}
+export const WINDOW_TOO_SMALL = "A janela do advisor é pequena demais para a consulta."
 
 export const HEAD_FRACTION = 0.6
 

@@ -11,11 +11,11 @@ export const PREVIEW_LINES = 8
 
 export const TEXT_PADDING = 0
 
-export const RENDER_TEXT = {
-  pending: "consultando...",
-  success: "✓ conselho",
-  title: "advisor ",
-}
+export const RENDER_PENDING = "consultando..."
+
+export const RENDER_SUCCESS = "✓ conselho"
+
+export const RENDER_TITLE = "advisor "
 
 export const TITLE_COLOR: ThemeColor = "toolTitle"
 
@@ -32,7 +32,6 @@ export const ADVISOR_TOOL_DESCRIPTION =
 
 export const ADVISOR_TOOL_SNIPPET = "Consult a reviewer model with the conversation, without parameters"
 
-export const TOOL_TEXT = {
-  progress: "Consultando advisor...",
-  cancelled: "Consulta ao advisor cancelada.",
-}
+export const TOOL_PROGRESS = "Consultando advisor..."
+
+export const TOOL_CANCELLED = "Consulta ao advisor cancelada."

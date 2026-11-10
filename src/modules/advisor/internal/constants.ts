@@ -13,6 +13,4 @@ Give the advice serious weight. If you follow a step and it fails empirically, o
 
 If you've already retrieved data pointing one way and the advisor points another: don't silently switch. Surface the conflict in one more advisor call — "I found X, you suggest Y, which constraint breaks the tie?" The advisor saw your evidence but may have underweighted it; a reconcile call is cheaper than committing to the wrong branch.`
 
-export const CONSULTATION_DIAGNOSTICS = {
-  noModel: "Nenhum modelo advisor configurado.",
-}
+export const NO_MODEL_CONFIGURED = "Nenhum modelo advisor configurado."

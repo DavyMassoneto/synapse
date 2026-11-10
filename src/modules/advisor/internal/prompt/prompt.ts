@@ -6,10 +6,10 @@ import {
   HOST_SAFETY_TOKENS,
   MAX_SYSTEM_CHARACTERS,
   MINIMUM_ANSWER_TOKENS,
-  PROMPT_DIAGNOSTICS,
   PROMPT_PREFIX,
   PROMPT_SUFFIX,
   TRANSCRIPT_PREFIX,
+  WINDOW_TOO_SMALL,
 } from "./constants"
 import { buildTranscript } from "./transcript"
 import { type PreparedPrompt, type PromptBudget } from "./types"
@@ -34,7 +34,7 @@ function availableBudget(model: ResolvedModel): PromptBudget {
 export function preparePrompt(input: Consultation, model: ResolvedModel): PreparedPrompt {
   const budget = availableBudget(model)
   if (budget.kind === "insufficient") {
-    return { kind: "failure", message: PROMPT_DIAGNOSTICS.windowTooSmall }
+    return { kind: "failure", message: WINDOW_TOO_SMALL }
   }
   const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(budget.characters / 2))
   const system = clip(input.system, systemLimit)

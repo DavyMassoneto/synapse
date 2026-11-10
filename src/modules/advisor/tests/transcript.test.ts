@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { AdvisorService, buildTranscript } from "../internal"
+import { AdvisorService, buildTranscript, selectMessages } from "../internal"
 import { type TranscriptMessage } from "../public"
 import { TestModel, TestStorage } from "./doubles"
 
@@ -61,6 +61,28 @@ async function smallContextFails(): Promise<void> {
   expect(model.captured).toBeUndefined()
 }
 
+function clipsOnlyToolOutput(): void {
+  const messages: TranscriptMessage[] = [
+    { kind: "user", blocks: [{ kind: "text", text: "u".repeat(13_000) }] },
+    { kind: "toolResult", tool: "read", error: false, blocks: [{ kind: "text", text: "t".repeat(13_000) }] },
+  ]
+  const text = buildTranscript(messages, 100_000)
+  expect(text).toContain("u".repeat(13_000))
+  expect(text).not.toContain("t".repeat(13_000))
+  expect(text).toContain("conteúdo omitido")
+}
+
+function recentMessagesKeepOrder(): void {
+  const blocks = ["FIRST", "A".repeat(100), "B".repeat(20), "C".repeat(20)]
+  expect(selectMessages(blocks, 120)).toBe(
+    ["FIRST", "[... mensagens anteriores omitidas ...]", "B".repeat(20), "C".repeat(20)].join("\n\n"),
+  )
+}
+
+function nothingToSelect(): void {
+  expect(selectMessages([], 120)).toBe("")
+}
+
 function registerTests(): void {
   test("transcrição vazia", emptyTranscript)
   test("shell oculto não aparece na transcrição", hiddenShell)
@@ -69,6 +91,9 @@ function registerTests(): void {
   test("início e fim são preservados", preservesBeginningAndEnd)
   test("última mensagem excessiva respeita orçamento", oversizedLastFits)
   test("janela muito pequena retorna falha antes de chamar o modelo", smallContextFails)
+  test("só a saída de ferramenta é cortada", clipsOnlyToolOutput)
+  test("mensagens recentes mantêm a ordem e a mais antiga é omitida", recentMessagesKeepOrder)
+  test("sem mensagens não há seleção", nothingToSelect)
 }
 
 describe("transcript", registerTests)

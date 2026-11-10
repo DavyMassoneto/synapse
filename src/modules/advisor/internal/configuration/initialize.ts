@@ -1,6 +1,10 @@
-import { type AdvisorResult, type Config } from "#synapse/modules/advisor/public/contracts"
+import {
+  type AdvisorResult,
+  type Config,
+  type ConfigLoadResult,
+  type StoredConfig,
+} from "#synapse/modules/advisor/public/contracts"
 import { DEFAULT_THINKING } from "./constants"
-import { type ConfigLoadResult, type StoredConfig } from "./types"
 
 function storedConfiguration(stored: StoredConfig): Config {
   const config: Config = { thinking: DEFAULT_THINKING }

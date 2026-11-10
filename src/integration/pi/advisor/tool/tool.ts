@@ -1,6 +1,6 @@
 import { type Advisor } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
-import { TOOL_TEXT } from "./constants"
+import { TOOL_CANCELLED } from "./constants"
 import { consultTool } from "./consult"
 import { toolFailure } from "./failure"
 import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
@@ -30,7 +30,7 @@ export class AdvisorToolHandler {
   ): AdvisorToolResult {
     const callSignal = this.callSignal(signal)
     if (callSignal.aborted) {
-      return toolFailure(TOOL_TEXT.cancelled)
+      return toolFailure(TOOL_CANCELLED)
     }
     return consultTool(this.advisor, callSignal, context, onUpdate)
   }

@@ -1,7 +1,7 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
 import { type ModelResponse } from "#synapse/modules"
 import { extractText } from "../host"
-import { MODEL_DIAGNOSTICS } from "./constants"
+import { EMPTY_RESPONSE } from "./constants"
 
 function failureReason(reply: AssistantMessage): string {
   if (reply.errorMessage) {
@@ -19,7 +19,7 @@ export function modelResponse(reply: AssistantMessage): ModelResponse {
   }
   const text = extractText(reply.content).trim()
   if (text.length === 0) {
-    throw new Error(MODEL_DIAGNOSTICS.emptyResponse)
+    throw new Error(EMPTY_RESPONSE)
   }
   const usage = reply.usage
   return {

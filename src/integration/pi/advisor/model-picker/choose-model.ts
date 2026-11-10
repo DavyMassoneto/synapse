@@ -1,5 +1,5 @@
 import { type AdvisorContext } from "../host"
-import { CANCELLED_SELECTION, MODEL_SELECTION_LIMIT, PICKER_TEXT } from "./constants"
+import { AMBIGUOUS_MODEL, CANCELLED_SELECTION, DISABLED_OPTION, MODEL_SELECTION_LIMIT, PICKER_TITLE } from "./constants"
 import { modelReferences } from "./references"
 import { searchModels } from "./search"
 import { type MenuChoice, type ModelSelection } from "./types"
@@ -12,8 +12,8 @@ function selectedModel(choice: MenuChoice, options: string[]): ModelSelection {
 }
 
 async function chooseFromAll(context: AdvisorContext, models: string[]): Promise<ModelSelection> {
-  const choice = await context.ui.select(PICKER_TEXT.title, [PICKER_TEXT.disabledOption, ...models])
-  if (choice === PICKER_TEXT.disabledOption) {
+  const choice = await context.ui.select(PICKER_TITLE, [DISABLED_OPTION, ...models])
+  if (choice === DISABLED_OPTION) {
     return { kind: "disabled" }
   }
   return selectedModel(choice, models)
@@ -22,10 +22,26 @@ async function chooseFromAll(context: AdvisorContext, models: string[]): Promise
 async function chooseMatch(context: AdvisorContext, matches: string[]): Promise<ModelSelection> {
   if (context.hasUI) {
     const options = matches.slice(0, MODEL_SELECTION_LIMIT)
-    return selectedModel(await context.ui.select(PICKER_TEXT.title, options), options)
+    return selectedModel(await context.ui.select(PICKER_TITLE, options), options)
   }
-  context.ui.notify(PICKER_TEXT.ambiguousModel, "warning")
+  context.ui.notify(AMBIGUOUS_MODEL, "warning")
   return CANCELLED_SELECTION
+}
+
+function reportNoMatch(context: AdvisorContext, input: string): ModelSelection {
+  context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error")
+  return CANCELLED_SELECTION
+}
+
+async function chooseSearched(context: AdvisorContext, input: string, matches: string[]): Promise<ModelSelection> {
+  const [first, second] = matches
+  if (first && second) {
+    return chooseMatch(context, matches)
+  }
+  if (first) {
+    return { kind: "selected", model: first }
+  }
+  return reportNoMatch(context, input)
 }
 
 export async function chooseModel(context: AdvisorContext, input: string): Promise<ModelSelection> {
@@ -33,14 +49,5 @@ export async function chooseModel(context: AdvisorContext, input: string): Promi
   if (input.length === 0) {
     return chooseFromAll(context, references)
   }
-  const matches = searchModels(references, input)
-  const [match] = matches
-  if (matches.length === 1 && match) {
-    return { kind: "selected", model: match }
-  }
-  if (match) {
-    return chooseMatch(context, matches)
-  }
-  context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error")
-  return CANCELLED_SELECTION
+  return chooseSearched(context, input, searchModels(references, input))
 }

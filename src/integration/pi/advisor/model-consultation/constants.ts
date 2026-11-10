@@ -1,10 +1,10 @@
 import { type ReasoningBudgets } from "./types"
 
-export const MODEL_DIAGNOSTICS = {
-  invalidReference: "Referência de modelo advisor inválida.",
-  capabilitiesChanged: "As capacidades do modelo advisor mudaram durante a consulta.",
-  emptyResponse: "O advisor não retornou texto.",
-}
+export const INVALID_REFERENCE = "Referência de modelo advisor inválida."
+
+export const CAPABILITIES_CHANGED = "As capacidades do modelo advisor mudaram durante a consulta."
+
+export const EMPTY_RESPONSE = "O advisor não retornou texto."
 
 export const REASONING_BUDGETS: ReasoningBudgets = {
   off: 0,

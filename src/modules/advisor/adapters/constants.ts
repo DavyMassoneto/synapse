@@ -8,8 +8,9 @@ export const configSchema = Type.Object({
   thinking: Type.Optional(thinkingSchema),
 })
 
-export const CONFIG_DIAGNOSTICS = {
-  readFailed: "Não foi possível ler a configuração do advisor.",
-  invalid: "Configuração do advisor inválida; revise advisor.json.",
-  writeAndCleanupFailed: "Falha ao gravar a configuração do advisor e ao remover o arquivo temporário.",
-}
+export const CONFIG_READ_FAILED = "Não foi possível ler a configuração do advisor."
+
+export const CONFIG_INVALID = "Configuração do advisor inválida; revise advisor.json."
+
+export const CONFIG_WRITE_AND_CLEANUP_FAILED =
+  "Falha ao gravar a configuração do advisor e ao remover o arquivo temporário."

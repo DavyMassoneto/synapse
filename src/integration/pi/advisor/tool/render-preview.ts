@@ -1,4 +1,4 @@
-import { ADDITIONAL_COLOR, PREVIEW_LINES, RENDER_TEXT, SUCCESS_COLOR } from "./constants"
+import { ADDITIONAL_COLOR, PREVIEW_LINES, RENDER_SUCCESS, SUCCESS_COLOR } from "./constants"
 import { type AdvisorRenderTheme } from "./types"
 
 function visibleLines(lines: string[], expanded: boolean): string[] {
@@ -17,9 +17,9 @@ function hiddenNotice(hidden: number, theme: AdvisorRenderTheme): string {
 
 function previewTitle(model?: string): string {
   if (model) {
-    return `${RENDER_TEXT.success} (${model})`
+    return `${RENDER_SUCCESS} (${model})`
   }
-  return RENDER_TEXT.success
+  return RENDER_SUCCESS
 }
 
 export function renderPreview(body: string, expanded: boolean, theme: AdvisorRenderTheme, model?: string): string {

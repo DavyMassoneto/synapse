@@ -1,12 +1,13 @@
 import {
   type AdvisorResult,
   type Config,
+  type ConfigLoadResult,
+  type ConfigPort,
   parseModelReference,
   THINKING_LEVELS,
 } from "#synapse/modules/advisor/public/contracts"
-import { CONFIGURATION_DIAGNOSTICS } from "./constants"
+import { CONFIG_SAVE_FAILED, INVALID_MODEL, INVALID_THINKING } from "./constants"
 import { initialConfiguration } from "./initialize"
-import { type ConfigLoadResult, type ConfigPort } from "./types"
 
 export class AdvisorConfiguration {
   private readonly storage: ConfigPort
@@ -30,13 +31,13 @@ export class AdvisorConfiguration {
       this.current = { kind: "success", config }
       return this.status()
     } catch {
-      return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.saveFailed }
+      return { kind: "failure", message: CONFIG_SAVE_FAILED }
     }
   }
 
   selectModel(model: string): AdvisorResult {
     if (parseModelReference(model).kind === "invalid") {
-      return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.invalidModel }
+      return { kind: "failure", message: INVALID_MODEL }
     }
     if (this.current.kind === "failure") {
       return this.status()
@@ -54,7 +55,7 @@ export class AdvisorConfiguration {
   setThinking(requested: string): AdvisorResult {
     const level = THINKING_LEVELS.find((candidate) => candidate === requested)
     if (!level) {
-      return { kind: "failure", message: CONFIGURATION_DIAGNOSTICS.invalidThinking }
+      return { kind: "failure", message: INVALID_THINKING }
     }
     if (this.current.kind === "failure") {
       return this.status()

@@ -8,7 +8,7 @@ import {
   type ValidReference,
 } from "#synapse/modules"
 import { type AdvisorModelRegistry } from "../host"
-import { MODEL_DIAGNOSTICS, REASONING_BUDGETS } from "./constants"
+import { CAPABILITIES_CHANGED, INVALID_REFERENCE, REASONING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
 
@@ -24,7 +24,7 @@ export class AdvisorModel {
     if (parsed.kind === "valid") {
       return this.authorizedModel(parsed, reference)
     }
-    throw new Error(MODEL_DIAGNOSTICS.invalidReference)
+    throw new Error(INVALID_REFERENCE)
   }
 
   private authorizedModel(parsed: ValidReference, reference: string): Model<Api> {
@@ -54,7 +54,7 @@ export class AdvisorModel {
   async consult(resolved: ResolvedModel, request: ModelRequest): Promise<ModelResponse> {
     const model = this.findModel(resolved.reference)
     if (model.contextWindow !== resolved.contextWindow || model.maxTokens !== resolved.maxOutputTokens) {
-      throw new Error(MODEL_DIAGNOSTICS.capabilitiesChanged)
+      throw new Error(CAPABILITIES_CHANGED)
     }
     const reply = await this.registry
       .streamSimple(model, consultationContext(request), consultationOptions(resolved, request))

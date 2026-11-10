@@ -1,12 +1,14 @@
 import {
   type Advisor,
+  type ConfigLoadResult,
+  type ConfigPort,
   type Consultation,
   type ConsultationResult,
   type ModelPort,
   type ReminderDecision,
   type ReminderTurn,
 } from "#synapse/modules/advisor/public/contracts"
-import { AdvisorConfiguration, type ConfigLoadResult, type ConfigPort } from "./configuration"
+import { AdvisorConfiguration } from "./configuration"
 import { CONSULTATION_INSTRUCTIONS } from "./constants"
 import { consultAdvisor } from "./consultation"
 import { REMINDER, ReminderCounter } from "./reminder"
@@ -22,7 +24,7 @@ export class AdvisorService implements Advisor {
 
   isEnabled(): boolean {
     const status = this.configuration.status()
-    return status.kind === "success" && typeof status.config.model === "string"
+    return status.kind === "success" && Boolean(status.config.model)
   }
 
   turn(event: ReminderTurn): ReminderDecision {

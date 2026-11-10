@@ -1,6 +1,26 @@
 import { clip } from "./clip"
 import { OMITTED_MESSAGES, SEPARATOR } from "./constants"
-import { selectRecent } from "./select-recent"
+
+function selectRecent(blocks: string[], budget: number): string[] {
+  let remaining = budget
+  const selected: string[] = []
+  for (let index = blocks.length - 1; index > 0; index -= 1) {
+    const block = blocks[index]
+    const available = remaining - SEPARATOR.length
+    if (!block || available <= 0) {
+      break
+    }
+    if (block.length > available) {
+      if (selected.length === 0) {
+        selected.push(clip(block, available))
+      }
+      break
+    }
+    selected.push(block)
+    remaining -= block.length + SEPARATOR.length
+  }
+  return selected.reverse()
+}
 
 function selectEdges(first: string, last: string, blocks: string[], budget: number): string {
   if (budget <= OMITTED_MESSAGES.length) {

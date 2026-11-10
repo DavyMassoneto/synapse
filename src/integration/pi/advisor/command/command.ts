@@ -2,7 +2,7 @@ import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
 import { type AdvisorContext } from "../host"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
-import { COMMAND_TEXT } from "./constants"
+import { DISABLED_NOTICE } from "./constants"
 import { currentModel } from "./current-model"
 import { parseAdvisorCommand } from "./parser"
 import { type AdvisorCommandInput } from "./types"
@@ -46,7 +46,7 @@ export class AdvisorCommand {
   }
 
   private disable(context: AdvisorContext): void {
-    this.report(context, this.advisor.configuration.disable(), COMMAND_TEXT.disabled)
+    this.report(context, this.advisor.configuration.disable(), DISABLED_NOTICE)
   }
 
   private report(context: AdvisorContext, result: AdvisorResult, success: string): void {
