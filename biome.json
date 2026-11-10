@@ -18,6 +18,7 @@
     "./biome/no-record.grit",
     "./biome/no-map-as-record.grit",
     "./biome/no-type-assertion.grit",
+    "./biome/no-type-guard.grit",
     "./biome/no-untyped-collection.grit",
     "./biome/no-untyped-parameter.grit",
     "./biome/no-untyped-property.grit",

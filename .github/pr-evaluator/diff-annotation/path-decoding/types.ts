@@ -9,5 +9,3 @@ export interface GitEscapeCharacters {
   "\\t": string
   "\\v": string
 }
-
-export type GitEscape = keyof GitEscapeCharacters

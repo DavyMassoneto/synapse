@@ -1,11 +1,20 @@
 import { ESCAPE_PATTERN, GIT_ESCAPE_CHARACTERS, OCTAL_RADIX, QUOTED_PATTERN, TAB_SUFFIX_PATTERN } from "./constants"
-import { isNamedEscape } from "./predicates"
 
 function decodeEscape(sequence: string): string {
-  if (isNamedEscape(sequence)) {
-    return GIT_ESCAPE_CHARACTERS[sequence]
+  switch (sequence) {
+    case "\\\\":
+    case '\\"':
+    case "\\a":
+    case "\\b":
+    case "\\f":
+    case "\\n":
+    case "\\r":
+    case "\\t":
+    case "\\v":
+      return GIT_ESCAPE_CHARACTERS[sequence]
+    default:
+      return String.fromCharCode(Number.parseInt(sequence.slice(1), OCTAL_RADIX))
   }
-  return String.fromCharCode(Number.parseInt(sequence.slice(1), OCTAL_RADIX))
 }
 
 function decodePath(header: string): string {
