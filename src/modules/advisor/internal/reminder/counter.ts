@@ -8,15 +8,13 @@ export class ReminderCounter {
     this.turns = 0
   }
 
-  advance(event: ReminderTurn): boolean {
-    if (!event.completed) {
-      return false
+  count(event: ReminderTurn): void {
+    if (event.completed) {
+      this.turns += 1
     }
-    this.turns += 1
-    if (this.turns < REMIND_EVERY || !event.usedTools) {
-      return false
-    }
-    this.reset()
-    return true
+  }
+
+  isDue(event: ReminderTurn): boolean {
+    return event.completed && event.usedTools && this.turns >= REMIND_EVERY
   }
 }

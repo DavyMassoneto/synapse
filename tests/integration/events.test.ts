@@ -81,6 +81,20 @@ async function disabledAdvisor(): Promise<void> {
   expect(host.active).toStrictEqual(["read", "write", "read"])
 }
 
+async function disabledAdvisorDoesNotCount(): Promise<void> {
+  const event = turnEvent()
+  host.advisor.configuration.disable()
+  for (let index = 0; index < 6; index++) {
+    for (const handler of host.turns) {
+      expect(await handler(event, context)).toBeUndefined()
+    }
+  }
+  host.advisor.configuration.selectModel("provider/model")
+  for (const handler of host.turns) {
+    expect(await handler(event, context)).toBeUndefined()
+  }
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -89,6 +103,7 @@ function registerTests(): void {
   test("lembrete respeita cadência", reminderCadence)
   test("resultado da ferramenta reinicia lembrete", toolResetsReminder)
   test("desligamento remove ferramenta e instruções", disabledAdvisor)
+  test("turnos com o advisor desligado não contam para o lembrete", disabledAdvisorDoesNotCount)
 }
 
 describe("events", registerTests)

@@ -1,51 +1,62 @@
 import { describe, expect, test } from "vitest"
 import { REMIND_EVERY, REMINDER, ReminderCounter } from "../internal"
+import { type ReminderTurn } from "../public"
+
+const WITH_TOOLS: ReminderTurn = { completed: true, usedTools: true }
+
+function countTurns(counter: ReminderCounter, turns: number): void {
+  for (let index = 0; index < turns; index++) {
+    counter.count(WITH_TOOLS)
+  }
+}
 
 function cadence(): void {
   const counter = new ReminderCounter()
-  for (let index = 1; index < REMIND_EVERY; index++) {
-    expect(counter.advance({ completed: true, usedTools: true })).toBe(false)
-  }
-  expect(counter.advance({ completed: true, usedTools: true })).toBe(true)
+  countTurns(counter, REMIND_EVERY - 1)
+  expect(counter.isDue(WITH_TOOLS)).toBe(false)
+  counter.count(WITH_TOOLS)
+  expect(counter.isDue(WITH_TOOLS)).toBe(true)
 }
 
 function incompleteTurn(): void {
   const counter = new ReminderCounter()
-  for (let index = 1; index < REMIND_EVERY; index++) {
-    counter.advance({ completed: true, usedTools: true })
-  }
-  expect(counter.advance({ completed: false, usedTools: true })).toBe(false)
-  expect(counter.advance({ completed: true, usedTools: true })).toBe(true)
+  countTurns(counter, REMIND_EVERY - 1)
+  const incomplete: ReminderTurn = { completed: false, usedTools: true }
+  counter.count(incomplete)
+  expect(counter.isDue(incomplete)).toBe(false)
+  expect(counter.isDue(WITH_TOOLS)).toBe(false)
+  counter.count(WITH_TOOLS)
+  expect(counter.isDue(WITH_TOOLS)).toBe(true)
 }
 
 function turnWithoutTools(): void {
   const counter = new ReminderCounter()
-  for (let index = 1; index < REMIND_EVERY; index++) {
-    counter.advance({ completed: true, usedTools: true })
-  }
-  expect(counter.advance({ completed: true, usedTools: false })).toBe(false)
-  expect(counter.advance({ completed: true, usedTools: true })).toBe(true)
+  countTurns(counter, REMIND_EVERY - 1)
+  const withoutTools: ReminderTurn = { completed: true, usedTools: false }
+  counter.count(withoutTools)
+  expect(counter.isDue(withoutTools)).toBe(false)
+  counter.count(WITH_TOOLS)
+  expect(counter.isDue(WITH_TOOLS)).toBe(true)
 }
 
 function isolatedCounters(): void {
   const first = new ReminderCounter()
   const second = new ReminderCounter()
-  for (let index = 0; index < REMIND_EVERY; index++) {
-    first.advance({ completed: true, usedTools: true })
-  }
-  expect(second.advance({ completed: true, usedTools: true })).toBe(false)
+  countTurns(first, REMIND_EVERY)
+  second.count(WITH_TOOLS)
+  expect(first.isDue(WITH_TOOLS)).toBe(true)
+  expect(second.isDue(WITH_TOOLS)).toBe(false)
 }
 
 function resetCadence(): void {
   const counter = new ReminderCounter()
-  for (let index = 1; index < REMIND_EVERY; index++) {
-    counter.advance({ completed: true, usedTools: true })
-  }
+  countTurns(counter, REMIND_EVERY)
   counter.reset()
-  for (let index = 1; index < REMIND_EVERY; index++) {
-    expect(counter.advance({ completed: true, usedTools: true })).toBe(false)
-  }
-  expect(counter.advance({ completed: true, usedTools: true })).toBe(true)
+  expect(counter.isDue(WITH_TOOLS)).toBe(false)
+  countTurns(counter, REMIND_EVERY - 1)
+  expect(counter.isDue(WITH_TOOLS)).toBe(false)
+  counter.count(WITH_TOOLS)
+  expect(counter.isDue(WITH_TOOLS)).toBe(true)
 }
 
 function reminderText(): void {

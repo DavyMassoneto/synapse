@@ -32,7 +32,12 @@ export class AdvisorService implements Advisor {
   }
 
   turn(event: ReminderTurn): ReminderDecision {
-    if (this.activeModel().kind === "active" && this.reminder.advance(event)) {
+    if (this.activeModel().kind === "inactive") {
+      return { kind: "idle" }
+    }
+    this.reminder.count(event)
+    if (this.reminder.isDue(event)) {
+      this.reminder.reset()
       return { kind: "due", text: REMINDER }
     }
     return { kind: "idle" }
