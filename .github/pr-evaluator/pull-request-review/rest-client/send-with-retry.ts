@@ -2,6 +2,7 @@ import { type GithubConfiguration } from "#evaluator/configuration"
 import { ensureOk } from "./ensure-ok"
 import { fetchGithub } from "./fetch-github"
 import { isRetryableResponse } from "./predicates"
+import { reportRateLimit } from "./report-rate-limit"
 import { waitForRateLimit } from "./wait-for-rate-limit"
 
 export async function sendWithRetry(
@@ -12,6 +13,7 @@ export async function sendWithRetry(
 ): Promise<Response> {
   const response = await fetchGithub(configuration, path, init)
   if (isRetryableResponse(response, attempt)) {
+    reportRateLimit(response)
     await waitForRateLimit(response)
     return sendWithRetry(configuration, path, init, attempt + 1)
   }

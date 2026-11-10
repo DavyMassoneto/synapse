@@ -9,7 +9,15 @@ export interface DiffState {
   lines: DiffLines
 }
 
-export type LineKind = "file-header" | "hunk-header" | "removed" | "added" | "context" | "no-newline" | "other"
+export type LineKind =
+  | "file-header"
+  | "hunk-header"
+  | "path-header"
+  | "removed"
+  | "added"
+  | "context"
+  | "no-newline"
+  | "other"
 
 export interface LeftPosition {
   kind: "left"

@@ -1,7 +1,8 @@
 import { type Finding } from "#evaluator/review-result"
-import { CRITERION_LABELS, KIND_LABELS, SECTION_BREAK } from "./constants"
+import { SECTION_BREAK } from "./constants"
+import { findingLabel } from "./finding-label"
 
 export function findingBody(finding: Finding): string {
-  const title = `**${CRITERION_LABELS[finding.criterion]} · ${KIND_LABELS[finding.kind]}** · ${finding.rule}`
+  const title = `**${findingLabel(finding)}** · ${finding.rule}`
   return [title, finding.evidence, `**Impacto:** ${finding.impact}`, `**Correção:** ${finding.fix}`].join(SECTION_BREAK)
 }

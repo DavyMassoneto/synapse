@@ -13,6 +13,7 @@ export interface ModelConfiguration {
 }
 
 export interface Configuration {
+  root: string
   github: GithubConfiguration
   model: ModelConfiguration
 }

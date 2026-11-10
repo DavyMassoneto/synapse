@@ -1,5 +1,5 @@
 import { type DiffState, type LineKind } from "../cursor"
-import { isFileHeader, isHunkHeader } from "../headers"
+import { isFileHeader, isHunkHeader, isPathHeader } from "../headers"
 import { ADDED, CONTEXT, NO_NEWLINE, REMOVED } from "./constants"
 
 function classifyHunkMarker(marker: string): LineKind {
@@ -28,6 +28,9 @@ export function classifyLine(state: DiffState, line: string): LineKind {
   }
   if (isHunkHeader(line)) {
     return "hunk-header"
+  }
+  if (isPathHeader(line)) {
+    return "path-header"
   }
   return "other"
 }

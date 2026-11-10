@@ -3,5 +3,5 @@ import { readModelConfiguration } from "./read-model-configuration"
 import { type Configuration } from "./types"
 
 export function readConfiguration(): Configuration {
-  return { github: readGithubConfiguration(), model: readModelConfiguration() }
+  return { root: process.cwd(), github: readGithubConfiguration(), model: readModelConfiguration() }
 }

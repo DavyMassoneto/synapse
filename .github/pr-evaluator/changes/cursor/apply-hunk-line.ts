@@ -8,14 +8,16 @@ function takeOldLine(state: DiffState): LinePosition {
   return { kind: "left", line }
 }
 
-function takeNewLine(state: DiffState, isContext: boolean): LinePosition {
+function takeNewLine(state: DiffState): LinePosition {
   const line = state.newLine
   state.newLine += 1
-  if (isContext) {
-    state.oldLine += 1
-  }
   linesOf(state).right.add(line)
   return { kind: "right", line }
+}
+
+function takeContextLine(state: DiffState): LinePosition {
+  state.oldLine += 1
+  return takeNewLine(state)
 }
 
 export function applyHunkLine(state: DiffState, kind: LineKind): LinePosition {
@@ -23,10 +25,10 @@ export function applyHunkLine(state: DiffState, kind: LineKind): LinePosition {
     return takeOldLine(state)
   }
   if (kind === "added") {
-    return takeNewLine(state, false)
+    return takeNewLine(state)
   }
   if (kind === "context") {
-    return takeNewLine(state, true)
+    return takeContextLine(state)
   }
   return { kind: "none" }
 }

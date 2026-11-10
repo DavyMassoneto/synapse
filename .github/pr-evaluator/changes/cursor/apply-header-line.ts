@@ -33,8 +33,10 @@ export function applyHeaderLine(state: DiffState, kind: LineKind, line: string):
     startFile(state)
   } else if (kind === "hunk-header") {
     startHunk(state, line)
-  } else {
+  } else if (kind === "path-header") {
     readPaths(state, line)
+  } else {
+    state.inHunk = false
   }
   return { kind: "none" }
 }
