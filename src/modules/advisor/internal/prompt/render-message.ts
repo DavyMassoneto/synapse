@@ -8,6 +8,7 @@ import {
   CONTEXT_LABEL,
   ERROR_LABEL,
   IMAGE_OMITTED,
+  NO_TEXT_LIMIT,
   SHELL_LABEL,
   SUMMARY_LABEL,
   TOOL_CALL_LABEL,
@@ -38,23 +39,28 @@ function messageLabel(message: TranscriptMessage): string {
   return `[${message.kind}]`
 }
 
-function renderBlock(message: TranscriptMessage, block: TranscriptBlock, limit: number): string {
+function textLimitOf(message: TranscriptMessage, limit: number): number {
+  if (hasClippedText(message)) {
+    return limit
+  }
+  return NO_TEXT_LIMIT
+}
+
+function renderBlock(block: TranscriptBlock, callLimit: number, textLimit: number): string {
   if (block.kind === "image") {
     return IMAGE_OMITTED
   }
   if (block.kind === "call") {
-    return `[${TOOL_CALL_LABEL} ${block.name}] ${clip(block.arguments, limit)}`
+    return `[${TOOL_CALL_LABEL} ${block.name}] ${clip(block.arguments, callLimit)}`
   }
-  if (hasClippedText(message)) {
-    return clip(block.text, limit)
-  }
-  return block.text
+  return clip(block.text, textLimit)
 }
 
 export function renderMessage(message: TranscriptMessage, limit: number): string {
+  const textLimit = textLimitOf(message, limit)
   const parts = [messageLabel(message)]
   for (const block of message.blocks) {
-    parts.push(renderBlock(message, block, limit))
+    parts.push(renderBlock(block, limit, textLimit))
   }
   return parts.join("\n")
 }

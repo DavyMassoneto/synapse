@@ -28,6 +28,8 @@ export const SMALL_CONTENT_LIMIT = 1_500
 
 export const MINIMAL_CONTENT_LIMIT = 500
 
+export const NO_TEXT_LIMIT = Number.POSITIVE_INFINITY
+
 export const ROOMY_CONTENT_LIMITS = [LARGE_CONTENT_LIMIT, MEDIUM_CONTENT_LIMIT, SMALL_CONTENT_LIMIT]
 
 export const WINDOW_TOO_SMALL = "A janela do advisor é pequena demais para a consulta."
