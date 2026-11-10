@@ -1,0 +1,14 @@
+import { applyChoice } from "./apply-choice"
+import { ensureNoProviderError } from "./ensure-no-provider-error"
+import { parseChunk } from "./parse-chunk"
+import { type StreamResult } from "./types"
+
+export function applyPayload(result: StreamResult, payload: string): void {
+  const chunk = parseChunk(payload)
+  ensureNoProviderError(chunk)
+  if (Array.isArray(chunk.choices)) {
+    for (const choice of chunk.choices) {
+      applyChoice(result, choice)
+    }
+  }
+}

@@ -1,0 +1,14 @@
+import { type GithubConfiguration } from "#evaluator/configuration"
+import { type AnnotatedDiff } from "#evaluator/diff-annotation"
+import { placeFindings } from "#evaluator/finding-placement"
+import { toComment, toPayload } from "#evaluator/pull-request-review"
+import { type ReviewResult } from "#evaluator/review-result"
+import { reviewBody } from "#evaluator/review-text"
+import { type PreparedReview } from "./types"
+
+export function prepareReview(github: GithubConfiguration, diff: AnnotatedDiff, result: ReviewResult): PreparedReview {
+  const placement = placeFindings(diff.lines, result.findings)
+  const comments = Array.from(placement.groups.values(), toComment)
+  const body = reviewBody(result, placement.unplaced, comments.length, github.headSha)
+  return { unplacedCount: placement.unplaced.length, payload: toPayload(github.headSha, body, comments) }
+}
