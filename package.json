@@ -4,16 +4,9 @@
   "type": "module",
   "scripts": {
     "format": "biome check --write .",
-    "lint": "biome ci .",
-    "typecheck": "tsgo --noEmit",
-    "evaluate": "tsx .github/pr-evaluator/main.ts",
-    "validate": "npm run lint && npm run typecheck"
+    "lint": "biome ci ."
   },
   "devDependencies": {
-    "@biomejs/biome": "2.6.6",
-    "@types/node": "^22.20.5",
-    "@typescript/native-preview": "^7.0.0-dev.20260707.2",
-    "tsx": "^4.23.15",
-    "typebox": "^1.4.6"
+    "@biomejs/biome": "2.6.6"
   }
 }
