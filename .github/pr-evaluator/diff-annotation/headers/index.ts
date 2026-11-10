@@ -1,3 +1,4 @@
+export * from "./constants"
 export * from "./predicates"
 export * from "./read-hunk-start"
 export * from "./read-path-header"

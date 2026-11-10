@@ -1,9 +1,11 @@
 import { applyHeaderLine } from "./apply-header-line"
 import { applyHunkLine } from "./apply-hunk-line"
+import { classifyLine } from "./classify-line"
 import { isHunkLineKind } from "./predicates"
-import { type DiffState, type LineKind, type LinePosition } from "./types"
+import { type DiffState, type LinePosition } from "./types"
 
-export function applyLine(state: DiffState, kind: LineKind, line: string): LinePosition {
+export function trackLine(state: DiffState, line: string): LinePosition {
+  const kind = classifyLine(state, line)
   if (isHunkLineKind(kind)) {
     return applyHunkLine(state, kind)
   }

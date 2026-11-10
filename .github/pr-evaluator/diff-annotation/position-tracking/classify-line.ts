@@ -1,7 +1,7 @@
-import { isFileHeader, isHunkHeader, isPathHeader } from "../headers"
-import { type DiffState, type LineKind } from "../position-tracking"
+import { DIFF_FILE_HEADER, HUNK_START_PATTERN, isPathHeader } from "../headers"
 import { ADDED, CONTEXT, NO_NEWLINE, REMOVED } from "./constants"
 import { isHunkBody } from "./predicates"
+import { type DiffState, type LineKind } from "./types"
 
 function classifyHunkMarker(marker: string): LineKind {
   if (marker === ADDED) {
@@ -24,10 +24,10 @@ export function classifyLine(state: DiffState, line: string): LineKind {
   if (isHunkBody(state, hunkKind)) {
     return hunkKind
   }
-  if (isFileHeader(line)) {
+  if (line.startsWith(DIFF_FILE_HEADER)) {
     return "file-header"
   }
-  if (isHunkHeader(line)) {
+  if (HUNK_START_PATTERN.test(line)) {
     return "hunk-header"
   }
   if (isPathHeader(line)) {

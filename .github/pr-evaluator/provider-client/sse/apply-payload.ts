@@ -1,12 +1,14 @@
 import { Value } from "typebox/value"
 import { PROVIDER_ERROR_PREFIX, PROVIDER_ERROR_WITHOUT_MESSAGE, StreamChunkSchema } from "./constants"
-import { type ProviderError, type StreamChoice, type StreamResult } from "./types"
+import { type StreamChoice, type StreamChunk, type StreamResult } from "./types"
 
-function providerErrorMessage(error: ProviderError): string {
-  if (error.message) {
-    return `${PROVIDER_ERROR_PREFIX}: ${error.message}`
+function ensureNoProviderError(chunk: StreamChunk): void {
+  if (chunk.error?.message) {
+    throw new Error(`${PROVIDER_ERROR_PREFIX}: ${chunk.error.message}`)
   }
-  return PROVIDER_ERROR_WITHOUT_MESSAGE
+  if (chunk.error) {
+    throw new Error(PROVIDER_ERROR_WITHOUT_MESSAGE)
+  }
 }
 
 function applyChoice(result: StreamResult, choice: StreamChoice): void {
@@ -20,9 +22,7 @@ function applyChoice(result: StreamResult, choice: StreamChoice): void {
 
 export function applyPayload(result: StreamResult, payload: string): void {
   const chunk = Value.Parse(StreamChunkSchema, JSON.parse(payload))
-  if (chunk.error) {
-    throw new Error(providerErrorMessage(chunk.error))
-  }
+  ensureNoProviderError(chunk)
   if (chunk.choices) {
     for (const choice of chunk.choices) {
       applyChoice(result, choice)

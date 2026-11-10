@@ -5,8 +5,6 @@ export type StreamChunk = Static<typeof StreamChunkSchema>
 
 export type StreamChoice = NonNullable<StreamChunk["choices"]>[number]
 
-export type ProviderError = NonNullable<StreamChunk["error"]>
-
 export interface StreamResult {
   content: string
   finishReason?: string
