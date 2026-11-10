@@ -11,14 +11,14 @@ function prepare(): void {
 }
 
 async function snapshotIsStable() {
-  const storage = new TestStorage()
-  storage.model = "provider/first"
-  const advisor = serviceFor(storage)
+  const firstStorage = new TestStorage()
+  firstStorage.model = "provider/first"
+  const firstAdvisor = serviceFor(firstStorage)
   const gate = Promise.withResolvers<void>()
   const port = new WaitingModel(gate.promise)
-  const pending = advisor.consult(emptyConsultation(new AbortController().signal), port)
-  advisor.configuration.selectModel("provider/second")
-  advisor.configuration.setThinking("high")
+  const pending = firstAdvisor.consult(emptyConsultation(new AbortController().signal), port)
+  firstAdvisor.configuration.selectModel("provider/second")
+  firstAdvisor.configuration.setThinking("high")
   gate.resolve()
   const result = await pending
   expect(result.kind).toBe("success")

@@ -37,7 +37,7 @@ export class AdvisorCommand {
   private async select(query: string, config: Config, context: AdvisorContext): Promise<void> {
     const cannotChoose = query.length === 0 && !context.hasUI
     if (cannotChoose) {
-      context.ui.notify(`Advisor: ${this.modelLabel()}, thinking ${config.thinking}`, "info")
+      this.showCurrent(config, context)
     } else {
       this.applySelection(context, await chooseModel(context, query))
     }
@@ -49,6 +49,10 @@ export class AdvisorCommand {
     } else if (selection.kind === "selected") {
       this.report(context, this.advisor.configuration.selectModel(selection.model), `Advisor: ${selection.model}`)
     }
+  }
+
+  private showCurrent(config: Config, context: AdvisorContext): void {
+    context.ui.notify(`Advisor: ${this.modelLabel()}, thinking ${config.thinking}`, "info")
   }
 
   private modelLabel(): string {

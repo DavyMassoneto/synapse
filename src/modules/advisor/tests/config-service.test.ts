@@ -21,13 +21,13 @@ function invalidThinkingDoesNotSave(): void {
 }
 
 function failedSavePreservesState(): void {
-  const storage = new TestStorage()
-  storage.model = "provider/original"
-  storage.failSave = true
-  const advisor = serviceFor(storage)
-  expect(storage.loads).toBe(1)
-  expect(advisor.configuration.selectModel("provider/novo").kind).toBe("failure")
-  expect(advisor.configuration.status()).toStrictEqual({
+  const failingStorage = new TestStorage()
+  failingStorage.model = "provider/original"
+  failingStorage.failSave = true
+  const failingAdvisor = serviceFor(failingStorage)
+  expect(failingStorage.loads).toBe(1)
+  expect(failingAdvisor.configuration.selectModel("provider/novo").kind).toBe("failure")
+  expect(failingAdvisor.configuration.status()).toStrictEqual({
     kind: "success",
     config: { model: "provider/original", thinking: "low" },
   })
