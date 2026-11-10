@@ -1,5 +1,5 @@
-import { createState, trackLine } from "../position-tracking"
 import { DIFF_LINE_BREAK } from "./constants"
+import { createState, trackLine } from "./position-tracking"
 import { renderLine } from "./render-line"
 import { type AnnotatedDiff } from "./types"
 

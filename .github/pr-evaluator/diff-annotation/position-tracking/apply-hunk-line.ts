@@ -26,9 +26,13 @@ function takeNewLine(state: DiffState): LinePosition {
 }
 
 function takeContextLine(state: DiffState): LinePosition {
-  linesOf(state).left.add(state.oldLine)
+  const line = state.newLine
+  const file = linesOf(state)
+  file.left.add(state.oldLine)
+  file.right.add(line)
   state.oldLine += 1
-  return takeNewLine(state)
+  state.newLine += 1
+  return { kind: "right", line }
 }
 
 export function applyHunkLine(state: DiffState, kind: LineKind): LinePosition {

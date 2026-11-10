@@ -1,4 +1,4 @@
-import { type LinePosition } from "../position-tracking"
+import { type LinePosition } from "./position-tracking"
 
 export function renderLine(position: LinePosition, line: string): string {
   if (position.kind === "left") {

@@ -1,4 +1,4 @@
-import { type DiffLines } from "../lines"
+import { type DiffLines } from "./lines"
 
 export interface AnnotatedDiff {
   text: string

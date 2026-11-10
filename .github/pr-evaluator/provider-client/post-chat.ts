@@ -1,5 +1,5 @@
 import { type ModelConfiguration } from "#evaluator/configuration"
-import { MAX_OUTPUT_TOKENS, MODEL_TIMEOUT_MS } from "./constants"
+import { MAX_OUTPUT_TOKENS, MODEL_TEMPERATURE, MODEL_TIMEOUT_MS } from "./constants"
 
 export function postChat(configuration: ModelConfiguration, prompt: string): Promise<Response> {
   return fetch(`${configuration.baseUrl}/chat/completions`, {
@@ -8,7 +8,7 @@ export function postChat(configuration: ModelConfiguration, prompt: string): Pro
     body: JSON.stringify({
       model: configuration.model,
       stream: true,
-      temperature: 0,
+      temperature: MODEL_TEMPERATURE,
       max_tokens: MAX_OUTPUT_TOKENS,
       messages: [{ role: "user", content: prompt }],
     }),
