@@ -24,7 +24,7 @@ async function preservesState(): Promise<void> {
   await host.requireCommand().handler("thinking high", context)
   const status = host.requireConfig()
   expect(status.thinking).toBe("low")
-  expect(host.advisor.isEnabled()).toBe(true)
+  expect(host.advisor.activeModel().kind).toBe("active")
 }
 
 function registerTests(): void {

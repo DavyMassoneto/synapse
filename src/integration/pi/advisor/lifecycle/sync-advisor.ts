@@ -1,4 +1,4 @@
-import { type Advisor, type AdvisorResult } from "#synapse/modules/advisor/public"
+import { type ActiveModel, type Advisor } from "#synapse/modules/advisor/public"
 import { ADVISOR_NAME, type AdvisorContext } from "../host"
 import { STATUS_PREFIX } from "./constants"
 import { type AdvisorToolActivation } from "./types"
@@ -17,21 +17,22 @@ function deactivateTool(pi: AdvisorToolActivation): void {
   }
 }
 
-function showStatus(context: AdvisorContext, status: AdvisorResult): void {
-  if (status.kind === "success" && status.config.model) {
-    context.ui.setStatus(ADVISOR_NAME, `${STATUS_PREFIX}${status.config.model}`)
+function showStatus(context: AdvisorContext, model: ActiveModel): void {
+  if (model.kind === "active") {
+    context.ui.setStatus(ADVISOR_NAME, `${STATUS_PREFIX}${model.model}`)
   } else {
     context.ui.setStatus(ADVISOR_NAME, undefined)
   }
 }
 
 export function syncAdvisor(pi: AdvisorToolActivation, advisor: Advisor, context: AdvisorContext): void {
-  if (advisor.isEnabled()) {
+  const model = advisor.activeModel()
+  if (model.kind === "active") {
     activateTool(pi)
   } else {
     deactivateTool(pi)
   }
   if (context.hasUI) {
-    showStatus(context, advisor.configuration.status())
+    showStatus(context, model)
   }
 }

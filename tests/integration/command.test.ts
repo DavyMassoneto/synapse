@@ -92,6 +92,8 @@ async function scopedSearch(): Promise<void> {
   expect(next.model).toBe("provider/model-extra")
   await host.requireCommand().handler("thinkingx", context)
   expect(context.ui.notices.at(-1)).toMatch(/Nenhum modelo encontrado/)
+  expect(host.requireConfig().model).toBe("provider/model-extra")
+  expect(host.advisor.activeModel()).toStrictEqual({ kind: "active", model: "provider/model-extra" })
 }
 
 function registerTests(): void {

@@ -1,4 +1,5 @@
 import {
+  type ActiveModel,
   type Advisor,
   type ConfigLoadResult,
   type ConfigPort,
@@ -22,13 +23,16 @@ export class AdvisorService implements Advisor {
     this.configuration = new AdvisorConfiguration(config, loaded)
   }
 
-  isEnabled(): boolean {
+  activeModel(): ActiveModel {
     const status = this.configuration.status()
-    return status.kind === "success" && Boolean(status.config.model)
+    if (status.kind === "success" && status.config.model) {
+      return { kind: "active", model: status.config.model }
+    }
+    return { kind: "inactive" }
   }
 
   turn(event: ReminderTurn): ReminderDecision {
-    if (this.isEnabled() && this.reminder.advance(event)) {
+    if (this.activeModel().kind === "active" && this.reminder.advance(event)) {
       return { kind: "due", text: REMINDER }
     }
     return { kind: "idle" }

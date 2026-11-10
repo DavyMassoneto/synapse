@@ -160,12 +160,23 @@ export type ParsedReference = ValidReference | InvalidReference
 
 export interface Advisor {
   readonly configuration: AdvisorConfigOperations
-  isEnabled(): boolean
+  activeModel(): ActiveModel
   readonly reminder: ReminderControl
   consultationInstructions: string
   turn(event: ReminderTurn): ReminderDecision
   consult(input: Consultation, model: ModelPort): Promise<ConsultationResult>
 }
+
+export interface ModelActive {
+  kind: "active"
+  model: string
+}
+
+export interface ModelInactive {
+  kind: "inactive"
+}
+
+export type ActiveModel = ModelActive | ModelInactive
 
 export interface ReminderDue {
   kind: "due"

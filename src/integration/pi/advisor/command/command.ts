@@ -37,7 +37,7 @@ export class AdvisorCommand {
   private async select(query: string, config: Config, context: AdvisorContext): Promise<void> {
     const cannotChoose = query.length === 0 && !context.hasUI
     if (cannotChoose) {
-      context.ui.notify(`Advisor: ${this.modelLabel(config)}, thinking ${config.thinking}`, "info")
+      context.ui.notify(`Advisor: ${this.modelLabel()}, thinking ${config.thinking}`, "info")
     } else {
       this.applySelection(context, await chooseModel(context, query))
     }
@@ -51,9 +51,10 @@ export class AdvisorCommand {
     }
   }
 
-  private modelLabel(config: Config): string {
-    if (config.model) {
-      return config.model
+  private modelLabel(): string {
+    const model = this.advisor.activeModel()
+    if (model.kind === "active") {
+      return model.model
     }
     return DISABLED_STATUS
   }

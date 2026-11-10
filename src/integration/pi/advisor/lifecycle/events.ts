@@ -30,7 +30,7 @@ export class AdvisorEvents {
 
   beforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): void {
     syncAdvisor(this.pi, this.advisor, context)
-    if (this.advisor.isEnabled()) {
+    if (this.advisor.activeModel().kind === "active") {
       event.systemPromptOptions.sections.advisor = this.advisor.consultationInstructions
     } else {
       delete event.systemPromptOptions.sections.advisor

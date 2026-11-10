@@ -18,6 +18,7 @@ async function chooseModel(): Promise<void> {
   await host.requireCommand().handler("", context)
   const status = host.requireConfig()
   expect(status.model).toBe("provider/other")
+  expect(status.thinking).toBe("low")
 }
 
 async function cancelSelection(): Promise<void> {
@@ -33,6 +34,8 @@ async function disableAdvisor(): Promise<void> {
   await host.requireCommand().handler("", context)
   const status = host.requireConfig()
   expect(status.model).toBeUndefined()
+  expect(status.thinking).toBe("low")
+  expect(host.advisor.activeModel()).toStrictEqual({ kind: "inactive" })
 }
 
 function registerTests(): void {
