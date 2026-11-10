@@ -25,3 +25,7 @@ export interface Placement {
   comments: ReviewComment[]
   unplaced: Finding[]
 }
+
+export interface RangedFinding extends Finding {
+  startLine: number
+}

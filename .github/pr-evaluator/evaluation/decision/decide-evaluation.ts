@@ -6,12 +6,12 @@ import { type EvaluationDecision } from "./types"
 
 export async function decideEvaluation(
   github: GithubConfiguration,
-  text: string,
+  rawDiff: string,
   diff: AnnotatedDiff,
 ): Promise<EvaluationDecision> {
   const reviewDecision = await decideReviewState(github)
   if (reviewDecision.kind === "skip") {
     return reviewDecision
   }
-  return decideContent(text, diff)
+  return decideContent(rawDiff, diff)
 }

@@ -1,6 +1,4 @@
-import { type CriterionLabels, type KindLabels } from "./types"
-
-export const CRITERION_LABELS: CriterionLabels = {
+export const CRITERION_LABELS = {
   "clean-code": "Clean Code",
   dry: "DRY",
   yagni: "YAGNI",
@@ -8,7 +6,7 @@ export const CRITERION_LABELS: CriterionLabels = {
   architecture: "Arquitetura",
 }
 
-export const KIND_LABELS: KindLabels = {
+export const KIND_LABELS = {
   violation: "violação",
   insufficient_context: "contexto insuficiente",
 }

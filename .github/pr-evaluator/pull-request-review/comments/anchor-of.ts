@@ -1,12 +1,10 @@
-import { type DiffLines, hasDiffLine, hasDiffRange } from "#evaluator/changes"
+import { type DiffLines, hasDiffLine } from "#evaluator/changes"
 import { type Finding } from "#evaluator/review-result"
+import { hasValidRange } from "./predicates"
 import { type Anchor } from "./types"
 
 function startLineOf(lines: DiffLines, finding: Finding): number {
-  if (
-    typeof finding.startLine === "number" &&
-    hasDiffRange(lines, finding.path, finding.side, finding.startLine, finding.line)
-  ) {
+  if (hasValidRange(lines, finding)) {
     return finding.startLine
   }
   return finding.line

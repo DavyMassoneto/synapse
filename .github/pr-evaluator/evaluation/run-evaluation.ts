@@ -4,8 +4,8 @@ import { applyDecision, decideEvaluation } from "./decision"
 import { evaluate } from "./evaluate"
 
 export async function runEvaluation(configuration: Configuration): Promise<void> {
-  const text = readDiff(configuration.github.baseSha, configuration.github.headSha)
-  const diff = annotateDiff(text)
-  const decision = await decideEvaluation(configuration.github, text, diff)
+  const rawDiff = readDiff(configuration.github.baseSha, configuration.github.headSha)
+  const diff = annotateDiff(rawDiff)
+  const decision = await decideEvaluation(configuration.github, rawDiff, diff)
   await applyDecision(decision, () => evaluate(configuration, diff))
 }

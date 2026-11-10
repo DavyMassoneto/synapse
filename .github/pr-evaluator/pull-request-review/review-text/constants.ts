@@ -1,6 +1,4 @@
-import { type VerdictLabels } from "./types"
-
-export const VERDICT_LABELS: VerdictLabels = {
+export const VERDICT_LABELS = {
   approve: "aprovar",
   approve_with_remarks: "aprovar com ressalvas",
   request_changes: "pedir mudanças",

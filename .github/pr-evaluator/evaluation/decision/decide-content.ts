@@ -2,8 +2,8 @@ import { type AnnotatedDiff } from "#evaluator/changes"
 import { MESSAGE_EMPTY_DIFF, MESSAGE_NO_TEXT_LINES } from "./constants"
 import { type EvaluationDecision } from "./types"
 
-export function decideContent(text: string, diff: AnnotatedDiff): EvaluationDecision {
-  if (text.trim().length === 0) {
+export function decideContent(rawDiff: string, diff: AnnotatedDiff): EvaluationDecision {
+  if (rawDiff.trim().length === 0) {
     return { kind: "skip", message: MESSAGE_EMPTY_DIFF }
   }
   if (diff.lines.size === 0) {

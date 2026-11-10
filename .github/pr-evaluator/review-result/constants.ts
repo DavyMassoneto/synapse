@@ -26,5 +26,3 @@ export const ReviewResultSchema = Type.Object({
 })
 
 export const FENCE_PATTERN = /^```[^\n]*\n([\s\S]*)```$/
-
-export const INVISIBLE_PATTERN = /[\u200B-\u200D\u2060\uFEFF]/g
