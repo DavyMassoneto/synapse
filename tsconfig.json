@@ -10,11 +10,7 @@
     "noEmit": true,
     "erasableSyntaxOnly": true,
     "verbatimModuleSyntax": true,
-    "skipLibCheck": true,
-    "types": ["node"],
-    "paths": {
-      "#evaluator/*": ["./.github/pr-evaluator/*"]
-    }
+    "skipLibCheck": true
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", ".github/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts"]
 }

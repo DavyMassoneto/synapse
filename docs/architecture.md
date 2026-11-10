@@ -76,28 +76,6 @@ Assim, uma funcionalidade do pi-web que necessite de memória depende de uma por
 
 A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A integração com o host registra as capacidades resultantes. Ela não replica regras dos módulos nem transforma persistência própria em histórico autoritativo do pi.
 
-## Automação do repositório
-
-`.github/` contém infraestrutura de desenvolvimento, não um módulo de produto. A avaliação automática de PR (`.github/pr-evaluator/`) é composta por capacidades com dependências em um só sentido; cada pasta tem uma responsabilidade que seu nome revela:
-
-| Pasta | Responsabilidade |
-| --- | --- |
-| `configuration/` | Ler e validar as variáveis de ambiente |
-| `diff-reading/` | Obter o diff do git, com um limite de leitura explícito |
-| `diff-annotation/` | Numerar as linhas do diff e registrar as que ele mostra, com a posição de cada uma |
-| `review-request/` | Carregar arquitetura, regras e padrões e montar a solicitação ao avaliador |
-| `http-failure/` | Ler o detalhe de uma resposta HTTP que falhou, para as mensagens de erro dos dois clientes HTTP |
-| `provider-client/` | Chamar o modelo no provedor, ler a resposta em streaming e repetir a chamada em falhas de servidor |
-| `review-result/` | Validar a resposta: veredito e apontamentos |
-| `github-rest-client/` | Chamar a API REST do GitHub e esperar o limite de taxa |
-| `finding-placement/` | Posicionar cada apontamento na linha do diff e agrupar os da mesma linha |
-| `comment-text/` | Escrever o texto do comentário de um apontamento |
-| `review-text/` | Escrever o resumo da review, o marcador do commit e a seção dos apontamentos sem linha |
-| `pull-request-review/` | Consultar a PR, ler as reviews já publicadas e publicar a review, com um comentário por grupo de apontamentos |
-| `evaluation/` | Coordenar os passos de uma avaliação; nenhuma outra capacidade o importa |
-
-O modelo usado é fixo no workflow. A automação não tem testes unitários: é verificada ao executá-la no GitHub Actions.
-
 ## Desenvolvimento paralelo e proteção das fronteiras
 
 - Cada frente modifica seu diretório `src/modules/<modulo>/` e valida o módulo isoladamente, substituindo portas externas por implementações de teste.
