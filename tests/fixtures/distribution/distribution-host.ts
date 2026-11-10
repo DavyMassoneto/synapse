@@ -1,12 +1,14 @@
 import { ExtensionRunner, SessionManager } from "@earendil-works/pi-coding-agent"
 import { TestUI } from "../context"
+import { type DistributionEnvironment } from "./distribution-environment"
 import { DistributionRegistry } from "./distribution-registry"
 import { createRuntime, loadExtension, resolveEntrypoint } from "./distribution-setup"
 import { type DistributionResult } from "./types"
 
-export async function runDistribution(home: string): Promise<DistributionResult> {
-  const loaded = await loadExtension(home, resolveEntrypoint())
-  const registry = new DistributionRegistry(await createRuntime(home))
+export async function runDistribution(environment: DistributionEnvironment): Promise<DistributionResult> {
+  const { home } = environment
+  const loaded = await loadExtension(environment, resolveEntrypoint())
+  const registry = new DistributionRegistry(await createRuntime(environment.agentDirectory))
   const runner = new ExtensionRunner(loaded.extensions, loaded.runtime, home, SessionManager.inMemory(home), registry)
   try {
     const ui = new TestUI()

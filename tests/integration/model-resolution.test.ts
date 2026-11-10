@@ -2,11 +2,12 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { AdvisorModel } from "#synapse/integration"
+import { AdvisorModel, PI_THINKING_BUDGETS } from "#synapse/integration"
 import {
   createAdvisor,
   type ModelRequest,
   type ResolvedModel,
+  THINKING_LEVELS,
   type ThinkingLevel,
 } from "#synapse/modules/advisor/public"
 import { TestRegistry } from "../fixtures"
@@ -107,6 +108,10 @@ async function reasoningBudgets(): Promise<void> {
   expect((await resolved("provider/first", "high")).reasoningTokens).toBe(16_384)
 }
 
+function budgetsCoverContractLevels(): void {
+  expect(Object.keys(PI_THINKING_BUDGETS)).toStrictEqual(THINKING_LEVELS)
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -118,6 +123,7 @@ function registerTests(): void {
   test("referência sem provedor é rejeitada", invalidReference)
   test("sinal já cancelado não consulta o registry", cancelledBeforeResolution)
   test("nível de raciocínio define a reserva", reasoningBudgets)
+  test("a tabela de reservas tem exatamente os níveis do contrato", budgetsCoverContractLevels)
 }
 
 describe("model resolution", registerTests)

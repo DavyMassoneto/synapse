@@ -9,6 +9,7 @@ import {
 } from "@earendil-works/pi-coding-agent"
 import { Value } from "typebox/value"
 import { manifestSchema } from "./constants"
+import { type DistributionEnvironment } from "./distribution-environment"
 
 export function resolveEntrypoint(): string {
   const manifestPath = fileURLToPath(new URL("../../../package.json", import.meta.url))
@@ -17,10 +18,13 @@ export function resolveEntrypoint(): string {
   return resolve(fileURLToPath(new URL("../../..", import.meta.url)), extension)
 }
 
-export async function loadExtension(home: string, entrypoint: string): Promise<LoadExtensionsResult> {
+export async function loadExtension(
+  environment: DistributionEnvironment,
+  entrypoint: string,
+): Promise<LoadExtensionsResult> {
   const loader = new DefaultResourceLoader({
-    cwd: home,
-    agentDir: join(home, ".pi", "agent"),
+    cwd: environment.home,
+    agentDir: environment.agentDirectory,
     settingsManager: SettingsManager.inMemory(),
     noExtensions: true,
     additionalExtensionPaths: [entrypoint],
@@ -37,12 +41,11 @@ export async function loadExtension(home: string, entrypoint: string): Promise<L
   return loaded
 }
 
-export function createRuntime(home: string): Promise<ModelRuntime> {
-  const agentDir = join(home, ".pi", "agent")
+export function createRuntime(agentDirectory: string): Promise<ModelRuntime> {
   return ModelRuntime.create({
-    authPath: join(agentDir, "auth.json"),
+    authPath: join(agentDirectory, "auth.json"),
     modelsPath: null,
-    modelsStorePath: join(agentDir, "models-store.json"),
+    modelsStorePath: join(agentDirectory, "models-store.json"),
     allowModelNetwork: false,
     refreshOnCreate: false,
   })

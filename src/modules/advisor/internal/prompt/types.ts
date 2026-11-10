@@ -1,4 +1,4 @@
-import { type Failure, type TranscriptMessage } from "#synapse/modules/advisor/public/contracts"
+import { type Failure } from "#synapse/modules/advisor/public/contracts"
 
 export interface PromptReady {
   kind: "ready"
@@ -17,27 +17,3 @@ export interface BudgetInsufficient {
 }
 
 export type PromptBudget = BudgetAvailable | BudgetInsufficient
-
-export interface FixedMessage {
-  kind: "fixed"
-  text: string
-}
-
-export interface ResizableMessage {
-  kind: "resizable"
-  message: TranscriptMessage
-}
-
-export type PreparedMessage = FixedMessage | ResizableMessage
-
-export interface TranscriptFits {
-  kind: "fits"
-  text: string
-}
-
-export interface TranscriptOverflow {
-  kind: "overflow"
-  blocks: string[]
-}
-
-export type FittedTranscript = TranscriptFits | TranscriptOverflow

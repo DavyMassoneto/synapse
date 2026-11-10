@@ -1,7 +1,7 @@
 import { type Consultation, type ResolvedModel } from "#synapse/modules/advisor/public/contracts"
-import { clip } from "./clip"
+import { ADVISOR_SYSTEM } from "../constants"
+import { buildTranscript, clip } from "../transcript"
 import {
-  ADVISOR_SYSTEM,
   ESTIMATED_CHARACTERS_PER_TOKEN,
   HOST_SAFETY_TOKENS,
   MAX_SYSTEM_CHARACTERS,
@@ -11,8 +11,11 @@ import {
   TRANSCRIPT_PREFIX,
   WINDOW_TOO_SMALL,
 } from "./constants"
-import { buildTranscript } from "./transcript"
 import { type PreparedPrompt, type PromptBudget } from "./types"
+
+function assemblePrompt(system: string, transcript: string): string {
+  return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX
+}
 
 function availableBudget(model: ResolvedModel): PromptBudget {
   const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS
@@ -25,11 +28,15 @@ function availableBudget(model: ResolvedModel): PromptBudget {
   }
   const systemTokens = Math.ceil(ADVISOR_SYSTEM.length / ESTIMATED_CHARACTERS_PER_TOKEN)
   const available = (inputTokens - systemTokens) * ESTIMATED_CHARACTERS_PER_TOKEN
-  const fixedLength = PROMPT_PREFIX.length + TRANSCRIPT_PREFIX.length + PROMPT_SUFFIX.length
+  const fixedLength = assemblePrompt("", "").length
   if (available <= fixedLength) {
     return { kind: "insufficient" }
   }
   return { kind: "available", characters: available - fixedLength }
+}
+
+function systemLimit(characters: number): number {
+  return Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(characters / 2))
 }
 
 export function preparePrompt(input: Consultation, model: ResolvedModel): PreparedPrompt {
@@ -37,9 +44,7 @@ export function preparePrompt(input: Consultation, model: ResolvedModel): Prepar
   if (budget.kind === "insufficient") {
     return { kind: "failure", message: WINDOW_TOO_SMALL }
   }
-  const systemLimit = Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(budget.characters / 2))
-  const system = clip(input.system, systemLimit)
-  const transcriptBudget = budget.characters - system.length
-  const transcript = buildTranscript(input.messages, transcriptBudget)
-  return { kind: "ready", text: PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX }
+  const system = clip(input.system, systemLimit(budget.characters))
+  const transcript = buildTranscript(input.messages, budget.characters - system.length)
+  return { kind: "ready", text: assemblePrompt(system, transcript) }
 }

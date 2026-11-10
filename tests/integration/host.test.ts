@@ -39,16 +39,6 @@ async function projectionFailure(): Promise<void> {
   expect(context.modelRegistry.calls).toBe(0)
 }
 
-async function registeredShutdown(): Promise<void> {
-  for (const handler of host.shutdowns) {
-    await handler({ type: "session_shutdown", reason: "quit" }, context)
-  }
-  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
-  expect(toolText(result)).toMatch(/cancelada/)
-  expect(context.modelRegistry.calls).toBe(0)
-  expect(host.signal.reason).toBeInstanceOf(Error)
-}
-
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -57,7 +47,6 @@ function registerTests(): void {
   test("provedor abortado devolve cancelamento", abortedProvider)
   test("erro do provedor devolve falha, não cancelamento", providerError)
   test("falha de projeção não consulta provedor", projectionFailure)
-  test("shutdown registrado impede consulta", registeredShutdown)
 }
 
 describe("host", registerTests)

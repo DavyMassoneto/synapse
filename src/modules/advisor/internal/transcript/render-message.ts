@@ -58,9 +58,8 @@ function renderBlock(block: TranscriptBlock, callLimit: number, textLimit: numbe
 
 export function renderMessage(message: TranscriptMessage, limit: number): string {
   const textLimit = textLimitOf(message, limit)
-  const parts = [messageLabel(message)]
-  for (const block of message.blocks) {
-    parts.push(renderBlock(block, limit, textLimit))
-  }
-  return parts.join("\n")
+  return message.blocks.reduce(
+    (rendered, block) => `${rendered}\n${renderBlock(block, limit, textLimit)}`,
+    messageLabel(message),
+  )
 }

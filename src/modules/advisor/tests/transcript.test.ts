@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { buildTranscript, selectMessages } from "../internal"
+import { buildTranscript, renderMessage, selectMessages } from "../internal"
 import { type TranscriptBlock, type TranscriptMessage } from "../public"
 import { emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
 
@@ -127,8 +127,17 @@ function nothingToSelect(): void {
   expect(selectMessages([], 120)).toBe("")
 }
 
+function rendersOneLinePerBlock(): void {
+  expect(renderMessage({ kind: "user", blocks: [] }, 500)).toBe("[user]")
+  expect(renderMessage({ kind: "user", blocks: [{ kind: "text", text: "" }] }, 500)).toBe("[user]\n")
+  expect(renderMessage({ kind: "summary", blocks: [{ kind: "text", text: "a" }, { kind: "image" }] }, 500)).toBe(
+    "[summary of earlier conversation]\na\n[image omitted]",
+  )
+}
+
 function registerTests(): void {
   test("transcrição vazia", emptyTranscript)
+  test("mensagem sai com o rótulo e uma linha por bloco, sem linha sobrando", rendersOneLinePerBlock)
   test("shell oculto não aparece na transcrição", hiddenShell)
   test("resultado de ferramenta identifica erro", toolErrorLabel)
   test("mensagem recente cabe no orçamento", recentMessageFits)

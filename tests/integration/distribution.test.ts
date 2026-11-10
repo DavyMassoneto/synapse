@@ -18,7 +18,7 @@ async function verifyDistribution(example: ConfigCase): Promise<void> {
   if (example.content) {
     writeFileSync(file, example.content)
   }
-  const result = await runDistribution(environment.home)
+  const result = await runDistribution(environment)
   expect(result.notices.join("\n")).toMatch(example.expected)
   if (example.content) {
     expect(readFileSync(file, "utf8")).toBe(example.content)

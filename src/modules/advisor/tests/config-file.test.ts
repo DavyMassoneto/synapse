@@ -4,6 +4,7 @@ import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { FileConfig } from "../adapters"
 import { AdvisorService } from "../internal"
+import { THINKING_LEVELS, type ThinkingLevel } from "../public"
 import { serviceFor } from "./doubles"
 
 let directory = ""
@@ -45,6 +46,21 @@ function defaultThinking(): void {
   })
 }
 
+function loadsLevel(level: ThinkingLevel): void {
+  const path = join(directory, "advisor.json")
+  writeFileSync(path, JSON.stringify({ thinking: level }))
+  expect(new FileConfig(path).load()).toStrictEqual({ kind: "loaded", config: { thinking: level } })
+}
+
+function rejectsUnknownLevel(): void {
+  const path = join(directory, "advisor.json")
+  writeFileSync(path, JSON.stringify({ thinking: "banana" }))
+  expect(new FileConfig(path).load()).toStrictEqual({
+    kind: "invalid",
+    message: "Configuração do advisor inválida; revise advisor.json.",
+  })
+}
+
 function replacesFile(): void {
   const path = join(directory, "advisor.json")
   const storage = new FileConfig(path)
@@ -70,6 +86,8 @@ function registerTests(): void {
   test("configuração ausente usa padrão", missingConfiguration)
   test("modelo vazio desliga advisor", disabledConfiguration)
   test("configuração sem nível usa padrão", defaultThinking)
+  test.each(THINKING_LEVELS)("nível %s é lido do arquivo", loadsLevel)
+  test("nível desconhecido no arquivo é recusado", rejectsUnknownLevel)
   test("gravação substitui arquivo", replacesFile)
   test("falha de substituição preserva destino e limpa temporário", rejectsDirectoryDestination)
 }

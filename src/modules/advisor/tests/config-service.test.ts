@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest"
 import { type AdvisorService } from "../internal"
+import { THINKING_LEVELS, type ThinkingLevel } from "../public"
 import { serviceFor, TestStorage } from "./doubles"
 
 let storage: TestStorage
@@ -18,6 +19,14 @@ function invalidModelDoesNotSave(): void {
 function invalidThinkingDoesNotSave(): void {
   expect(advisor.configuration.setThinking("invalid").kind).toBe("failure")
   expect(storage.saves).toBe(0)
+}
+
+function acceptsLevel(level: ThinkingLevel): void {
+  expect(advisor.configuration.setThinking(level)).toStrictEqual({
+    kind: "success",
+    config: { model: "provider/model", thinking: level },
+  })
+  expect(storage.saves).toBe(1)
 }
 
 function failedSavePreservesState(): void {
@@ -40,6 +49,7 @@ function registerTests(): void {
   beforeEach(prepare)
   test("modelo inválido não é salvo", invalidModelDoesNotSave)
   test("nível inválido não é salvo", invalidThinkingDoesNotSave)
+  test.each(THINKING_LEVELS)("nível %s é aceito e salvo", acceptsLevel)
   test("falha de persistência preserva a configuração anterior", failedSavePreservesState)
 }
 

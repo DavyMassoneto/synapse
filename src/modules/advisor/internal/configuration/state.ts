@@ -6,8 +6,7 @@ import {
   parseModelReference,
   THINKING_LEVELS,
 } from "#synapse/modules/advisor/public/contracts"
-import { CONFIG_SAVE_FAILED, INVALID_MODEL, INVALID_THINKING } from "./constants"
-import { initialConfiguration } from "./initialize"
+import { CONFIG_SAVE_FAILED, DEFAULT_THINKING, INVALID_MODEL, INVALID_THINKING } from "./constants"
 import { type ConfigChange } from "./types"
 
 export class AdvisorConfiguration {
@@ -16,7 +15,18 @@ export class AdvisorConfiguration {
 
   constructor(storage: ConfigPort, loaded: ConfigLoadResult) {
     this.storage = storage
-    this.current = initialConfiguration(loaded)
+    const config: Config = { thinking: DEFAULT_THINKING }
+    if (loaded.kind === "loaded" && loaded.config.thinking) {
+      config.thinking = loaded.config.thinking
+    }
+    if (loaded.kind === "loaded" && loaded.config.model) {
+      config.model = loaded.config.model
+    }
+    if (loaded.kind === "invalid") {
+      this.current = { kind: "failure", message: loaded.message }
+    } else {
+      this.current = { kind: "success", config }
+    }
   }
 
   status(): AdvisorResult {

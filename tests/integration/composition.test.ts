@@ -1,55 +1,82 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { compose } from "#synapse/composition"
-import { AdvisorHostCollector, TestContext } from "../fixtures"
+import { AdvisorHostCollector, TestContext, toolText } from "../fixtures"
 
 let directory = ""
+let file = ""
+let host: AdvisorHostCollector
+let context: TestContext
 
 function prepare(): void {
   directory = mkdtempSync(join(tmpdir(), "synapse-composition-"))
+  file = join(directory, "advisor.json")
+  host = new AdvisorHostCollector()
+  context = new TestContext()
 }
 
 function cleanup(): void {
   rmSync(directory, { recursive: true, force: true })
 }
 
+async function shutdown(): Promise<void> {
+  for (const handler of host.shutdowns) {
+    await handler({ type: "session_shutdown", reason: "quit" }, context)
+  }
+}
+
 async function compositionLifecycle(): Promise<void> {
-  const host = new AdvisorHostCollector()
-  const composition = compose(host, join(directory, "advisor.json"))
-  expect(composition.signal.aborted).toBe(false)
+  writeFileSync(file, JSON.stringify({ model: "provider/model", thinking: "low" }))
+  compose(host, file)
+  await host.startSession(context)
+  expect(host.active).toContain("advisor")
   expect(host.shutdowns).toHaveLength(1)
-  for (const handler of host.shutdowns) {
-    await handler({ type: "session_shutdown", reason: "quit" }, new TestContext())
-  }
-  expect(composition.signal.aborted).toBe(true)
-  const reason = composition.signal.reason
-  for (const handler of host.shutdowns) {
-    await handler({ type: "session_shutdown", reason: "quit" }, new TestContext())
-  }
-  expect(composition.signal.reason).toBe(reason)
+  const answered = await host.requireTool().execute("id", {}, undefined, undefined, context)
+  expect(toolText(answered)).toBe("conselho")
+  const lifetime = context.modelRegistry.options?.signal
+  expect(lifetime?.aborted).toBe(false)
+  const calls = context.modelRegistry.calls
+  await shutdown()
+  await shutdown()
+  expect(lifetime?.aborted).toBe(true)
+  expect(lifetime?.reason).toBeInstanceOf(Error)
+  const refused = await host.requireTool().execute("id", {}, undefined, undefined, context)
+  expect(toolText(refused)).toMatch(/cancelada/)
+  expect(context.modelRegistry.calls).toBe(calls)
 }
 
-function missingConfiguration(): void {
-  const composition = compose(new AdvisorHostCollector(), join(directory, "advisor.json"))
-  expect(composition.advisor.activeModel()).toStrictEqual({ kind: "inactive" })
+async function missingConfiguration(): Promise<void> {
+  compose(host, file)
+  await host.startSession(context)
+  expect(host.active).not.toContain("advisor")
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
+  expect(result.isError).toBe(true)
+  expect(toolText(result)).toBe("Nenhum modelo advisor configurado.")
+  expect(context.modelRegistry.calls).toBe(0)
 }
 
-function invalidConfiguration(): void {
-  const file = join(directory, "advisor.json")
+async function invalidConfiguration(): Promise<void> {
   writeFileSync(file, "{broken")
-  const composition = compose(new AdvisorHostCollector(), file)
-  expect(composition.advisor.configuration.status().kind).toBe("failure")
-  expect(composition.advisor.activeModel()).toStrictEqual({ kind: "inactive" })
+  context.hasUI = true
+  compose(host, file)
+  await host.startSession(context)
+  expect(context.ui.notices[0]).toMatch(/inválida/)
+  expect(host.active).not.toContain("advisor")
+  const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
+  expect(result.isError).toBe(true)
+  expect(toolText(result)).toMatch(/inválida/)
+  expect(context.modelRegistry.calls).toBe(0)
+  expect(readFileSync(file, "utf8")).toBe("{broken")
 }
 
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
-  test("composição registra o advisor e coordena o encerramento", compositionLifecycle)
+  test("composição registra o advisor e o encerramento cancela as consultas", compositionLifecycle)
   test("sem arquivo de configuração o advisor fica desligado", missingConfiguration)
-  test("configuração inválida vira falha e deixa o advisor desligado", invalidConfiguration)
+  test("configuração inválida vira falha, deixa o advisor desligado e preserva o arquivo", invalidConfiguration)
 }
 
 describe("composition", registerTests)
