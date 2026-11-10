@@ -1,0 +1,15 @@
+language js
+
+JsNewExpression(callee=$callee, arguments=$arguments) as $creation where {
+  $callee <: `Map`,
+  $arguments <: contains JsArrayExpression(elements=$pair) where {
+    $pair <: [
+      or {
+        JsStringLiteralExpression(),
+        JsNumberLiteralExpression()
+      },
+      $value
+    ]
+  },
+  register_diagnostic(span=$creation, message="A Map built from keys written in the code is a Record in disguise: declare an interface with the known properties in types.ts and type the object with it. Map only holds keys that exist at run time.")
+}

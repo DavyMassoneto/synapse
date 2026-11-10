@@ -1,0 +1,8 @@
+language js
+
+or {
+  TsPredicateReturnType(),
+  TsAssertsReturnType()
+} as $guard where {
+  register_diagnostic(span=$guard, message="Type guards (value is T, asserts value is T) are forbidden: the compiler does not check what they claim, like a cast. Narrow with a direct condition, a comparison with the known values or schema validation at the boundary.")
+}

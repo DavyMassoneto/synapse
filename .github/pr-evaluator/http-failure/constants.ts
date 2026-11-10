@@ -1,0 +1,1 @@
+export const ERROR_BODY_CHARACTERS = 500
