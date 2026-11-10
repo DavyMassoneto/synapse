@@ -1,8 +1,8 @@
 import { type Advisor } from "#synapse/modules/advisor/public"
-import { ADVISOR_NAME } from "../host"
 import {
   ADVISOR_EXECUTION_MODE,
   ADVISOR_LABEL,
+  ADVISOR_NAME,
   ADVISOR_TOOL_DESCRIPTION,
   ADVISOR_TOOL_SNIPPET,
   advisorParameters,

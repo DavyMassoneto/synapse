@@ -1,4 +1,4 @@
-import { type AdvisorContext } from "../host"
+import { type AdvisorContext } from "../host-context"
 import { AMBIGUOUS_MODEL, CANCELLED_SELECTION, DISABLED_OPTION, MODEL_SELECTION_LIMIT, PICKER_TITLE } from "./constants"
 import { modelReferences } from "./references"
 import { searchModels } from "./search"

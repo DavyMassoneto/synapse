@@ -5,7 +5,7 @@ import {
   type ToolRenderResultOptions,
 } from "@earendil-works/pi-coding-agent"
 import { type Component } from "@earendil-works/pi-tui"
-import { type AdvisorContext } from "../host"
+import { type AdvisorContext } from "../host-context"
 import { type advisorParameters } from "./constants"
 
 export type AdvisorRenderTheme = Pick<Theme, "fg" | "bold">

@@ -1,5 +1,5 @@
 import { type RegisteredCommand } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "../host"
+import { type AdvisorContext } from "../host-context"
 import { type LifecycleHost } from "../lifecycle"
 
 export interface DisableCommand {

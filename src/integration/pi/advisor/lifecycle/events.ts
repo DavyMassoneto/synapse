@@ -5,7 +5,8 @@ import {
   type TurnEndEvent,
 } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules/advisor/public"
-import { ADVISOR_NAME, type AdvisorContext } from "../host"
+import { type AdvisorContext } from "../host-context"
+import { ADVISOR_NAME } from "../tool"
 import { REMINDER_DISPLAY, REMINDER_TYPE } from "./constants"
 import { syncAdvisor } from "./sync-advisor"
 import { type AdvisorToolActivation, type TurnEndOutcome } from "./types"

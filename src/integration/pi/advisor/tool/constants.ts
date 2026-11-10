@@ -3,6 +3,8 @@ import { Type } from "typebox"
 
 export const advisorParameters = Type.Object({})
 
+export const ADVISOR_NAME = "advisor"
+
 export const ADVISOR_LABEL = "Advisor"
 
 export const ADVISOR_EXECUTION_MODE: ToolExecutionMode = "sequential"

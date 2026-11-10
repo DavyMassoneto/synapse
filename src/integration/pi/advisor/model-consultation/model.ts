@@ -7,7 +7,7 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules/advisor/public"
-import { type AdvisorModelRegistry } from "../host"
+import { type AdvisorModelRegistry } from "../host-context"
 import { CAPABILITIES_CHANGED, INVALID_REFERENCE, PI_THINKING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"

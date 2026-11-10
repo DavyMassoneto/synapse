@@ -8,7 +8,7 @@ import {
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "../host"
+import { type AdvisorContext } from "../host-context"
 
 export type AdvisorToolActivation = Pick<ExtensionAPI, "getActiveTools" | "setActiveTools">
 
