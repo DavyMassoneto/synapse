@@ -17,3 +17,7 @@ export const REQUEST_TIMEOUT_MS = 60_000
 export const MILLISECONDS_PER_SECOND = 1000
 
 export const NO_REMAINING = "0"
+
+export const RETRY_AFTER_HEADER = "retry-after"
+
+export const REMAINING_HEADER = "x-ratelimit-remaining"

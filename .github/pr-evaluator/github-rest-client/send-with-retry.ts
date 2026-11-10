@@ -1,12 +1,12 @@
 import { setTimeout as delay } from "node:timers/promises"
 import { type GithubConfiguration } from "#evaluator/configuration"
 import { ensureOk } from "#evaluator/http-failure"
-import { DEFAULT_RETRY_SECONDS, MILLISECONDS_PER_SECOND, REQUEST_ATTEMPTS } from "./constants"
+import { DEFAULT_RETRY_SECONDS, MILLISECONDS_PER_SECOND, REQUEST_ATTEMPTS, RETRY_AFTER_HEADER } from "./constants"
 import { fetchGithub } from "./fetch-github"
 import { isRateLimited, isRetryAfterSeconds } from "./predicates"
 
 function retryDelayMs(response: Response): number {
-  const seconds = Number(response.headers.get("retry-after"))
+  const seconds = Number(response.headers.get(RETRY_AFTER_HEADER))
   if (isRetryAfterSeconds(seconds)) {
     return seconds * MILLISECONDS_PER_SECOND
   }
