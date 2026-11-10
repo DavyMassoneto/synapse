@@ -9,17 +9,6 @@ export interface DiffState {
   lines: DiffLines
 }
 
-export type HunkLineKind = "removed" | "added" | "context" | "no-newline"
-
-export interface HunkMarkerKinds {
-  "+": HunkLineKind
-  "-": HunkLineKind
-  " ": HunkLineKind
-  "\\": HunkLineKind
-}
-
-export type HunkMarker = keyof HunkMarkerKinds
-
 export interface LeftPosition {
   kind: "left"
   line: number

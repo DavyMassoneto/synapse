@@ -1,4 +1,3 @@
-import { linesOnSide } from "./lines-on-side"
 import { type DiffLines, type Side } from "./types"
 
 export function isMultiLine(start: number, end: number): boolean {
@@ -17,7 +16,7 @@ export function hasEveryLine(lines: Set<number>, start: number, end: number): bo
 export function hasDiffLine(lines: DiffLines, path: string, side: Side, line: number): boolean {
   const file = lines.get(path)
   if (file) {
-    return linesOnSide(file, side).has(line)
+    return file[side].has(line)
   }
   return false
 }
@@ -25,7 +24,7 @@ export function hasDiffLine(lines: DiffLines, path: string, side: Side, line: nu
 export function hasDiffRange(lines: DiffLines, path: string, side: Side, start: number, end: number): boolean {
   const file = lines.get(path)
   if (file) {
-    return isMultiLine(start, end) && hasEveryLine(linesOnSide(file, side), start, end)
+    return isMultiLine(start, end) && hasEveryLine(file[side], start, end)
   }
   return false
 }

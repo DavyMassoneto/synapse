@@ -1,4 +1,4 @@
-export class ModelHttpError extends Error {
+export class HttpFailure extends Error {
   readonly status: number
 
   constructor(status: number, message: string) {

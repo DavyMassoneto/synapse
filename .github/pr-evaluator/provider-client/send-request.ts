@@ -1,18 +1,11 @@
 import { type ModelConfiguration } from "#evaluator/configuration"
-import { readFailureDetail } from "#evaluator/http-failure"
-import { ModelHttpError } from "./model-http-error"
+import { ensureOk } from "#evaluator/http-failure"
+import { MODEL_ORIGIN } from "./constants"
 import { postChat } from "./post-chat"
 import { ensureCompleted, readSseStream } from "./sse"
 
-async function ensureSuccess(response: Response): Promise<Response> {
-  if (response.ok) {
-    return response
-  }
-  throw new ModelHttpError(response.status, `Modelo respondeu ${response.status}: ${await readFailureDetail(response)}`)
-}
-
 export async function sendRequest(configuration: ModelConfiguration, prompt: string): Promise<string> {
-  const response = await ensureSuccess(await postChat(configuration, prompt))
+  const response = await ensureOk(await postChat(configuration, prompt), MODEL_ORIGIN)
   if (response.body) {
     return ensureCompleted(await readSseStream(response.body))
   }
