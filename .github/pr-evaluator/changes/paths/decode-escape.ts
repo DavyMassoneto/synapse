@@ -1,10 +1,13 @@
-import { decodeOctal } from "./decode-octal"
-import { lookupEscape } from "./lookup-escape"
+import { ESCAPES, OCTAL_RADIX } from "./constants"
 import { isOctalEscape } from "./predicates"
 
 export function decodeEscape(sequence: string): string {
   if (isOctalEscape(sequence)) {
-    return decodeOctal(sequence)
+    return String.fromCharCode(Number.parseInt(sequence.slice(1), OCTAL_RADIX))
   }
-  return lookupEscape(sequence)
+  const decoded = ESCAPES.get(sequence)
+  if (typeof decoded === "string") {
+    return decoded
+  }
+  return sequence
 }

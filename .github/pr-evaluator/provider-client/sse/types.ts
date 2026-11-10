@@ -23,5 +23,3 @@ export interface SplitText {
   lines: string[]
   rest: string
 }
-
-export type StreamChunk = Static<typeof StreamChunkSchema>

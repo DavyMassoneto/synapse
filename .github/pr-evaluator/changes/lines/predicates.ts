@@ -1,9 +1,17 @@
-import { countRangeLines } from "./count-range-lines"
 import { linesOnSide } from "./lines-on-side"
 import { type DiffLines, type Side } from "./types"
 
 export function isMultiLine(start: number, end: number): boolean {
   return start < end
+}
+
+export function hasEveryLine(lines: Set<number>, start: number, end: number): boolean {
+  for (let line = start; line <= end; line += 1) {
+    if (!lines.has(line)) {
+      return false
+    }
+  }
+  return true
 }
 
 export function hasDiffLine(lines: DiffLines, path: string, side: Side, line: number): boolean {
@@ -12,5 +20,6 @@ export function hasDiffLine(lines: DiffLines, path: string, side: Side, line: nu
 }
 
 export function hasDiffRange(lines: DiffLines, path: string, side: Side, start: number, end: number): boolean {
-  return isMultiLine(start, end) && countRangeLines(lines, path, side, start, end) === end - start + 1
+  const file = lines.get(path)
+  return isMultiLine(start, end) && file instanceof Object && hasEveryLine(linesOnSide(file, side), start, end)
 }

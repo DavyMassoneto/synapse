@@ -85,6 +85,7 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 | `configuration/` | Ler e validar as variáveis de ambiente |
 | `changes/` | Obter o diff do git e registrar as linhas que ele mostra, com a posição de cada uma |
 | `review-request/` | Carregar arquitetura, regras e padrões e montar a solicitação ao avaliador |
+| `http-failure/` | Ler o detalhe de uma resposta HTTP que falhou, para as mensagens de erro dos dois clientes HTTP |
 | `provider-client/` | Chamar o modelo no provedor, ler a resposta em streaming e repetir a chamada em falhas de servidor |
 | `review-result/` | Validar a resposta: veredito e apontamentos |
 | `pull-request-review/` | Consultar a PR e publicar a review com um comentário por linha |

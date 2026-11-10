@@ -1,12 +1,11 @@
-import { decodeEscapes } from "./decode-escapes"
+import { TAB_SUFFIX_PATTERN } from "./constants"
+import { decodeQuoted } from "./decode-quoted"
 import { isQuoted } from "./predicates"
-import { unquote } from "./unquote"
-import { withoutTabSuffix } from "./without-tab-suffix"
 
 export function decodePath(header: string): string {
-  const name = withoutTabSuffix(header)
+  const name = header.replace(TAB_SUFFIX_PATTERN, "")
   if (isQuoted(name)) {
-    return decodeEscapes(unquote(name))
+    return decodeQuoted(name)
   }
   return name
 }

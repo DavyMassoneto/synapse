@@ -15,6 +15,7 @@ O avaliador roda sozinho em toda PR e aponta cada problema na linha em que ele o
 - Comentário em outra linha nunca substitui o apontamento: se a linha do apontamento não está no diff, ele entra na lista "sem linha no diff" do resumo da review. Se só o intervalo (`startLine`) não está inteiro no diff, o comentário fica na linha final do apontamento, sem intervalo.
 - Resposta truncada (término diferente de `stop`), com texto fora do JSON (é aceita no máximo uma cerca de código em volta dele), fora do formato ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado.
 - O job termina com sucesso quando a avaliação é publicada, qualquer que seja o veredito. Não é uma barreira de merge: o veredito `pedir mudanças` aparece na review, não no status do check.
+- Sem o cabeçalho `retry-after`, o avaliador espera 60 segundos antes de repetir uma requisição limitada pelo GitHub, o intervalo mínimo que a documentação do GitHub recomenda para limites secundários.
 - O modelo é o configurado em `REVIEW_MODEL` no workflow e precisa estar liberado para a chave do secret `OMNIROUTE_API_KEY`.
 
 ## Entradas
@@ -58,7 +59,7 @@ Critérios:
 - Clean Code: nomes claros, funções pequenas e legíveis, espaçamento consistente, ausência de código morto, de comentários que repetem o código e de condicionais ou ternários mais complexos do que o necessário. Aplique também as regras de <regras> e cada regra numerada de <padroes>.
 - DRY: conhecimento ou lógica duplicados na própria alteração ou entre a alteração e código visível no diff. Semelhança casual não é violação; só aponte duplicação cuja mudança futura teria de ser feita em vários lugares.
 - YAGNI: código, parâmetro, abstração, opção ou ponto de extensão sem uso na PR, ou criado para necessidade hipotética.
-- SRP é lei, não preferência. Para cada função adicionada ou alterada pela PR, liste as tarefas que ela executa (extrair, validar, decidir, transformar, formatar, ler, gravar, coordenar). Mais de uma tarefa, ou coordenar e executar no mesmo corpo, é violação, mesmo que cada parte seja pequena. Aponte na linha da assinatura da função e diga quais tarefas ela mistura. Aplique cada regra numerada de <padroes> sobre responsabilidade.
+- SRP é lei, não preferência. Para cada função adicionada ou alterada pela PR, nomeie os motivos independentes pelos quais ela mudaria (formato da entrada, regra de decisão, política de repetição, formato da saída, origem dos dados). Mais de um motivo independente, ou coordenar e executar a lógica dos passos no mesmo corpo, é violação: aponte na linha da assinatura da função e cite os motivos que ela mistura. Passos que mudam sempre juntos são uma responsabilidade só e não são violação. Aplique cada regra numerada de <padroes> sobre responsabilidade.
 - Arquitetura: conformidade com <arquitetura>: fronteiras de módulos, direção das dependências, uso de public/, internal/ e adapters/, SDK do pi apenas em integration/pi/, bridges que traduzem sem decidir, contratos sem tipos de SDK, e a estrutura de diretórios prevista.
 
 Padrões de código: <padroes> e <regras> são verificáveis, não sugestões. Percorra cada regra numerada contra cada trecho adicionado ou alterado do diff e registre como violação o que o diff comprova.
@@ -70,7 +71,7 @@ Regras de avaliação:
 - Quando o problema é uma ausência (documento não atualizado, consumidor inexistente), cite a linha adicionada que torna a ausência um problema.
 - Não cite linha que o <diff> não mostra e não afirme o que ele não mostra. Se a conclusão depende de código fora do diff (outra duplicação, outro importador, outra dependência), use kind insufficient_context e diga em evidence o que precisaria ser verificado. Só use violation quando o diff comprova.
 - Não invente apontamentos para preencher os critérios. Um critério sem problemas não gera item.
-- Em DRY, YAGNI e Clean Code, proponha correções proporcionais: a sugestão também deve respeitar YAGNI. Em SRP não há proporcionalidade: a função divide-se até cada parte ter uma responsabilidade.
+- Em DRY, YAGNI e Clean Code, proponha correções proporcionais: a sugestão também deve respeitar YAGNI. Em SRP não há proporcionalidade: a função divide-se por motivo de mudança, sem criar funções que só escondem uma linha.
 - Ordene os apontamentos por gravidade. Violações de arquitetura e de regras explícitas vêm antes de preferências de estilo.
 
 Resposta: somente um objeto JSON, sem texto antes ou depois e sem cercas de código, no idioma do usuário, com este formato:

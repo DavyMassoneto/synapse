@@ -1,6 +1,9 @@
 import { decodePath } from "./decode-path"
-import { removePrefix } from "./remove-prefix"
 
 export function pathOf(header: string, prefix: string): string {
-  return removePrefix(decodePath(header), prefix)
+  const name = decodePath(header)
+  if (name.startsWith(prefix)) {
+    return name.slice(prefix.length)
+  }
+  return name
 }

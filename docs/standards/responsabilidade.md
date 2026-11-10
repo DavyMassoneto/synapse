@@ -1,22 +1,21 @@
 # Responsabilidade única
 
-SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única responsabilidade, e o nome a diz por inteiro.
+SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única responsabilidade coesa e explícita, e o nome a diz.
 
 ## 1. Função
 
-- Uma função faz uma coisa. Se descrevê-la exige "e", "ou" ou "depois", ela faz mais de uma e deve ser dividida.
-- Tarefas diferentes são extrair, validar, decidir, transformar, formatar, ler, gravar e coordenar. Uma função executa uma delas; nunca duas.
-- Uma função ou coordena, chamando outras funções em sequência, ou executa um único passo. Não faz as duas coisas.
-- Dividir é obrigatório mesmo que cada parte fique com uma ou duas linhas (ver [Legibilidade](legibilidade.md), seção 5).
+- Uma função tem um único motivo para mudar. Para julgar, nomeie os motivos pelos quais ela mudaria: o formato da entrada, a regra de uma decisão, a política de repetição, o formato da saída, a origem dos dados. Mais de um motivo independente é violação, e a função se divide por motivo.
+- Passos que mudam sempre juntos são uma responsabilidade só. Um parser lê e avança a sua posição; uma validação compara várias condições do mesmo dado; uma política de repetição decide e repete; "buscar ou criar" é uma operação. Nada disso, sozinho, é violação.
+- Uma função ou coordena, chamando outras funções em sequência, ou executa o seu passo. Uma função que coordena não contém a lógica dos passos.
+- Não se divide uma função apenas para ter funções menores: uma função que só esconde uma linha de outra não é uma responsabilidade.
 
-## 2. Sinais de que uma função tem mais de uma responsabilidade
+## 2. Sinais de que uma função tem mais de um motivo para mudar
 
-- Duas ou mais tarefas da lista da seção 1 no mesmo corpo.
-- Uma condição composta (`&&`, `||`) que decide um conceito sem nome: o conceito vira predicado.
-- Uma conta ou transformação que alimenta uma decisão na mesma função: a transformação vira função própria.
-- Um ternário, um `slice` ou um laço escondido dentro da expressão de outra tarefa.
-- Variáveis intermediárias que só servem a uma das tarefas.
-- Um nome com "And", "Or", "E" ou "Ou", ou um nome que cobre só parte do que a função faz.
+- Ela interpreta um formato e, no mesmo corpo, decide o que fazer com o resultado, e as duas partes mudariam por razões distintas.
+- Ela reúne leitura de entrada, regra de negócio e formatação de saída.
+- Uma conta, uma busca ou uma transformação que alimenta uma decisão de outro assunto está dentro dela.
+- Um conceito sem nome está escondido numa condição composta, num ternário ou num laço dentro de uma expressão.
+- Um nome que cobre só parte do que a função faz, ou um nome com "And", "Or", "E" ou "Ou".
 
 ## 3. Arquivo e pasta
 
