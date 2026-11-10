@@ -1,5 +1,6 @@
 export * from "./advisor"
 export * from "./command"
+export * from "./content-text"
 export * from "./host"
 export * from "./lifecycle"
 export * from "./model-consultation"

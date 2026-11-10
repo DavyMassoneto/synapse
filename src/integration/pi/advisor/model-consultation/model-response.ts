@@ -1,13 +1,13 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
 import { type ModelResponse, type Usage } from "#synapse/modules/advisor/public"
-import { EMPTY_RESPONSE } from "./constants"
-import { extractText } from "./extract-text"
+import { extractText } from "../content-text"
+import { EMPTY_RESPONSE, PROVIDER_FAILED } from "./constants"
 
 function failureReason(reply: AssistantMessage): string {
   if (reply.errorMessage) {
     return reply.errorMessage
   }
-  return reply.stopReason
+  return PROVIDER_FAILED
 }
 
 function contractUsage(usage: AssistantMessage["usage"]): Usage {

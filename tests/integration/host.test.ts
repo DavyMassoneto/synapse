@@ -29,8 +29,7 @@ async function providerError(): Promise<void> {
   context.modelRegistry.stopReason = "error"
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(result.isError).toBe(true)
-  expect(toolText(result)).not.toMatch(/conselho/)
-  expect(toolText(result)).not.toMatch(/cancelada/)
+  expect(toolText(result)).toBe("O provedor do advisor falhou sem informar o erro.")
 }
 
 async function projectionFailure(): Promise<void> {

@@ -6,6 +6,8 @@ export const CAPABILITIES_CHANGED = "As capacidades do modelo advisor mudaram du
 
 export const EMPTY_RESPONSE = "O advisor não retornou texto."
 
+export const PROVIDER_FAILED = "O provedor do advisor falhou sem informar o erro."
+
 export const PI_THINKING_BUDGETS: PiThinkingBudgets = {
   off: 0,
   minimal: 1_024,

@@ -1,3 +1,3 @@
 export * from "./constants"
-export * from "./parse-model-reference"
+export * from "./model-reference"
 export * from "./types"
