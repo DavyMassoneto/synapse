@@ -1,5 +1,6 @@
 import { type AgentToolResult } from "@earendil-works/pi-coding-agent"
 import { type AdvisorToolDetails } from "#synapse/integration"
+import { type ReasoningLevel } from "./types"
 
 export const RENDER_RESULT: AgentToolResult<AdvisorToolDetails> = {
   content: [{ type: "text", text: "line0\nline1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9" }],
@@ -16,5 +17,7 @@ export const TEST_USAGE = {
 }
 
 export const DEFAULT_WINDOW = 40_000
+
+export const REASONING_LEVELS: ReasoningLevel[] = ["minimal", "low", "medium", "high", "xhigh", "max"]
 
 export const IDLE_SIGNAL = new AbortController().signal

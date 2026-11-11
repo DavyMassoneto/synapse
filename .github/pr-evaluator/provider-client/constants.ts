@@ -2,6 +2,16 @@ export const MODEL_TEMPERATURE = 0
 
 export const MODEL_TIMEOUT_MS = 2_400_000
 
+export const CHAT_PATH = "/chat/completions"
+
+export const CHAT_METHOD = "POST"
+
+export const AUTHORIZATION_HEADER = "Authorization"
+
+export const BEARER_PREFIX = "Bearer "
+
+export const PROMPT_ROLE = "user"
+
 export const CONTENT_TYPE_HEADER = "Content-Type"
 
 export const JSON_CONTENT_TYPE = "application/json"

@@ -11,7 +11,7 @@ import {
   THINKING_LEVELS,
   type ThinkingLevel,
 } from "#synapse/modules"
-import { IDLE_SIGNAL, TestRegistry } from "../fixtures"
+import { IDLE_SIGNAL, REASONING_LEVELS, type ReasoningLevel, TestRegistry } from "../fixtures"
 
 let registry: TestRegistry
 let adapter: AdvisorModel
@@ -107,12 +107,12 @@ function budgetsCoverContractLevels(): void {
   expect(Object.keys(PI_THINKING_BUDGETS)).toStrictEqual(THINKING_LEVELS)
 }
 
-function budgetMatchesPiAi(level: ThinkingLevel): void {
-  if (level === "off") {
-    expect(PI_THINKING_BUDGETS.off).toBe(0)
-  } else {
-    expect(PI_THINKING_BUDGETS[level]).toBe(thinkingBudgetForLevel(level))
-  }
+function budgetOffIsZero(): void {
+  expect(PI_THINKING_BUDGETS.off).toBe(0)
+}
+
+function budgetMatchesPiAi(level: ReasoningLevel): void {
+  expect(PI_THINKING_BUDGETS[level]).toBe(thinkingBudgetForLevel(level))
 }
 
 function cleanup(): void {
@@ -131,7 +131,8 @@ function registerTests(): void {
   test("sinal já cancelado não consulta o registry", cancelledBeforeResolution)
   test.each(THINKING_LEVELS)("nível %s define a reserva", reasoningBudget)
   test("a tabela de reservas tem exatamente os níveis do contrato", budgetsCoverContractLevels)
-  test.each(THINKING_LEVELS)(
+  test("o nível off não reserva tokens", budgetOffIsZero)
+  test.each(REASONING_LEVELS)(
     "a cópia da reserva de %s é igual à do pi-ai, que não expõe a tabela às extensões",
     budgetMatchesPiAi,
   )

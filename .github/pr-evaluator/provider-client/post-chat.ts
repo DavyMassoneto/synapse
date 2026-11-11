@@ -1,18 +1,23 @@
 import { MAX_OUTPUT_TOKENS, type ModelConfiguration } from "#evaluator/configuration"
 import {
+  AUTHORIZATION_HEADER,
+  BEARER_PREFIX,
   CACHE_CONTROL_HEADER,
+  CHAT_METHOD,
+  CHAT_PATH,
   CONTENT_TYPE_HEADER,
   JSON_CONTENT_TYPE,
   MODEL_TEMPERATURE,
   MODEL_TIMEOUT_MS,
   NO_CACHE_DIRECTIVE,
+  PROMPT_ROLE,
 } from "./constants"
 
 export function postChat(configuration: ModelConfiguration, prompt: string): Promise<Response> {
-  return fetch(`${configuration.baseUrl}/chat/completions`, {
-    method: "POST",
+  return fetch(`${configuration.baseUrl}${CHAT_PATH}`, {
+    method: CHAT_METHOD,
     headers: {
-      Authorization: `Bearer ${configuration.apiKey}`,
+      [AUTHORIZATION_HEADER]: `${BEARER_PREFIX}${configuration.apiKey}`,
       [CONTENT_TYPE_HEADER]: JSON_CONTENT_TYPE,
       [CACHE_CONTROL_HEADER]: NO_CACHE_DIRECTIVE,
     },
@@ -21,7 +26,7 @@ export function postChat(configuration: ModelConfiguration, prompt: string): Pro
       stream: true,
       temperature: MODEL_TEMPERATURE,
       max_tokens: MAX_OUTPUT_TOKENS,
-      messages: [{ role: "user", content: prompt }],
+      messages: [{ role: PROMPT_ROLE, content: prompt }],
     }),
     signal: AbortSignal.timeout(MODEL_TIMEOUT_MS),
   })

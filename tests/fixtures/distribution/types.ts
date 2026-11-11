@@ -1,8 +1,6 @@
-export interface ConfigCase {
+export interface InvalidConfigCase {
   name: string
-  content?: string
-  expected: RegExp
-  invalid?: boolean
+  content: string
 }
 
 export interface VariableSet {
