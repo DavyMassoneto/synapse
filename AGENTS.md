@@ -20,6 +20,7 @@
 - Do not use `any`, `unknown`, `Record`, type assertions, casts, `as const` or `satisfies`, nor any workaround for them (`Object.freeze`, a helper that asserts a type without validating it).
 - Comments in code, default values and fallbacks without justification, `biome-ignore`, `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck` are forbidden.
 - Split complex logic into small, readable functions with clear responsibilities; avoid unnecessary functions and redundant type guards.
+- Pull requests are micro PRs: each one carries a single cohesive change with one reason to exist, small enough to be reviewed in one sitting. Changes to rules and standards, to the GitHub automation and to product code go in separate PRs, and so do a refactor and the behavior change that follows it. Larger work is split into a sequence of small PRs, each one complete, validated and mergeable on its own.
 - Code written while fixing a finding goes through the same review questions as the code under review, before it is published.
 - Every verification includes an input that must be rejected, not only inputs that must work.
 - Tests use Vitest with `expect`: one scenario per test, and shared fixtures live in a support file.
