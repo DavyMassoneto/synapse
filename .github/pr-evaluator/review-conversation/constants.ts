@@ -37,5 +37,3 @@ export const TOO_MANY_TOOL_CALLS = "A resposta excede o limite de chamadas de fe
 export const MESSAGE_SEPARATOR_BYTES = 1
 
 export const ARRAY_BRACKET_BALANCE_BYTES = 1
-
-export const EMPTY_MESSAGES_BYTES = 2

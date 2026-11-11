@@ -50,6 +50,5 @@ export function searchCode(snapshot: RepositorySnapshot, text: string): string {
   return renderInspectionItems(matchingLines(output.text, prefix), {
     maximum: MAX_SEARCH_MATCHES,
     more: MORE_MATCHES,
-    empty: `${NO_MATCHES}${text}`,
   })
 }

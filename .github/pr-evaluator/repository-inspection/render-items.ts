@@ -10,7 +10,7 @@ export function renderInspectionItems(items: Iterable<string>, presentation: Ins
     }
     selected.push(item)
   }
-  if (selected.length === 0) {
+  if (selected.length === 0 && presentation.empty) {
     return presentation.empty
   }
   return selected.join(LINE_BREAK)

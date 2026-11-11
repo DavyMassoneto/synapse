@@ -24,9 +24,7 @@ function numberedPage(content: string, request: ReadFileRequest): string {
       }
       break
     }
-    if (line >= request.startLine) {
-      numbered.push(`${line}${LINE_NUMBER_BREAK}${text}`)
-    }
+    numbered.push(`${line}${LINE_NUMBER_BREAK}${text}`)
     line += 1
   }
   return numbered.join(LINE_BREAK)

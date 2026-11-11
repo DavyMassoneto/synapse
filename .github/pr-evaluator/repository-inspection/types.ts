@@ -13,7 +13,7 @@ export type ReadFileRequest = Static<typeof ReadFileArguments>
 export interface InspectionItemsPresentation {
   maximum: number
   more: string
-  empty: string
+  empty?: string
 }
 
 export interface InspectionGrepOutput {
