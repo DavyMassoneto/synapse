@@ -12,7 +12,7 @@ import {
 import { AdvisorConfiguration } from "./configuration"
 import { CONSULTATION_INSTRUCTIONS } from "./constants"
 import { consultAdvisor } from "./consultation"
-import { REMINDER, ReminderCounter } from "./reminder"
+import { isReminderDue, REMINDER, ReminderCounter } from "./reminder"
 
 export class AdvisorService implements Advisor {
   readonly consultationInstructions = CONSULTATION_INSTRUCTIONS
@@ -36,7 +36,7 @@ export class AdvisorService implements Advisor {
       return { kind: "idle" }
     }
     this.reminder.count(event)
-    if (this.reminder.isDue(event)) {
+    if (isReminderDue(this.reminder.turns, event)) {
       this.reminder.reset()
       return { kind: "due", text: REMINDER }
     }

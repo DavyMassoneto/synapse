@@ -1,20 +1,19 @@
 import { type ReminderTurn } from "#synapse/modules/advisor/public/contracts"
-import { REMIND_EVERY } from "./constants"
 
 export class ReminderCounter {
-  private turns = 0
+  private completedTurns = 0
+
+  get turns(): number {
+    return this.completedTurns
+  }
 
   reset(): void {
-    this.turns = 0
+    this.completedTurns = 0
   }
 
   count(event: ReminderTurn): void {
     if (event.completed) {
-      this.turns += 1
+      this.completedTurns += 1
     }
-  }
-
-  isDue(event: ReminderTurn): boolean {
-    return event.completed && event.usedTools && this.turns >= REMIND_EVERY
   }
 }

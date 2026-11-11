@@ -133,7 +133,10 @@ function registerTests(): void {
   test("sinal já cancelado não consulta o registry", cancelledBeforeResolution)
   test("nível de raciocínio define a reserva", reasoningBudgets)
   test("a tabela de reservas tem exatamente os níveis do contrato", budgetsCoverContractLevels)
-  test.each(THINKING_LEVELS)("reserva de %s segue o pi-ai", budgetMatchesPiAi)
+  test.each(THINKING_LEVELS)(
+    "a cópia da reserva de %s é igual à do pi-ai, que não expõe a tabela às extensões",
+    budgetMatchesPiAi,
+  )
 }
 
 describe("model resolution", registerTests)
