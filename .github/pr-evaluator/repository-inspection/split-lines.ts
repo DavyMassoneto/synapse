@@ -8,7 +8,7 @@ export function* splitInspectionLines(text: string, startLine: number): Generato
     start = boundary < 0 ? text.length + 1 : boundary + 1
     line += 1
   }
-  while (start <= text.length) {
+  while (start < text.length) {
     const boundary = text.indexOf(LINE_BREAK, start)
     const end = boundary < 0 ? text.length : boundary
     yield text.slice(start, end)
