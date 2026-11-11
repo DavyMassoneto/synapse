@@ -28,8 +28,6 @@ export const SUBMITTED_ROUND = "submitted"
 
 export const CONTINUING_ROUND = "continuing"
 
-export const MAX_CONVERSATION_BYTES = 872_000
-
 export const MAX_ROUND_TOOL_CALLS = 16
 
 export const CONVERSATION_TOO_LARGE = "A conversa excede o limite de bytes: "

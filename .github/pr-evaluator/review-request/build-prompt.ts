@@ -6,6 +6,9 @@ import {
   PLACEHOLDER_RULES,
   PLACEHOLDER_STANDARDS,
   PROMPT_ENCODING,
+  PROMPT_LIMIT_DETAIL,
+  PROMPT_NOT_TRUNCATED,
+  PROMPT_TOO_LARGE,
 } from "./constants"
 import { type PromptContext } from "./types"
 
@@ -32,9 +35,7 @@ function fillTemplate(context: PromptContext, diff: string): string {
 function ensureWithinLimit(prompt: string): string {
   const bytes = Buffer.byteLength(prompt, PROMPT_ENCODING)
   if (bytes > MAX_PROMPT_BYTES) {
-    throw new Error(
-      `O prompt tem ${bytes} bytes e excede o limite de ${MAX_PROMPT_BYTES} (regras e diff); nada é truncado.`,
-    )
+    throw new Error(`${PROMPT_TOO_LARGE}${bytes}${PROMPT_LIMIT_DETAIL}${MAX_PROMPT_BYTES}${PROMPT_NOT_TRUNCATED}`)
   }
   return prompt
 }

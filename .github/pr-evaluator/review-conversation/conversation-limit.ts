@@ -1,10 +1,11 @@
 import { type ChatMessage, type ModelReply } from "#evaluator/provider-client"
-import { CONVERSATION_TOO_LARGE, MAX_CONVERSATION_BYTES, MAX_ROUND_TOOL_CALLS, TOO_MANY_TOOL_CALLS } from "./constants"
+import { MAX_PROMPT_BYTES } from "#evaluator/review-request"
+import { CONVERSATION_TOO_LARGE, MAX_ROUND_TOOL_CALLS, TOO_MANY_TOOL_CALLS } from "./constants"
 
 export function ensureConversationLimit(messages: ChatMessage[]): void {
   const bytes = Buffer.byteLength(JSON.stringify(messages))
-  if (bytes > MAX_CONVERSATION_BYTES) {
-    throw new Error(`${CONVERSATION_TOO_LARGE}${bytes}/${MAX_CONVERSATION_BYTES}`)
+  if (bytes > MAX_PROMPT_BYTES) {
+    throw new Error(`${CONVERSATION_TOO_LARGE}${bytes}/${MAX_PROMPT_BYTES}`)
   }
 }
 

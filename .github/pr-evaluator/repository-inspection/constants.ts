@@ -15,7 +15,9 @@ export const ReadFileArguments = Type.Object({
   endLine: Type.Integer({ minimum: 1 }),
 })
 
-export const SearchCodeArguments = Type.Object({ text: Type.String({ minLength: 2 }) })
+export const MIN_SEARCH_TEXT_LENGTH = 2
+
+export const SearchCodeArguments = Type.Object({ text: Type.String({ minLength: MIN_SEARCH_TEXT_LENGTH }) })
 
 export const MAX_TOOL_OUTPUT_BYTES = 65_536
 

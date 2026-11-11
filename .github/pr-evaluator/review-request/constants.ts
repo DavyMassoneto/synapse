@@ -31,3 +31,9 @@ export const MIN_BYTES_PER_TOKEN = 1
 export const MAX_PROMPT_BYTES = (MODEL_CONTEXT_TOKENS - MAX_OUTPUT_TOKENS) * MIN_BYTES_PER_TOKEN
 
 export const PROMPT_ENCODING = "utf8"
+
+export const PROMPT_TOO_LARGE = "O prompt tem "
+
+export const PROMPT_LIMIT_DETAIL = " bytes e excede o limite de "
+
+export const PROMPT_NOT_TRUNCATED = " (regras e diff); nada é truncado."
