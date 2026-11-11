@@ -4,12 +4,13 @@ import {
   PLACEHOLDER_DIFF,
   PLACEHOLDER_PATTERN,
   PLACEHOLDER_RULES,
+  PLACEHOLDER_SOURCE,
   PLACEHOLDER_STANDARDS,
   PROMPT_ENCODING,
 } from "./constants"
-import { type PromptContext } from "./types"
+import { type PromptContext, type ReviewInput } from "./types"
 
-function placeholderText(context: PromptContext, diff: string, marker: string): string {
+function placeholderText(context: PromptContext, input: ReviewInput, marker: string): string {
   if (marker === PLACEHOLDER_ARCHITECTURE) {
     return context.architecture
   }
@@ -20,13 +21,16 @@ function placeholderText(context: PromptContext, diff: string, marker: string): 
     return context.standards
   }
   if (marker === PLACEHOLDER_DIFF) {
-    return diff
+    return input.diff
+  }
+  if (marker === PLACEHOLDER_SOURCE) {
+    return input.source
   }
   throw new Error(`Marcador desconhecido no modelo do prompt: ${marker}`)
 }
 
-function fillTemplate(context: PromptContext, diff: string): string {
-  return context.template.replace(PLACEHOLDER_PATTERN, (marker) => placeholderText(context, diff, marker))
+function fillTemplate(context: PromptContext, input: ReviewInput): string {
+  return context.template.replace(PLACEHOLDER_PATTERN, (marker) => placeholderText(context, input, marker))
 }
 
 function ensureWithinLimit(prompt: string): string {
@@ -39,6 +43,6 @@ function ensureWithinLimit(prompt: string): string {
   return prompt
 }
 
-export function buildPrompt(context: PromptContext, diff: string): string {
-  return ensureWithinLimit(fillTemplate(context, diff))
+export function buildPrompt(context: PromptContext, input: ReviewInput): string {
+  return ensureWithinLimit(fillTemplate(context, input))
 }

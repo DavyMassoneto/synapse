@@ -22,6 +22,8 @@ export const PLACEHOLDER_STANDARDS = "{{PADROES}}"
 
 export const PLACEHOLDER_DIFF = "{{DIFF}}"
 
+export const PLACEHOLDER_SOURCE = "{{CODIGO}}"
+
 export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
 
 export const MODEL_CONTEXT_TOKENS = 1_000_000
