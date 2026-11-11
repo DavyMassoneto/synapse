@@ -5,12 +5,11 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { FileConfig } from "../adapters"
 import { AdvisorService } from "../internal"
 import { THINKING_LEVELS, type ThinkingLevel } from "../public"
+import { INVALID_FILE } from "./constants"
 import { serviceFor } from "./doubles"
 
 let directory = ""
 let file = ""
-
-const INVALID_FILE = { kind: "invalid", message: "Configuração do advisor inválida; revise advisor.json." }
 
 function prepareDirectory(): void {
   directory = mkdtempSync(join(tmpdir(), "advisor-config-"))

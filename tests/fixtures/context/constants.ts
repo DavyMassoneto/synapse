@@ -16,3 +16,5 @@ export const TEST_USAGE = {
 }
 
 export const DEFAULT_WINDOW = 40_000
+
+export const IDLE_SIGNAL = new AbortController().signal

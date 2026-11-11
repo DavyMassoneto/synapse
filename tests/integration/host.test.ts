@@ -39,7 +39,6 @@ async function projectionFailure(): Promise<void> {
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(() => host.cleanup())
-
   test("consulta registrada preserva uso e modelo", successfulConsultation)
   test("provedor abortado devolve cancelamento", abortedProvider)
   test("erro do provedor devolve falha, não cancelamento", providerError)

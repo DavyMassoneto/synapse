@@ -8,12 +8,15 @@ export class DistributionRegistry extends ModelRegistry {
   override getAvailable(): Model<Api>[] {
     return this.fake.getAvailable()
   }
+
   override find(provider: string, id: string): ReturnType<ModelRegistry["find"]> {
     return this.fake.find(provider, id)
   }
+
   override hasConfiguredAuth(): boolean {
     return true
   }
+
   override streamSimple(model: Model<Api>, context: Context, options?: ModelsSimpleStreamOptions) {
     return this.fake.streamSimple(model, context, options)
   }

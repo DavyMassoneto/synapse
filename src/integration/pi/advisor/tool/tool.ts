@@ -2,14 +2,9 @@ import { type Advisor, type ConsultationResult } from "#synapse/modules"
 import { type AdvisorContext } from "../host-contracts"
 import { AdvisorModel } from "../model-consultation"
 import { captureTranscript } from "../transcript"
-import { TOOL_CANCELLED, TOOL_PROGRESS } from "./constants"
-import {
-  type AdvisorToolInput,
-  type AdvisorToolOutput,
-  type AdvisorToolResult,
-  type AdvisorToolSignal,
-  type AdvisorToolUpdate,
-} from "./types"
+import { TOOL_CANCELLED } from "./constants"
+import { reportProgress, toolFailure, toolOutput, unavailableOutput } from "./tool-output"
+import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
 
 export class AdvisorToolHandler {
   private readonly advisor: Advisor
@@ -29,7 +24,7 @@ export class AdvisorToolHandler {
   ): AdvisorToolResult {
     const callSignal = this.callSignal(signal)
     if (callSignal.aborted) {
-      return this.failure(TOOL_CANCELLED)
+      return toolFailure(TOOL_CANCELLED)
     }
     return this.consultReporting(callSignal, onUpdate, context)
   }
@@ -40,18 +35,14 @@ export class AdvisorToolHandler {
     context: AdvisorContext,
   ): AdvisorToolResult {
     try {
-      this.reportProgress(onUpdate)
-      return this.output(await this.consult(signal, context))
+      reportProgress(onUpdate)
+      return toolOutput(await this.consult(signal, context))
     } catch (error) {
       if (error instanceof Error) {
-        return this.unavailable(error, signal)
+        return unavailableOutput(error, signal)
       }
       throw error
     }
-  }
-
-  private reportProgress(onUpdate: AdvisorToolUpdate): void {
-    onUpdate?.({ content: [{ type: "text", text: TOOL_PROGRESS }], details: {} })
   }
 
   private callSignal(signal: AdvisorToolSignal): AbortSignal {
@@ -66,30 +57,5 @@ export class AdvisorToolHandler {
       { system: context.getSystemPrompt(), messages: captureTranscript(context), signal },
       new AdvisorModel(context.modelRegistry),
     )
-  }
-
-  private output(result: ConsultationResult): AdvisorToolOutput {
-    if (result.kind === "cancelled") {
-      return this.failure(TOOL_CANCELLED)
-    }
-    if (result.kind === "failure") {
-      return this.failure(result.message)
-    }
-    return {
-      content: [{ type: "text", text: result.response.text }],
-      details: { model: result.model },
-      usage: result.response.usage,
-    }
-  }
-
-  private unavailable(error: Error, signal: AbortSignal): AdvisorToolOutput {
-    if (signal.aborted) {
-      return this.failure(TOOL_CANCELLED)
-    }
-    return this.failure(`Advisor indisponível: ${error.message}.`)
-  }
-
-  private failure(message: string): AdvisorToolOutput {
-    return { content: [{ type: "text", text: message }], details: {}, isError: true }
   }
 }

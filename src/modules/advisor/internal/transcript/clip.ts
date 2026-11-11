@@ -7,11 +7,9 @@ export function clip(text: string, limit: number): string {
   if (text.length <= limit) {
     return text
   }
-
   if (limit <= CLIPPED_CONTENT.length) {
     return text.slice(0, limit)
   }
-
   const available = limit - CLIPPED_CONTENT.length
   const head = Math.floor(available * HEAD_FRACTION)
   const tail = available - head

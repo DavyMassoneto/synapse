@@ -1,8 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { isReminderDue, REMIND_EVERY, REMINDER, ReminderCounter } from "../internal"
 import { type ReminderTurn } from "../public"
-
-const WITH_TOOLS: ReminderTurn = { completed: true, usedTools: true }
+import { WITH_TOOLS } from "./constants"
 
 function countTurns(counter: ReminderCounter, turns: number): void {
   for (let index = 0; index < turns; index++) {

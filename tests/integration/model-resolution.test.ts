@@ -11,12 +11,11 @@ import {
   THINKING_LEVELS,
   type ThinkingLevel,
 } from "#synapse/modules"
-import { TestRegistry } from "../fixtures"
+import { IDLE_SIGNAL, TestRegistry } from "../fixtures"
 
 let registry: TestRegistry
 let adapter: AdvisorModel
 let directory = ""
-const signal = new AbortController().signal
 
 function prepare(): void {
   registry = new TestRegistry()
@@ -25,7 +24,7 @@ function prepare(): void {
 }
 
 async function resolved(reference: string, thinking: ThinkingLevel): Promise<ResolvedModel> {
-  const resolution = await adapter.resolve(reference, thinking, signal)
+  const resolution = await adapter.resolve(reference, thinking, IDLE_SIGNAL)
   if (resolution.kind === "resolved") {
     return resolution.model
   }
@@ -35,7 +34,7 @@ async function resolved(reference: string, thinking: ThinkingLevel): Promise<Res
 async function independentResolutions(): Promise<void> {
   const first = await resolved("provider/first", "high")
   const second = await resolved("provider/second", "low")
-  const request: ModelRequest = { system: "review", prompt: "question", signal }
+  const request: ModelRequest = { system: "review", prompt: "question", signal: IDLE_SIGNAL }
   await adapter.consult(first, request)
   expect(registry.used?.id).toBe("first")
   expect(registry.options?.reasoning).toBe("high")
@@ -52,7 +51,7 @@ async function serviceConsultation(): Promise<void> {
     {
       system: "review",
       messages: [{ kind: "user", blocks: [{ kind: "text", text: "x".repeat(300_000) }] }],
-      signal,
+      signal: IDLE_SIGNAL,
     },
     adapter,
   )
@@ -66,14 +65,14 @@ async function serviceConsultation(): Promise<void> {
 async function changedCapabilities(): Promise<void> {
   const first = await resolved("provider/first", "high")
   registry.window = 64_000
-  const response = await adapter.consult(first, { system: "review", prompt: "question", signal })
+  const response = await adapter.consult(first, { system: "review", prompt: "question", signal: IDLE_SIGNAL })
   expect(response.kind).toBe("failure")
   expect(registry.used).toBeUndefined()
 }
 
 async function missingModel(): Promise<void> {
   registry.missing = true
-  expect(await adapter.resolve("provider/absent", "high", signal)).toStrictEqual({
+  expect(await adapter.resolve("provider/absent", "high", IDLE_SIGNAL)).toStrictEqual({
     kind: "failure",
     message: "Modelo advisor não encontrado: provider/absent",
   })
@@ -81,14 +80,14 @@ async function missingModel(): Promise<void> {
 
 async function missingCredentials(): Promise<void> {
   registry.authorized = false
-  expect(await adapter.resolve("provider/first", "high", signal)).toStrictEqual({
+  expect(await adapter.resolve("provider/first", "high", IDLE_SIGNAL)).toStrictEqual({
     kind: "failure",
     message: "Credenciais ausentes para provider/first",
   })
 }
 
 async function invalidReference(): Promise<void> {
-  const resolution = await adapter.resolve("sem-barra", "high", signal)
+  const resolution = await adapter.resolve("sem-barra", "high", IDLE_SIGNAL)
   expect(resolution.kind).toBe("failure")
   expect(registry.calls).toBe(0)
 }

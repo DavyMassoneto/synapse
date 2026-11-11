@@ -70,7 +70,6 @@ function imageBlocksAreIgnored(): void {
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(() => host.cleanup())
-
   test("renderiza consulta parcial", partialRendering)
   test("renderiza resumo compacto", compactRendering)
   test("reutiliza componente ao expandir", expandedRendering)
