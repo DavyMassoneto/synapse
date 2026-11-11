@@ -33,3 +33,7 @@ export const MAX_ROUND_TOOL_CALLS = 16
 export const CONVERSATION_TOO_LARGE = "A conversa excede o limite de bytes: "
 
 export const TOO_MANY_TOOL_CALLS = "A resposta excede o limite de chamadas de ferramenta: "
+
+export const MESSAGE_SEPARATOR_BYTES = 1
+
+export const ARRAY_BRACKET_BALANCE_BYTES = 1

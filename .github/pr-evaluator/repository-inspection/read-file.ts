@@ -12,20 +12,22 @@ import {
 } from "./constants"
 import { type ReadFileRequest, type RepositorySnapshot } from "./types"
 
-function numberedLines(lines: string[], start: number, last: number): string[] {
+function numberedPage(content: string, request: ReadFileRequest): string {
   const numbered: string[] = []
-  for (let line = start; line <= last; line += 1) {
-    numbered.push(`${line}${LINE_NUMBER_BREAK}${lines[line - 1]}`)
+  const last = Math.min(request.endLine, request.startLine + MAX_READ_LINES - 1)
+  let start = 0
+  let line = 1
+  while (start <= content.length && line <= last) {
+    const boundary = content.indexOf(LINE_BREAK, start)
+    const end = boundary < 0 ? content.length : boundary
+    if (line >= request.startLine) {
+      numbered.push(`${line}${LINE_NUMBER_BREAK}${content.slice(start, end)}`)
+    }
+    start = end + 1
+    line += 1
   }
-  return numbered
-}
-
-function numberedPage(lines: string[], request: ReadFileRequest): string {
-  const wanted = Math.min(request.endLine, lines.length)
-  const last = Math.min(wanted, request.startLine + MAX_READ_LINES - 1)
-  const numbered = numberedLines(lines, request.startLine, last)
-  if (last < wanted) {
-    numbered.push(`${MORE_LINES}${last + 1}`)
+  if (line <= request.endLine && start <= content.length) {
+    numbered.push(`${MORE_LINES}${line}`)
   }
   return numbered.join(LINE_BREAK)
 }
@@ -37,8 +39,6 @@ export function readFile(snapshot: RepositorySnapshot, request: ReadFileRequest)
   if (request.endLine < request.startLine) {
     return INVALID_RANGE
   }
-  const lines = runGit([GIT_SHOW, `${snapshot.sha}${REVISION_SEPARATOR}${request.path}`], FILE_SUBJECT).split(
-    LINE_BREAK,
-  )
-  return numberedPage(lines, request)
+  const content = runGit([GIT_SHOW, `${snapshot.sha}${REVISION_SEPARATOR}${request.path}`], FILE_SUBJECT)
+  return numberedPage(content, request)
 }

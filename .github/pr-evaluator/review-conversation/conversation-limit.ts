@@ -1,6 +1,6 @@
 import { type ChatMessage, type ModelReply } from "#evaluator/provider-client"
 import { MAX_PROMPT_BYTES } from "#evaluator/review-request"
-import { CONVERSATION_TOO_LARGE, MAX_ROUND_TOOL_CALLS, TOO_MANY_TOOL_CALLS } from "./constants"
+import { CONVERSATION_TOO_LARGE, MAX_ROUND_TOOL_CALLS, MESSAGE_SEPARATOR_BYTES, TOO_MANY_TOOL_CALLS } from "./constants"
 
 export function ensureConversationLimit(bytes: number): void {
   if (bytes > MAX_PROMPT_BYTES) {
@@ -17,7 +17,7 @@ export function ensureRoundToolLimit(reply: ModelReply): void {
 export function reviewMessagesBytes(messages: ChatMessage[]): number {
   let bytes = 0
   for (const message of messages) {
-    bytes += Buffer.byteLength(JSON.stringify(message)) + 1
+    bytes += Buffer.byteLength(JSON.stringify(message)) + MESSAGE_SEPARATOR_BYTES
   }
   return bytes
 }

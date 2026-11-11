@@ -17,9 +17,7 @@ export const StreamChunkSchema = Type.Object({
     Type.Object({
       prompt_tokens: Type.Integer({ minimum: 0 }),
       completion_tokens: Type.Integer({ minimum: 0 }),
-      prompt_tokens_details: Type.Optional(
-        Type.Union([Type.Object({ cached_tokens: Type.Integer({ minimum: 0 }) }), Type.Object({})]),
-      ),
+      prompt_tokens_details: Type.Optional(Type.Object({ cached_tokens: Type.Optional(Type.Integer({ minimum: 0 })) })),
     }),
   ),
   error: Type.Optional(Type.Object({ message: Type.Optional(Type.String()) })),

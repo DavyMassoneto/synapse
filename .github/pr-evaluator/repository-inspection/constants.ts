@@ -88,6 +88,8 @@ export const INVALID_RANGE = "Intervalo inválido: endLine é menor que startLin
 
 export const NO_FILES = "Nenhum arquivo começa com: "
 
+export const SEARCH_TOO_LARGE = "A busca excedeu o limite de leitura; refine o texto pesquisado."
+
 export const NO_MATCHES = "Nenhuma ocorrência de: "
 
 export const MORE_FILES = "... há mais arquivos; use um prefixo mais específico"

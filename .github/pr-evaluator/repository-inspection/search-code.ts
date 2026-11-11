@@ -1,4 +1,4 @@
-import { runGit } from "#evaluator/git-output"
+import { isBufferOverflow, runGit } from "#evaluator/git-output"
 import {
   GIT_GREP_ARGUMENTS,
   LINE_BREAK,
@@ -7,6 +7,7 @@ import {
   NO_MATCHES,
   REVISION_SEPARATOR,
   SEARCH_SUBJECT,
+  SEARCH_TOO_LARGE,
 } from "./constants"
 import { isNoMatch } from "./predicates"
 import { renderInspectionItems } from "./render-items"
@@ -18,6 +19,9 @@ function grep(snapshot: RepositorySnapshot, text: string): string {
   } catch (error) {
     if (error instanceof Error && isNoMatch(error)) {
       return ""
+    }
+    if (error instanceof Error && error.cause instanceof Error && isBufferOverflow(error.cause)) {
+      return SEARCH_TOO_LARGE
     }
     throw error
   }
@@ -37,7 +41,11 @@ function* matchingLines(output: string, prefix: string): Generator<string> {
 
 export function searchCode(snapshot: RepositorySnapshot, text: string): string {
   const prefix = `${snapshot.sha}${REVISION_SEPARATOR}`
-  return renderInspectionItems(matchingLines(grep(snapshot, text), prefix), {
+  const output = grep(snapshot, text)
+  if (output === SEARCH_TOO_LARGE) {
+    return output
+  }
+  return renderInspectionItems(matchingLines(output, prefix), {
     maximum: MAX_SEARCH_MATCHES,
     more: MORE_MATCHES,
     empty: `${NO_MATCHES}${text}`,

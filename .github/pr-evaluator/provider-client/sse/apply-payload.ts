@@ -16,7 +16,7 @@ function applyStreamUsage(result: StreamResult, chunk: StreamChunk): void {
       completionTokens: chunk.usage.completion_tokens,
     }
     const details = chunk.usage.prompt_tokens_details
-    if (details && "cached_tokens" in details) {
+    if (details && typeof details.cached_tokens === "number") {
       result.cache = { kind: USAGE_REPORTED, tokens: details.cached_tokens }
     }
   }
