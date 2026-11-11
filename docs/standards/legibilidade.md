@@ -29,6 +29,7 @@
 
 - Trecho de código repetido que pode virar uma função e ser reutilizado em mais de um lugar é duplicação.
 - Texto ou template repetido não é código repetido: a função que só o devolveria é desnecessária, conforme [AGENTS.md](../../AGENTS.md).
+- Semelhança casual não é duplicação: uma expressão curta e comum, como `lista.length === 0`, não vira função. Só é duplicação o trecho cuja mudança futura teria de ser feita em todos os lugares onde ele aparece.
 - Vale mesmo que a extração quebre o código original e deixe uma função menor.
 
 ## 6. Números mágicos
