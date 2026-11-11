@@ -1,4 +1,4 @@
-import { type BeforeAgentStartEvent, type ToolResultEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
+import { type BeforeAgentStartEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
 
 export function beforeStartEvent(): BeforeAgentStartEvent {
   return {
@@ -48,17 +48,5 @@ export function turnEvent(): TurnEndEvent {
       pendingMessages: [],
       canContinue: true,
     },
-  }
-}
-
-export function advisorToolResult(): ToolResultEvent {
-  return {
-    type: "tool_result",
-    toolCallId: "advisor",
-    toolName: "advisor",
-    input: {},
-    content: [],
-    details: {},
-    isError: false,
   }
 }

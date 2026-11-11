@@ -1,4 +1,4 @@
-import { type BeforeAgentStartEvent, type ToolResultEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
+import { type BeforeAgentStartEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
 import {
   type AdvisorBeforeStartHandler,
   type AdvisorCommandDefinition,
@@ -7,7 +7,6 @@ import {
   type AdvisorSessionStartHandler,
   type AdvisorShutdownHandler,
   type AdvisorTool,
-  type AdvisorToolResultHandler,
   type AdvisorTurnEndHandler,
   type Unsubscribe,
 } from "#synapse/integration"
@@ -17,7 +16,6 @@ export class AdvisorHostCollector implements AdvisorHost {
   readonly starts: AdvisorSessionStartHandler[] = []
   readonly shutdowns: AdvisorShutdownHandler[] = []
   readonly beforeStarts: AdvisorBeforeStartHandler[] = []
-  readonly toolResults: AdvisorToolResultHandler[] = []
   readonly turns: AdvisorTurnEndHandler[] = []
   active: string[] = []
   private tool?: AdvisorTool
@@ -26,7 +24,6 @@ export class AdvisorHostCollector implements AdvisorHost {
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe
   on(event: "before_agent_start", handler: AdvisorBeforeStartHandler): Unsubscribe
-  on(event: "tool_result", handler: AdvisorToolResultHandler): Unsubscribe
   on(event: "turn_end", handler: AdvisorTurnEndHandler): Unsubscribe
   on(...registration: AdvisorEventRegistration): Unsubscribe {
     switch (registration[0]) {
@@ -38,9 +35,6 @@ export class AdvisorHostCollector implements AdvisorHost {
         break
       case "before_agent_start":
         this.beforeStarts.push(registration[1])
-        break
-      case "tool_result":
-        this.toolResults.push(registration[1])
         break
       case "turn_end":
         this.turns.push(registration[1])
@@ -65,12 +59,6 @@ export class AdvisorHostCollector implements AdvisorHost {
 
   async emitBeforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): Promise<void> {
     for (const handler of this.beforeStarts) {
-      await handler(event, context)
-    }
-  }
-
-  async emitToolResult(event: ToolResultEvent, context: AdvisorContext): Promise<void> {
-    for (const handler of this.toolResults) {
       await handler(event, context)
     }
   }

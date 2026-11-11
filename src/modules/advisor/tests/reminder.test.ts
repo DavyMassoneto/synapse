@@ -2,6 +2,7 @@ import { describe, expect, test } from "vitest"
 import { isReminderDue, REMIND_EVERY, REMINDER, ReminderCounter } from "../internal"
 import { type ReminderTurn } from "../public"
 import { WITH_TOOLS } from "./constants"
+import { emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
 
 function countTurns(counter: ReminderCounter, turns: number): void {
   for (let index = 0; index < turns; index++) {
@@ -58,6 +59,32 @@ function resetCadence(): void {
   expect(isReminderDue(counter.turns, WITH_TOOLS)).toBe(true)
 }
 
+function turnsUntilDue(advisor: ReturnType<typeof serviceFor>): void {
+  for (let index = 0; index < REMIND_EVERY - 1; index++) {
+    advisor.turn(WITH_TOOLS)
+  }
+}
+
+async function consultationResetsCount(): Promise<void> {
+  const advisor = serviceFor(new TestStorage())
+  turnsUntilDue(advisor)
+  await advisor.consult(emptyConsultation(new AbortController().signal), new TestModel())
+  expect(advisor.turn(WITH_TOOLS)).toStrictEqual({ kind: "idle" })
+}
+
+function sessionStartResetsCount(): void {
+  const advisor = serviceFor(new TestStorage())
+  turnsUntilDue(advisor)
+  advisor.startSession()
+  expect(advisor.turn(WITH_TOOLS)).toStrictEqual({ kind: "idle" })
+}
+
+function dueWithoutReset(): void {
+  const advisor = serviceFor(new TestStorage())
+  turnsUntilDue(advisor)
+  expect(advisor.turn(WITH_TOOLS).kind).toBe("due")
+}
+
 function reminderText(): void {
   expect(REMINDER).toContain(String(REMIND_EVERY))
 }
@@ -69,6 +96,9 @@ function registerTests(): void {
   test("contadores são isolados", isolatedCounters)
   test("reset reinicia cadência", resetCadence)
   test("texto informa cadência", reminderText)
+  test("serviço emite o lembrete no quinto turno", dueWithoutReset)
+  test("consulta zera a contagem", consultationResetsCount)
+  test("início de sessão zera a contagem", sessionStartResetsCount)
 }
 
 describe("reminder", registerTests)

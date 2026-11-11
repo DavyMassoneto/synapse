@@ -1,12 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import {
-  advisorToolResult,
-  beforeStartEvent,
-  prepareHostDirectory,
-  TestContext,
-  TypedAdvisorHost,
-  turnEvent,
-} from "../fixtures"
+import { beforeStartEvent, prepareHostDirectory, TestContext, TypedAdvisorHost, turnEvent } from "../fixtures"
 
 let host: TypedAdvisorHost
 let context: TestContext
@@ -47,7 +40,7 @@ async function toolResetsReminder(): Promise<void> {
   for (let index = 0; index < 4; index++) {
     await host.emitTurnEnd(event, context)
   }
-  await host.emitToolResult(advisorToolResult(), context)
+  await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
@@ -91,7 +84,7 @@ function registerTests(): void {
   test("início ativa ferramenta", sessionStart)
   test("instruções são inseridas", instructions)
   test("lembrete respeita cadência", reminderCadence)
-  test("resultado da ferramenta reinicia lembrete", toolResetsReminder)
+  test("consulta reinicia lembrete", toolResetsReminder)
   test("início de sessão reinicia lembrete", sessionStartResetsReminder)
   test("desligamento remove ferramenta e instruções", disabledAdvisor)
   test("turnos com o advisor desligado não contam para o lembrete", disabledAdvisorDoesNotCount)
