@@ -37,7 +37,7 @@ function ensureWithinLimit(prompt: string): string {
   const bytes = Buffer.byteLength(prompt, PROMPT_ENCODING)
   if (bytes > MAX_PROMPT_BYTES) {
     throw new Error(
-      `O prompt tem ${bytes} bytes e excede o limite de ${MAX_PROMPT_BYTES}; o diff não é truncado, reduza a PR.`,
+      `O prompt tem ${bytes} bytes e excede o limite de ${MAX_PROMPT_BYTES} (regras, código do commit e diff); nada é truncado.`,
     )
   }
   return prompt

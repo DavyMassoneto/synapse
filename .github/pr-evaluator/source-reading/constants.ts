@@ -15,3 +15,7 @@ export const SOURCE_BUFFER_BYTES = 8_388_608
 export const FILE_HEADER = "### "
 
 export const FILE_BREAK = "\n\n"
+
+export const MAX_SOURCE_BYTES = 4_194_304
+
+export const BUFFER_OVERFLOW_CODE = "ENOBUFS"
