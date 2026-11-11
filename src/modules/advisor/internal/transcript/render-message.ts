@@ -6,22 +6,25 @@ import {
 import { clip } from "./clip"
 import {
   BLOCK_BREAK,
-  CONTEXT_LABEL,
+  CONTEXT_OPEN,
   ERROR_LABEL,
   IMAGE_OMITTED,
+  LABEL_CLOSE,
+  LABEL_OPEN,
   NO_TEXT_LIMIT,
-  SHELL_LABEL,
+  SHELL_OPEN,
   SUMMARY_LABEL,
-  TOOL_CALL_LABEL,
-  TOOL_RESULT_LABEL,
+  TOOL_CALL_CLOSE,
+  TOOL_CALL_OPEN,
+  TOOL_RESULT_OPEN,
 } from "./constants"
 import { hasClippedText } from "./predicates"
 
 function toolResultLabel(message: ToolResultTranscript): string {
   if (message.error) {
-    return `[${TOOL_RESULT_LABEL} ${message.tool}${ERROR_LABEL}]`
+    return `${TOOL_RESULT_OPEN}${message.tool}${ERROR_LABEL}${LABEL_CLOSE}`
   }
-  return `[${TOOL_RESULT_LABEL} ${message.tool}]`
+  return `${TOOL_RESULT_OPEN}${message.tool}${LABEL_CLOSE}`
 }
 
 function messageLabel(message: TranscriptMessage): string {
@@ -29,15 +32,15 @@ function messageLabel(message: TranscriptMessage): string {
     return toolResultLabel(message)
   }
   if (message.kind === "shell") {
-    return `[${SHELL_LABEL}] $ ${message.command}`
+    return `${SHELL_OPEN}${message.command}`
   }
   if (message.kind === "custom") {
-    return `[${CONTEXT_LABEL}:${message.customType}]`
+    return `${CONTEXT_OPEN}${message.customType}${LABEL_CLOSE}`
   }
   if (message.kind === "summary") {
     return SUMMARY_LABEL
   }
-  return `[${message.kind}]`
+  return `${LABEL_OPEN}${message.kind}${LABEL_CLOSE}`
 }
 
 function textLimitOf(message: TranscriptMessage, limit: number): number {
@@ -52,7 +55,7 @@ function renderBlock(block: TranscriptBlock, callLimit: number, textLimit: numbe
     return IMAGE_OMITTED
   }
   if (block.kind === "call") {
-    return `[${TOOL_CALL_LABEL} ${block.name}] ${clip(block.arguments, callLimit)}`
+    return `${TOOL_CALL_OPEN}${block.name}${TOOL_CALL_CLOSE}${clip(block.arguments, callLimit)}`
   }
   return clip(block.text, textLimit)
 }

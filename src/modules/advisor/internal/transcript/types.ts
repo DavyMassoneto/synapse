@@ -19,7 +19,6 @@ export interface TranscriptFits {
 
 export interface TranscriptOverflow {
   kind: "overflow"
-  blocks: string[]
 }
 
 export type FittedTranscript = TranscriptFits | TranscriptOverflow

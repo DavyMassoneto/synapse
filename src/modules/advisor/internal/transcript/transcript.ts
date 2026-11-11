@@ -34,13 +34,22 @@ function fitAt(prepared: PreparedMessage[], limit: number, budget: number): Fitt
   let length = -SEPARATOR.length
   for (const entry of prepared) {
     const block = renderPrepared(entry, limit)
-    blocks.push(block)
     length += block.length + SEPARATOR.length
+    if (length > budget) {
+      return { kind: "overflow" }
+    }
+    blocks.push(block)
   }
-  if (length <= budget) {
-    return { kind: "fits", text: blocks.join(SEPARATOR) }
+  return { kind: "fits", text: blocks.join(SEPARATOR) }
+}
+
+function selectMinimal(prepared: PreparedMessage[], budget: number): string {
+  const blocks = prepared.map((entry) => renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
+  const text = blocks.join(SEPARATOR)
+  if (text.length <= budget) {
+    return text
   }
-  return { kind: "overflow", blocks }
+  return selectMessages(blocks, budget)
 }
 
 export function buildTranscript(messages: TranscriptMessage[], budget: number): string {
@@ -54,9 +63,5 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
       return fitted.text
     }
   }
-  const smallest = fitAt(prepared, MINIMAL_CONTENT_LIMIT, budget)
-  if (smallest.kind === "fits") {
-    return smallest.text
-  }
-  return selectMessages(smallest.blocks, budget)
+  return selectMinimal(prepared, budget)
 }
