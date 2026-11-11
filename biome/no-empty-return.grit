@@ -1,0 +1,5 @@
+language js
+
+JsReturnStatement(argument=.) as $return where {
+  register_diagnostic(span=$return, message="A return without a value is forbidden: structure the flow with if/else or smaller functions. A function with no result declares void and has no return.")
+}

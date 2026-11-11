@@ -25,7 +25,8 @@ SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única res
 - Uma pasta que guarda mais de um fluxo independente (por exemplo, decisões tomadas em momentos diferentes, ou leitura e escrita de formatos distintos) divide-se por fluxo ou por capacidade, cada parte com o nome do que faz.
 - Uma pasta fragmentada demais também é violação. Para julgar, conte quantos arquivos é preciso abrir, em sequência, para entender uma única operação. Muitos arquivos curtos para um mesmo fluxo indicam fragmentação: funções que mudam sempre pelo mesmo motivo ficam no mesmo arquivo, e a navegação entre arquivos não pode ser maior que a complexidade do que eles fazem.
 - Um arquivo que só repassa a chamada para outra função, sem decisão, formato ou efeito próprio, não é uma responsabilidade e deve ser removido.
-- Dividir por responsabilidade não é criar uma função por arquivo. Uma função auxiliar que só o seu chamador usa, e que muda com ele, fica no arquivo do chamador.
+- O barrel `index.ts` que toda pasta de código tem, conforme [AGENTS.md](../../AGENTS.md), não é esse arquivo: ele é a entrada da pasta, e os imports chegam por ele. Reexportar não o torna repasse nem fragmentação. Um barrel continua sujeito às regras de import: export que não pertence à pasta e ciclo são violações.
+- Dividir por responsabilidade não é criar uma função por arquivo. Uma função auxiliar que só o seu chamador usa, e que muda com ele, fica no arquivo do chamador. Exceção: função não divide arquivo com classe, conforme [AGENTS.md](../../AGENTS.md). A auxiliar de uma classe fica em arquivo próprio, na mesma pasta.
 - Não existe um número máximo de arquivos por pasta. O apontamento cita a evidência concreta: os arquivos do fluxo, o caminho que se percorre para entendê-lo e o motivo de mudança que cada um carrega.
 
 ## 4. Classe

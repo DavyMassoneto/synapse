@@ -13,8 +13,9 @@
     "skipLibCheck": true,
     "types": ["node"],
     "paths": {
+      "#synapse/*": ["./src/*/index.ts"],
       "#evaluator/*": ["./.github/pr-evaluator/*"]
     }
   },
-  "include": ["src/**/*.ts", "tests/**/*.ts", ".github/**/*.ts"]
+  "include": ["src/**/*.ts", "tests/**/*.ts", ".github/**/*.ts", "vitest.config.ts"]
 }

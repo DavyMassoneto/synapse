@@ -1,3 +1,5 @@
+import { MAX_OUTPUT_TOKENS } from "#evaluator/provider-client"
+
 export const TEMPLATE_FILE = "docs/pr-evaluator.md"
 
 export const ARCHITECTURE_FILE = "docs/architecture.md"
@@ -20,6 +22,14 @@ export const PLACEHOLDER_STANDARDS = "{{PADROES}}"
 
 export const PLACEHOLDER_DIFF = "{{DIFF}}"
 
+export const PLACEHOLDER_SOURCE = "{{CODIGO}}"
+
 export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
 
-export const MAX_PROMPT_CHARACTERS = 420_000
+export const MODEL_CONTEXT_TOKENS = 1_000_000
+
+export const MIN_BYTES_PER_TOKEN = 1
+
+export const MAX_PROMPT_BYTES = (MODEL_CONTEXT_TOKENS - MAX_OUTPUT_TOKENS) * MIN_BYTES_PER_TOKEN
+
+export const PROMPT_ENCODING = "utf8"

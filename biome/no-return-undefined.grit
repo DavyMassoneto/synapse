@@ -1,0 +1,5 @@
+language js
+
+`return undefined` as $return where {
+  register_diagnostic(span=$return, message="return undefined is forbidden: a function with no result does not return anything and declares void.")
+}

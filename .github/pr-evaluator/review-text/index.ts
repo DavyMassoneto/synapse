@@ -1,3 +1,6 @@
 export * from "./comment-body"
+export * from "./constants"
+export * from "./finding-label"
 export * from "./review-body"
 export * from "./review-marker"
+export * from "./types"

@@ -1,0 +1,6 @@
+language js
+
+TsInterfaceDeclaration() as $interface where {
+  $interface <: r"(?s)interface.*\{(?:\s|//[^\n]*\n|/\*.*?\*/)*\}\s*$",
+  register_diagnostic(span=$interface, message="An empty interface does not exist: declare its members, or compose contracts with a type alias (A & B).")
+}
