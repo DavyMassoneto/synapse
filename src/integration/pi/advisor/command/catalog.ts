@@ -1,5 +1,5 @@
 import { type AutocompleteItem } from "@earendil-works/pi-tui"
-import { type AdvisorContext } from "../host-context"
+import { type AdvisorContext } from "../host-contracts"
 import { modelReferences } from "../model-picker"
 import { COMPLETION_LIMIT, SUBCOMMANDS } from "./constants"
 

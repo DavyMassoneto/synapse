@@ -1,5 +1,5 @@
 import { formatModelReference } from "#synapse/modules"
-import { type AdvisorContext } from "../host-context"
+import { type AdvisorContext } from "../host-contracts"
 
 export function modelReferences(context: AdvisorContext): string[] {
   if (context.scopedModels.length > 0) {

@@ -17,10 +17,6 @@ function prepare(): void {
   context = new TestContext()
 }
 
-function cleanup(): void {
-  rmSync(directory, { recursive: true, force: true })
-}
-
 async function shutdown(): Promise<void> {
   for (const handler of host.shutdowns) {
     await handler({ type: "session_shutdown", reason: "quit" }, context)
@@ -73,7 +69,7 @@ async function invalidConfiguration(): Promise<void> {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => rmSync(directory, { recursive: true, force: true }))
   test("composição registra o advisor e o encerramento cancela as consultas", compositionLifecycle)
   test("sem arquivo de configuração o advisor fica desligado", missingConfiguration)
   test("configuração inválida vira falha, deixa o advisor desligado e preserva o arquivo", invalidConfiguration)

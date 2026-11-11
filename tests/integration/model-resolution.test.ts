@@ -24,10 +24,6 @@ function prepare(): void {
   directory = mkdtempSync(join(tmpdir(), "advisor-model-"))
 }
 
-function cleanup(): void {
-  rmSync(directory, { recursive: true, force: true })
-}
-
 async function resolved(reference: string, thinking: ThinkingLevel): Promise<ResolvedModel> {
   const resolution = await adapter.resolve(reference, thinking, signal)
   if (resolution.kind === "resolved") {
@@ -124,7 +120,7 @@ function budgetMatchesPiAi(level: ThinkingLevel): void {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => rmSync(directory, { recursive: true, force: true }))
   test("resoluções intercaladas preservam modelos", independentResolutions)
   test("consulta usa modelo configurado", serviceConsultation)
   test("mudança de capacidade é rejeitada", changedCapabilities)

@@ -9,10 +9,6 @@ function prepare(): void {
   environment = new DistributionEnvironment()
 }
 
-function cleanup(): void {
-  environment.restore()
-}
-
 async function verifyDistribution(example: ConfigCase): Promise<void> {
   const file = advisorConfigPath()
   if (example.content) {
@@ -49,7 +45,7 @@ function restoresVariable(): void {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => environment.restore())
   test.each(CASES)("distribuição: $name", verifyDistribution)
   test("ambiente restaura variável vazia, ausente e preenchida como estavam", restoresVariable)
 }

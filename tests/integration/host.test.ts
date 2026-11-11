@@ -9,10 +9,6 @@ function prepare(): void {
   context = new TestContext()
 }
 
-function cleanup(): void {
-  host.cleanup()
-}
-
 async function successfulConsultation(): Promise<void> {
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toBeTruthy()
@@ -42,7 +38,7 @@ async function projectionFailure(): Promise<void> {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => host.cleanup())
 
   test("consulta registrada preserva uso e modelo", successfulConsultation)
   test("provedor abortado devolve cancelamento", abortedProvider)

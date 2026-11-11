@@ -16,10 +16,6 @@ function prepare(): void {
   context = new TestContext()
 }
 
-function cleanup(): void {
-  host.cleanup()
-}
-
 async function sessionStart(): Promise<void> {
   await host.startSession(context)
   expect(host.advisor.activeModel().kind).toBe("active")
@@ -98,7 +94,7 @@ async function disabledAdvisorDoesNotCount(): Promise<void> {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => host.cleanup())
   test("início ativa ferramenta", sessionStart)
   test("instruções são inseridas", instructions)
   test("lembrete respeita cadência", reminderCadence)

@@ -7,10 +7,6 @@ function prepare(): void {
   host = new TypedAdvisorHost(prepareHostDirectory())
 }
 
-function cleanup(): void {
-  host.cleanup()
-}
-
 function partialRendering(): void {
   const component = host
     .requireTool()
@@ -73,7 +69,7 @@ function imageBlocksAreIgnored(): void {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => host.cleanup())
 
   test("renderiza consulta parcial", partialRendering)
   test("renderiza resumo compacto", compactRendering)

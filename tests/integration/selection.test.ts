@@ -10,10 +10,6 @@ function prepare(): void {
   context.hasUI = true
 }
 
-function cleanup(): void {
-  host.cleanup()
-}
-
 async function chooseModel(): Promise<void> {
   context.ui.selection = "provider/other"
   await host.requireCommand().handler("", context)
@@ -41,7 +37,7 @@ async function disableAdvisor(): Promise<void> {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => host.cleanup())
   test("seleciona modelo", chooseModel)
   test("cancelamento preserva modelo", cancelSelection)
   test("desliga advisor", disableAdvisor)

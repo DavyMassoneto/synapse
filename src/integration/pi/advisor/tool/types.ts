@@ -1,5 +1,5 @@
 import { type ToolDefinition } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "../host-context"
+import { type AdvisorContext } from "../host-contracts"
 import { type AdvisorRenderers, type AdvisorToolDetails } from "../tool-rendering"
 import { type advisorParameters } from "./constants"
 

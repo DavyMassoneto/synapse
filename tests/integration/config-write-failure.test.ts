@@ -10,10 +10,6 @@ function prepare(): void {
   context = new TestContext()
 }
 
-function cleanup(): void {
-  host.cleanup()
-}
-
 async function reportsFailure(): Promise<void> {
   await host.requireCommand().handler("thinking high", context)
   expect(context.ui.notices).toHaveLength(1)
@@ -32,7 +28,7 @@ async function preservesState(): Promise<void> {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => host.cleanup())
   test("falha ao salvar é informada", reportsFailure)
   test("falha ao salvar preserva estado", preservesState)
 }

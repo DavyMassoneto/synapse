@@ -10,10 +10,6 @@ function prepare(): void {
   context = new TestContext()
 }
 
-function cleanup(): void {
-  host.cleanup()
-}
-
 async function missingThinking(): Promise<void> {
   await host.requireCommand().handler("thinking", context)
   expect(context.ui.notices.at(-1)).toMatch(/inválido/)
@@ -93,7 +89,7 @@ async function scopedSearch(): Promise<void> {
 
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(cleanup)
+  afterEach(() => host.cleanup())
   test("thinking sem nível", missingThinking)
   test("thinking inválido", invalidThinking)
   test("thinkingx é modelo", thinkingModel)

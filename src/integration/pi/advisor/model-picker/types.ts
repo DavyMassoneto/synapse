@@ -1,5 +1,5 @@
 import { type Cancelled } from "#synapse/modules"
-import { type AdvisorUI } from "../host-context"
+import { type AdvisorUI } from "../host-contracts"
 
 export interface ModelSelected {
   kind: "selected"

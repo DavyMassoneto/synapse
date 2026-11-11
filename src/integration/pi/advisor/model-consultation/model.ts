@@ -7,10 +7,11 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules"
-import { type AdvisorModelRegistry } from "../host-context"
+import { type AdvisorModelRegistry } from "../host-contracts"
 import { CAPABILITIES_CHANGED, INVALID_REFERENCE, PI_THINKING_BUDGETS } from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
+import { hasSameCapabilities } from "./predicates"
 import { type ModelLookup } from "./types"
 
 export class AdvisorModel {
@@ -62,7 +63,7 @@ export class AdvisorModel {
       return lookup
     }
     const { model } = lookup
-    if (model.contextWindow !== resolved.contextWindow || model.maxTokens !== resolved.maxOutputTokens) {
+    if (!hasSameCapabilities(model, resolved)) {
       return { kind: "failure", message: CAPABILITIES_CHANGED }
     }
     const reply = await this.registry

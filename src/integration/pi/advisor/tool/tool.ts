@@ -1,5 +1,5 @@
 import { type Advisor, type ConsultationResult } from "#synapse/modules"
-import { type AdvisorContext } from "../host-context"
+import { type AdvisorContext } from "../host-contracts"
 import { AdvisorModel } from "../model-consultation"
 import { captureTranscript } from "../transcript"
 import { TOOL_CANCELLED, TOOL_PROGRESS } from "./constants"

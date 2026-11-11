@@ -1,5 +1,5 @@
 import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
-import { type AdvisorContext } from "../host-context"
+import { type AdvisorContext } from "../host-contracts"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
 import { DISABLED_NOTICE, DISABLED_STATUS } from "./constants"

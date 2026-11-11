@@ -1,5 +1,5 @@
 import { type Cancelled } from "#synapse/modules"
-import { type AdvisorContext } from "../host-context"
+import { type AdvisorContext } from "../host-contracts"
 import { AMBIGUOUS_MODEL, CANCELLED_SELECTION, DISABLED_OPTION, MODEL_SELECTION_LIMIT, PICKER_TITLE } from "./constants"
 import { modelReferences } from "./references"
 import { searchModels } from "./search"
