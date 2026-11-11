@@ -97,3 +97,9 @@ export const MORE_FILES = "... há mais arquivos; use um prefixo mais específic
 export const MORE_LINES = "... o arquivo continua na linha "
 
 export const MORE_MATCHES = "... há mais ocorrências; refine a busca"
+
+export const GREP_OUTPUT = "output"
+
+export const GREP_TOO_LARGE = "too_large"
+
+export const GREP_NO_MATCHES = "no_matches"

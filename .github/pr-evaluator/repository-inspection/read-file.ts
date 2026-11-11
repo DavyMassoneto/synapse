@@ -10,24 +10,24 @@ import {
   REVISION_SEPARATOR,
   UNKNOWN_PATH,
 } from "./constants"
+import { splitInspectionLines } from "./split-lines"
 import { type ReadFileRequest, type RepositorySnapshot } from "./types"
 
 function numberedPage(content: string, request: ReadFileRequest): string {
   const numbered: string[] = []
   const last = Math.min(request.endLine, request.startLine + MAX_READ_LINES - 1)
-  let start = 0
   let line = 1
-  while (start <= content.length && line <= last) {
-    const boundary = content.indexOf(LINE_BREAK, start)
-    const end = boundary < 0 ? content.length : boundary
-    if (line >= request.startLine) {
-      numbered.push(`${line}${LINE_NUMBER_BREAK}${content.slice(start, end)}`)
+  for (const text of splitInspectionLines(content)) {
+    if (line > last) {
+      if (line <= request.endLine) {
+        numbered.push(`${MORE_LINES}${line}`)
+      }
+      break
     }
-    start = end + 1
+    if (line >= request.startLine) {
+      numbered.push(`${line}${LINE_NUMBER_BREAK}${text}`)
+    }
     line += 1
-  }
-  if (line <= request.endLine && start <= content.length) {
-    numbered.push(`${MORE_LINES}${line}`)
   }
   return numbered.join(LINE_BREAK)
 }

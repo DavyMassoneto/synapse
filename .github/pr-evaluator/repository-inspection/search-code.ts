@@ -1,7 +1,9 @@
 import { isBufferOverflow, runGit } from "#evaluator/git-output"
 import {
   GIT_GREP_ARGUMENTS,
-  LINE_BREAK,
+  GREP_NO_MATCHES,
+  GREP_OUTPUT,
+  GREP_TOO_LARGE,
   MAX_SEARCH_MATCHES,
   MORE_MATCHES,
   NO_MATCHES,
@@ -11,41 +13,41 @@ import {
 } from "./constants"
 import { isNoMatch } from "./predicates"
 import { renderInspectionItems } from "./render-items"
-import { type RepositorySnapshot } from "./types"
+import { splitInspectionLines } from "./split-lines"
+import { type InspectionGrepResult, type RepositorySnapshot } from "./types"
 
-function grep(snapshot: RepositorySnapshot, text: string): string {
+function grep(snapshot: RepositorySnapshot, text: string): InspectionGrepResult {
   try {
-    return runGit([...GIT_GREP_ARGUMENTS, text, snapshot.sha], SEARCH_SUBJECT)
+    return { kind: GREP_OUTPUT, text: runGit([...GIT_GREP_ARGUMENTS, text, snapshot.sha], SEARCH_SUBJECT) }
   } catch (error) {
     if (error instanceof Error && isNoMatch(error)) {
-      return ""
+      return { kind: GREP_NO_MATCHES }
     }
     if (error instanceof Error && error.cause instanceof Error && isBufferOverflow(error.cause)) {
-      return SEARCH_TOO_LARGE
+      return { kind: GREP_TOO_LARGE }
     }
     throw error
   }
 }
 
 function* matchingLines(output: string, prefix: string): Generator<string> {
-  let start = 0
-  while (start < output.length) {
-    const boundary = output.indexOf(LINE_BREAK, start)
-    const end = boundary < 0 ? output.length : boundary
-    if (end > start) {
-      yield output.slice(start + prefix.length, end)
+  for (const line of splitInspectionLines(output)) {
+    if (line) {
+      yield line.slice(prefix.length)
     }
-    start = end + 1
   }
 }
 
 export function searchCode(snapshot: RepositorySnapshot, text: string): string {
   const prefix = `${snapshot.sha}${REVISION_SEPARATOR}`
   const output = grep(snapshot, text)
-  if (output === SEARCH_TOO_LARGE) {
-    return output
+  if (output.kind === GREP_TOO_LARGE) {
+    return SEARCH_TOO_LARGE
   }
-  return renderInspectionItems(matchingLines(output, prefix), {
+  if (output.kind === GREP_NO_MATCHES) {
+    return `${NO_MATCHES}${text}`
+  }
+  return renderInspectionItems(matchingLines(output.text, prefix), {
     maximum: MAX_SEARCH_MATCHES,
     more: MORE_MATCHES,
     empty: `${NO_MATCHES}${text}`,
