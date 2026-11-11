@@ -22,7 +22,7 @@ export function initialState(loaded: ConfigLoadResult): AdvisorResult {
     case "invalid":
       return { kind: "failure", message: loaded.message }
     case "missing":
-      return { kind: "success", config: { thinking: DEFAULT_THINKING } }
+      return { kind: "success", config: storedConfig({}) }
     case "loaded":
       return { kind: "success", config: storedConfig(loaded.config) }
   }
