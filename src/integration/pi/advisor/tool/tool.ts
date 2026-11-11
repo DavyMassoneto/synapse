@@ -12,12 +12,12 @@ import {
 } from "./types"
 
 export class AdvisorToolHandler {
-  private readonly advisor: Advisor
-  private readonly lifetime: AbortSignal
+  private readonly $advisor: Advisor
+  private readonly $lifetime: AbortSignal
 
   constructor(advisor: Advisor, lifetime: AbortSignal) {
-    this.advisor = advisor
-    this.lifetime = lifetime
+    this.$advisor = advisor
+    this.$lifetime = lifetime
   }
 
   async execute(
@@ -27,21 +27,21 @@ export class AdvisorToolHandler {
     onUpdate: AdvisorToolUpdate,
     context: ToolContext,
   ): AdvisorToolResult {
-    const callSignal = this.callSignal(signal)
+    const callSignal = this.$callSignal(signal)
     if (callSignal.aborted) {
       return toolFailure(TOOL_CANCELLED)
     }
-    return this.consultReporting(callSignal, onUpdate, context)
+    return this.$consultReporting(callSignal, onUpdate, context)
   }
 
-  private async consultReporting(
+  private async $consultReporting(
     signal: AbortSignal,
     onUpdate: AdvisorToolUpdate,
     context: ToolContext,
   ): AdvisorToolResult {
     try {
       reportProgress(onUpdate)
-      return toolOutput(await this.consult(signal, context))
+      return toolOutput(await this.$consult(signal, context))
     } catch (error) {
       if (error instanceof Error) {
         return unavailableOutput(error, signal)
@@ -50,15 +50,15 @@ export class AdvisorToolHandler {
     }
   }
 
-  private callSignal(signal: AdvisorToolSignal): AbortSignal {
+  private $callSignal(signal: AdvisorToolSignal): AbortSignal {
     if (signal) {
-      return AbortSignal.any([signal, this.lifetime])
+      return AbortSignal.any([signal, this.$lifetime])
     }
-    return this.lifetime
+    return this.$lifetime
   }
 
-  private consult(signal: AbortSignal, context: ToolContext): Promise<ConsultationResult> {
-    return this.advisor.consult(
+  private $consult(signal: AbortSignal, context: ToolContext): Promise<ConsultationResult> {
+    return this.$advisor.consult(
       { system: context.getSystemPrompt(), messages: captureTranscript(context), signal },
       new AdvisorModel(context.modelRegistry),
     )

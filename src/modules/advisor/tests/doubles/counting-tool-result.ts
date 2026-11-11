@@ -5,14 +5,14 @@ export class CountingToolResult implements ToolResultTranscript {
   readonly tool = "read"
   readonly error = false
   reads = 0
-  private readonly content: TranscriptBlock[]
+  private readonly $content: TranscriptBlock[]
 
   constructor(content: TranscriptBlock[]) {
-    this.content = content
+    this.$content = content
   }
 
   get blocks(): TranscriptBlock[] {
     this.reads += 1
-    return this.content
+    return this.$content
   }
 }

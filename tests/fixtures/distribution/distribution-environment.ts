@@ -9,12 +9,12 @@ import { type SavedVariable } from "./types"
 export class DistributionEnvironment {
   readonly home: string
   readonly agentDirectory: string
-  private readonly previousHome: SavedVariable
-  private readonly previousProfile: SavedVariable
+  private readonly $previousHome: SavedVariable
+  private readonly $previousProfile: SavedVariable
 
   constructor() {
-    this.previousHome = saveVariable(HOME_VARIABLE)
-    this.previousProfile = saveVariable(PROFILE_VARIABLE)
+    this.$previousHome = saveVariable(HOME_VARIABLE)
+    this.$previousProfile = saveVariable(PROFILE_VARIABLE)
     this.home = mkdtempSync(join(tmpdir(), HOME_PREFIX))
     process.env[HOME_VARIABLE] = this.home
     process.env[PROFILE_VARIABLE] = this.home
@@ -24,8 +24,8 @@ export class DistributionEnvironment {
 
   restore(): void {
     try {
-      restoreVariable(HOME_VARIABLE, this.previousHome)
-      restoreVariable(PROFILE_VARIABLE, this.previousProfile)
+      restoreVariable(HOME_VARIABLE, this.$previousHome)
+      restoreVariable(PROFILE_VARIABLE, this.$previousProfile)
     } finally {
       rmSync(this.home, { recursive: true, force: true })
     }

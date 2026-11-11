@@ -18,8 +18,8 @@ export class AdvisorHostCollector implements AdvisorHost {
   readonly beforeStarts: AdvisorBeforeStartHandler[] = []
   readonly turns: AdvisorTurnEndHandler[] = []
   active: string[] = []
-  private tool?: AdvisorTool
-  private command?: AdvisorCommandDefinition
+  private $tool?: AdvisorTool
+  private $command?: AdvisorCommandDefinition
 
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe
@@ -80,15 +80,15 @@ export class AdvisorHostCollector implements AdvisorHost {
   }
 
   requireTool(): AdvisorTool {
-    if (this.tool) {
-      return this.tool
+    if (this.$tool) {
+      return this.$tool
     }
     throw new Error("ferramenta ausente")
   }
 
   requireCommand(): AdvisorCommandDefinition {
-    if (this.command) {
-      return this.command
+    if (this.$command) {
+      return this.$command
     }
     throw new Error("comando ausente")
   }
@@ -102,11 +102,11 @@ export class AdvisorHostCollector implements AdvisorHost {
   }
 
   registerTool(tool: AdvisorTool): void {
-    this.tool = tool
+    this.$tool = tool
   }
 
   registerCommand(_name: string, command: AdvisorCommandDefinition): void {
-    this.command = command
+    this.$command = command
   }
 
   getActiveTools(): string[] {

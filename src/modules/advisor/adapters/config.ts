@@ -15,15 +15,15 @@ import { parseConfig } from "./parse-config"
 import { isMissingFile } from "./predicates"
 
 export class FileConfig {
-  private readonly path: string
+  private readonly $path: string
 
   constructor(path: string) {
-    this.path = path
+    this.$path = path
   }
 
   load(): ConfigLoadResult {
     try {
-      return parseConfig(readFileSync(this.path, CONFIG_ENCODING))
+      return parseConfig(readFileSync(this.$path, CONFIG_ENCODING))
     } catch (error) {
       if (error instanceof Error && isMissingFile(error)) {
         return { kind: "missing" }
@@ -33,13 +33,13 @@ export class FileConfig {
   }
 
   save(config: Config): ConfigSaveResult {
-    const temporary = `${this.path}.${randomUUID()}${TEMPORARY_EXTENSION}`
+    const temporary = `${this.$path}.${randomUUID()}${TEMPORARY_EXTENSION}`
     try {
-      mkdirSync(dirname(this.path), { recursive: true })
+      mkdirSync(dirname(this.$path), { recursive: true })
       writeFileSync(temporary, `${JSON.stringify(config, null, CONFIG_INDENT)}${CONFIG_FILE_END}`, {
         flag: CREATE_ONLY,
       })
-      renameSync(temporary, this.path)
+      renameSync(temporary, this.$path)
       return { kind: "saved" }
     } catch (error) {
       if (error instanceof Error) {

@@ -4,14 +4,14 @@ import { COMPLETED_TURN, CUSTOM_MESSAGE_ENTRY, REMINDER_DISPLAY, REMINDER_TYPE }
 import { type TurnEndOutcome } from "./types"
 
 export class ReminderEvents {
-  private readonly advisor: Advisor
+  private readonly $advisor: Advisor
 
   constructor(advisor: Advisor) {
-    this.advisor = advisor
+    this.$advisor = advisor
   }
 
   turnEnd(event: TurnEndEvent): TurnEndOutcome {
-    const reminder = this.advisor.turn({
+    const reminder = this.$advisor.turn({
       completed: event.outcome === COMPLETED_TURN,
       usedTools: event.toolResults.length > 0,
     })
