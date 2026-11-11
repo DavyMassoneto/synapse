@@ -27,7 +27,7 @@ function ensureWithinStreamLimit(receivedBytes: number): void {
 
 export async function readSseStream(body: ReadableStream<Uint8Array>): Promise<StreamResult> {
   const decoder = new TextDecoder()
-  const result: StreamResult = { content: "" }
+  const result: StreamResult = { content: "", toolCalls: new Map() }
   let pending = ""
   let receivedBytes = 0
   for await (const bytes of body) {

@@ -1,4 +1,5 @@
 import { Type } from "typebox"
+import { FUNCTION_TYPE, type ToolDefinition } from "#evaluator/provider-client"
 
 export const FindingSchema = Type.Object({
   criterion: Type.Union([
@@ -26,6 +27,19 @@ export const ReviewResultSchema = Type.Object({
   findings: Type.Array(FindingSchema),
 })
 
-export const FENCE_PATTERN = /^```[^\n]*\n([\s\S]*)```$/
-
 export const ISSUE_BREAK = "; "
+
+export const SUBMIT_REVIEW = "submit_review"
+
+export const SUBMIT_REVIEW_TOOL: ToolDefinition = {
+  type: FUNCTION_TYPE,
+  function: {
+    name: SUBMIT_REVIEW,
+    description: "Entrega a avaliação da pull request: o veredito, o resumo e os apontamentos.",
+    parameters: ReviewResultSchema,
+  },
+}
+
+export const MISSING_SUBMISSION = "O modelo não entregou a avaliação pela ferramenta submit_review"
+
+export const INVALID_SUBMISSION = "Avaliação entregue fora do formato esperado: "

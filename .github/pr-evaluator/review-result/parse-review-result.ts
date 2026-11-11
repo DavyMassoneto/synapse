@@ -1,15 +1,7 @@
 import { AssertError, Value } from "typebox/value"
-import { FENCE_PATTERN, ISSUE_BREAK, ReviewResultSchema } from "./constants"
+import { type ModelReply } from "#evaluator/provider-client"
+import { INVALID_SUBMISSION, ISSUE_BREAK, MISSING_SUBMISSION, ReviewResultSchema, SUBMIT_REVIEW } from "./constants"
 import { type ReviewResult } from "./types"
-
-function unwrapFence(text: string): string {
-  const trimmed = text.trim()
-  const fenced = FENCE_PATTERN.exec(trimmed)
-  if (fenced?.[1]) {
-    return fenced[1]
-  }
-  return trimmed
-}
 
 function failureDetail(error: Error): string {
   if (error instanceof AssertError) {
@@ -18,12 +10,21 @@ function failureDetail(error: Error): string {
   return error.message
 }
 
-export function parseReviewResult(text: string): ReviewResult {
+function submittedArguments(reply: ModelReply): string {
+  const submission = reply.toolCalls.find((call) => call.function.name === SUBMIT_REVIEW)
+  if (submission) {
+    return submission.function.arguments
+  }
+  throw new Error(MISSING_SUBMISSION)
+}
+
+export function parseReviewResult(reply: ModelReply): ReviewResult {
+  const submitted = submittedArguments(reply)
   try {
-    return Value.Parse(ReviewResultSchema, JSON.parse(unwrapFence(text)))
+    return Value.Parse(ReviewResultSchema, JSON.parse(submitted))
   } catch (error) {
     if (error instanceof Error) {
-      throw new Error(`Resposta do modelo fora do formato esperado: ${failureDetail(error)}`, { cause: error })
+      throw new Error(`${INVALID_SUBMISSION}${failureDetail(error)}`, { cause: error })
     }
     throw error
   }
