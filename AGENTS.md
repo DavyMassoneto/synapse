@@ -7,6 +7,7 @@
 - Always follow docs/standards/desempenho.md
 - Follow SRP, DRY, YAGNI and Clean Code; keep code readable and consistently spaced. Write control-flow bodies on separate lines with braces.
 - Keep type declarations and constants separate from implementation; do not declare inline object types in implementation. Constants, texts, magic numbers, identification literals, styles and schemas never sit in implementation code: each lives in its own file.
+- Private class members (properties, methods and accessors) start with `$`, as in `private readonly $storage` and `private $persist()`; public members never do.
 - Do not mix standalone functions with class declarations in the same file. Moving the function into the class as `static`, or into an object, only to escape this rule is a workaround.
 - No unnecessary function: a trivial type guard, a trivial predicate, a function that only returns a text or a template, a method that only forwards the call.
 - Combine type and value imports from the same module into one declaration using inline `type`.

@@ -1,0 +1,12 @@
+language js
+
+or {
+  JsPropertyClassMember(modifiers=$modifiers, name=$name),
+  JsMethodClassMember(modifiers=$modifiers, name=$name),
+  JsGetterClassMember(modifiers=$modifiers, name=$name),
+  JsSetterClassMember(modifiers=$modifiers, name=$name)
+} where {
+  $modifiers <: contains `private`,
+  $name <: not r"\$.+",
+  register_diagnostic(span=$name, message="A private class member starts with the $ prefix.")
+}
