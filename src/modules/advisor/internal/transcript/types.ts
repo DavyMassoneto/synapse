@@ -19,6 +19,7 @@ export interface TranscriptFits {
 
 export interface TranscriptOverflow {
   kind: "overflow"
+  rendered: string[]
 }
 
 export type FittedTranscript = TranscriptFits | TranscriptOverflow

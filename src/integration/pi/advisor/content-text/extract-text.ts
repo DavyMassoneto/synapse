@@ -1,10 +1,10 @@
-import { TEXT_BREAK } from "./constants"
+import { TEXT_BREAK, TEXT_CONTENT } from "./constants"
 import { type MessageContentBlocks } from "./types"
 
 export function extractText(blocks: MessageContentBlocks): string {
   const texts: string[] = []
   for (const block of blocks) {
-    if (block.type === "text") {
+    if (block.type === TEXT_CONTENT) {
       texts.push(block.text)
     }
   }

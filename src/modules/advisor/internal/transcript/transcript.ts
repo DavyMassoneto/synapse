@@ -1,5 +1,5 @@
 import { type TranscriptMessage } from "#synapse/modules/advisor/public/contracts"
-import { CONTENT_LIMITS, LARGE_CONTENT_LIMIT, MINIMAL_CONTENT_LIMIT, SEPARATOR } from "./constants"
+import { LARGE_CONTENT_LIMIT, MINIMAL_CONTENT_LIMIT, ROOMY_CONTENT_LIMITS, SEPARATOR } from "./constants"
 import { hasResizableContent, isHiddenShell } from "./predicates"
 import { renderMessage } from "./render-message"
 import { selectMessages } from "./select-messages"
@@ -34,13 +34,22 @@ function fitAt(prepared: PreparedMessage[], limit: number, budget: number): Fitt
   let length = -SEPARATOR.length
   for (const entry of prepared) {
     const block = renderPrepared(entry, limit)
+    blocks.push(block)
     length += block.length + SEPARATOR.length
     if (length > budget) {
-      return { kind: "overflow" }
+      return { kind: "overflow", rendered: blocks }
     }
-    blocks.push(block)
   }
   return { kind: "fits", text: blocks.join(SEPARATOR) }
+}
+
+function selectMinimal(prepared: PreparedMessage[], budget: number): string {
+  const fitted = fitAt(prepared, MINIMAL_CONTENT_LIMIT, budget)
+  if (fitted.kind === "fits") {
+    return fitted.text
+  }
+  const rest = prepared.slice(fitted.rendered.length).map((entry) => renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
+  return selectMessages([...fitted.rendered, ...rest], budget)
 }
 
 export function buildTranscript(messages: TranscriptMessage[], budget: number): string {
@@ -48,14 +57,11 @@ export function buildTranscript(messages: TranscriptMessage[], budget: number): 
     return ""
   }
   const prepared = prepareMessages(messages)
-  for (const limit of CONTENT_LIMITS) {
+  for (const limit of ROOMY_CONTENT_LIMITS) {
     const fitted = fitAt(prepared, limit, budget)
     if (fitted.kind === "fits") {
       return fitted.text
     }
   }
-  return selectMessages(
-    prepared.map((entry) => renderPrepared(entry, MINIMAL_CONTENT_LIMIT)),
-    budget,
-  )
+  return selectMinimal(prepared, budget)
 }

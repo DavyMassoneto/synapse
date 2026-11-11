@@ -2,6 +2,8 @@ import { type PiThinkingBudgets } from "./types"
 
 export const NO_REASONING = "off"
 
+export const PROMPT_ROLE = "user"
+
 export const INVALID_REFERENCE = "Referência de modelo advisor inválida."
 
 export const CAPABILITIES_CHANGED = "As capacidades do modelo advisor mudaram durante a consulta."

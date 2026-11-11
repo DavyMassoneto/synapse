@@ -1,11 +1,12 @@
 import { type Context, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
 import { type ModelRequest, type ResolvedModel } from "#synapse/modules"
-import { NO_REASONING } from "./constants"
+import { TEXT_CONTENT } from "../content-text"
+import { NO_REASONING, PROMPT_ROLE } from "./constants"
 
 export function consultationContext(request: ModelRequest): Context {
   return {
     systemPrompt: request.system,
-    messages: [{ role: "user", content: [{ type: "text", text: request.prompt }], timestamp: Date.now() }],
+    messages: [{ role: PROMPT_ROLE, content: [{ type: TEXT_CONTENT, text: request.prompt }], timestamp: Date.now() }],
   }
 }
 
