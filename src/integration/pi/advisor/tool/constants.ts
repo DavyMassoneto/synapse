@@ -1,7 +1,4 @@
 import { type ToolExecutionMode } from "@earendil-works/pi-coding-agent"
-import { Type } from "typebox"
-
-export const advisorParameters = Type.Object({})
 
 export const ADVISOR_NAME = "advisor"
 

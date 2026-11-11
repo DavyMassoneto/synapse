@@ -1,4 +1,8 @@
 import { type ExtensionContext, type ExtensionUIContext, type ModelRegistry } from "@earendil-works/pi-coding-agent"
+import { type Static } from "typebox"
+import { type advisorParameters } from "./constants"
+
+export type AdvisorToolInput = Static<typeof advisorParameters>
 
 export type AdvisorUI = Pick<ExtensionUIContext, "notify" | "select" | "setStatus">
 

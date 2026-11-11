@@ -1,10 +1,10 @@
 import { type Advisor, type ConsultationResult } from "#synapse/modules"
-import { type AdvisorContext } from "../host-contracts"
+import { type AdvisorContext, type AdvisorToolInput } from "../host-contracts"
 import { AdvisorModel } from "../model-consultation"
 import { captureTranscript } from "../transcript"
 import { TOOL_CANCELLED } from "./constants"
 import { reportProgress, toolFailure, toolOutput, unavailableOutput } from "./tool-output"
-import { type AdvisorToolInput, type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
+import { type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
 
 export class AdvisorToolHandler {
   private readonly advisor: Advisor

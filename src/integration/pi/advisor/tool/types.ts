@@ -1,7 +1,6 @@
 import { type ToolDefinition } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "../host-contracts"
+import { type AdvisorContext, type AdvisorToolInput, type advisorParameters } from "../host-contracts"
 import { type AdvisorRenderers, type AdvisorToolDetails } from "../tool-rendering"
-import { type advisorParameters } from "./constants"
 
 export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, never>
 
@@ -11,13 +10,11 @@ export type AdvisorToolResult = ReturnType<PiAdvisorTool["execute"]>
 
 export type AdvisorToolOutput = Awaited<AdvisorToolResult>
 
-export type AdvisorToolInput = Parameters<PiAdvisorTool["execute"]>[1]
-
 export type AdvisorToolBase = Omit<PiAdvisorTool, "execute" | "renderCall" | "renderResult">
 
 export type AdvisorToolSignal = Parameters<PiAdvisorTool["execute"]>[2]
 
-export interface AdvisorTool extends AdvisorToolBase, AdvisorRenderers<AdvisorToolInput> {
+export interface AdvisorTool extends AdvisorToolBase, AdvisorRenderers {
   execute(
     id: string,
     input: AdvisorToolInput,

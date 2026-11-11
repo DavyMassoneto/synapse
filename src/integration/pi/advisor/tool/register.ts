@@ -1,4 +1,5 @@
 import { type Advisor } from "#synapse/modules"
+import { advisorParameters } from "../host-contracts"
 import { renderAdvisorCall, renderAdvisorResult } from "../tool-rendering"
 import {
   ADVISOR_EXECUTION_MODE,
@@ -6,7 +7,6 @@ import {
   ADVISOR_NAME,
   ADVISOR_TOOL_DESCRIPTION,
   ADVISOR_TOOL_SNIPPET,
-  advisorParameters,
 } from "./constants"
 import { AdvisorToolHandler } from "./tool"
 import { type ToolRegistry } from "./types"
