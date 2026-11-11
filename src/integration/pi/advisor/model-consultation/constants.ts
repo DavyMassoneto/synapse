@@ -2,6 +2,10 @@ import { type PiThinkingBudgets } from "./types"
 
 export const NO_REASONING = "off"
 
+export const ABORTED_STOP = "aborted"
+
+export const ERROR_STOP = "error"
+
 export const PROMPT_ROLE = "user"
 
 export const INVALID_REFERENCE = "Referência de modelo advisor inválida."

@@ -1,7 +1,7 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
 import { type ModelResponse, type Usage } from "#synapse/modules"
 import { extractText } from "../content-text"
-import { EMPTY_RESPONSE, PROVIDER_FAILED } from "./constants"
+import { ABORTED_STOP, EMPTY_RESPONSE, ERROR_STOP, PROVIDER_FAILED } from "./constants"
 
 function failureReason(reply: AssistantMessage): string {
   if (reply.errorMessage) {
@@ -28,10 +28,10 @@ function contractUsage(usage: AssistantMessage["usage"]): Usage {
 }
 
 export function modelResponse(reply: AssistantMessage): ModelResponse {
-  if (reply.stopReason === "aborted") {
+  if (reply.stopReason === ABORTED_STOP) {
     return { kind: "cancelled" }
   }
-  if (reply.stopReason === "error") {
+  if (reply.stopReason === ERROR_STOP) {
     return { kind: "failure", message: failureReason(reply) }
   }
   const text = extractText(reply.content).trim()

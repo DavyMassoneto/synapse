@@ -2,7 +2,14 @@ import { describe, expect, test } from "vitest"
 import { buildTranscript, renderMessage, selectMessages } from "../internal"
 import { type TranscriptMessage } from "../public"
 import { RENDERED_MESSAGES } from "./constants"
-import { CountingUserMessage, emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
+import {
+  CountingToolResult,
+  CountingUserMessage,
+  emptyConsultation,
+  serviceFor,
+  TestModel,
+  TestStorage,
+} from "./doubles"
 import { type RenderedMessage } from "./types"
 
 function emptyTranscript(): void {
@@ -101,6 +108,14 @@ function fixedMessagePreparedOnce(): void {
   expect(counting.reads).toBe(2)
 }
 
+function lastPassKeepsRenderedBlocks(): void {
+  const counting = new CountingToolResult([{ kind: "text", text: "t".repeat(20_000) }])
+  const messages: TranscriptMessage[] = [counting, { kind: "user", blocks: [{ kind: "text", text: "FIM" }] }]
+  const text = buildTranscript(messages, 200)
+  expect(text.length).toBeLessThanOrEqual(200)
+  expect(counting.reads).toBe(4)
+}
+
 function reducesToolOutputToFit(): void {
   const messages: TranscriptMessage[] = [
     { kind: "user", blocks: [{ kind: "text", text: "PEDIDO" }] },
@@ -140,6 +155,7 @@ function registerTests(): void {
   test("sem mensagens não há seleção", nothingToSelect)
   test("mensagem que não depende do limite é preparada uma vez", fixedMessagePreparedOnce)
   test("saída de ferramenta é reduzida até caber", reducesToolOutputToFit)
+  test("a última passagem não renderiza de novo os blocos já renderizados", lastPassKeepsRenderedBlocks)
   test("orçamento zero devolve transcrição vazia", noBudget)
   test("mensagem única maior que o orçamento é cortada sem aviso de omissão", singleOversizedMessage)
 }

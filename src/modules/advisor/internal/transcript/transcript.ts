@@ -48,8 +48,13 @@ function selectMinimal(prepared: PreparedMessage[], budget: number): string {
   if (fitted.kind === "fits") {
     return fitted.text
   }
-  const rest = prepared.slice(fitted.rendered.length).map((entry) => renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
-  return selectMessages([...fitted.rendered, ...rest], budget)
+  const blocks = fitted.rendered
+  for (const [index, entry] of prepared.entries()) {
+    if (index >= blocks.length) {
+      blocks.push(renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
+    }
+  }
+  return selectMessages(blocks, budget)
 }
 
 export function buildTranscript(messages: TranscriptMessage[], budget: number): string {

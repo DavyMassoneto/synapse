@@ -1,11 +1,4 @@
-import { type AgentToolResult } from "@earendil-works/pi-coding-agent"
-import { type AdvisorToolDetails } from "#synapse/integration"
 import { type ReasoningLevel } from "./types"
-
-export const RENDER_RESULT: AgentToolResult<AdvisorToolDetails> = {
-  content: [{ type: "text", text: "line0\nline1\nline2\nline3\nline4\nline5\nline6\nline7\nline8\nline9" }],
-  details: { model: "provider/original" },
-}
 
 export const TEST_USAGE = {
   input: 1,

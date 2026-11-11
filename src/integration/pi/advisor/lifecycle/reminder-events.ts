@@ -1,6 +1,6 @@
 import { type TurnEndEvent } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules"
-import { REMINDER_DISPLAY, REMINDER_TYPE } from "./constants"
+import { COMPLETED_TURN, CUSTOM_MESSAGE_ENTRY, REMINDER_DISPLAY, REMINDER_TYPE } from "./constants"
 import { type TurnEndOutcome } from "./types"
 
 export class ReminderEvents {
@@ -12,14 +12,14 @@ export class ReminderEvents {
 
   turnEnd(event: TurnEndEvent): TurnEndOutcome {
     const reminder = this.advisor.turn({
-      completed: event.outcome === "completed",
+      completed: event.outcome === COMPLETED_TURN,
       usedTools: event.toolResults.length > 0,
     })
     if (reminder.kind === "due") {
       return {
         entries: [
           ...event.entries,
-          { type: "custom_message", customType: REMINDER_TYPE, content: reminder.text, display: REMINDER_DISPLAY },
+          { type: CUSTOM_MESSAGE_ENTRY, customType: REMINDER_TYPE, content: reminder.text, display: REMINDER_DISPLAY },
         ],
       }
     }
