@@ -1,6 +1,6 @@
 import { type ChatMessage, type ModelReply, type ToolMessage } from "#evaluator/provider-client"
 import { type RepositorySnapshot, runInspectionTool } from "#evaluator/repository-inspection"
-import { hasSubmission, isSubmission, parseReviewResult } from "#evaluator/review-result"
+import { isSubmission, parseReviewResult } from "#evaluator/review-result"
 import { ASSISTANT_ROLE, CONTINUING_ROUND, SUBMITTED_ROUND, TOOL_ROLE } from "./constants"
 import { type ReviewRoundOutcome } from "./types"
 
@@ -41,7 +41,7 @@ function submittedRound(snapshot: RepositorySnapshot, reply: ModelReply): Review
 }
 
 export function handleReviewRound(snapshot: RepositorySnapshot, reply: ModelReply): ReviewRoundOutcome {
-  if (hasSubmission(reply)) {
+  if (reply.toolCalls.some(isSubmission)) {
     return submittedRound(snapshot, reply)
   }
   return {

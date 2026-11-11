@@ -35,17 +35,24 @@ function dispatch(snapshot: RepositorySnapshot, call: ToolCall): string {
   }
 }
 
-export function runInspectionTool(snapshot: RepositorySnapshot, call: ToolCall): string {
+function inspectionOutput(snapshot: RepositorySnapshot, call: ToolCall): string {
   try {
-    const output = dispatch(snapshot, call)
-    if (Buffer.byteLength(output) > MAX_TOOL_OUTPUT_BYTES) {
-      return TOOL_OUTPUT_TOO_LARGE
-    }
-    return output
+    return dispatch(snapshot, call)
   } catch (error) {
     if (error instanceof AssertError || error instanceof SyntaxError) {
       return `${INVALID_ARGUMENTS}${error.message}`
     }
     throw error
   }
+}
+
+function limitedOutput(output: string): string {
+  if (Buffer.byteLength(output) > MAX_TOOL_OUTPUT_BYTES) {
+    return TOOL_OUTPUT_TOO_LARGE
+  }
+  return output
+}
+
+export function runInspectionTool(snapshot: RepositorySnapshot, call: ToolCall): string {
+  return limitedOutput(inspectionOutput(snapshot, call))
 }
