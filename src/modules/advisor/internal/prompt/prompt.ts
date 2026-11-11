@@ -5,6 +5,7 @@ import {
   ESTIMATED_CHARACTERS_PER_TOKEN,
   HOST_SAFETY_TOKENS,
   MAX_SYSTEM_CHARACTERS,
+  MAX_SYSTEM_SHARE,
   MINIMUM_ANSWER_TOKENS,
   PROMPT_FRAME_CHARACTERS,
   PROMPT_PREFIX,
@@ -13,10 +14,6 @@ import {
   WINDOW_TOO_SMALL,
 } from "./constants"
 import { type PreparedPrompt, type PromptBudget } from "./types"
-
-function assemblePrompt(system: string, transcript: string): string {
-  return PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX
-}
 
 function availableBudget(model: ResolvedModel): PromptBudget {
   const requiredOutputTokens = model.reasoningTokens + MINIMUM_ANSWER_TOKENS
@@ -36,7 +33,7 @@ function availableBudget(model: ResolvedModel): PromptBudget {
 }
 
 function systemLimit(characters: number): number {
-  return Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(characters / 2))
+  return Math.min(MAX_SYSTEM_CHARACTERS, Math.floor(characters * MAX_SYSTEM_SHARE))
 }
 
 export function preparePrompt(input: Consultation, model: ResolvedModel): PreparedPrompt {
@@ -46,5 +43,5 @@ export function preparePrompt(input: Consultation, model: ResolvedModel): Prepar
   }
   const system = clip(input.system, systemLimit(budget.characters))
   const transcript = buildTranscript(input.messages, budget.characters - system.length)
-  return { kind: "ready", text: assemblePrompt(system, transcript) }
+  return { kind: "ready", text: PROMPT_PREFIX + system + TRANSCRIPT_PREFIX + transcript + PROMPT_SUFFIX }
 }

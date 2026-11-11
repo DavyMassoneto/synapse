@@ -1,3 +1,3 @@
 import { type AssistantMessage, type ImageContent } from "@earendil-works/pi-ai"
 
-export type TextBlocks = Array<ImageContent | AssistantMessage["content"][number]>
+export type MessageContentBlocks = Array<ImageContent | AssistantMessage["content"][number]>

@@ -1,5 +1,6 @@
 export * from "./constants"
-export * from "./events"
 export * from "./register-events"
+export * from "./reminder-events"
+export * from "./session-sync"
 export * from "./sync-advisor"
 export * from "./types"

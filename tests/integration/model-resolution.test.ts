@@ -99,10 +99,8 @@ async function cancelledBeforeResolution(): Promise<void> {
   expect(registry.calls).toBe(0)
 }
 
-async function reasoningBudgets(): Promise<void> {
-  expect((await resolved("provider/first", "off")).reasoningTokens).toBe(0)
-  expect((await resolved("provider/first", "minimal")).reasoningTokens).toBe(PI_THINKING_BUDGETS.minimal)
-  expect((await resolved("provider/first", "high")).reasoningTokens).toBe(PI_THINKING_BUDGETS.high)
+async function reasoningBudget(level: ThinkingLevel): Promise<void> {
+  expect((await resolved("provider/first", level)).reasoningTokens).toBe(PI_THINKING_BUDGETS[level])
 }
 
 function budgetsCoverContractLevels(): void {
@@ -127,7 +125,7 @@ function registerTests(): void {
   test("credenciais ausentes são rejeitadas", missingCredentials)
   test("referência sem provedor é rejeitada", invalidReference)
   test("sinal já cancelado não consulta o registry", cancelledBeforeResolution)
-  test("nível de raciocínio define a reserva", reasoningBudgets)
+  test.each(THINKING_LEVELS)("nível %s define a reserva", reasoningBudget)
   test("a tabela de reservas tem exatamente os níveis do contrato", budgetsCoverContractLevels)
   test.each(THINKING_LEVELS)(
     "a cópia da reserva de %s é igual à do pi-ai, que não expõe a tabela às extensões",

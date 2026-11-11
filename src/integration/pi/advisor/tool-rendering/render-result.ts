@@ -6,6 +6,9 @@ import {
   ERROR_COLOR,
   HIDDEN_LINES_PREFIX,
   HIDDEN_LINES_SUFFIX,
+  LINE_BREAK,
+  MODEL_PREFIX,
+  MODEL_SUFFIX,
   PENDING_COLOR,
   PREVIEW_LINES,
   RENDER_PENDING,
@@ -24,23 +27,23 @@ function visibleLines(lines: string[], expanded: boolean): string[] {
 
 function hiddenNotice(hidden: number, theme: AdvisorRenderTheme): string {
   if (hidden > 0) {
-    return `\n${theme.fg(ADDITIONAL_COLOR, `${HIDDEN_LINES_PREFIX}${hidden}${HIDDEN_LINES_SUFFIX}`)}`
+    return `${LINE_BREAK}${theme.fg(ADDITIONAL_COLOR, `${HIDDEN_LINES_PREFIX}${hidden}${HIDDEN_LINES_SUFFIX}`)}`
   }
   return ""
 }
 
 function previewTitle(model?: string): string {
   if (model) {
-    return `${RENDER_SUCCESS} (${model})`
+    return `${RENDER_SUCCESS}${MODEL_PREFIX}${model}${MODEL_SUFFIX}`
   }
   return RENDER_SUCCESS
 }
 
 function renderPreview(body: string, expanded: boolean, theme: AdvisorRenderTheme, model?: string): string {
-  const lines = body.split("\n")
+  const lines = body.split(LINE_BREAK)
   const shown = visibleLines(lines, expanded)
   const suffix = hiddenNotice(lines.length - shown.length, theme)
-  return `${theme.fg(SUCCESS_COLOR, previewTitle(model))}\n${shown.join("\n")}${suffix}`
+  return `${theme.fg(SUCCESS_COLOR, previewTitle(model))}${LINE_BREAK}${shown.join(LINE_BREAK)}${suffix}`
 }
 
 export function renderAdvisorResult(

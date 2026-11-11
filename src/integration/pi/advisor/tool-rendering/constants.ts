@@ -20,6 +20,12 @@ export const SUCCESS_COLOR: ThemeColor = "success"
 
 export const ADDITIONAL_COLOR: ThemeColor = "dim"
 
+export const LINE_BREAK = "\n"
+
+export const MODEL_PREFIX = " ("
+
+export const MODEL_SUFFIX = ")"
+
 export const HIDDEN_LINES_PREFIX = "... ("
 
 export const HIDDEN_LINES_SUFFIX = " linhas a mais)"

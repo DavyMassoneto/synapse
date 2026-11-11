@@ -5,6 +5,7 @@ import {
 } from "#synapse/modules/advisor/public/contracts"
 import { clip } from "./clip"
 import {
+  BLOCK_BREAK,
   CONTEXT_LABEL,
   ERROR_LABEL,
   IMAGE_OMITTED,
@@ -60,5 +61,5 @@ export function renderMessage(message: TranscriptMessage, limit: number): string
   const textLimit = textLimitOf(message, limit)
   const lines = message.blocks.map((block) => renderBlock(block, limit, textLimit))
   lines.unshift(messageLabel(message))
-  return lines.join("\n")
+  return lines.join(BLOCK_BREAK)
 }

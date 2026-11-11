@@ -54,6 +54,10 @@ async function suggestionsBeforeSession(): Promise<void> {
 async function unmatchedPrefix(): Promise<void> {
   await host.emitSessionStart(context)
   expect(await host.requireCompletions()("zzz")).toStrictEqual([])
+}
+
+async function caseInsensitivePrefix(): Promise<void> {
+  await host.emitSessionStart(context)
   expect((await host.requireCompletions()("TH"))?.map(suggestionValue)).toStrictEqual(["thinking"])
 }
 
@@ -70,21 +74,30 @@ async function completionLimit(): Promise<void> {
   expect(suggestions).toHaveLength(40)
 }
 
-async function scopedSearch(): Promise<void> {
+function scopeTwoModels(): void {
   context.scopedModels = [
     { model: { ...context.modelRegistry.model, id: "model" } },
     { model: { ...context.modelRegistry.model, id: "model-extra" } },
   ]
+}
+
+async function scopedExactSearch(): Promise<void> {
+  scopeTwoModels()
   await host.requireCommand().handler("PROVIDER/MODEL", context)
-  const status = host.requireConfig()
-  expect(status.model).toBe("provider/model")
+  expect(host.requireConfig().model).toBe("provider/model")
+}
+
+async function scopedFuzzySearch(): Promise<void> {
+  scopeTwoModels()
   await host.requireCommand().handler("model extra", context)
-  const next = host.requireConfig()
-  expect(next.model).toBe("provider/model-extra")
+  expect(host.requireConfig().model).toBe("provider/model-extra")
+}
+
+async function searchOutsideScope(): Promise<void> {
+  scopeTwoModels()
   await host.requireCommand().handler("thinkingx", context)
   expect(context.ui.notices.at(-1)).toMatch(/Nenhum modelo encontrado/)
-  expect(host.requireConfig().model).toBe("provider/model-extra")
-  expect(host.advisor.activeModel()).toStrictEqual({ kind: "active", model: "provider/model-extra" })
+  expect(host.advisor.activeModel()).toStrictEqual({ kind: "active", model: "provider/model" })
 }
 
 function registerTests(): void {
@@ -99,7 +112,10 @@ function registerTests(): void {
   test("autocomplete limita sugestões", completionLimit)
   test("autocomplete antes da sessão só tem os subcomandos", suggestionsBeforeSession)
   test("autocomplete ignora prefixo sem correspondência", unmatchedPrefix)
-  test("busca respeita escopo e correspondência exata", scopedSearch)
+  test("autocomplete ignora maiúsculas no prefixo", caseInsensitivePrefix)
+  test("busca exata no escopo ignora maiúsculas", scopedExactSearch)
+  test("busca aproximada no escopo escolhe o modelo", scopedFuzzySearch)
+  test("modelo fora do escopo é recusado e preserva o atual", searchOutsideScope)
 }
 
 describe("command", registerTests)

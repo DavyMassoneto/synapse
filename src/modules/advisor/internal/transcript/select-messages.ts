@@ -1,5 +1,5 @@
 import { clip } from "./clip"
-import { OMITTED_MESSAGES, SEPARATOR } from "./constants"
+import { FIRST_MESSAGE_SHARE, OMITTED_MESSAGES, SEPARATOR } from "./constants"
 
 function selectRecent(blocks: string[], budget: number): string[] {
   let remaining = budget
@@ -26,7 +26,7 @@ function selectEdges(first: string, last: string, blocks: string[], budget: numb
   if (budget <= OMITTED_MESSAGES.length) {
     return clip(last, budget)
   }
-  const firstBudget = Math.floor((budget - OMITTED_MESSAGES.length - SEPARATOR.length * 2) / 2)
+  const firstBudget = Math.floor((budget - OMITTED_MESSAGES.length - SEPARATOR.length * 2) * FIRST_MESSAGE_SHARE)
   if (firstBudget <= 0) {
     return clip(first, budget)
   }

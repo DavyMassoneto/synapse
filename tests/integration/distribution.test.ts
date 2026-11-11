@@ -27,27 +27,27 @@ async function verifyDistribution(example: ConfigCase): Promise<void> {
   }
 }
 
-function restoresVariable(): void {
-  process.env.USERPROFILE = ""
-  const empty = new DistributionEnvironment()
-  expect(process.env.USERPROFILE).not.toBe("")
-  empty.restore()
-  expect(process.env.USERPROFILE).toBe("")
+function restoresSetVariable(value: string): void {
+  process.env.USERPROFILE = value
+  const nested = new DistributionEnvironment()
+  expect(process.env.USERPROFILE).not.toBe(value)
+  nested.restore()
+  expect(process.env.USERPROFILE).toBe(value)
+}
+
+function restoresUnsetVariable(): void {
   delete process.env.USERPROFILE
-  const absent = new DistributionEnvironment()
-  absent.restore()
+  const nested = new DistributionEnvironment()
+  nested.restore()
   expect(process.env.USERPROFILE).toBeUndefined()
-  process.env.USERPROFILE = "valor"
-  const filled = new DistributionEnvironment()
-  filled.restore()
-  expect(process.env.USERPROFILE).toBe("valor")
 }
 
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(() => environment.restore())
   test.each(CASES)("distribuição: $name", verifyDistribution)
-  test("ambiente restaura variável vazia, ausente e preenchida como estavam", restoresVariable)
+  test.each(["", "valor"])("ambiente restaura a variável definida como %j", restoresSetVariable)
+  test("ambiente restaura a variável ausente", restoresUnsetVariable)
 }
 
 describe("distribution", registerTests)

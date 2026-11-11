@@ -10,7 +10,7 @@ function prepare(): void {
   advisor = serviceFor(storage)
 }
 
-async function snapshotIsStable() {
+async function snapshotIsStable(): Promise<void> {
   const firstStorage = new TestStorage()
   firstStorage.model = "provider/first"
   const firstAdvisor = serviceFor(firstStorage)
@@ -31,7 +31,7 @@ async function snapshotIsStable() {
   expect(port.resolved?.effectiveThinking).toBe("low")
 }
 
-async function cancellationBeforeResolution() {
+async function cancellationBeforeResolution(): Promise<void> {
   const controller = new AbortController()
   controller.abort()
   const port = new TestModel()
@@ -41,7 +41,7 @@ async function cancellationBeforeResolution() {
   expect(port.calls).toBe(0)
 }
 
-async function providerFailure() {
+async function providerFailure(): Promise<void> {
   const port = new FailingModel()
   expect(await advisor.consult(emptyConsultation(new AbortController().signal), port)).toStrictEqual({
     kind: "failure",

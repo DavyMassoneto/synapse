@@ -12,6 +12,10 @@ export const ROOMY_CONTENT_LIMITS = [LARGE_CONTENT_LIMIT, MEDIUM_CONTENT_LIMIT, 
 
 export const HEAD_FRACTION = 0.6
 
+export const FIRST_MESSAGE_SHARE = 0.5
+
+export const BLOCK_BREAK = "\n"
+
 export const SEPARATOR = "\n\n"
 
 export const CLIPPED_CONTENT = "\n[... conteúdo omitido ...]\n"

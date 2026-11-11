@@ -51,6 +51,15 @@ async function toolResetsReminder(): Promise<void> {
   expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
+async function sessionStartResetsReminder(): Promise<void> {
+  const event = turnEvent()
+  for (let index = 0; index < 4; index++) {
+    await host.emitTurnEnd(event, context)
+  }
+  await host.emitSessionStart(context)
+  expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
+}
+
 async function disabledAdvisor(): Promise<void> {
   const event = beforeStartEvent()
   await host.emitBeforeStart(event, context)
@@ -79,6 +88,7 @@ function registerTests(): void {
   test("instruções são inseridas", instructions)
   test("lembrete respeita cadência", reminderCadence)
   test("resultado da ferramenta reinicia lembrete", toolResetsReminder)
+  test("início de sessão reinicia lembrete", sessionStartResetsReminder)
   test("desligamento remove ferramenta e instruções", disabledAdvisor)
   test("turnos com o advisor desligado não contam para o lembrete", disabledAdvisorDoesNotCount)
 }

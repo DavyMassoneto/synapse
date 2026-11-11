@@ -28,5 +28,5 @@ export function unavailableOutput(error: Error, signal: AbortSignal): AdvisorToo
   if (signal.aborted) {
     return toolFailure(TOOL_CANCELLED)
   }
-  return toolFailure(`${TOOL_UNAVAILABLE}${error.message}.`)
+  return toolFailure(`${TOOL_UNAVAILABLE}${error.message}`)
 }

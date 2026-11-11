@@ -17,7 +17,7 @@ function prepare(): void {
   advisor = serviceFor(storage)
 }
 
-async function cancellationDuringResolution() {
+async function cancellationDuringResolution(): Promise<void> {
   const controller = new AbortController()
   const port = new CancelOnResolveModel(controller)
   const result = await advisor.consult(emptyConsultation(controller.signal), port)
@@ -25,14 +25,14 @@ async function cancellationDuringResolution() {
   expect(port.captured).toBeUndefined()
 }
 
-async function cancellationDuringExecution() {
+async function cancellationDuringExecution(): Promise<void> {
   const controller = new AbortController()
   const port = new CancelOnConsultModel(controller)
   const result = await advisor.consult(emptyConsultation(controller.signal), port)
   expect(result.kind).toBe("cancelled")
 }
 
-async function cancellationFromProvider() {
+async function cancellationFromProvider(): Promise<void> {
   const result = await advisor.consult(emptyConsultation(new AbortController().signal), new CancelledModel())
   expect(result.kind).toBe("cancelled")
 }

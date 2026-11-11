@@ -6,7 +6,10 @@
 - Always follow docs/standards/responsabilidade.md
 - Always follow docs/standards/desempenho.md
 - Follow SRP, DRY, YAGNI and Clean Code; keep code readable and consistently spaced. Write control-flow bodies on separate lines with braces.
-- Keep type declarations and constants separate from implementation; do not declare inline object types in implementation. Do not mix standalone functions with class declarations in the same file.
+- Keep type declarations and constants separate from implementation; do not declare inline object types in implementation. Constants, texts, magic numbers, identification literals (event, tool, command and status names), styles and schemas never sit in implementation code: each lives in the `constants.ts` of its capability. A text with a variable part keeps each fixed part as a named constant, and the code only joins those constants with the value.
+- Do not mix standalone functions with class declarations in the same file. Moving the function into the class as `static`, or into an object, only to escape this rule is a workaround.
+- No unnecessary function: a trivial type guard, a trivial predicate, a function that only returns a text or a template, a method that only forwards the call.
+- Combine type and value imports from the same module into one declaration using inline `type`.
 - Do not declare functions inside other functions; keep responsibilities separate.
 - Use ternaries only for very small expressions; prefer explicit conditionals when they improve readability.
 - Folders have one cohesive, explicit responsibility. Types, constants and helpers live in the folder of the capability that uses them; do not create shared folders grouped by technical category (constants, types, utils). A contract folder is allowed only when it marks an architectural boundary, such as `public/contracts` in docs/architecture.md.
@@ -14,7 +17,10 @@
 - Every source directory must contain one barrel named `index.ts`, containing only `export * from` or `export { default as Name } from` declarations. Exceptions: `tests/integration/`, which holds only test files, and the root of `.github/pr-evaluator/`, which holds the automation entry point.
 - A folder name states what it holds. If it holds HTTP or SSE reading, name it for that; do not name it after the domain noun it serves (for example, `model` for an HTTP client). Name it after what it does.
 - Unit tests belong to the project code. The GitHub automation under `.github/` has no unit tests; it is verified by running it in GitHub Actions.
-- Do not use `any`, `unknown`, `Record`, type assertions or casts.
+- Do not use `any`, `unknown`, `Record`, type assertions, casts, `as const` or `satisfies`, nor any workaround for them (`Object.freeze`, a helper that asserts a type without validating it).
+- Comments in code, default values and fallbacks without justification, `biome-ignore`, `@ts-ignore`, `@ts-expect-error` and `@ts-nocheck` are forbidden.
 - Split complex logic into small, readable functions with clear responsibilities; avoid unnecessary functions and redundant type guards.
 - Code written while fixing a finding goes through the same review questions as the code under review, before it is published.
 - Every verification includes an input that must be rejected, not only inputs that must work.
+- Tests use Vitest with `expect`: one scenario per test, and shared fixtures live in a support file.
+- Changing `docs/architecture.md`, `AGENTS.md`, `docs/standards/`, `biome.json`, `tsconfig.json` or the workflows to make the code fit is the owner's decision.

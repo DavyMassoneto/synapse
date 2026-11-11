@@ -10,6 +10,7 @@ export class TestContext implements AdvisorContext {
   readonly modelRegistry = new TestRegistry()
   readonly sessionManager = new TestSession()
   readonly ui = new TestUI()
+
   getSystemPrompt(): string {
     return "system"
   }

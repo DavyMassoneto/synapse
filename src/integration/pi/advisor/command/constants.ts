@@ -2,6 +2,10 @@ export const DISABLE_COMMAND = "off"
 
 export const THINKING_COMMAND = "thinking"
 
+export const ARGUMENT_PATTERN = /\s+/
+
+export const ARGUMENT_SEPARATOR = " "
+
 export const SUBCOMMANDS = [DISABLE_COMMAND, THINKING_COMMAND]
 
 export const COMPLETION_LIMIT = 40

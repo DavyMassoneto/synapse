@@ -74,6 +74,9 @@ Regras de avaliação:
 - Não cite linha que o <diff> não mostra e não afirme o que ele não mostra. Se a conclusão depende de código fora do diff (outra duplicação, outro importador, outra dependência), use kind insufficient_context e diga em evidence o que precisaria ser verificado. Só use violation quando o diff comprova.
 - Não invente apontamentos para preencher os critérios. Um critério sem problemas não gera item.
 - Em DRY, YAGNI e Clean Code, proponha correções proporcionais: a sugestão também deve respeitar YAGNI. Em SRP não há proporcionalidade: a função divide-se por motivo de mudança, sem criar funções que só escondem uma linha.
+- Cada apontamento cita a regra de <regras>, de <padroes> ou de <arquitetura>, ou a definição de critério acima, que o trecho viola. Não aponte o que nenhuma delas pede, como o tamanho ou o assunto da PR.
+- A correção (fix) cumpre todas as regras de <regras>, <padroes> e <arquitetura>, inclusive as exceções que elas declaram. Antes de propor a correção, confira-a contra cada regra: não proponha função no arquivo de uma classe, função que só devolve um texto ou template, import que desça abaixo do barrel mais alto ou crie ciclo, remoção de um barrel exigido, `as const`, nem qualquer outra construção que uma regra proíbe. Se toda correção possível viola outra regra, use kind insufficient_context e diga em evidence quais regras conflitam.
+- Código que a PR executa tem uso. Se o motivo de uma mudança depende de algo que o diff não mostra (um comportamento externo, um incidente), use kind insufficient_context em vez de YAGNI.
 - Ordene os apontamentos por gravidade. Violações de arquitetura e de regras explícitas vêm antes de preferências de estilo.
 
 Resposta: somente um objeto JSON, sem texto antes ou depois e sem cercas de código, no idioma do usuário, com este formato:

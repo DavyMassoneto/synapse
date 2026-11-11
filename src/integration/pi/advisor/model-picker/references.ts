@@ -1,9 +1,14 @@
-import { formatModelReference } from "#synapse/modules"
+import { REFERENCE_SEPARATOR } from "#synapse/modules"
 import { type AdvisorContext } from "../host-contracts"
+import { type ListedModel } from "./types"
+
+function listedModels(context: AdvisorContext): ListedModel[] {
+  if (context.scopedModels.length > 0) {
+    return context.scopedModels.map((entry) => entry.model)
+  }
+  return context.modelRegistry.getAvailable()
+}
 
 export function modelReferences(context: AdvisorContext): string[] {
-  if (context.scopedModels.length > 0) {
-    return context.scopedModels.map((entry) => formatModelReference(entry.model.provider, entry.model.id))
-  }
-  return context.modelRegistry.getAvailable().map((model) => formatModelReference(model.provider, model.id))
+  return listedModels(context).map((model) => `${model.provider}${REFERENCE_SEPARATOR}${model.id}`)
 }

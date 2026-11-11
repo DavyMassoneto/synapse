@@ -5,6 +5,7 @@ import { type ProjectedMessages } from "./types"
 export class TestSession implements AdvisorSession {
   projectionError = false
   messages: ProjectedMessages = []
+
   buildSessionProjection(): SessionProjection {
     if (this.projectionError) {
       throw new Error("projection failed")

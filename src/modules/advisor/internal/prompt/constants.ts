@@ -20,6 +20,8 @@ export const MINIMUM_ANSWER_TOKENS = 1_024
 
 export const MAX_SYSTEM_CHARACTERS = 40_000
 
+export const MAX_SYSTEM_SHARE = 0.5
+
 export const WINDOW_TOO_SMALL = "A janela do advisor é pequena demais para a consulta."
 
 export const PROMPT_PREFIX = "<executor_system_prompt>\n"
