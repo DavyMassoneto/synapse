@@ -1,11 +1,5 @@
-import { type ModelConfiguration } from "#evaluator/configuration"
-import {
-  CACHE_CONTROL_HEADER,
-  MAX_OUTPUT_TOKENS,
-  MODEL_TEMPERATURE,
-  MODEL_TIMEOUT_MS,
-  NO_CACHE_DIRECTIVE,
-} from "./constants"
+import { MAX_OUTPUT_TOKENS, type ModelConfiguration } from "#evaluator/configuration"
+import { CACHE_CONTROL_HEADER, MODEL_TEMPERATURE, MODEL_TIMEOUT_MS, NO_CACHE_DIRECTIVE } from "./constants"
 
 export function postChat(configuration: ModelConfiguration, prompt: string): Promise<Response> {
   return fetch(`${configuration.baseUrl}/chat/completions`, {

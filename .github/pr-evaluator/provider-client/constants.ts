@@ -1,5 +1,3 @@
-export const MAX_OUTPUT_TOKENS = 128_000
-
 export const MODEL_TEMPERATURE = 0
 
 export const MODEL_TIMEOUT_MS = 2_400_000
