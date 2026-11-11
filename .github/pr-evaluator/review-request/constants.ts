@@ -1,3 +1,5 @@
+import { MAX_OUTPUT_TOKENS, MODEL_CONTEXT_TOKENS } from "#evaluator/provider-client"
+
 export const TEMPLATE_FILE = "docs/pr-evaluator.md"
 
 export const ARCHITECTURE_FILE = "docs/architecture.md"
@@ -22,4 +24,4 @@ export const PLACEHOLDER_DIFF = "{{DIFF}}"
 
 export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
 
-export const MAX_PROMPT_CHARACTERS = 420_000
+export const MAX_PROMPT_CHARACTERS = MODEL_CONTEXT_TOKENS - MAX_OUTPUT_TOKENS

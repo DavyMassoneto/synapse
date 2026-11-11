@@ -23,6 +23,4 @@ export interface PickerContext extends PickerContextBase {
   modelRegistry: ModelListing
 }
 
-export type ListedModel = Pick<ReturnType<ModelListing["getAvailable"]>[number], "provider" | "id">
-
 export type MenuChoice = Awaited<ReturnType<PickerUI["select"]>>

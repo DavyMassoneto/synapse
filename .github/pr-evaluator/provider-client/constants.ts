@@ -1,3 +1,5 @@
+export const MODEL_CONTEXT_TOKENS = 1_000_000
+
 export const MAX_OUTPUT_TOKENS = 128_000
 
 export const MODEL_TEMPERATURE = 0
