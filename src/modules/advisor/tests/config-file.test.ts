@@ -62,7 +62,7 @@ function rejectsMalformedModel(model: string): void {
 function replacesFile(): void {
   const storage = new FileConfig(file)
   writeFileSync(file, "old")
-  storage.save({ model: "provider/new", thinking: "low" })
+  expect(storage.save({ model: "provider/new", thinking: "low" })).toStrictEqual({ kind: "saved" })
   expect(readFileSync(file, "utf8")).toMatch(/provider\/new/)
   expect(readdirSync(directory)).toStrictEqual(["advisor.json"])
 }
@@ -72,7 +72,7 @@ function rejectsDirectoryDestination(): void {
   mkdirSync(blockedPath)
   writeFileSync(join(blockedPath, "keep"), "original")
   const storage = new FileConfig(blockedPath)
-  expect(() => storage.save({ thinking: "high" })).toThrow(Error)
+  expect(storage.save({ thinking: "high" }).kind).toBe("failure")
   expect(readFileSync(join(blockedPath, "keep"), "utf8")).toBe("original")
   expect(readdirSync(directory)).toStrictEqual(["blocked"])
 }

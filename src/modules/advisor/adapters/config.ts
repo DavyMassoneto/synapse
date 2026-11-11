@@ -1,16 +1,16 @@
 import { randomUUID } from "node:crypto"
-import { mkdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs"
+import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname } from "node:path"
-import { type Config, type ConfigLoadResult } from "#synapse/modules/advisor/public/contracts"
+import { type Config, type ConfigLoadResult, type ConfigSaveResult } from "#synapse/modules/advisor/public/contracts"
 import {
   CONFIG_ENCODING,
   CONFIG_FILE_END,
   CONFIG_INDENT,
   CONFIG_READ_FAILED,
-  CONFIG_WRITE_AND_CLEANUP_FAILED,
   CREATE_ONLY,
   TEMPORARY_EXTENSION,
 } from "./constants"
+import { discardTemporary } from "./discard-temporary"
 import { parseConfig } from "./parse-config"
 import { isMissingFile } from "./predicates"
 
@@ -32,19 +32,18 @@ export class FileConfig {
     }
   }
 
-  save(config: Config): void {
-    mkdirSync(dirname(this.path), { recursive: true })
+  save(config: Config): ConfigSaveResult {
     const temporary = `${this.path}.${randomUUID()}${TEMPORARY_EXTENSION}`
     try {
+      mkdirSync(dirname(this.path), { recursive: true })
       writeFileSync(temporary, `${JSON.stringify(config, null, CONFIG_INDENT)}${CONFIG_FILE_END}`, {
         flag: CREATE_ONLY,
       })
       renameSync(temporary, this.path)
+      return { kind: "saved" }
     } catch (error) {
-      try {
-        rmSync(temporary, { force: true })
-      } catch (cleanupError) {
-        throw new AggregateError([error, cleanupError], CONFIG_WRITE_AND_CLEANUP_FAILED)
+      if (error instanceof Error) {
+        return discardTemporary(temporary, error)
       }
       throw error
     }

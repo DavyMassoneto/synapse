@@ -27,16 +27,12 @@ export class AdvisorConfiguration {
   }
 
   private persist(config: Config): AdvisorResult {
-    try {
-      this.storage.save(config)
-      this.current = { kind: "success", config }
-      return this.status()
-    } catch (error) {
-      if (error instanceof Error) {
-        return { kind: "failure", message: `${CONFIG_SAVE_FAILED}${SAVE_FAILURE_CAUSE}${error.message}` }
-      }
-      throw error
+    const saved = this.storage.save(config)
+    if (saved.kind === "failure") {
+      return { kind: "failure", message: `${CONFIG_SAVE_FAILED}${SAVE_FAILURE_CAUSE}${saved.message}` }
     }
+    this.current = { kind: "success", config }
+    return this.status()
   }
 
   private change(next: ConfigChange): AdvisorResult {

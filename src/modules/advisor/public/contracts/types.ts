@@ -203,8 +203,14 @@ export interface ReminderTurn {
 
 export interface ConfigPort {
   load(): ConfigLoadResult
-  save(config: Config): void
+  save(config: Config): ConfigSaveResult
 }
+
+export interface ConfigSaved {
+  kind: "saved"
+}
+
+export type ConfigSaveResult = ConfigSaved | Failure
 
 export type ConfigLoadResult = ConfigMissing | ConfigLoaded | ConfigInvalid
 

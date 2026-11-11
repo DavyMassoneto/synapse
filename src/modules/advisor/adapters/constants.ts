@@ -12,8 +12,7 @@ export const CONFIG_READ_FAILED = "Não foi possível ler a configuração do ad
 
 export const CONFIG_INVALID = "Configuração do advisor inválida; revise advisor.json."
 
-export const CONFIG_WRITE_AND_CLEANUP_FAILED =
-  "Falha ao gravar a configuração do advisor e ao remover o arquivo temporário."
+export const CLEANUP_FAILED = " O arquivo temporário também não foi removido: "
 
 export const MISSING_FILE_CODE = "ENOENT"
 

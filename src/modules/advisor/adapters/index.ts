@@ -1,4 +1,5 @@
 export * from "./config"
 export * from "./constants"
+export * from "./discard-temporary"
 export * from "./parse-config"
 export * from "./predicates"

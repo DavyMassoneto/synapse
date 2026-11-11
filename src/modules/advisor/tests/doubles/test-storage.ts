@@ -1,4 +1,9 @@
-import { type ConfigLoadResult, type ConfigPort, type ThinkingLevel } from "#synapse/modules/advisor"
+import {
+  type ConfigLoadResult,
+  type ConfigPort,
+  type ConfigSaveResult,
+  type ThinkingLevel,
+} from "#synapse/modules/advisor"
 
 export class TestStorage implements ConfigPort {
   failSave = false
@@ -12,10 +17,11 @@ export class TestStorage implements ConfigPort {
     return { kind: "loaded", config: { model: this.model, thinking: this.thinking } }
   }
 
-  save(): void {
+  save(): ConfigSaveResult {
     this.saves += 1
     if (this.failSave) {
-      throw new Error("disco indisponível")
+      return { kind: "failure", message: "disco indisponível" }
     }
+    return { kind: "saved" }
   }
 }
