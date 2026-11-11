@@ -1,5 +1,5 @@
 import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
-import { type AdvisorContext } from "../host-contracts"
+import { type AdvisorContext, ERROR_NOTICE, INFO_NOTICE } from "../host-contracts"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
 import { DISABLED_NOTICE, DISABLED_STATUS, MODEL_NOTICE, THINKING_LABEL, THINKING_NOTICE } from "./constants"
@@ -18,7 +18,7 @@ export class AdvisorCommand {
   async handle(args: string, context: AdvisorContext): Promise<void> {
     const status = this.advisor.configuration.status()
     if (status.kind === "failure") {
-      context.ui.notify(status.message, "error")
+      context.ui.notify(status.message, ERROR_NOTICE)
     } else {
       await this.execute(parseAdvisorCommand(args), status.config, context)
     }
@@ -52,7 +52,7 @@ export class AdvisorCommand {
   }
 
   private showCurrent(config: Config, context: AdvisorContext): void {
-    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, "info")
+    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, INFO_NOTICE)
   }
 
   private modelLabel(): string {
@@ -69,10 +69,10 @@ export class AdvisorCommand {
 
   private report(context: AdvisorContext, result: AdvisorResult, success: string): void {
     if (result.kind === "failure") {
-      context.ui.notify(result.message, "error")
+      context.ui.notify(result.message, ERROR_NOTICE)
     } else {
       syncAdvisor(this.pi, this.advisor, context)
-      context.ui.notify(success, "info")
+      context.ui.notify(success, INFO_NOTICE)
     }
   }
 }

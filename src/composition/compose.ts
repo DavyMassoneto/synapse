@@ -1,7 +1,7 @@
-import { type AdvisorHost, registerAdvisor } from "#synapse/integration"
+import { type AdvisorHost, advisorConfigPath, registerAdvisor } from "#synapse/integration"
 import { createAdvisor } from "#synapse/modules"
 
-export function compose(pi: AdvisorHost, configPath: string): void {
+export function compose(pi: AdvisorHost): void {
   const controller = new AbortController()
-  registerAdvisor(pi, createAdvisor(configPath), controller.signal, () => controller.abort())
+  registerAdvisor(pi, createAdvisor(advisorConfigPath()), controller.signal, () => controller.abort())
 }

@@ -1,5 +1,5 @@
 import { type Cancelled } from "#synapse/modules"
-import { type AdvisorContext } from "../host-contracts"
+import { type AdvisorContext, ERROR_NOTICE, WARNING_NOTICE } from "../host-contracts"
 import {
   AMBIGUOUS_MODEL,
   CANCELLED_SELECTION,
@@ -32,12 +32,12 @@ async function chooseMatch(context: AdvisorContext, matches: string[]): Promise<
     const options = matches.slice(0, MODEL_SELECTION_LIMIT)
     return selectedModel(await context.ui.select(PICKER_TITLE, options), options)
   }
-  context.ui.notify(AMBIGUOUS_MODEL, "warning")
+  context.ui.notify(AMBIGUOUS_MODEL, WARNING_NOTICE)
   return CANCELLED_SELECTION
 }
 
 function reportNoMatch(context: AdvisorContext, input: string): Cancelled {
-  context.ui.notify(`${NO_MATCH}${input}`, "error")
+  context.ui.notify(`${NO_MATCH}${input}`, ERROR_NOTICE)
   return CANCELLED_SELECTION
 }
 

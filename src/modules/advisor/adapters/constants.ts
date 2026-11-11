@@ -16,3 +16,13 @@ export const CONFIG_WRITE_AND_CLEANUP_FAILED =
   "Falha ao gravar a configuração do advisor e ao remover o arquivo temporário."
 
 export const MISSING_FILE_CODE = "ENOENT"
+
+export const CONFIG_ENCODING = "utf8"
+
+export const CONFIG_INDENT = 2
+
+export const CONFIG_FILE_END = "\n"
+
+export const TEMPORARY_EXTENSION = ".tmp"
+
+export const CREATE_ONLY = "wx"
