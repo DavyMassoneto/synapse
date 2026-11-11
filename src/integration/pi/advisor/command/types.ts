@@ -1,6 +1,6 @@
 import { type RegisteredCommand } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "../host-contracts"
-import { type LifecycleHost } from "../lifecycle"
+import { type LifecycleHost, type SessionContext } from "../lifecycle"
+import { type PickerContext } from "../model-picker"
 
 export interface DisableCommand {
   kind: "disable"
@@ -18,10 +18,12 @@ export interface SelectCommand {
 
 export type AdvisorCommandInput = DisableCommand | ThinkingCommand | SelectCommand
 
+export type CommandContext = PickerContext & SessionContext
+
 export type AdvisorCommandBase = Pick<RegisteredCommand, "description" | "getArgumentCompletions">
 
 export interface AdvisorCommandDefinition extends AdvisorCommandBase {
-  handler(args: string, context: AdvisorContext): Promise<void>
+  handler(args: string, context: CommandContext): Promise<void>
 }
 
 export interface CommandRegistry {

@@ -1,7 +1,7 @@
 import { type Advisor } from "#synapse/modules"
 import { registerCommand } from "./command"
 import { type AdvisorShutdownHandler, registerEvents } from "./lifecycle"
-import { registerTool } from "./tool"
+import { registerTool } from "./tool-registration"
 import { type AdvisorHost } from "./types"
 
 export function registerAdvisor(

@@ -1,6 +1,6 @@
 import { type ToolResultEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules"
-import { ADVISOR_NAME } from "../host-contracts"
+import { ADVISOR_NAME } from "../tool"
 import { REMINDER_DISPLAY, REMINDER_TYPE } from "./constants"
 import { type TurnEndOutcome } from "./types"
 

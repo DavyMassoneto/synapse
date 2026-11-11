@@ -1,12 +1,11 @@
 import { type AutocompleteItem } from "@earendil-works/pi-tui"
-import { type AdvisorContext } from "../host-contracts"
-import { modelReferences } from "../model-picker"
+import { modelReferences, type PickerContext } from "../model-picker"
 import { COMPLETION_LIMIT, SUBCOMMANDS } from "./constants"
 
 export class CompletionCatalog {
   private values = SUBCOMMANDS
 
-  refresh(context: AdvisorContext): void {
+  refresh(context: PickerContext): void {
     this.values = [...SUBCOMMANDS, ...modelReferences(context)]
   }
 

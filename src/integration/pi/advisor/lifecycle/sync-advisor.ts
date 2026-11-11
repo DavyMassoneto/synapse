@@ -1,7 +1,7 @@
 import { type ActiveModel, type Advisor } from "#synapse/modules"
-import { ADVISOR_NAME, type AdvisorContext } from "../host-contracts"
+import { ADVISOR_NAME } from "../tool"
 import { STATUS_PREFIX } from "./constants"
-import { type AdvisorToolActivation } from "./types"
+import { type AdvisorToolActivation, type SessionContext } from "./types"
 
 function activateTool(pi: AdvisorToolActivation): void {
   const active = pi.getActiveTools()
@@ -17,7 +17,7 @@ function deactivateTool(pi: AdvisorToolActivation): void {
   }
 }
 
-function showStatus(context: AdvisorContext, model: ActiveModel): void {
+function showStatus(context: SessionContext, model: ActiveModel): void {
   if (model.kind === "active") {
     context.ui.setStatus(ADVISOR_NAME, `${STATUS_PREFIX}${model.model}`)
   } else {
@@ -25,7 +25,7 @@ function showStatus(context: AdvisorContext, model: ActiveModel): void {
   }
 }
 
-export function syncAdvisor(pi: AdvisorToolActivation, advisor: Advisor, context: AdvisorContext): void {
+export function syncAdvisor(pi: AdvisorToolActivation, advisor: Advisor, context: SessionContext): void {
   const model = advisor.activeModel()
   if (model.kind === "active") {
     activateTool(pi)

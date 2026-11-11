@@ -1,6 +1,7 @@
 import { type AgentToolResult, type ToolRenderResultOptions } from "@earendil-works/pi-coding-agent"
 import { type Component } from "@earendil-works/pi-tui"
 import { extractText } from "../content-text"
+import { type AdvisorToolDetails } from "../tool"
 import {
   ADDITIONAL_COLOR,
   ERROR_COLOR,
@@ -16,7 +17,7 @@ import {
   SUCCESS_COLOR,
 } from "./constants"
 import { textComponent } from "./text-component"
-import { type AdvisorRenderContext, type AdvisorRenderTheme, type AdvisorToolDetails } from "./types"
+import { type AdvisorRenderContext, type AdvisorRenderTheme } from "./types"
 
 function visibleLines(lines: string[], expanded: boolean): string[] {
   if (expanded) {

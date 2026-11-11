@@ -1,6 +1,20 @@
-import { type ToolDefinition } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext, type AdvisorToolInput, type advisorParameters } from "../host-contracts"
-import { type AdvisorRenderers, type AdvisorToolDetails } from "../tool-rendering"
+import { type ExtensionContext, type ToolDefinition } from "@earendil-works/pi-coding-agent"
+import { type Static } from "typebox"
+import { type AdvisorModelRegistry } from "../model-consultation"
+import { type TranscriptSource } from "../transcript"
+import { type advisorParameters } from "./constants"
+
+export type AdvisorToolInput = Static<typeof advisorParameters>
+
+export interface AdvisorToolDetails {
+  model?: string
+}
+
+export type ToolContextBase = Pick<ExtensionContext, "getSystemPrompt">
+
+export interface ToolContext extends ToolContextBase, TranscriptSource {
+  modelRegistry: AdvisorModelRegistry
+}
 
 export type PiAdvisorTool = ToolDefinition<typeof advisorParameters, AdvisorToolDetails, never>
 
@@ -13,17 +27,3 @@ export type AdvisorToolOutput = Awaited<AdvisorToolResult>
 export type AdvisorToolBase = Omit<PiAdvisorTool, "execute" | "renderCall" | "renderResult">
 
 export type AdvisorToolSignal = Parameters<PiAdvisorTool["execute"]>[2]
-
-export interface AdvisorTool extends AdvisorToolBase, AdvisorRenderers {
-  execute(
-    id: string,
-    input: AdvisorToolInput,
-    signal: AdvisorToolSignal,
-    update: AdvisorToolUpdate,
-    context: AdvisorContext,
-  ): AdvisorToolResult
-}
-
-export interface ToolRegistry {
-  registerTool(tool: AdvisorTool): void
-}

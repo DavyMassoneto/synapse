@@ -1,6 +1,6 @@
 import { rmSync } from "node:fs"
 import { join } from "node:path"
-import { registerAdvisor } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE, registerAdvisor } from "#synapse/integration"
 import { type Advisor, type Config, createAdvisor } from "#synapse/modules"
 import { AdvisorHostCollector } from "./host-collector"
 
@@ -13,7 +13,7 @@ export class TypedAdvisorHost extends AdvisorHostCollector {
     this.directory = directory
     try {
       const lifetime = new AbortController()
-      this.advisor = createAdvisor(join(directory, "advisor.json"))
+      this.advisor = createAdvisor(join(directory, ADVISOR_CONFIG_FILE))
       registerAdvisor(this, this.advisor, lifetime.signal, () => lifetime.abort())
     } catch (error) {
       rmSync(directory, { recursive: true, force: true })

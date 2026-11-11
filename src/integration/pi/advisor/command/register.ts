@@ -1,6 +1,6 @@
 import { type Advisor } from "#synapse/modules"
-import { ADVISOR_NAME } from "../host-contracts"
 import { SESSION_START } from "../lifecycle"
+import { ADVISOR_NAME } from "../tool"
 import { CompletionCatalog } from "./catalog"
 import { AdvisorCommand } from "./command"
 import { COMMAND_DESCRIPTION } from "./constants"

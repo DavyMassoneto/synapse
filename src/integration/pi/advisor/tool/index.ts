@@ -1,5 +1,4 @@
 export * from "./constants"
-export * from "./register"
 export * from "./tool"
 export * from "./tool-output"
 export * from "./types"

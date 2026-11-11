@@ -1,11 +1,10 @@
 import { type Api, type Context, type Model, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
-import { type AdvisorRegistry } from "#synapse/integration"
 import { assistantStream } from "./assistant-stream"
 import { DEFAULT_WINDOW } from "./constants"
 import { fixtureModel } from "./fixture-model"
-import { type TestStopReason } from "./types"
+import { type ContextRegistry, type TestStopReason } from "./types"
 
-export class TestRegistry implements AdvisorRegistry {
+export class TestRegistry implements ContextRegistry {
   calls = 0
   stopReason: TestStopReason = "stop"
   window = DEFAULT_WINDOW
@@ -24,7 +23,7 @@ export class TestRegistry implements AdvisorRegistry {
     ]
   }
 
-  find(provider: string, id: string): ReturnType<AdvisorRegistry["find"]> {
+  find(provider: string, id: string): ReturnType<ContextRegistry["find"]> {
     this.calls += 1
     if (!this.missing) {
       return fixtureModel(provider, id, this.window)

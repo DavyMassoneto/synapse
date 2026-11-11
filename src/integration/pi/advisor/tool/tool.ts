@@ -1,10 +1,15 @@
 import { type Advisor, type ConsultationResult } from "#synapse/modules"
-import { type AdvisorContext, type AdvisorToolInput } from "../host-contracts"
 import { AdvisorModel } from "../model-consultation"
 import { captureTranscript } from "../transcript"
 import { TOOL_CANCELLED } from "./constants"
 import { reportProgress, toolFailure, toolOutput, unavailableOutput } from "./tool-output"
-import { type AdvisorToolResult, type AdvisorToolSignal, type AdvisorToolUpdate } from "./types"
+import {
+  type AdvisorToolInput,
+  type AdvisorToolResult,
+  type AdvisorToolSignal,
+  type AdvisorToolUpdate,
+  type ToolContext,
+} from "./types"
 
 export class AdvisorToolHandler {
   private readonly advisor: Advisor
@@ -20,7 +25,7 @@ export class AdvisorToolHandler {
     _params: AdvisorToolInput,
     signal: AdvisorToolSignal,
     onUpdate: AdvisorToolUpdate,
-    context: AdvisorContext,
+    context: ToolContext,
   ): AdvisorToolResult {
     const callSignal = this.callSignal(signal)
     if (callSignal.aborted) {
@@ -32,7 +37,7 @@ export class AdvisorToolHandler {
   private async consultReporting(
     signal: AbortSignal,
     onUpdate: AdvisorToolUpdate,
-    context: AdvisorContext,
+    context: ToolContext,
   ): AdvisorToolResult {
     try {
       reportProgress(onUpdate)
@@ -52,7 +57,7 @@ export class AdvisorToolHandler {
     return this.lifetime
   }
 
-  private consult(signal: AbortSignal, context: AdvisorContext): Promise<ConsultationResult> {
+  private consult(signal: AbortSignal, context: ToolContext): Promise<ConsultationResult> {
     return this.advisor.consult(
       { system: context.getSystemPrompt(), messages: captureTranscript(context), signal },
       new AdvisorModel(context.modelRegistry),

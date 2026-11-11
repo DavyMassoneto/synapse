@@ -1,8 +1,7 @@
 import { type BeforeAgentStartEvent, type SessionStartEvent } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules"
-import { type AdvisorContext, ERROR_NOTICE } from "../host-contracts"
 import { syncAdvisor } from "./sync-advisor"
-import { type AdvisorToolActivation } from "./types"
+import { type AdvisorToolActivation, type SessionContext } from "./types"
 
 export class SessionSync {
   private readonly pi: AdvisorToolActivation
@@ -13,20 +12,20 @@ export class SessionSync {
     this.advisor = advisor
   }
 
-  sessionStart(_event: SessionStartEvent, context: AdvisorContext): void {
+  sessionStart(_event: SessionStartEvent, context: SessionContext): void {
     syncAdvisor(this.pi, this.advisor, context)
     this.reportConfigurationFailure(context)
   }
 
-  beforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): void {
+  beforeStart(event: BeforeAgentStartEvent, context: SessionContext): void {
     syncAdvisor(this.pi, this.advisor, context)
     this.applyInstructions(event)
   }
 
-  private reportConfigurationFailure(context: AdvisorContext): void {
+  private reportConfigurationFailure(context: SessionContext): void {
     const status = this.advisor.configuration.status()
     if (status.kind === "failure" && context.hasUI) {
-      context.ui.notify(status.message, ERROR_NOTICE)
+      context.ui.notify(status.message, "error")
     }
   }
 

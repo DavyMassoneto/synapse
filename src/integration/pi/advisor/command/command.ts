@@ -1,10 +1,9 @@
 import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
-import { type AdvisorContext, ERROR_NOTICE, INFO_NOTICE } from "../host-contracts"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
 import { DISABLED_NOTICE, DISABLED_STATUS, MODEL_NOTICE, THINKING_LABEL, THINKING_NOTICE } from "./constants"
 import { parseAdvisorCommand } from "./parser"
-import { type AdvisorCommandInput } from "./types"
+import { type AdvisorCommandInput, type CommandContext } from "./types"
 
 export class AdvisorCommand {
   private readonly pi: AdvisorToolActivation
@@ -15,16 +14,16 @@ export class AdvisorCommand {
     this.advisor = advisor
   }
 
-  async handle(args: string, context: AdvisorContext): Promise<void> {
+  async handle(args: string, context: CommandContext): Promise<void> {
     const status = this.advisor.configuration.status()
     if (status.kind === "failure") {
-      context.ui.notify(status.message, ERROR_NOTICE)
+      context.ui.notify(status.message, "error")
     } else {
       await this.execute(parseAdvisorCommand(args), status.config, context)
     }
   }
 
-  private async execute(input: AdvisorCommandInput, config: Config, context: AdvisorContext): Promise<void> {
+  private async execute(input: AdvisorCommandInput, config: Config, context: CommandContext): Promise<void> {
     if (input.kind === "disable") {
       this.disable(context)
     } else if (input.kind === "thinking") {
@@ -34,7 +33,7 @@ export class AdvisorCommand {
     }
   }
 
-  private async select(query: string, config: Config, context: AdvisorContext): Promise<void> {
+  private async select(query: string, config: Config, context: CommandContext): Promise<void> {
     const cannotChoose = query.length === 0 && !context.hasUI
     if (cannotChoose) {
       this.showCurrent(config, context)
@@ -43,7 +42,7 @@ export class AdvisorCommand {
     }
   }
 
-  private applySelection(context: AdvisorContext, selection: ModelSelection): void {
+  private applySelection(context: CommandContext, selection: ModelSelection): void {
     if (selection.kind === "disabled") {
       this.disable(context)
     } else if (selection.kind === "selected") {
@@ -51,8 +50,8 @@ export class AdvisorCommand {
     }
   }
 
-  private showCurrent(config: Config, context: AdvisorContext): void {
-    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, INFO_NOTICE)
+  private showCurrent(config: Config, context: CommandContext): void {
+    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, "info")
   }
 
   private modelLabel(): string {
@@ -63,16 +62,16 @@ export class AdvisorCommand {
     return DISABLED_STATUS
   }
 
-  private disable(context: AdvisorContext): void {
+  private disable(context: CommandContext): void {
     this.report(context, this.advisor.configuration.disable(), DISABLED_NOTICE)
   }
 
-  private report(context: AdvisorContext, result: AdvisorResult, success: string): void {
+  private report(context: CommandContext, result: AdvisorResult, success: string): void {
     if (result.kind === "failure") {
-      context.ui.notify(result.message, ERROR_NOTICE)
+      context.ui.notify(result.message, "error")
     } else {
       syncAdvisor(this.pi, this.advisor, context)
-      context.ui.notify(success, INFO_NOTICE)
+      context.ui.notify(success, "info")
     }
   }
 }

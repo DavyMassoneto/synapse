@@ -1,7 +1,6 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
 import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules"
-import { type AdvisorContext } from "../host-contracts"
-import { type ContentBlock, type ConversationMessage, type MessageContent } from "./types"
+import { type ContentBlock, type ConversationMessage, type MessageContent, type TranscriptSource } from "./types"
 
 function convertBlock(block: ContentBlock): TranscriptBlock {
   if (block.type === "text") {
@@ -21,7 +20,7 @@ function convertAssistant(message: AssistantMessage): TranscriptMessage {
   const blocks: TranscriptBlock[] = []
   for (const block of message.content) {
     if (block.type === "text") {
-      blocks.push({ kind: "text", text: block.text })
+      blocks.push(convertBlock(block))
     } else if (block.type === "toolCall") {
       blocks.push({ kind: "call", name: block.name, arguments: JSON.stringify(block.arguments) })
     }
@@ -61,7 +60,7 @@ function convertMessage(message: ConversationMessage): TranscriptMessage {
   }
 }
 
-export function captureTranscript(context: AdvisorContext): TranscriptMessage[] {
+export function captureTranscript(context: TranscriptSource): TranscriptMessage[] {
   const transcript: TranscriptMessage[] = []
   for (const message of context.sessionManager.buildSessionProjection().messages) {
     if (message.role !== "system") {

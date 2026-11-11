@@ -1,5 +1,5 @@
 import { type Component } from "@earendil-works/pi-tui"
-import { type AdvisorToolInput } from "../host-contracts"
+import { type AdvisorToolInput } from "../tool"
 import { RENDER_TITLE, TITLE_COLOR } from "./constants"
 import { textComponent } from "./text-component"
 import { type AdvisorRenderContext, type AdvisorRenderTheme } from "./types"

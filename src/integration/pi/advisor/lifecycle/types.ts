@@ -1,14 +1,27 @@
 import {
   type BeforeAgentStartEvent,
   type ExtensionAPI,
+  type ExtensionContext,
   type ExtensionHandler,
+  type ExtensionUIContext,
   type SessionShutdownEvent,
   type SessionStartEvent,
   type ToolResultEvent,
   type TurnEndEvent,
   type TurnEndEventResult,
 } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "../host-contracts"
+import { type PickerContext } from "../model-picker"
+import { type ToolContext } from "../tool"
+
+export type SessionUI = Pick<ExtensionUIContext, "notify" | "setStatus">
+
+export type SessionContextBase = Pick<ExtensionContext, "hasUI">
+
+export interface SessionContext extends SessionContextBase {
+  ui: SessionUI
+}
+
+export type AdvisorContext = SessionContext & PickerContext & ToolContext
 
 export type AdvisorToolActivation = Pick<ExtensionAPI, "getActiveTools" | "setActiveTools">
 

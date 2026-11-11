@@ -7,7 +7,6 @@ import {
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules"
-import { type AdvisorModelRegistry } from "../host-contracts"
 import {
   CAPABILITIES_CHANGED,
   INVALID_REFERENCE,
@@ -18,7 +17,7 @@ import {
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
 import { hasSameCapabilities } from "./predicates"
-import { type ModelLookup } from "./types"
+import { type AdvisorModelRegistry, type ModelLookup } from "./types"
 
 export class AdvisorModel {
   private readonly registry: AdvisorModelRegistry

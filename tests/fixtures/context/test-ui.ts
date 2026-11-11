@@ -1,6 +1,6 @@
-import { type AdvisorUI } from "#synapse/integration"
+import { type ContextUI } from "./types"
 
-export class TestUI implements AdvisorUI {
+export class TestUI implements ContextUI {
   notices: string[] = []
   selection?: string
 
@@ -8,7 +8,7 @@ export class TestUI implements AdvisorUI {
     this.notices.push(message)
   }
 
-  async select(): ReturnType<AdvisorUI["select"]> {
+  async select(): ReturnType<ContextUI["select"]> {
     return this.selection
   }
 
