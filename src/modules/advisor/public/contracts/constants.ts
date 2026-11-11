@@ -1,15 +1,5 @@
-import { Type } from "typebox"
+import { type ThinkingLevel } from "./types"
 
-export const thinkingLevelSchema = Type.Union([
-  Type.Literal("off"),
-  Type.Literal("minimal"),
-  Type.Literal("low"),
-  Type.Literal("medium"),
-  Type.Literal("high"),
-  Type.Literal("xhigh"),
-  Type.Literal("max"),
-])
-
-export const THINKING_LEVELS = thinkingLevelSchema.anyOf.map((level) => level.const)
+export const THINKING_LEVELS: ThinkingLevel[] = ["off", "minimal", "low", "medium", "high", "xhigh", "max"]
 
 export const REFERENCE_SEPARATOR = "/"

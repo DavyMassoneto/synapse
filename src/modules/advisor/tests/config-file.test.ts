@@ -12,6 +12,7 @@ let directory = ""
 function prepareDirectory(): void {
   directory = mkdtempSync(join(tmpdir(), "advisor-config-"))
 }
+
 function cleanupDirectory(): void {
   rmSync(directory, { recursive: true, force: true })
 }
@@ -61,6 +62,15 @@ function rejectsUnknownLevel(): void {
   })
 }
 
+function rejectsMalformedModel(model: string): void {
+  const path = join(directory, "advisor.json")
+  writeFileSync(path, JSON.stringify({ model, thinking: "low" }))
+  expect(new FileConfig(path).load()).toStrictEqual({
+    kind: "invalid",
+    message: "Configuração do advisor inválida; revise advisor.json.",
+  })
+}
+
 function replacesFile(): void {
   const path = join(directory, "advisor.json")
   const storage = new FileConfig(path)
@@ -88,6 +98,7 @@ function registerTests(): void {
   test("configuração sem nível usa padrão", defaultThinking)
   test.each(THINKING_LEVELS)("nível %s é lido do arquivo", loadsLevel)
   test("nível desconhecido no arquivo é recusado", rejectsUnknownLevel)
+  test.each(["lixo", "provedor/", "/id"])("modelo %s fora do formato provedor/id é recusado", rejectsMalformedModel)
   test("gravação substitui arquivo", replacesFile)
   test("falha de substituição preserva destino e limpa temporário", rejectsDirectoryDestination)
 }

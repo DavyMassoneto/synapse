@@ -1,7 +1,7 @@
 import { describe, expect, test } from "vitest"
 import { buildTranscript, renderMessage, selectMessages } from "../internal"
-import { type TranscriptBlock, type TranscriptMessage } from "../public"
-import { emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
+import { type TranscriptMessage } from "../public"
+import { CountingUserMessage, emptyConsultation, serviceFor, TestModel, TestStorage } from "./doubles"
 
 function emptyTranscript(): void {
   expect(buildTranscript([], 200)).toBe("")
@@ -89,21 +89,14 @@ function singleOversizedMessage(): void {
 }
 
 function fixedMessagePreparedOnce(): void {
-  let reads = 0
-  const blocks: TranscriptBlock[] = [{ kind: "text", text: "u".repeat(20_000) }]
+  const counting = new CountingUserMessage([{ kind: "text", text: "u".repeat(20_000) }])
   const messages: TranscriptMessage[] = [
-    {
-      kind: "user",
-      get blocks() {
-        reads += 1
-        return blocks
-      },
-    },
+    counting,
     { kind: "toolResult", tool: "read", error: false, blocks: [{ kind: "text", text: "t".repeat(20_000) }] },
   ]
   const text = buildTranscript(messages, 300)
   expect(text.length).toBeLessThanOrEqual(300)
-  expect(reads).toBe(2)
+  expect(counting.reads).toBe(2)
 }
 
 function reducesToolOutputToFit(): void {

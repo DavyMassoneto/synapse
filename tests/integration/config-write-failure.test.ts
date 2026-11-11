@@ -9,6 +9,7 @@ function prepare(): void {
   host.blockConfiguration()
   context = new TestContext()
 }
+
 function cleanup(): void {
   host.cleanup()
 }

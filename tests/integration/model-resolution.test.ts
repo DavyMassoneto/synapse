@@ -23,6 +23,7 @@ function prepare(): void {
   adapter = new AdvisorModel(registry)
   directory = mkdtempSync(join(tmpdir(), "advisor-model-"))
 }
+
 function cleanup(): void {
   rmSync(directory, { recursive: true, force: true })
 }

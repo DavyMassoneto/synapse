@@ -8,6 +8,7 @@ function prepare(): void {
   host = new TypedAdvisorHost(prepareHostDirectory())
   context = new TestContext()
 }
+
 function cleanup(): void {
   host.cleanup()
 }

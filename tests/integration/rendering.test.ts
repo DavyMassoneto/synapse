@@ -6,6 +6,7 @@ let host: TypedAdvisorHost
 function prepare(): void {
   host = new TypedAdvisorHost(prepareHostDirectory())
 }
+
 function cleanup(): void {
   host.cleanup()
 }

@@ -1,5 +1,7 @@
 import { Type } from "typebox"
-import { thinkingLevelSchema } from "#synapse/modules/advisor/public/contracts"
+import { THINKING_LEVELS } from "#synapse/modules/advisor/public/contracts"
+
+export const thinkingLevelSchema = Type.Union(THINKING_LEVELS.map((level) => Type.Literal(level)))
 
 export const configSchema = Type.Object({
   model: Type.Optional(Type.String()),

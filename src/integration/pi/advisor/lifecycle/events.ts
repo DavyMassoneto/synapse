@@ -23,6 +23,10 @@ export class AdvisorEvents {
   sessionStart(_event: SessionStartEvent, context: AdvisorContext): void {
     this.advisor.reminder.reset()
     syncAdvisor(this.pi, this.advisor, context)
+    this.reportConfigurationFailure(context)
+  }
+
+  private reportConfigurationFailure(context: AdvisorContext): void {
     const status = this.advisor.configuration.status()
     if (status.kind === "failure" && context.hasUI) {
       context.ui.notify(status.message, "error")

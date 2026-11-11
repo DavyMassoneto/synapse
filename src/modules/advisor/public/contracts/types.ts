@@ -1,7 +1,4 @@
-import { type Static } from "typebox"
-import { type thinkingLevelSchema } from "./constants"
-
-export type ThinkingLevel = Static<typeof thinkingLevelSchema>
+export type ThinkingLevel = "off" | "minimal" | "low" | "medium" | "high" | "xhigh" | "max"
 
 export interface Config {
   model?: string

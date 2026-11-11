@@ -81,12 +81,15 @@ export class AdvisorHostCollector implements AdvisorHost {
   registerTool(tool: AdvisorTool): void {
     this.tool = tool
   }
+
   registerCommand(_name: string, command: AdvisorCommandDefinition): void {
     this.command = command
   }
+
   getActiveTools(): string[] {
     return this.active
   }
+
   setActiveTools(names: string[]): void {
     this.active = names
   }

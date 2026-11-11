@@ -9,6 +9,7 @@ function prepare(): void {
   context = new TestContext()
   context.hasUI = true
 }
+
 function cleanup(): void {
   host.cleanup()
 }
