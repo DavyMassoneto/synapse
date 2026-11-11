@@ -29,17 +29,15 @@ function renderPrepared(prepared: PreparedMessage, limit: number): string {
   return renderMessage(prepared.message, limit)
 }
 
-function joinedLength(blocks: string[]): number {
-  let length = 0
-  for (const block of blocks) {
+function fitAt(prepared: PreparedMessage[], limit: number, budget: number): FittedTranscript {
+  const blocks: string[] = []
+  let length = -SEPARATOR.length
+  for (const entry of prepared) {
+    const block = renderPrepared(entry, limit)
+    blocks.push(block)
     length += block.length + SEPARATOR.length
   }
-  return Math.max(0, length - SEPARATOR.length)
-}
-
-function fitAt(prepared: PreparedMessage[], limit: number, budget: number): FittedTranscript {
-  const blocks = prepared.map((entry) => renderPrepared(entry, limit))
-  if (joinedLength(blocks) <= budget) {
+  if (length <= budget) {
     return { kind: "fits", text: blocks.join(SEPARATOR) }
   }
   return { kind: "overflow", blocks }

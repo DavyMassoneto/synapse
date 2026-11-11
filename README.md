@@ -13,7 +13,7 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 
 ## Estado do projeto
 
-O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. A integração foi verificada com pi 1.5.0. Compile com `npm run build` e instale localmente com `pi install ./` e não carregue outra extensão advisor simultaneamente.
+O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. A integração foi verificada com pi 1.5.1. Compile com `npm run build` e instale localmente com `pi install ./`. Não carregue outra extensão advisor simultaneamente.
 
 ## Desenvolvimento
 
