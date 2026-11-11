@@ -169,7 +169,7 @@ export interface Advisor {
   readonly configuration: AdvisorConfigOperations
   activeModel(): ActiveModel
   readonly reminder: ReminderControl
-  consultationInstructions: string
+  readonly consultationInstructions: string
   turn(event: ReminderTurn): ReminderDecision
   consult(input: Consultation, model: ModelPort): Promise<ConsultationResult>
 }
