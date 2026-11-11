@@ -36,7 +36,7 @@ export const FUNCTION_TYPE = "function"
 
 export const USER_ROLE = "user"
 
-export const INCOMPLETE_TOOL_CALL = "O modelo pediu uma ferramenta sem nome"
+export const INCOMPLETE_TOOL_CALL = "O modelo pediu uma ferramenta sem identificador ou sem nome"
 
 export const UNEXPECTED_FINISH = "A resposta do modelo terminou de forma inesperada: "
 

@@ -1,4 +1,5 @@
 import { type TSchema } from "typebox"
+import { type ModelCacheUsage, type ModelTokenUsage } from "./sse"
 
 export interface ToolCallFunction {
   name: string
@@ -6,6 +7,8 @@ export interface ToolCallFunction {
 }
 
 export interface ToolCall {
+  id: string
+  type: "function"
   function: ToolCallFunction
 }
 
@@ -13,6 +16,20 @@ export interface UserMessage {
   role: "user"
   content: string
 }
+
+export interface AssistantMessage {
+  role: "assistant"
+  content: string
+  tool_calls?: ToolCall[]
+}
+
+export interface ToolMessage {
+  role: "tool"
+  tool_call_id: string
+  content: string
+}
+
+export type ChatMessage = UserMessage | AssistantMessage | ToolMessage
 
 export interface ToolFunction {
   name: string
@@ -26,9 +43,9 @@ export interface ToolDefinition {
 }
 
 export interface ChatRequest {
-  messages: UserMessage[]
+  messages: ChatMessage[]
   tools: ToolDefinition[]
-  forcedTool: string
+  forcedTool?: string
 }
 
 export interface ForcedFunction {
@@ -45,11 +62,14 @@ export interface ChatBody {
   stream: boolean
   temperature: number
   max_tokens: number
-  messages: UserMessage[]
+  messages: ChatMessage[]
   tools: ToolDefinition[]
-  tool_choice: ForcedToolChoice
+  tool_choice?: ForcedToolChoice
 }
 
 export interface ModelReply {
+  content: string
   toolCalls: ToolCall[]
+  usage: ModelTokenUsage
+  cache: ModelCacheUsage
 }

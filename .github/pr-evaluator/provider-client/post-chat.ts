@@ -16,15 +16,18 @@ import {
 import { type ChatBody, type ChatRequest } from "./types"
 
 function chatBody(configuration: ModelConfiguration, request: ChatRequest): ChatBody {
-  return {
+  const body: ChatBody = {
     model: configuration.model,
     stream: true,
     temperature: MODEL_TEMPERATURE,
     max_tokens: MAX_OUTPUT_TOKENS,
     messages: request.messages,
     tools: request.tools,
-    tool_choice: { type: FUNCTION_TYPE, function: { name: request.forcedTool } },
   }
+  if (request.forcedTool) {
+    body.tool_choice = { type: FUNCTION_TYPE, function: { name: request.forcedTool } }
+  }
+  return body
 }
 
 export function postChat(configuration: ModelConfiguration, request: ChatRequest): Promise<Response> {

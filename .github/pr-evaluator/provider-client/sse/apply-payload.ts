@@ -1,4 +1,5 @@
 import { Value } from "typebox/value"
+import { applyStreamUsage } from "./apply-usage"
 import { PROVIDER_ERROR_PREFIX, PROVIDER_ERROR_WITHOUT_MESSAGE, StreamChunkSchema } from "./constants"
 import {
   type PendingToolCall,
@@ -22,13 +23,16 @@ function pendingCall(result: StreamResult, index: number): PendingToolCall {
   if (existing) {
     return existing
   }
-  const created = { name: "", arguments: "" }
+  const created = { id: "", name: "", arguments: "" }
   result.toolCalls.set(index, created)
   return created
 }
 
 function applyToolCall(result: StreamResult, delta: ToolCallDelta): void {
   const call = pendingCall(result, delta.index)
+  if (delta.id) {
+    call.id = delta.id
+  }
   if (delta.function?.name) {
     call.name = delta.function.name
   }
@@ -38,6 +42,9 @@ function applyToolCall(result: StreamResult, delta: ToolCallDelta): void {
 }
 
 function applyChoice(result: StreamResult, choice: StreamChoice): void {
+  if (choice.delta.content) {
+    result.content += choice.delta.content
+  }
   if (choice.delta.tool_calls) {
     for (const delta of choice.delta.tool_calls) {
       applyToolCall(result, delta)
@@ -51,6 +58,7 @@ function applyChoice(result: StreamResult, choice: StreamChoice): void {
 export function applyPayload(result: StreamResult, payload: string): void {
   const chunk = Value.Parse(StreamChunkSchema, JSON.parse(payload))
   ensureNoProviderError(chunk)
+  applyStreamUsage(result, chunk)
   if (chunk.choices) {
     for (const choice of chunk.choices) {
       applyChoice(result, choice)

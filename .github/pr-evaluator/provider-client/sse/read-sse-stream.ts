@@ -1,5 +1,5 @@
 import { applyPayload } from "./apply-payload"
-import { DATA_PREFIX, DONE_PAYLOAD, EVENT_LINE_BREAK, MAX_STREAM_BYTES } from "./constants"
+import { DATA_PREFIX, DONE_PAYLOAD, EVENT_LINE_BREAK, MAX_STREAM_BYTES, USAGE_UNREPORTED } from "./constants"
 import { type StreamResult } from "./types"
 
 function applyLine(result: StreamResult, line: string): void {
@@ -27,7 +27,12 @@ function ensureWithinStreamLimit(receivedBytes: number): void {
 
 export async function readSseStream(body: ReadableStream<Uint8Array>): Promise<StreamResult> {
   const decoder = new TextDecoder()
-  const result: StreamResult = { toolCalls: new Map() }
+  const result: StreamResult = {
+    content: "",
+    usage: { kind: USAGE_UNREPORTED },
+    cache: { kind: USAGE_UNREPORTED },
+    toolCalls: new Map(),
+  }
   let pending = ""
   let receivedBytes = 0
   for await (const bytes of body) {
