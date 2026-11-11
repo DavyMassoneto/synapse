@@ -81,9 +81,13 @@ async function disabledAdvisorDoesNotCount(): Promise<void> {
   expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
+function cleanup(): void {
+  host.cleanup()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => host.cleanup())
+  afterEach(cleanup)
   test("início ativa ferramenta", sessionStart)
   test("instruções são inseridas", instructions)
   test("lembrete respeita cadência", reminderCadence)

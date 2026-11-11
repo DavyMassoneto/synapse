@@ -115,9 +115,13 @@ function budgetMatchesPiAi(level: ThinkingLevel): void {
   }
 }
 
+function cleanup(): void {
+  rmSync(directory, { recursive: true, force: true })
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => rmSync(directory, { recursive: true, force: true }))
+  afterEach(cleanup)
   test("resoluções intercaladas preservam modelos", independentResolutions)
   test("consulta usa modelo configurado", serviceConsultation)
   test("mudança de capacidade é rejeitada", changedCapabilities)

@@ -77,9 +77,13 @@ function rejectsDirectoryDestination(): void {
   expect(readdirSync(directory)).toStrictEqual(["blocked"])
 }
 
+function cleanup(): void {
+  rmSync(directory, { recursive: true, force: true })
+}
+
 function registerTests(): void {
   beforeEach(prepareDirectory)
-  afterEach(() => rmSync(directory, { recursive: true, force: true }))
+  afterEach(cleanup)
   test("configuração ausente usa padrão", missingConfiguration)
   test("modelo vazio desliga advisor", disabledConfiguration)
   test("configuração sem nível usa padrão", defaultThinking)

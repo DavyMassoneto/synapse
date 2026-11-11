@@ -26,9 +26,13 @@ async function preservesState(): Promise<void> {
   expect(host.advisor.activeModel().kind).toBe("active")
 }
 
+function cleanup(): void {
+  host.cleanup()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => host.cleanup())
+  afterEach(cleanup)
   test("falha ao salvar é informada", reportsFailure)
   test("falha ao salvar preserva estado", preservesState)
 }

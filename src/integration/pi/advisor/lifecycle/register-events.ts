@@ -6,7 +6,7 @@ import { type AdvisorShutdownHandler, type LifecycleHost } from "./types"
 export function registerEvents(pi: LifecycleHost, advisor: Advisor, shutdown: AdvisorShutdownHandler): void {
   const sync = new SessionSync(pi, advisor)
   const reminder = new ReminderEvents(advisor)
-  pi.on("session_start", reminder.sessionStart.bind(reminder))
+  pi.on("session_start", advisor.reminder.reset.bind(advisor.reminder))
   pi.on("session_start", sync.sessionStart.bind(sync))
   pi.on("session_shutdown", shutdown)
   pi.on("before_agent_start", sync.beforeStart.bind(sync))

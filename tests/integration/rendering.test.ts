@@ -67,9 +67,13 @@ function imageBlocksAreIgnored(): void {
   expect(rendered).not.toMatch(/AA==/)
 }
 
+function cleanup(): void {
+  host.cleanup()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => host.cleanup())
+  afterEach(cleanup)
   test("renderiza consulta parcial", partialRendering)
   test("renderiza resumo compacto", compactRendering)
   test("reutiliza componente ao expandir", expandedRendering)

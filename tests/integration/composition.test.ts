@@ -61,9 +61,13 @@ async function invalidConfiguration(): Promise<void> {
   expect(readFileSync(file, "utf8")).toBe("{broken")
 }
 
+function cleanup(): void {
+  rmSync(directory, { recursive: true, force: true })
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => rmSync(directory, { recursive: true, force: true }))
+  afterEach(cleanup)
   test("composição registra o advisor e o encerramento cancela as consultas", compositionLifecycle)
   test("sem arquivo de configuração o advisor fica desligado", missingConfiguration)
   test("configuração inválida vira falha, deixa o advisor desligado e preserva o arquivo", invalidConfiguration)

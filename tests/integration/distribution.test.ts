@@ -42,9 +42,13 @@ function restoresUnsetVariable(): void {
   expect(process.env.USERPROFILE).toBeUndefined()
 }
 
+function cleanup(): void {
+  environment.restore()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => environment.restore())
+  afterEach(cleanup)
   test.each(CASES)("distribuição: $name", verifyDistribution)
   test.each(["", "valor"])("ambiente restaura a variável definida como %j", restoresSetVariable)
   test("ambiente restaura a variável ausente", restoresUnsetVariable)

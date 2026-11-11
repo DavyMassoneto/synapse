@@ -35,9 +35,13 @@ async function disableAdvisor(): Promise<void> {
   expect(host.advisor.activeModel()).toStrictEqual({ kind: "inactive" })
 }
 
+function cleanup(): void {
+  host.cleanup()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => host.cleanup())
+  afterEach(cleanup)
   test("seleciona modelo", chooseModel)
   test("cancelamento preserva modelo", cancelSelection)
   test("desliga advisor", disableAdvisor)

@@ -100,9 +100,13 @@ async function searchOutsideScope(): Promise<void> {
   expect(host.advisor.activeModel()).toStrictEqual({ kind: "active", model: "provider/model" })
 }
 
+function cleanup(): void {
+  host.cleanup()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
-  afterEach(() => host.cleanup())
+  afterEach(cleanup)
   test("thinking sem nível", missingThinking)
   test("thinking inválido", invalidThinking)
   test("thinkingx é modelo", thinkingModel)

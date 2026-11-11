@@ -11,10 +11,6 @@ export class ReminderEvents {
     this.advisor = advisor
   }
 
-  sessionStart(): void {
-    this.advisor.reminder.reset()
-  }
-
   toolResult(event: ToolResultEvent): void {
     if (event.toolName === ADVISOR_NAME) {
       this.advisor.reminder.reset()
