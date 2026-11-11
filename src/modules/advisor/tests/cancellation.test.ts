@@ -5,16 +5,13 @@ import {
   CancelOnConsultModel,
   CancelOnResolveModel,
   emptyConsultation,
-  serviceFor,
-  TestStorage,
+  serviceScenario,
 } from "./doubles"
 
-let storage: TestStorage
 let advisor: AdvisorService
 
 function prepare(): void {
-  storage = new TestStorage()
-  advisor = serviceFor(storage)
+  advisor = serviceScenario().advisor
 }
 
 async function cancellationDuringResolution(): Promise<void> {

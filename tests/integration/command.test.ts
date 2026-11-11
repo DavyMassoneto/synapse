@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { prepareHostDirectory, TestContext, TypedAdvisorHost } from "../fixtures"
+import { hostScenario, type TestContext, type TypedAdvisorHost } from "../fixtures"
 
 let host: TypedAdvisorHost
 let context: TestContext
 
 function prepare(): void {
-  host = new TypedAdvisorHost(prepareHostDirectory())
-  context = new TestContext()
+  ;({ host, context } = hostScenario())
 }
 
 async function missingThinking(): Promise<void> {

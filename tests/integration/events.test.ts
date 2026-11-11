@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { beforeStartEvent, prepareHostDirectory, TestContext, TypedAdvisorHost, turnEvent } from "../fixtures"
+import { beforeStartEvent, hostScenario, type TestContext, type TypedAdvisorHost, turnEvent } from "../fixtures"
 
 let host: TypedAdvisorHost
 let context: TestContext
 
 function prepare(): void {
-  host = new TypedAdvisorHost(prepareHostDirectory())
-  context = new TestContext()
+  ;({ host, context } = hostScenario())
 }
 
 async function sessionStart(): Promise<void> {

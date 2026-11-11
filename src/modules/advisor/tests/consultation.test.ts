@@ -1,13 +1,19 @@
 import { beforeEach, describe, expect, test } from "vitest"
 import { type AdvisorService } from "../internal"
-import { emptyConsultation, FailingModel, serviceFor, TestModel, TestStorage, WaitingModel } from "./doubles"
+import {
+  emptyConsultation,
+  FailingModel,
+  serviceFor,
+  serviceScenario,
+  TestModel,
+  TestStorage,
+  WaitingModel,
+} from "./doubles"
 
-let storage: TestStorage
 let advisor: AdvisorService
 
 function prepare(): void {
-  storage = new TestStorage()
-  advisor = serviceFor(storage)
+  advisor = serviceScenario().advisor
 }
 
 async function snapshotIsStable(): Promise<void> {

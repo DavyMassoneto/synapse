@@ -1,14 +1,13 @@
 import { beforeEach, describe, expect, test } from "vitest"
 import { type AdvisorService } from "../internal"
 import { THINKING_LEVELS, type ThinkingLevel } from "../public"
-import { serviceFor, TestStorage } from "./doubles"
+import { serviceFor, serviceScenario, TestStorage } from "./doubles"
 
 let storage: TestStorage
 let advisor: AdvisorService
 
 function prepare(): void {
-  storage = new TestStorage()
-  advisor = serviceFor(storage)
+  ;({ storage, advisor } = serviceScenario())
 }
 
 function invalidModelDoesNotSave(): void {

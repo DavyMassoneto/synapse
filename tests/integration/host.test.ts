@@ -1,12 +1,11 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { prepareHostDirectory, TEST_USAGE, TestContext, TypedAdvisorHost, toolText } from "../fixtures"
+import { hostScenario, TEST_USAGE, type TestContext, type TypedAdvisorHost, toolText } from "../fixtures"
 
 let host: TypedAdvisorHost
 let context: TestContext
 
 function prepare(): void {
-  host = new TypedAdvisorHost(prepareHostDirectory())
-  context = new TestContext()
+  ;({ host, context } = hostScenario())
 }
 
 async function successfulConsultation(): Promise<void> {
