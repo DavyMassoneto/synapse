@@ -1,6 +1,6 @@
 # Arquitetura do Synapse
 
-Synapse contém dez módulos: **memória**, **pi-web**, **navegador**, **advisor**, **equipe de agentes**, **computer-use**, **iPhone**, **roteador de modelos**, **repetição por cooldown** e **regras de resposta**. Cada módulo é uma unidade de propriedade de código, contratos e estado. A integração os conecta ao pi sem permitir dependências diretas entre eles.
+Synapse contém oito módulos: **memória**, **pi-web**, **navegador**, **advisor**, **equipe de agentes**, **computer-use**, **iPhone** e **roteador de modelos**. Cada módulo é uma unidade de propriedade de código, contratos e estado. A integração os conecta ao pi sem permitir dependências diretas entre eles.
 
 ## Padrão arquitetural
 
@@ -24,14 +24,14 @@ A composição e a integração são infraestrutura de montagem, não um módulo
 | Computer-use | Sessão com o driver que controla o computador, alvo das ações e capturas de tela | Recebe uma ação e o alvo; devolve o resultado, o que foi verificado e as capturas, e distingue ação concluída de resultado desconhecido |
 | iPhone | Sessão de automação com o aparelho ou o simulador e leitura da tela | Recebe uma operação e o alvo; devolve o resultado e a evidência, sem repetir ação de efeito incerto |
 | Roteador de modelos | Política de escolha do modelo e do nível de raciocínio de cada pedido | Recebe o pedido, o histórico e os modelos disponíveis; devolve o modelo e o nível escolhidos ou a falha da escolha |
-| Repetição por cooldown | Regra que reconhece o erro de cooldown do provedor | Recebe a mensagem de erro de uma resposta; devolve se ela deve ser repetida |
-| Regras de resposta | Regras de resposta do usuário reapresentadas a cada pedido | Recebe o texto das instruções; devolve o lembrete a acrescentar ao pedido |
+
+Nem todo comportamento é um módulo. O que existe só para ajustar o próprio host, sem estado nem contrato que faça sentido fora dele, fica em `src/integration/pi/`: a repetição por cooldown, que reescreve um erro do provedor para o pi repetir a chamada, e as regras de resposta, que reapresentam ao modelo as instruções de resposta do usuário.
 
 Nenhum módulo lê ou escreve arquivos, tabelas, caches ou estado mutável privado de outro. Configuração é entregue separadamente a cada módulo; não existe acesso à configuração privada de um vizinho. Compartilhar o processo não torna esses dados públicos.
 
 ## Estrutura de diretórios
 
-Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`, `pi-web`, `browser`, `advisor`, `agent-team`, `computer-use`, `iphone`, `model-router`, `cooldown-retry` ou `response-rules`.
+Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`, `pi-web`, `browser`, `advisor`, `agent-team`, `computer-use`, `iphone` ou `model-router`.
 
 | Caminho | Conteúdo e propriedade |
 | --- | --- |
@@ -43,13 +43,11 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `src/modules/computer-use/` | Área exclusiva da frente de computer-use |
 | `src/modules/iphone/` | Área exclusiva da frente de iPhone |
 | `src/modules/model-router/` | Área exclusiva da frente de roteador de modelos |
-| `src/modules/cooldown-retry/` | Área exclusiva da frente de repetição por cooldown |
-| `src/modules/response-rules/` | Área exclusiva da frente de regras de resposta |
 | `src/modules/<modulo>/public/` | Contratos de entrada e saída, portas requeridas e ponto público de montagem do módulo |
 | `src/modules/<modulo>/internal/` | Núcleo privado de regras e casos de uso; a organização interna pertence à frente |
 | `src/modules/<modulo>/adapters/` | Adaptadores privados de entrada e saída: interface, armazenamento, provedores e engine, conforme o módulo |
 | `src/modules/<modulo>/tests/` | Testes isolados do módulo e substitutos de suas portas |
-| `src/integration/pi/` | Adaptação ao SDK, eventos e registros do host |
+| `src/integration/pi/` | Adaptação ao SDK, eventos e registros do host, e as capacidades que só ajustam o comportamento do host |
 | `src/integration/bridges/` | Adaptadores que conectam a porta de um módulo ao contrato público de outro |
 | `src/composition/` | Montagem, injeção de dependências, distribuição da configuração e encerramento |
 | `src/entry.ts` | Entrada do pacote Pi que aciona a composição |
@@ -73,8 +71,6 @@ flowchart TD
     composicao --> computador["computer-use/public/"]
     composicao --> iphone["iphone/public/"]
     composicao --> roteador["model-router/public/"]
-    composicao --> cooldown["cooldown-retry/public/"]
-    composicao --> respostas["response-rules/public/"]
     integracao --> advisor
     integracao --> memoria
     integracao --> web
@@ -83,8 +79,6 @@ flowchart TD
     integracao --> computador
     integracao --> iphone
     integracao --> roteador
-    integracao --> cooldown
-    integracao --> respostas
     integracao --> pi["Runtime pi"]
 ```
 
@@ -108,7 +102,7 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 
 ## Suporte por sistema operacional
 
-O pacote roda em macOS, Linux e Windows. Advisor, equipe de agentes, roteador de modelos, repetição por cooldown e regras de resposta não dependem do sistema operacional. Os módulos que controlam algo fora do processo declaram o que fazem em cada sistema e recusam, com uma mensagem que diz o motivo, o que o sistema não oferece:
+O pacote roda em macOS, Linux e Windows. Advisor, equipe de agentes, roteador de modelos e as capacidades da integração não dependem do sistema operacional. Os módulos que controlam algo fora do processo declaram o que fazem em cada sistema e recusam, com uma mensagem que diz o motivo, o que o sistema não oferece:
 
 | Capacidade | macOS | Linux | Windows |
 | --- | --- | --- | --- |
