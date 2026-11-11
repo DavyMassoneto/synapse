@@ -1,13 +1,13 @@
 # Arquitetura do Synapse
 
-Synapse contém quatro módulos: **memória**, **pi-web**, **navegador** e **advisor**. Cada módulo é uma unidade de propriedade de código, contratos e estado. A integração os conecta ao pi sem permitir dependências diretas entre eles.
+Synapse contém dez módulos: **memória**, **pi-web**, **navegador**, **advisor**, **equipe de agentes**, **computer-use**, **iPhone**, **roteador de modelos**, **repetição por cooldown** e **regras de resposta**. Cada módulo é uma unidade de propriedade de código, contratos e estado. A integração os conecta ao pi sem permitir dependências diretas entre eles.
 
 ## Padrão arquitetural
 
 Adota-se **monólito modular com Portas e Adaptadores (arquitetura hexagonal)**, organizado verticalmente por módulo:
 
 - **Monólito modular:** uma composição e uma distribuição como Pi package, sem exigir serviços independentes para separar responsabilidades. Processos auxiliares continuam sob o controle do módulo que os utiliza.
-- **Organização vertical:** código, adaptadores e testes de uma capacidade ficam no diretório da frente responsável, em vez de distribuir as quatro frentes por pastas globais de controllers, services ou repositories. Isso reduz arquivos compartilhados durante mudanças paralelas.
+- **Organização vertical:** código, adaptadores e testes de uma capacidade ficam no diretório da frente responsável, em vez de distribuir as frentes por pastas globais de controllers, services ou repositories. Isso reduz arquivos compartilhados durante mudanças paralelas.
 - **Portas e Adaptadores:** cada módulo declara as operações externas de que necessita; a composição fornece implementações. Essa inversão de dependência permite desenvolver e testar uma frente sem carregar o pi ou a implementação das outras frentes.
 
 A composição e a integração são infraestrutura de montagem, não um módulo de produto adicional. O pi permanece proprietário do loop do agente, das sessões, do histórico e da compactação.
@@ -20,12 +20,18 @@ A composição e a integração são infraestrutura de montagem, não um módulo
 | pi-web | Interface, estado de apresentação e conexão com o runtime | Envia intenções por uma porta de runtime; recebe resultados e eventos para apresentação |
 | Navegador | Contextos de navegação, execução de ações e artefatos associados | Recebe operação e identidade do alvo; devolve resultado, efeitos conhecidos e evidências |
 | Advisor | Configuração, política de lembretes e consulta ao revisor | Expõe operações de configuração e consulta; distingue sucesso, falha e cancelamento |
+| Equipe de agentes | Agentes da equipe, mensagens entre eles e quadro de tarefas compartilhado | Recebe pedidos de criar agente, enviar mensagem, interromper e alterar tarefa, com a identidade de quem pede; devolve o estado da equipe e distingue sucesso, recusa e falha |
+| Computer-use | Sessão com o driver que controla o computador, alvo das ações e capturas de tela | Recebe uma ação e o alvo; devolve o resultado, o que foi verificado e as capturas, e distingue ação concluída de resultado desconhecido |
+| iPhone | Sessão de automação com o aparelho ou o simulador e leitura da tela | Recebe uma operação e o alvo; devolve o resultado e a evidência, sem repetir ação de efeito incerto |
+| Roteador de modelos | Política de escolha do modelo e do nível de raciocínio de cada pedido | Recebe o pedido, o histórico e os modelos disponíveis; devolve o modelo e o nível escolhidos ou a falha da escolha |
+| Repetição por cooldown | Regra que reconhece o erro de cooldown do provedor | Recebe a mensagem de erro de uma resposta; devolve se ela deve ser repetida |
+| Regras de resposta | Regras de resposta do usuário reapresentadas a cada pedido | Recebe o texto das instruções; devolve o lembrete a acrescentar ao pedido |
 
 Nenhum módulo lê ou escreve arquivos, tabelas, caches ou estado mutável privado de outro. Configuração é entregue separadamente a cada módulo; não existe acesso à configuração privada de um vizinho. Compartilhar o processo não torna esses dados públicos.
 
 ## Estrutura de diretórios
 
-Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`, `pi-web`, `browser` ou `advisor`.
+Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`, `pi-web`, `browser`, `advisor`, `agent-team`, `computer-use`, `iphone`, `model-router`, `cooldown-retry` ou `response-rules`.
 
 | Caminho | Conteúdo e propriedade |
 | --- | --- |
@@ -33,6 +39,12 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `src/modules/pi-web/` | Área exclusiva da frente de pi-web |
 | `src/modules/browser/` | Área exclusiva da frente de navegador |
 | `src/modules/advisor/` | Área exclusiva da frente de advisor |
+| `src/modules/agent-team/` | Área exclusiva da frente de equipe de agentes |
+| `src/modules/computer-use/` | Área exclusiva da frente de computer-use |
+| `src/modules/iphone/` | Área exclusiva da frente de iPhone |
+| `src/modules/model-router/` | Área exclusiva da frente de roteador de modelos |
+| `src/modules/cooldown-retry/` | Área exclusiva da frente de repetição por cooldown |
+| `src/modules/response-rules/` | Área exclusiva da frente de regras de resposta |
 | `src/modules/<modulo>/public/` | Contratos de entrada e saída, portas requeridas e ponto público de montagem do módulo |
 | `src/modules/<modulo>/internal/` | Núcleo privado de regras e casos de uso; a organização interna pertence à frente |
 | `src/modules/<modulo>/adapters/` | Adaptadores privados de entrada e saída: interface, armazenamento, provedores e engine, conforme o módulo |
@@ -57,10 +69,22 @@ flowchart TD
     composicao --> web["pi-web/public/"]
     composicao --> advisor["advisor/public/"]
     composicao --> navegador["browser/public/"]
+    composicao --> equipe["agent-team/public/"]
+    composicao --> computador["computer-use/public/"]
+    composicao --> iphone["iphone/public/"]
+    composicao --> roteador["model-router/public/"]
+    composicao --> cooldown["cooldown-retry/public/"]
+    composicao --> respostas["response-rules/public/"]
     integracao --> advisor
     integracao --> memoria
     integracao --> web
     integracao --> navegador
+    integracao --> equipe
+    integracao --> computador
+    integracao --> iphone
+    integracao --> roteador
+    integracao --> cooldown
+    integracao --> respostas
     integracao --> pi["Runtime pi"]
 ```
 
@@ -81,6 +105,19 @@ Assim, uma funcionalidade do pi-web que necessite de memória depende de uma por
 - **Evolução:** cada frente controla seus contratos públicos. Alterações compatíveis preservam consumidores existentes; uma alteração incompatível exige migração coordenada das bridges e consumidores afetados, sem depender de mudanças simultâneas nas implementações privadas.
 
 A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A integração com o host registra as capacidades resultantes. Ela não replica regras dos módulos nem transforma persistência própria em histórico autoritativo do pi.
+
+## Suporte por sistema operacional
+
+O pacote roda em macOS, Linux e Windows. Advisor, equipe de agentes, roteador de modelos, repetição por cooldown e regras de resposta não dependem do sistema operacional. Os módulos que controlam algo fora do processo declaram o que fazem em cada sistema e recusam, com uma mensagem que diz o motivo, o que o sistema não oferece:
+
+| Capacidade | macOS | Linux | Windows |
+| --- | --- | --- | --- |
+| Computer-use | Driver nativo; exige as permissões de Acessibilidade e de Gravação de Tela | Driver nativo | Driver nativo |
+| iPhone: servidor de automação | Local ou remoto | Local ou remoto | Local ou remoto |
+| iPhone: simulador | Disponível | Recusado: o simulador do iOS só existe no macOS | Recusado: o simulador do iOS só existe no macOS |
+| iPhone: aparelho físico | Disponível | Só com o WebDriverAgent já instalado no aparelho, porque compilá-lo exige o Xcode | Só com o WebDriverAgent já instalado no aparelho, porque compilá-lo exige o Xcode |
+
+Caminhos são montados com as funções de caminho da plataforma, e nenhum módulo depende de um comando que só existe num dos sistemas sem declarar a recusa nos outros.
 
 ## Automação do repositório
 
