@@ -28,7 +28,7 @@
 ## 5. Duplicação
 
 - Trecho de código repetido que pode virar uma função e ser reutilizado em mais de um lugar é duplicação.
-- Texto ou template repetido não é código repetido: a função que só o devolveria é desnecessária, conforme [AGENTS.md](../../AGENTS.md).
+- Texto ou template repetido não é código repetido, mesmo que uma mudança no formato tivesse de ser feita em cada lugar: a função que só o devolveria é desnecessária, conforme [AGENTS.md](../../AGENTS.md). Exemplo: o mesmo `${provider}/${id}` em dois `map` sobre listas diferentes não vira função.
 - Semelhança casual não é duplicação: uma expressão curta e comum, como `lista.length === 0`, não vira função. Só é duplicação o trecho cuja mudança futura teria de ser feita em todos os lugares onde ele aparece.
 - Vale mesmo que a extração quebre o código original e deixe uma função menor.
 
