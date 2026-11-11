@@ -31,7 +31,7 @@ function grep(snapshot: RepositorySnapshot, text: string): InspectionGrepResult 
 }
 
 function* matchingLines(output: string, prefix: string): Generator<string> {
-  for (const line of splitInspectionLines(output)) {
+  for (const line of splitInspectionLines(output, 1)) {
     if (line) {
       yield line.slice(prefix.length)
     }

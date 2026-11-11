@@ -16,8 +16,8 @@ import { type ReadFileRequest, type RepositorySnapshot } from "./types"
 function numberedPage(content: string, request: ReadFileRequest): string {
   const numbered: string[] = []
   const last = Math.min(request.endLine, request.startLine + MAX_READ_LINES - 1)
-  let line = 1
-  for (const text of splitInspectionLines(content)) {
+  let line = request.startLine
+  for (const text of splitInspectionLines(content, request.startLine)) {
     if (line > last) {
       if (line <= request.endLine) {
         numbered.push(`${MORE_LINES}${line}`)

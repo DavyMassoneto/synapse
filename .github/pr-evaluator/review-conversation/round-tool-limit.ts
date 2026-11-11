@@ -1,0 +1,8 @@
+import { type ModelReply } from "#evaluator/provider-client"
+import { MAX_ROUND_TOOL_CALLS, TOO_MANY_TOOL_CALLS } from "./constants"
+
+export function ensureRoundToolLimit(reply: ModelReply): void {
+  if (reply.toolCalls.length > MAX_ROUND_TOOL_CALLS) {
+    throw new Error(`${TOO_MANY_TOOL_CALLS}${reply.toolCalls.length}/${MAX_ROUND_TOOL_CALLS}`)
+  }
+}
