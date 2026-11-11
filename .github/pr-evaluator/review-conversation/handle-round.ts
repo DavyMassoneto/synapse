@@ -1,9 +1,22 @@
 import { type ChatMessage, type ModelReply, type ToolMessage } from "#evaluator/provider-client"
-import { type RepositorySnapshot } from "#evaluator/repository-inspection"
-import { hasSubmission, parseReviewResult } from "#evaluator/review-result"
-import { ASSISTANT_ROLE, CONTINUING_ROUND, SUBMITTED_ROUND } from "./constants"
-import { executeReviewCalls } from "./execute-calls"
+import { type RepositorySnapshot, runInspectionTool } from "#evaluator/repository-inspection"
+import { hasSubmission, parseReviewResult, SUBMIT_REVIEW } from "#evaluator/review-result"
+import { ASSISTANT_ROLE, CONTINUING_ROUND, SUBMITTED_ROUND, TOOL_ROLE } from "./constants"
 import { type ReviewRoundOutcome } from "./types"
+
+function executeReviewCalls(snapshot: RepositorySnapshot, reply: ModelReply, submissionError?: string): ToolMessage[] {
+  const results: ToolMessage[] = []
+  for (const call of reply.toolCalls) {
+    let content: string
+    if (submissionError && call.function.name === SUBMIT_REVIEW) {
+      content = submissionError
+    } else {
+      content = runInspectionTool(snapshot, call)
+    }
+    results.push({ role: TOOL_ROLE, tool_call_id: call.id, content })
+  }
+  return results
+}
 
 function reviewReplyMessages(reply: ModelReply, results: ToolMessage[]): ChatMessage[] {
   if (reply.toolCalls.length === 0) {

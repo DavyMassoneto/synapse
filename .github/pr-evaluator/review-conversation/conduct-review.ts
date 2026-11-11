@@ -3,7 +3,7 @@ import { type ChatMessage, type ChatRequest, callModel, USER_ROLE } from "#evalu
 import { openSnapshot } from "#evaluator/repository-inspection"
 import { type ReviewResult, SUBMIT_REVIEW } from "#evaluator/review-result"
 import { MAX_ROUNDS, NO_SUBMISSION, REVIEW_TOOLS, SUBMITTED_ROUND } from "./constants"
-import { ensureConversationLimit, ensureRoundToolLimit } from "./conversation-limit"
+import { ensureConversationLimit, ensureRoundToolLimit, reviewMessagesBytes } from "./conversation-limit"
 import { describeReviewRound } from "./describe-round"
 import { handleReviewRound } from "./handle-round"
 
@@ -17,9 +17,10 @@ function roundRequest(messages: ChatMessage[], round: number, mustSubmit: boolea
 export async function conductReview(configuration: Configuration, prompt: string): Promise<ReviewResult> {
   const snapshot = openSnapshot(configuration.github.headSha)
   const messages: ChatMessage[] = [{ role: USER_ROLE, content: prompt }]
+  let bytes = reviewMessagesBytes(messages) + 1
   let mustSubmit = false
   for (let round = 1; round <= MAX_ROUNDS; round += 1) {
-    ensureConversationLimit(messages)
+    ensureConversationLimit(bytes)
     const reply = await callModel(configuration.model, roundRequest(messages, round, mustSubmit))
     ensureRoundToolLimit(reply)
     console.log(describeReviewRound(round, reply))
@@ -28,6 +29,7 @@ export async function conductReview(configuration: Configuration, prompt: string
       return outcome.review
     }
     mustSubmit = outcome.mustSubmit
+    bytes += reviewMessagesBytes(outcome.messages)
     messages.push(...outcome.messages)
   }
   throw new Error(NO_SUBMISSION)

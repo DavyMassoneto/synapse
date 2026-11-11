@@ -9,6 +9,7 @@ import {
   SEARCH_SUBJECT,
 } from "./constants"
 import { isNoMatch } from "./predicates"
+import { renderInspectionItems } from "./render-items"
 import { type RepositorySnapshot } from "./types"
 
 function grep(snapshot: RepositorySnapshot, text: string): string {
@@ -22,19 +23,19 @@ function grep(snapshot: RepositorySnapshot, text: string): string {
   }
 }
 
-export function searchCode(snapshot: RepositorySnapshot, text: string): string {
-  const prefix = `${snapshot.sha}${REVISION_SEPARATOR}`
-  const matches: string[] = []
-  for (const line of grep(snapshot, text).split(LINE_BREAK)) {
+function* matchingLines(output: string, prefix: string): Generator<string> {
+  for (const line of output.split(LINE_BREAK)) {
     if (line) {
-      if (matches.length === MAX_SEARCH_MATCHES) {
-        return [...matches, MORE_MATCHES].join(LINE_BREAK)
-      }
-      matches.push(line.slice(prefix.length))
+      yield line.slice(prefix.length)
     }
   }
-  if (matches.length === 0) {
-    return `${NO_MATCHES}${text}`
-  }
-  return matches.join(LINE_BREAK)
+}
+
+export function searchCode(snapshot: RepositorySnapshot, text: string): string {
+  const prefix = `${snapshot.sha}${REVISION_SEPARATOR}`
+  return renderInspectionItems(matchingLines(grep(snapshot, text), prefix), {
+    maximum: MAX_SEARCH_MATCHES,
+    more: MORE_MATCHES,
+    empty: `${NO_MATCHES}${text}`,
+  })
 }

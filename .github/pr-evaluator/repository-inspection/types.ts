@@ -9,3 +9,9 @@ export interface RepositorySnapshot {
 }
 
 export type ReadFileRequest = Static<typeof ReadFileArguments>
+
+export interface InspectionItemsPresentation {
+  maximum: number
+  more: string
+  empty: string
+}

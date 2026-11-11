@@ -1,18 +1,19 @@
-import { LINE_BREAK, MAX_LISTED_FILES, MORE_FILES, NO_FILES } from "./constants"
+import { MAX_LISTED_FILES, MORE_FILES, NO_FILES } from "./constants"
+import { renderInspectionItems } from "./render-items"
 import { type RepositorySnapshot } from "./types"
 
-export function listFiles(snapshot: RepositorySnapshot, prefix: string): string {
-  const listed: string[] = []
+function* matchingFiles(snapshot: RepositorySnapshot, prefix: string): Generator<string> {
   for (const path of snapshot.files) {
     if (path.startsWith(prefix)) {
-      if (listed.length === MAX_LISTED_FILES) {
-        return [...listed, MORE_FILES].join(LINE_BREAK)
-      }
-      listed.push(path)
+      yield path
     }
   }
-  if (listed.length === 0) {
-    return `${NO_FILES}${prefix}`
-  }
-  return listed.join(LINE_BREAK)
+}
+
+export function listFiles(snapshot: RepositorySnapshot, prefix: string): string {
+  return renderInspectionItems(matchingFiles(snapshot, prefix), {
+    maximum: MAX_LISTED_FILES,
+    more: MORE_FILES,
+    empty: `${NO_FILES}${prefix}`,
+  })
 }

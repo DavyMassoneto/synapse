@@ -1,6 +1,5 @@
 import { Value } from "typebox/value"
-import { applyStreamUsage } from "./apply-usage"
-import { PROVIDER_ERROR_PREFIX, PROVIDER_ERROR_WITHOUT_MESSAGE, StreamChunkSchema } from "./constants"
+import { PROVIDER_ERROR_PREFIX, PROVIDER_ERROR_WITHOUT_MESSAGE, StreamChunkSchema, USAGE_REPORTED } from "./constants"
 import {
   type PendingToolCall,
   type StreamChoice,
@@ -8,6 +7,20 @@ import {
   type StreamResult,
   type ToolCallDelta,
 } from "./types"
+
+function applyStreamUsage(result: StreamResult, chunk: StreamChunk): void {
+  if (chunk.usage) {
+    result.usage = {
+      kind: USAGE_REPORTED,
+      promptTokens: chunk.usage.prompt_tokens,
+      completionTokens: chunk.usage.completion_tokens,
+    }
+    const details = chunk.usage.prompt_tokens_details
+    if (details && "cached_tokens" in details) {
+      result.cache = { kind: USAGE_REPORTED, tokens: details.cached_tokens }
+    }
+  }
+}
 
 function ensureNoProviderError(chunk: StreamChunk): void {
   if (chunk.error?.message) {
