@@ -1,5 +1,6 @@
 import { type BeforeAgentStartEvent, type SessionStartEvent } from "@earendil-works/pi-coding-agent"
 import { type Advisor } from "#synapse/modules"
+import { CONFIGURATION_FAILURE_LEVEL } from "./constants"
 import { syncAdvisor } from "./sync-advisor"
 import { type AdvisorToolActivation, type SessionContext } from "./types"
 
@@ -25,7 +26,7 @@ export class SessionSync {
   private reportConfigurationFailure(context: SessionContext): void {
     const status = this.advisor.configuration.status()
     if (status.kind === "failure" && context.hasUI) {
-      context.ui.notify(status.message, "error")
+      context.ui.notify(status.message, CONFIGURATION_FAILURE_LEVEL)
     }
   }
 

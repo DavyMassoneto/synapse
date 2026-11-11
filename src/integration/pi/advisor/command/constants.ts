@@ -21,3 +21,7 @@ export const MODEL_NOTICE = "Advisor: "
 export const THINKING_NOTICE = "Advisor thinking: "
 
 export const THINKING_LABEL = ", thinking "
+
+export const FAILURE_LEVEL = "error"
+
+export const RESULT_LEVEL = "info"

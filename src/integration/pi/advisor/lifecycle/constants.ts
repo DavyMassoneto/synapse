@@ -11,3 +11,5 @@ export const REMINDER_TYPE = "advisor-reminder"
 export const REMINDER_DISPLAY = false
 
 export const STATUS_PREFIX = "advisor: "
+
+export const CONFIGURATION_FAILURE_LEVEL = "error"

@@ -1,10 +1,12 @@
 import { type Cancelled } from "#synapse/modules"
 import {
+  AMBIGUOUS_LEVEL,
   AMBIGUOUS_MODEL,
   CANCELLED_SELECTION,
   DISABLED_OPTION,
   MODEL_SELECTION_LIMIT,
   NO_MATCH,
+  NO_MATCH_LEVEL,
   PICKER_TITLE,
 } from "./constants"
 import { modelReferences } from "./references"
@@ -31,12 +33,12 @@ async function chooseMatch(context: PickerContext, matches: string[]): Promise<M
     const options = matches.slice(0, MODEL_SELECTION_LIMIT)
     return selectedModel(await context.ui.select(PICKER_TITLE, options), options)
   }
-  context.ui.notify(AMBIGUOUS_MODEL, "warning")
+  context.ui.notify(AMBIGUOUS_MODEL, AMBIGUOUS_LEVEL)
   return CANCELLED_SELECTION
 }
 
 function reportNoMatch(context: PickerContext, input: string): Cancelled {
-  context.ui.notify(`${NO_MATCH}${input}`, "error")
+  context.ui.notify(`${NO_MATCH}${input}`, NO_MATCH_LEVEL)
   return CANCELLED_SELECTION
 }
 

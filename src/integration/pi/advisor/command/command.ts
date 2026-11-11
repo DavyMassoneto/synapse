@@ -1,7 +1,15 @@
 import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
-import { DISABLED_NOTICE, DISABLED_STATUS, MODEL_NOTICE, THINKING_LABEL, THINKING_NOTICE } from "./constants"
+import {
+  DISABLED_NOTICE,
+  DISABLED_STATUS,
+  FAILURE_LEVEL,
+  MODEL_NOTICE,
+  RESULT_LEVEL,
+  THINKING_LABEL,
+  THINKING_NOTICE,
+} from "./constants"
 import { parseAdvisorCommand } from "./parser"
 import { type AdvisorCommandInput, type CommandContext } from "./types"
 
@@ -17,7 +25,7 @@ export class AdvisorCommand {
   async handle(args: string, context: CommandContext): Promise<void> {
     const status = this.advisor.configuration.status()
     if (status.kind === "failure") {
-      context.ui.notify(status.message, "error")
+      context.ui.notify(status.message, FAILURE_LEVEL)
     } else {
       await this.execute(parseAdvisorCommand(args), status.config, context)
     }
@@ -51,7 +59,7 @@ export class AdvisorCommand {
   }
 
   private showCurrent(config: Config, context: CommandContext): void {
-    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, "info")
+    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, RESULT_LEVEL)
   }
 
   private modelLabel(): string {
@@ -68,10 +76,10 @@ export class AdvisorCommand {
 
   private report(context: CommandContext, result: AdvisorResult, success: string): void {
     if (result.kind === "failure") {
-      context.ui.notify(result.message, "error")
+      context.ui.notify(result.message, FAILURE_LEVEL)
     } else {
       syncAdvisor(this.pi, this.advisor, context)
-      context.ui.notify(success, "info")
+      context.ui.notify(success, RESULT_LEVEL)
     }
   }
 }
