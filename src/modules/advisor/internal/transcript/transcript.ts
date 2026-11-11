@@ -44,10 +44,15 @@ function fitAt(prepared: PreparedMessage[], limit: number, budget: number): Fitt
 }
 
 function selectMinimal(prepared: PreparedMessage[], budget: number): string {
-  const blocks = prepared.map((entry) => renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
-  const text = blocks.join(SEPARATOR)
-  if (text.length <= budget) {
-    return text
+  const blocks: string[] = []
+  let length = -SEPARATOR.length
+  for (const entry of prepared) {
+    const block = renderPrepared(entry, MINIMAL_CONTENT_LIMIT)
+    blocks.push(block)
+    length += block.length + SEPARATOR.length
+  }
+  if (length <= budget) {
+    return blocks.join(SEPARATOR)
   }
   return selectMessages(blocks, budget)
 }
