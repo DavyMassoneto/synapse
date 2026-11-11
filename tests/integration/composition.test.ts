@@ -17,16 +17,10 @@ function prepare(): void {
   context = new TestContext()
 }
 
-async function shutdown(): Promise<void> {
-  for (const handler of host.shutdowns) {
-    await handler({ type: "session_shutdown", reason: "quit" }, context)
-  }
-}
-
 async function compositionLifecycle(): Promise<void> {
   writeFileSync(file, JSON.stringify({ model: "provider/model", thinking: "low" }))
   compose(host, file)
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   expect(host.active).toContain("advisor")
   expect(host.shutdowns).toHaveLength(1)
   const answered = await host.requireTool().execute("id", {}, undefined, undefined, context)
@@ -34,8 +28,8 @@ async function compositionLifecycle(): Promise<void> {
   const lifetime = context.modelRegistry.options?.signal
   expect(lifetime?.aborted).toBe(false)
   const calls = context.modelRegistry.calls
-  await shutdown()
-  await shutdown()
+  await host.emitShutdown(context)
+  await host.emitShutdown(context)
   expect(lifetime?.aborted).toBe(true)
   expect(lifetime?.reason).toBeInstanceOf(Error)
   const refused = await host.requireTool().execute("id", {}, undefined, undefined, context)
@@ -45,7 +39,7 @@ async function compositionLifecycle(): Promise<void> {
 
 async function missingConfiguration(): Promise<void> {
   compose(host, file)
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   expect(host.active).not.toContain("advisor")
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(result.isError).toBe(true)
@@ -57,7 +51,7 @@ async function invalidConfiguration(): Promise<void> {
   writeFileSync(file, "{broken")
   context.hasUI = true
   compose(host, file)
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   expect(context.ui.notices[0]).toMatch(/inválida/)
   expect(host.active).not.toContain("advisor")
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)

@@ -41,7 +41,7 @@ async function ambiguousModel(): Promise<void> {
 
 async function scopedSuggestions(): Promise<void> {
   context.scopedModels = [{ model: { ...context.modelRegistry.model, id: "scoped" } }]
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   const suggestions = await host.requireCompletions()("")
   expect(suggestions?.map(suggestionValue)).toStrictEqual(["off", "thinking", "provider/scoped"])
 }
@@ -52,7 +52,7 @@ async function suggestionsBeforeSession(): Promise<void> {
 }
 
 async function unmatchedPrefix(): Promise<void> {
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   expect(await host.requireCompletions()("zzz")).toStrictEqual([])
   expect((await host.requireCompletions()("TH"))?.map(suggestionValue)).toStrictEqual(["thinking"])
 }
@@ -65,7 +65,7 @@ async function completionLimit(): Promise<void> {
   context.scopedModels = Array.from({ length: 50 }, (_, index) => ({
     model: { ...context.modelRegistry.model, id: `model-${index}` },
   }))
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   const suggestions = await host.requireCompletions()("")
   expect(suggestions).toHaveLength(40)
 }

@@ -1,5 +1,5 @@
 import { type ModelConfiguration } from "#evaluator/configuration"
-import { FRESH_RESPONSE, MAX_OUTPUT_TOKENS, MODEL_TEMPERATURE, MODEL_TIMEOUT_MS } from "./constants"
+import { MAX_OUTPUT_TOKENS, MODEL_TEMPERATURE, MODEL_TIMEOUT_MS, NO_CACHE_DIRECTIVE } from "./constants"
 
 export function postChat(configuration: ModelConfiguration, prompt: string): Promise<Response> {
   return fetch(`${configuration.baseUrl}/chat/completions`, {
@@ -7,7 +7,7 @@ export function postChat(configuration: ModelConfiguration, prompt: string): Pro
     headers: {
       Authorization: `Bearer ${configuration.apiKey}`,
       "Content-Type": "application/json",
-      "Cache-Control": FRESH_RESPONSE,
+      "Cache-Control": NO_CACHE_DIRECTIVE,
     },
     body: JSON.stringify({
       model: configuration.model,

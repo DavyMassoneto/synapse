@@ -1,5 +1,5 @@
 import { type Advisor } from "#synapse/modules"
-import { ADVISOR_NAME } from "../tool"
+import { ADVISOR_NAME } from "../host-contracts"
 import { CompletionCatalog } from "./catalog"
 import { AdvisorCommand } from "./command"
 import { COMMAND_DESCRIPTION } from "./constants"

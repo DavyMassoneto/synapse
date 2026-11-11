@@ -1,3 +1,4 @@
+import { type BeforeAgentStartEvent, type ToolResultEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
 import {
   type AdvisorBeforeStartHandler,
   type AdvisorCommandDefinition,
@@ -10,7 +11,7 @@ import {
   type AdvisorTurnEndHandler,
   type Unsubscribe,
 } from "#synapse/integration"
-import { type AdvisorEventRegistration, type CommandCompletions } from "./types"
+import { type AdvisorEventRegistration, type CommandCompletions, type TurnEndResult } from "./types"
 
 export class AdvisorHostCollector implements AdvisorHost {
   readonly starts: AdvisorSessionStartHandler[] = []
@@ -50,10 +51,36 @@ export class AdvisorHostCollector implements AdvisorHost {
 
   unsubscribe(): void {}
 
-  async startSession(context: AdvisorContext): Promise<void> {
+  async emitSessionStart(context: AdvisorContext): Promise<void> {
     for (const handler of this.starts) {
       await handler({ type: "session_start", reason: "startup" }, context)
     }
+  }
+
+  async emitShutdown(context: AdvisorContext): Promise<void> {
+    for (const handler of this.shutdowns) {
+      await handler({ type: "session_shutdown", reason: "quit" }, context)
+    }
+  }
+
+  async emitBeforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): Promise<void> {
+    for (const handler of this.beforeStarts) {
+      await handler(event, context)
+    }
+  }
+
+  async emitToolResult(event: ToolResultEvent, context: AdvisorContext): Promise<void> {
+    for (const handler of this.toolResults) {
+      await handler(event, context)
+    }
+  }
+
+  async emitTurnEnd(event: TurnEndEvent, context: AdvisorContext): Promise<TurnEndResult[]> {
+    const results: TurnEndResult[] = []
+    for (const handler of this.turns) {
+      results.push(await handler(event, context))
+    }
+    return results
   }
 
   requireTool(): AdvisorTool {

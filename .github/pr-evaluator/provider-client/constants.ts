@@ -4,7 +4,7 @@ export const MODEL_TEMPERATURE = 0
 
 export const MODEL_TIMEOUT_MS = 2_400_000
 
-export const FRESH_RESPONSE = "no-cache"
+export const NO_CACHE_DIRECTIVE = "no-cache"
 
 export const RETRY_DELAY_MS = 20_000
 

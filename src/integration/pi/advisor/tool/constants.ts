@@ -1,7 +1,5 @@
 import { type ToolExecutionMode } from "@earendil-works/pi-coding-agent"
 
-export const ADVISOR_NAME = "advisor"
-
 export const ADVISOR_LABEL = "Advisor"
 
 export const ADVISOR_EXECUTION_MODE: ToolExecutionMode = "sequential"

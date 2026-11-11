@@ -3,11 +3,31 @@ import {
   type Consultation,
   type ConsultationResult,
   type ModelPort,
+  type ModelRequest,
+  type ModelResponse,
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules/advisor/public/contracts"
 import { NO_MODEL_CONFIGURED } from "./constants"
 import { ADVISOR_SYSTEM, preparePrompt } from "./prompt"
+
+function modelRequest(input: Consultation, prompt: string): ModelRequest {
+  return { system: ADVISOR_SYSTEM, prompt, signal: input.signal }
+}
+
+function consultationOutcome(
+  input: Consultation,
+  resolved: ResolvedModel,
+  response: ModelResponse,
+): ConsultationResult {
+  if (input.signal.aborted || response.kind === "cancelled") {
+    return { kind: "cancelled" }
+  }
+  if (response.kind === "failure") {
+    return response
+  }
+  return { kind: "success", model: resolved.reference, response }
+}
 
 async function consultResolved(
   input: Consultation,
@@ -21,18 +41,8 @@ async function consultResolved(
   if (prompt.kind === "failure") {
     return prompt
   }
-  const response = await model.consult(resolved, {
-    system: ADVISOR_SYSTEM,
-    prompt: prompt.text,
-    signal: input.signal,
-  })
-  if (input.signal.aborted || response.kind === "cancelled") {
-    return { kind: "cancelled" }
-  }
-  if (response.kind === "failure") {
-    return response
-  }
-  return { kind: "success", model: resolved.reference, response }
+  const response = await model.consult(resolved, modelRequest(input, prompt.text))
+  return consultationOutcome(input, resolved, response)
 }
 
 async function consultModel(

@@ -7,6 +7,8 @@ import {
   type AdvisorTurnEndHandler,
 } from "#synapse/integration"
 
+export type TurnEndResult = Awaited<ReturnType<AdvisorTurnEndHandler>>
+
 export type CommandCompletions = NonNullable<AdvisorCommandDefinition["getArgumentCompletions"]>
 
 export type AdvisorEventRegistration =

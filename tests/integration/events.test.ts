@@ -17,63 +17,47 @@ function prepare(): void {
 }
 
 async function sessionStart(): Promise<void> {
-  await host.startSession(context)
+  await host.emitSessionStart(context)
   expect(host.advisor.activeModel().kind).toBe("active")
   expect(host.active).toContain("advisor")
 }
 
 async function instructions(): Promise<void> {
   const event = beforeStartEvent()
-  for (const handler of host.beforeStarts) {
-    await handler(event, context)
-  }
+  await host.emitBeforeStart(event, context)
   expect(event.systemPromptOptions.sections.advisor).toBeTruthy()
 }
 
 async function reminderCadence(): Promise<void> {
   const event = turnEvent()
   for (let index = 0; index < 4; index++) {
-    for (const handler of host.turns) {
-      expect(await handler(event, context)).toBeUndefined()
-    }
+    expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
   }
-  for (const handler of host.turns) {
-    const reminder = await handler(event, context)
-    const entry = reminder?.entries?.at(-1)
-    expect(entry?.type).toBe("custom_message")
-    if (entry?.type !== "custom_message") {
-      throw new Error("lembrete ausente")
-    }
-    expect(entry.customType).toBe("advisor-reminder")
+  const [reminder] = await host.emitTurnEnd(event, context)
+  const entry = reminder?.entries?.at(-1)
+  expect(entry?.type).toBe("custom_message")
+  if (entry?.type !== "custom_message") {
+    throw new Error("lembrete ausente")
   }
+  expect(entry.customType).toBe("advisor-reminder")
 }
 
 async function toolResetsReminder(): Promise<void> {
   const event = turnEvent()
   for (let index = 0; index < 4; index++) {
-    for (const handler of host.turns) {
-      await handler(event, context)
-    }
+    await host.emitTurnEnd(event, context)
   }
-  for (const handler of host.toolResults) {
-    await handler(advisorToolResult(), context)
-  }
-  for (const handler of host.turns) {
-    expect(await handler(event, context)).toBeUndefined()
-  }
+  await host.emitToolResult(advisorToolResult(), context)
+  expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
 async function disabledAdvisor(): Promise<void> {
   const event = beforeStartEvent()
-  for (const handler of host.beforeStarts) {
-    await handler(event, context)
-  }
+  await host.emitBeforeStart(event, context)
   host.active = ["read", "advisor", "write", "advisor", "read"]
   host.advisor.configuration.disable()
   expect(host.advisor.activeModel().kind).toBe("inactive")
-  for (const handler of host.beforeStarts) {
-    await handler(event, context)
-  }
+  await host.emitBeforeStart(event, context)
   expect(event.systemPromptOptions.sections.advisor).toBeUndefined()
   expect(host.active).toStrictEqual(["read", "write", "read"])
 }
@@ -82,14 +66,10 @@ async function disabledAdvisorDoesNotCount(): Promise<void> {
   const event = turnEvent()
   host.advisor.configuration.disable()
   for (let index = 0; index < 6; index++) {
-    for (const handler of host.turns) {
-      expect(await handler(event, context)).toBeUndefined()
-    }
+    expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
   }
   host.advisor.configuration.selectModel("provider/model")
-  for (const handler of host.turns) {
-    expect(await handler(event, context)).toBeUndefined()
-  }
+  expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
 function registerTests(): void {

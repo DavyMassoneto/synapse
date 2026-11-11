@@ -1,6 +1,5 @@
 import { type ActiveModel, type Advisor } from "#synapse/modules"
-import { type AdvisorContext } from "../host-contracts"
-import { ADVISOR_NAME } from "../tool"
+import { ADVISOR_NAME, type AdvisorContext } from "../host-contracts"
 import { STATUS_PREFIX } from "./constants"
 import { type AdvisorToolActivation } from "./types"
 
