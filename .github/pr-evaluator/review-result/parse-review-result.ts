@@ -1,6 +1,7 @@
 import { AssertError, Value } from "typebox/value"
 import { type ModelReply } from "#evaluator/provider-client"
-import { INVALID_SUBMISSION, ISSUE_BREAK, MISSING_SUBMISSION, ReviewResultSchema, SUBMIT_REVIEW } from "./constants"
+import { INVALID_SUBMISSION, ISSUE_BREAK, MISSING_SUBMISSION, ReviewResultSchema } from "./constants"
+import { isSubmission } from "./predicates"
 import { type ReviewResult } from "./types"
 
 function failureDetail(error: Error): string {
@@ -11,7 +12,7 @@ function failureDetail(error: Error): string {
 }
 
 function submittedArguments(reply: ModelReply): string {
-  const submission = reply.toolCalls.find((call) => call.function.name === SUBMIT_REVIEW)
+  const submission = reply.toolCalls.find(isSubmission)
   if (submission) {
     return submission.function.arguments
   }

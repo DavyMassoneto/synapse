@@ -20,6 +20,16 @@ function numberedLines(lines: string[], start: number, last: number): string[] {
   return numbered
 }
 
+function numberedPage(lines: string[], request: ReadFileRequest): string {
+  const wanted = Math.min(request.endLine, lines.length)
+  const last = Math.min(wanted, request.startLine + MAX_READ_LINES - 1)
+  const numbered = numberedLines(lines, request.startLine, last)
+  if (last < wanted) {
+    numbered.push(`${MORE_LINES}${last + 1}`)
+  }
+  return numbered.join(LINE_BREAK)
+}
+
 export function readFile(snapshot: RepositorySnapshot, request: ReadFileRequest): string {
   if (!snapshot.files.has(request.path)) {
     return `${UNKNOWN_PATH}${request.path}`
@@ -30,15 +40,5 @@ export function readFile(snapshot: RepositorySnapshot, request: ReadFileRequest)
   const lines = runGit([GIT_SHOW, `${snapshot.sha}${REVISION_SEPARATOR}${request.path}`], FILE_SUBJECT).split(
     LINE_BREAK,
   )
-  return pageOf(lines, request)
-}
-
-function pageOf(lines: string[], request: ReadFileRequest): string {
-  const wanted = Math.min(request.endLine, lines.length)
-  const last = Math.min(wanted, request.startLine + MAX_READ_LINES - 1)
-  const numbered = numberedLines(lines, request.startLine, last)
-  if (last < wanted) {
-    numbered.push(`${MORE_LINES}${last + 1}`)
-  }
-  return numbered.join(LINE_BREAK)
+  return numberedPage(lines, request)
 }

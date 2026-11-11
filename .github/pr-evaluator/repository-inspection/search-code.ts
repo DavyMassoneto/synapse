@@ -24,10 +24,14 @@ function grep(snapshot: RepositorySnapshot, text: string): string {
 }
 
 function* matchingLines(output: string, prefix: string): Generator<string> {
-  for (const line of output.split(LINE_BREAK)) {
-    if (line) {
-      yield line.slice(prefix.length)
+  let start = 0
+  while (start < output.length) {
+    const boundary = output.indexOf(LINE_BREAK, start)
+    const end = boundary < 0 ? output.length : boundary
+    if (end > start) {
+      yield output.slice(start + prefix.length, end)
     }
+    start = end + 1
   }
 }
 

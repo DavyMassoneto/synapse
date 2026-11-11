@@ -1,6 +1,6 @@
 import { type ChatMessage, type ModelReply, type ToolMessage } from "#evaluator/provider-client"
 import { type RepositorySnapshot, runInspectionTool } from "#evaluator/repository-inspection"
-import { hasSubmission, parseReviewResult, SUBMIT_REVIEW } from "#evaluator/review-result"
+import { hasSubmission, isSubmission, parseReviewResult } from "#evaluator/review-result"
 import { ASSISTANT_ROLE, CONTINUING_ROUND, SUBMITTED_ROUND, TOOL_ROLE } from "./constants"
 import { type ReviewRoundOutcome } from "./types"
 
@@ -8,7 +8,7 @@ function executeReviewCalls(snapshot: RepositorySnapshot, reply: ModelReply, sub
   const results: ToolMessage[] = []
   for (const call of reply.toolCalls) {
     let content: string
-    if (submissionError && call.function.name === SUBMIT_REVIEW) {
+    if (submissionError && isSubmission(call)) {
       content = submissionError
     } else {
       content = runInspectionTool(snapshot, call)
