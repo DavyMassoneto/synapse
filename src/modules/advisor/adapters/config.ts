@@ -10,7 +10,7 @@ import {
   CREATE_ONLY,
   TEMPORARY_EXTENSION,
 } from "./constants"
-import { discardTemporary } from "./discard-temporary"
+import { failureAfterCleanup } from "./failure-after-cleanup"
 import { parseConfig } from "./parse-config"
 import { isMissingFile } from "./predicates"
 
@@ -43,7 +43,7 @@ export class FileConfig {
       return { kind: "saved" }
     } catch (error) {
       if (error instanceof Error) {
-        return discardTemporary(temporary, error)
+        return failureAfterCleanup(temporary, error)
       }
       throw error
     }
