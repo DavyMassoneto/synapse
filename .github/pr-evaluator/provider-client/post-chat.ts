@@ -1,4 +1,4 @@
-import { MAX_OUTPUT_TOKENS, type ModelConfiguration } from "#evaluator/configuration"
+import { type ModelConfiguration } from "#evaluator/configuration"
 import {
   AUTHORIZATION_HEADER,
   BEARER_PREFIX,
@@ -7,6 +7,7 @@ import {
   CHAT_PATH,
   CONTENT_TYPE_HEADER,
   JSON_CONTENT_TYPE,
+  MAX_OUTPUT_TOKENS,
   MODEL_TEMPERATURE,
   MODEL_TIMEOUT_MS,
   NO_CACHE_DIRECTIVE,

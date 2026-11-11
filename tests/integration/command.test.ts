@@ -1,4 +1,3 @@
-import { type AutocompleteItem } from "@earendil-works/pi-tui"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { prepareHostDirectory, TestContext, TypedAdvisorHost } from "../fixtures"
 
@@ -43,12 +42,12 @@ async function scopedSuggestions(): Promise<void> {
   context.scopedModels = [{ model: { ...context.modelRegistry.model, id: "scoped" } }]
   await host.emitSessionStart(context)
   const suggestions = await host.requireCompletions()("")
-  expect(suggestions?.map(suggestionValue)).toStrictEqual(["off", "thinking", "provider/scoped"])
+  expect(suggestions?.map((item) => item.value)).toStrictEqual(["off", "thinking", "provider/scoped"])
 }
 
 async function suggestionsBeforeSession(): Promise<void> {
   const suggestions = await host.requireCompletions()("")
-  expect(suggestions?.map(suggestionValue)).toStrictEqual(["off", "thinking"])
+  expect(suggestions?.map((item) => item.value)).toStrictEqual(["off", "thinking"])
 }
 
 async function unmatchedPrefix(): Promise<void> {
@@ -58,11 +57,7 @@ async function unmatchedPrefix(): Promise<void> {
 
 async function caseInsensitivePrefix(): Promise<void> {
   await host.emitSessionStart(context)
-  expect((await host.requireCompletions()("TH"))?.map(suggestionValue)).toStrictEqual(["thinking"])
-}
-
-function suggestionValue(item: AutocompleteItem): string {
-  return item.value
+  expect((await host.requireCompletions()("TH"))?.map((item) => item.value)).toStrictEqual(["thinking"])
 }
 
 async function completionLimit(): Promise<void> {

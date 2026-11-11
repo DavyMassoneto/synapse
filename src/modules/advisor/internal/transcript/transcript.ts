@@ -49,8 +49,9 @@ function selectMinimal(prepared: PreparedMessage[], budget: number): string {
     return fitted.text
   }
   const blocks = fitted.rendered
-  for (const [index, entry] of prepared.entries()) {
-    if (index >= blocks.length) {
+  for (let index = blocks.length; index < prepared.length; index += 1) {
+    const entry = prepared[index]
+    if (entry) {
       blocks.push(renderPrepared(entry, MINIMAL_CONTENT_LIMIT))
     }
   }

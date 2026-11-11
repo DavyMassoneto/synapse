@@ -14,10 +14,6 @@ export const ENV_MODEL_URL = "OMNIROUTE_BASE_URL"
 
 export const ENV_MODEL_NAME = "REVIEW_MODEL"
 
-export const MODEL_CONTEXT_TOKENS = 1_000_000
-
-export const MAX_OUTPUT_TOKENS = 128_000
-
 export const COMMIT_SHA_PATTERN = /^[0-9a-f]{40}$/
 
 export const PULL_NUMBER_PATTERN = /^[1-9][0-9]*$/
