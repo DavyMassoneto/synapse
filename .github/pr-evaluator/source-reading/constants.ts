@@ -10,12 +10,12 @@ export const PATH_TERMINATOR = "\0"
 
 export const SOURCE_ENCODING = "utf8"
 
-export const SOURCE_BUFFER_BYTES = 8_388_608
-
 export const FILE_HEADER = "### "
 
 export const FILE_BREAK = "\n\n"
 
 export const MAX_SOURCE_BYTES = 4_194_304
 
-export const BUFFER_OVERFLOW_CODE = "ENOBUFS"
+export const LISTING_SUBJECT = "A lista de arquivos do commit"
+
+export const FILE_SUBJECT = "Um arquivo de código"

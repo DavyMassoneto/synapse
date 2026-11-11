@@ -8,6 +8,4 @@ export const GIT_DIFF_ARGUMENTS = [
   "-M",
 ]
 
-export const DIFF_BUFFER_BYTES = 8_388_608
-
-export const BUFFER_OVERFLOW_CODE = "ENOBUFS"
+export const DIFF_SUBJECT = "O diff"
