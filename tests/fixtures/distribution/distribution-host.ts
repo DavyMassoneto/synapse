@@ -1,4 +1,5 @@
 import { ExtensionRunner, SessionManager } from "@earendil-works/pi-coding-agent"
+import { ADVISOR_NAME } from "#synapse/integration"
 import { TestUI } from "../context"
 import { type DistributionEnvironment } from "./distribution-environment"
 import { DistributionRegistry } from "./distribution-registry"
@@ -13,8 +14,8 @@ export async function runDistribution(environment: DistributionEnvironment): Pro
   try {
     const ui = new TestUI()
     runner.getUIContext().notify = ui.notify.bind(ui)
-    const command = runner.getCommand("advisor")
-    const tool = runner.getToolDefinition("advisor")
+    const command = runner.getCommand(ADVISOR_NAME)
+    const tool = runner.getToolDefinition(ADVISOR_NAME)
     if (command && tool) {
       await command.handler("", runner.createCommandContext())
       const result = await tool.execute("id", {}, undefined, undefined, runner.createToolContext("id", undefined))

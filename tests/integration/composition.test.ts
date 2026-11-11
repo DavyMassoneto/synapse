@@ -63,16 +63,32 @@ async function missingConfiguration(): Promise<void> {
   expect(context.modelRegistry.calls).toBe(0)
 }
 
-async function invalidConfiguration(): Promise<void> {
+async function composeInvalid(): Promise<void> {
   writeFileSync(advisorConfigPath(), "{broken")
   context.hasUI = true
   compose(host)
   await host.emitSessionStart(context)
+}
+
+async function invalidConfigurationIsReported(): Promise<void> {
+  await composeInvalid()
   expect(context.ui.notices[0]).toMatch(/inválida/)
+}
+
+async function invalidConfigurationDisablesTool(): Promise<void> {
+  await composeInvalid()
   expect(host.active).not.toContain("advisor")
+}
+
+async function invalidConfigurationRefusesConsultation(): Promise<void> {
+  await composeInvalid()
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(toolText(result)).toMatch(/inválida/)
   expect(context.modelRegistry.calls).toBe(0)
+}
+
+async function invalidConfigurationIsPreserved(): Promise<void> {
+  await composeInvalid()
   expect(readFileSync(advisorConfigPath(), "utf8")).toBe("{broken")
 }
 
@@ -88,7 +104,10 @@ function registerTests(): void {
   test("encerramento repetido aborta uma vez, com erro como motivo", shutdownAbortsOnce)
   test("consulta depois do encerramento é recusada sem chamar o modelo", refusesAfterShutdown)
   test("sem arquivo de configuração o advisor fica desligado", missingConfiguration)
-  test("configuração inválida vira falha, deixa o advisor desligado e preserva o arquivo", invalidConfiguration)
+  test("configuração inválida é informada", invalidConfigurationIsReported)
+  test("configuração inválida desliga a ferramenta", invalidConfigurationDisablesTool)
+  test("configuração inválida recusa a consulta sem chamar o modelo", invalidConfigurationRefusesConsultation)
+  test("configuração inválida não sobrescreve o arquivo", invalidConfigurationIsPreserved)
 }
 
 describe("composition", registerTests)

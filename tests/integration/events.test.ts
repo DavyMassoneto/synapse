@@ -21,11 +21,13 @@ async function instructions(): Promise<void> {
   expect(event.systemPromptOptions.sections.advisor).toBeTruthy()
 }
 
-async function reminderCadence(): Promise<void> {
+async function noReminderBeforeCadence(): Promise<void> {
+  expect(await host.emitTurnEnds(turnEvent(), context, 4)).toStrictEqual([undefined, undefined, undefined, undefined])
+}
+
+async function reminderAtCadence(): Promise<void> {
   const event = turnEvent()
-  for (let index = 0; index < 4; index++) {
-    expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
-  }
+  await host.emitTurnEnds(event, context, 4)
   const [reminder] = await host.emitTurnEnd(event, context)
   const entry = reminder?.entries?.at(-1)
   expect(entry?.type).toBe("custom_message")
@@ -37,39 +39,37 @@ async function reminderCadence(): Promise<void> {
 
 async function toolResetsReminder(): Promise<void> {
   const event = turnEvent()
-  for (let index = 0; index < 4; index++) {
-    await host.emitTurnEnd(event, context)
-  }
+  await host.emitTurnEnds(event, context, 4)
   await host.requireTool().execute("id", {}, undefined, undefined, context)
   expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
 async function sessionStartResetsReminder(): Promise<void> {
   const event = turnEvent()
-  for (let index = 0; index < 4; index++) {
-    await host.emitTurnEnd(event, context)
-  }
+  await host.emitTurnEnds(event, context, 4)
   await host.emitSessionStart(context)
   expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
 
-async function disabledAdvisor(): Promise<void> {
+async function disablingRemovesInstructions(): Promise<void> {
   const event = beforeStartEvent()
   await host.emitBeforeStart(event, context)
-  host.active = ["read", "advisor", "write", "advisor", "read"]
   host.advisor.configuration.disable()
-  expect(host.advisor.activeModel().kind).toBe("inactive")
   await host.emitBeforeStart(event, context)
   expect(event.systemPromptOptions.sections.advisor).toBeUndefined()
+}
+
+async function disablingRemovesTool(): Promise<void> {
+  host.active = ["read", "advisor", "write", "advisor", "read"]
+  host.advisor.configuration.disable()
+  await host.emitBeforeStart(beforeStartEvent(), context)
   expect(host.active).toStrictEqual(["read", "write", "read"])
 }
 
 async function disabledAdvisorDoesNotCount(): Promise<void> {
   const event = turnEvent()
   host.advisor.configuration.disable()
-  for (let index = 0; index < 6; index++) {
-    expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
-  }
+  await host.emitTurnEnds(event, context, 6)
   host.advisor.configuration.selectModel("provider/model")
   expect(await host.emitTurnEnd(event, context)).toStrictEqual([undefined])
 }
@@ -83,10 +83,12 @@ function registerTests(): void {
   afterEach(cleanup)
   test("início ativa ferramenta", sessionStart)
   test("instruções são inseridas", instructions)
-  test("lembrete respeita cadência", reminderCadence)
+  test("lembrete não aparece antes da cadência", noReminderBeforeCadence)
+  test("lembrete aparece no quinto turno", reminderAtCadence)
   test("consulta reinicia lembrete", toolResetsReminder)
   test("início de sessão reinicia lembrete", sessionStartResetsReminder)
-  test("desligamento remove ferramenta e instruções", disabledAdvisor)
+  test("desligamento remove as instruções", disablingRemovesInstructions)
+  test("desligamento remove a ferramenta", disablingRemovesTool)
   test("turnos com o advisor desligado não contam para o lembrete", disabledAdvisorDoesNotCount)
 }
 

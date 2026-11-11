@@ -71,6 +71,14 @@ export class AdvisorHostCollector implements AdvisorHost {
     return results
   }
 
+  async emitTurnEnds(event: TurnEndEvent, context: AdvisorContext, turns: number): Promise<TurnEndResult[]> {
+    const results: TurnEndResult[] = []
+    for (let turn = 0; turn < turns; turn++) {
+      results.push(...(await this.emitTurnEnd(event, context)))
+    }
+    return results
+  }
+
   requireTool(): AdvisorTool {
     if (this.tool) {
       return this.tool
