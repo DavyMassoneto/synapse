@@ -1,4 +1,4 @@
-import { type ModelResolution } from "#synapse/modules"
+import { type ModelResolution } from "#synapse/modules/advisor"
 import { TestModel } from "./test-model"
 
 export class CancelOnResolveModel extends TestModel {

@@ -35,6 +35,10 @@ export class AdvisorEvents {
 
   beforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): void {
     syncAdvisor(this.pi, this.advisor, context)
+    this.applyInstructions(event)
+  }
+
+  private applyInstructions(event: BeforeAgentStartEvent): void {
     if (this.advisor.activeModel().kind === "active") {
       event.systemPromptOptions.sections.advisor = this.advisor.consultationInstructions
     } else {

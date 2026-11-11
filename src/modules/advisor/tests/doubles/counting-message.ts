@@ -1,4 +1,4 @@
-import { type TranscriptBlock, type UserTranscript } from "#synapse/modules"
+import { type TranscriptBlock, type UserTranscript } from "#synapse/modules/advisor"
 
 export class CountingUserMessage implements UserTranscript {
   readonly kind = "user"

@@ -14,3 +14,5 @@ export const CONFIG_INVALID = "Configuração do advisor inválida; revise advis
 
 export const CONFIG_WRITE_AND_CLEANUP_FAILED =
   "Falha ao gravar a configuração do advisor e ao remover o arquivo temporário."
+
+export const MISSING_FILE_CODE = "ENOENT"

@@ -1,4 +1,4 @@
-import { type ModelResponse } from "#synapse/modules"
+import { type ModelResponse } from "#synapse/modules/advisor"
 import { TestModel } from "./test-model"
 
 export class FailingModel extends TestModel {

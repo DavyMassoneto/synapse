@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs"
 import { type Config, type ConfigLoadResult } from "#synapse/modules/advisor/public/contracts"
 import { CONFIG_READ_FAILED } from "./constants"
 import { parseConfig } from "./parse-config"
+import { isMissingFile } from "./predicates"
 import { replaceConfig } from "./replace-config"
 
 export class FileConfig {
@@ -15,7 +16,7 @@ export class FileConfig {
     try {
       return parseConfig(readFileSync(this.path, "utf8"))
     } catch (error) {
-      if (error instanceof Error && "code" in error && error.code === "ENOENT") {
+      if (error instanceof Error && isMissingFile(error)) {
         return { kind: "missing" }
       }
       return { kind: "invalid", message: CONFIG_READ_FAILED }

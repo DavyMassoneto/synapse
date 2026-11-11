@@ -31,15 +31,27 @@ export class AdvisorToolHandler {
     if (callSignal.aborted) {
       return this.failure(TOOL_CANCELLED)
     }
+    return this.consultReporting(callSignal, onUpdate, context)
+  }
+
+  private async consultReporting(
+    signal: AbortSignal,
+    onUpdate: AdvisorToolUpdate,
+    context: AdvisorContext,
+  ): AdvisorToolResult {
     try {
-      onUpdate?.({ content: [{ type: "text", text: TOOL_PROGRESS }], details: {} })
-      return this.output(await this.consult(callSignal, context))
+      this.reportProgress(onUpdate)
+      return this.output(await this.consult(signal, context))
     } catch (error) {
       if (error instanceof Error) {
-        return this.unavailable(error, callSignal)
+        return this.unavailable(error, signal)
       }
       throw error
     }
+  }
+
+  private reportProgress(onUpdate: AdvisorToolUpdate): void {
+    onUpdate?.({ content: [{ type: "text", text: TOOL_PROGRESS }], details: {} })
   }
 
   private callSignal(signal: AdvisorToolSignal): AbortSignal {

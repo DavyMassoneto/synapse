@@ -4,7 +4,7 @@ import {
   type ModelResolution,
   type ModelResponse,
   type ResolvedModel,
-} from "#synapse/modules"
+} from "#synapse/modules/advisor"
 
 export class TestModel implements ModelPort {
   calls = 0

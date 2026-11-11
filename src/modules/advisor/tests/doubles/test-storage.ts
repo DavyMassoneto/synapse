@@ -1,4 +1,4 @@
-import { type ConfigLoadResult, type ConfigPort, type ThinkingLevel } from "#synapse/modules"
+import { type ConfigLoadResult, type ConfigPort, type ThinkingLevel } from "#synapse/modules/advisor"
 
 export class TestStorage implements ConfigPort {
   failSave = false

@@ -1,4 +1,4 @@
-import { type ConfigPort, type Consultation } from "#synapse/modules"
+import { type ConfigPort, type Consultation } from "#synapse/modules/advisor"
 import { AdvisorService } from "#synapse/modules/advisor/internal"
 
 export function serviceFor(storage: ConfigPort): AdvisorService {
