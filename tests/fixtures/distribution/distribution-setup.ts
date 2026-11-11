@@ -8,14 +8,20 @@ import {
   SettingsManager,
 } from "@earendil-works/pi-coding-agent"
 import { Value } from "typebox/value"
-import { manifestSchema } from "./constants"
+import {
+  AUTH_FILE,
+  MANIFEST_ENCODING,
+  MANIFEST_URL,
+  MODELS_STORE_FILE,
+  manifestSchema,
+  PACKAGE_ROOT_URL,
+} from "./constants"
 import { type DistributionEnvironment } from "./distribution-environment"
 
 export function resolveEntrypoint(): string {
-  const manifestPath = fileURLToPath(new URL("../../../package.json", import.meta.url))
-  const manifest = Value.Parse(manifestSchema, JSON.parse(readFileSync(manifestPath, "utf8")))
+  const manifest = Value.Parse(manifestSchema, JSON.parse(readFileSync(fileURLToPath(MANIFEST_URL), MANIFEST_ENCODING)))
   const [extension] = manifest.pi.extensions
-  return resolve(fileURLToPath(new URL("../../..", import.meta.url)), extension)
+  return resolve(fileURLToPath(PACKAGE_ROOT_URL), extension)
 }
 
 export async function loadExtension(
@@ -43,9 +49,9 @@ export async function loadExtension(
 
 export function createRuntime(agentDirectory: string): Promise<ModelRuntime> {
   return ModelRuntime.create({
-    authPath: join(agentDirectory, "auth.json"),
+    authPath: join(agentDirectory, AUTH_FILE),
     modelsPath: null,
-    modelsStorePath: join(agentDirectory, "models-store.json"),
+    modelsStorePath: join(agentDirectory, MODELS_STORE_FILE),
     allowModelNetwork: false,
     refreshOnCreate: false,
   })

@@ -2,6 +2,10 @@ export const MODEL_TEMPERATURE = 0
 
 export const MODEL_TIMEOUT_MS = 2_400_000
 
+export const CONTENT_TYPE_HEADER = "Content-Type"
+
+export const JSON_CONTENT_TYPE = "application/json"
+
 export const CACHE_CONTROL_HEADER = "Cache-Control"
 
 export const NO_CACHE_DIRECTIVE = "no-cache"
