@@ -27,7 +27,8 @@
 
 ## 5. Duplicação
 
-- Trecho que pode virar uma função e ser reutilizado em mais de um lugar é duplicação.
+- Trecho de código repetido que pode virar uma função e ser reutilizado em mais de um lugar é duplicação.
+- Texto ou template repetido não é código repetido: a função que só o devolveria é desnecessária, conforme [AGENTS.md](../../AGENTS.md).
 - Vale mesmo que a extração quebre o código original e deixe uma função menor.
 
 ## 6. Números mágicos
