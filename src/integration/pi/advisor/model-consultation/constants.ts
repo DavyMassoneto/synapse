@@ -17,3 +17,7 @@ export const PI_THINKING_BUDGETS: PiThinkingBudgets = {
   xhigh: 16_384,
   max: 16_384,
 }
+
+export const MODEL_NOT_FOUND = "Modelo advisor não encontrado: "
+
+export const MISSING_CREDENTIALS = "Credenciais ausentes para "

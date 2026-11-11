@@ -7,3 +7,5 @@ export const CONFIG_SAVE_FAILED = "Não foi possível salvar a configuração do
 export const INVALID_MODEL = "O modelo deve usar o formato provedor/id."
 
 export const INVALID_THINKING = "Nível de raciocínio inválido."
+
+export const SAVE_FAILURE_CAUSE = " Causa: "

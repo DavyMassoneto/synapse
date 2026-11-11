@@ -12,3 +12,5 @@ export const ADVISOR_TOOL_SNIPPET = "Consult a reviewer model with the conversat
 export const TOOL_PROGRESS = "Consultando advisor..."
 
 export const TOOL_CANCELLED = "Consulta ao advisor cancelada."
+
+export const TOOL_UNAVAILABLE = "Advisor indisponível: "

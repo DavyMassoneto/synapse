@@ -4,6 +4,8 @@ import { extractText } from "../content-text"
 import {
   ADDITIONAL_COLOR,
   ERROR_COLOR,
+  HIDDEN_LINES_PREFIX,
+  HIDDEN_LINES_SUFFIX,
   PENDING_COLOR,
   PREVIEW_LINES,
   RENDER_PENDING,
@@ -22,7 +24,7 @@ function visibleLines(lines: string[], expanded: boolean): string[] {
 
 function hiddenNotice(hidden: number, theme: AdvisorRenderTheme): string {
   if (hidden > 0) {
-    return `\n${theme.fg(ADDITIONAL_COLOR, `... (${hidden} linhas a mais)`)}`
+    return `\n${theme.fg(ADDITIONAL_COLOR, `${HIDDEN_LINES_PREFIX}${hidden}${HIDDEN_LINES_SUFFIX}`)}`
   }
   return ""
 }

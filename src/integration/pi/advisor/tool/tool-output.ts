@@ -1,5 +1,5 @@
 import { type ConsultationResult } from "#synapse/modules"
-import { TOOL_CANCELLED, TOOL_PROGRESS } from "./constants"
+import { TOOL_CANCELLED, TOOL_PROGRESS, TOOL_UNAVAILABLE } from "./constants"
 import { type AdvisorToolOutput, type AdvisorToolUpdate } from "./types"
 
 export function reportProgress(onUpdate: AdvisorToolUpdate): void {
@@ -28,5 +28,5 @@ export function unavailableOutput(error: Error, signal: AbortSignal): AdvisorToo
   if (signal.aborted) {
     return toolFailure(TOOL_CANCELLED)
   }
-  return toolFailure(`Advisor indisponível: ${error.message}.`)
+  return toolFailure(`${TOOL_UNAVAILABLE}${error.message}.`)
 }

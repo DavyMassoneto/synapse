@@ -1,6 +1,13 @@
 import { type Cancelled } from "#synapse/modules"
 import { type AdvisorContext } from "../host-contracts"
-import { AMBIGUOUS_MODEL, CANCELLED_SELECTION, DISABLED_OPTION, MODEL_SELECTION_LIMIT, PICKER_TITLE } from "./constants"
+import {
+  AMBIGUOUS_MODEL,
+  CANCELLED_SELECTION,
+  DISABLED_OPTION,
+  MODEL_SELECTION_LIMIT,
+  NO_MATCH,
+  PICKER_TITLE,
+} from "./constants"
 import { modelReferences } from "./references"
 import { searchModels } from "./search"
 import { type MenuChoice, type ModelSelection } from "./types"
@@ -30,7 +37,7 @@ async function chooseMatch(context: AdvisorContext, matches: string[]): Promise<
 }
 
 function reportNoMatch(context: AdvisorContext, input: string): Cancelled {
-  context.ui.notify(`Nenhum modelo encontrado: ${input}`, "error")
+  context.ui.notify(`${NO_MATCH}${input}`, "error")
   return CANCELLED_SELECTION
 }
 

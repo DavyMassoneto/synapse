@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, test } from "vitest"
 import { type AdvisorService } from "../internal"
+import { type ResolvedModel } from "../public"
 import { BudgetModel, emptyConsultation, serviceFor, TestStorage } from "./doubles"
 
 let advisor: AdvisorService
@@ -10,14 +11,18 @@ function prepare(): void {
   advisor = serviceFor(storage)
 }
 
-async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
-  const port = new BudgetModel({
+function highThinkingModel(contextWindow: number): ResolvedModel {
+  return {
     reference: "provider/model",
     contextWindow,
     maxOutputTokens: 32_000,
     reasoningTokens: 16_384,
     effectiveThinking: "high",
-  })
+  }
+}
+
+async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
+  const port = new BudgetModel(highThinkingModel(contextWindow))
   const result = await advisor.consult(emptyConsultation(new AbortController().signal), port)
   expect(result.kind).toBe("failure")
   expect(port.calls).toBe(1)
@@ -25,13 +30,7 @@ async function rejectInsufficientWindows(contextWindow: number): Promise<void> {
 }
 
 async function reserveFullOutput(): Promise<void> {
-  const port = new BudgetModel({
-    reference: "provider/model",
-    contextWindow: 128_000,
-    maxOutputTokens: 32_000,
-    reasoningTokens: 16_384,
-    effectiveThinking: "high",
-  })
+  const port = new BudgetModel(highThinkingModel(128_000))
   const result = await advisor.consult(
     {
       system: "",

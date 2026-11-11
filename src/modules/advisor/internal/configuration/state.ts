@@ -6,7 +6,7 @@ import {
   parseModelReference,
   THINKING_LEVELS,
 } from "#synapse/modules/advisor/public/contracts"
-import { CONFIG_SAVE_FAILED, INVALID_MODEL, INVALID_THINKING } from "./constants"
+import { CONFIG_SAVE_FAILED, INVALID_MODEL, INVALID_THINKING, SAVE_FAILURE_CAUSE } from "./constants"
 import { initialState } from "./initial-state"
 import { type ConfigChange } from "./types"
 
@@ -33,7 +33,7 @@ export class AdvisorConfiguration {
       return this.status()
     } catch (error) {
       if (error instanceof Error) {
-        return { kind: "failure", message: `${CONFIG_SAVE_FAILED} Causa: ${error.message}` }
+        return { kind: "failure", message: `${CONFIG_SAVE_FAILED}${SAVE_FAILURE_CAUSE}${error.message}` }
       }
       throw error
     }

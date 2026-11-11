@@ -8,7 +8,13 @@ import {
   type ThinkingLevel,
 } from "#synapse/modules"
 import { type AdvisorModelRegistry } from "../host-contracts"
-import { CAPABILITIES_CHANGED, INVALID_REFERENCE, PI_THINKING_BUDGETS } from "./constants"
+import {
+  CAPABILITIES_CHANGED,
+  INVALID_REFERENCE,
+  MISSING_CREDENTIALS,
+  MODEL_NOT_FOUND,
+  PI_THINKING_BUDGETS,
+} from "./constants"
 import { consultationContext, consultationOptions } from "./model-request"
 import { modelResponse } from "./model-response"
 import { hasSameCapabilities } from "./predicates"
@@ -28,10 +34,10 @@ export class AdvisorModel {
     }
     const model = this.registry.find(parsed.provider, parsed.id)
     if (!model) {
-      return { kind: "failure", message: `Modelo advisor não encontrado: ${reference}` }
+      return { kind: "failure", message: `${MODEL_NOT_FOUND}${reference}` }
     }
     if (!this.registry.hasConfiguredAuth(model)) {
-      return { kind: "failure", message: `Credenciais ausentes para ${reference}` }
+      return { kind: "failure", message: `${MISSING_CREDENTIALS}${reference}` }
     }
     return { kind: "found", model }
   }

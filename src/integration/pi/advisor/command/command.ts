@@ -2,7 +2,7 @@ import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
 import { type AdvisorContext } from "../host-contracts"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
-import { DISABLED_NOTICE, DISABLED_STATUS } from "./constants"
+import { DISABLED_NOTICE, DISABLED_STATUS, MODEL_NOTICE, THINKING_LABEL, THINKING_NOTICE } from "./constants"
 import { parseAdvisorCommand } from "./parser"
 import { type AdvisorCommandInput } from "./types"
 
@@ -28,7 +28,7 @@ export class AdvisorCommand {
     if (input.kind === "disable") {
       this.disable(context)
     } else if (input.kind === "thinking") {
-      this.report(context, this.advisor.configuration.setThinking(input.level), `Advisor thinking: ${input.level}`)
+      this.report(context, this.advisor.configuration.setThinking(input.level), `${THINKING_NOTICE}${input.level}`)
     } else {
       await this.select(input.query, config, context)
     }
@@ -47,12 +47,12 @@ export class AdvisorCommand {
     if (selection.kind === "disabled") {
       this.disable(context)
     } else if (selection.kind === "selected") {
-      this.report(context, this.advisor.configuration.selectModel(selection.model), `Advisor: ${selection.model}`)
+      this.report(context, this.advisor.configuration.selectModel(selection.model), `${MODEL_NOTICE}${selection.model}`)
     }
   }
 
   private showCurrent(config: Config, context: AdvisorContext): void {
-    context.ui.notify(`Advisor: ${this.modelLabel()}, thinking ${config.thinking}`, "info")
+    context.ui.notify(`${MODEL_NOTICE}${this.modelLabel()}${THINKING_LABEL}${config.thinking}`, "info")
   }
 
   private modelLabel(): string {

@@ -19,3 +19,7 @@ export const ERROR_COLOR: ThemeColor = "error"
 export const SUCCESS_COLOR: ThemeColor = "success"
 
 export const ADDITIONAL_COLOR: ThemeColor = "dim"
+
+export const HIDDEN_LINES_PREFIX = "... ("
+
+export const HIDDEN_LINES_SUFFIX = " linhas a mais)"
