@@ -9,6 +9,12 @@ export const INVALID_CASES: InvalidConfigCase[] = [
   { name: "JSON malformado", content: "{broken" },
 ]
 
+export const HOME_VARIABLE = "HOME"
+
+export const PROFILE_VARIABLE = "USERPROFILE"
+
+export const HOME_PREFIX = "synapse-config-"
+
 export const MANIFEST_URL = new URL("../../../package.json", import.meta.url)
 
 export const PACKAGE_ROOT_URL = new URL("../../..", import.meta.url)
