@@ -6,6 +6,7 @@ import {
   HOST_SAFETY_TOKENS,
   MAX_SYSTEM_CHARACTERS,
   MINIMUM_ANSWER_TOKENS,
+  PROMPT_FRAME_CHARACTERS,
   PROMPT_PREFIX,
   PROMPT_SUFFIX,
   TRANSCRIPT_PREFIX,
@@ -28,11 +29,10 @@ function availableBudget(model: ResolvedModel): PromptBudget {
   }
   const systemTokens = Math.ceil(ADVISOR_SYSTEM.length / ESTIMATED_CHARACTERS_PER_TOKEN)
   const available = (inputTokens - systemTokens) * ESTIMATED_CHARACTERS_PER_TOKEN
-  const fixedLength = assemblePrompt("", "").length
-  if (available <= fixedLength) {
+  if (available <= PROMPT_FRAME_CHARACTERS) {
     return { kind: "insufficient" }
   }
-  return { kind: "available", characters: available - fixedLength }
+  return { kind: "available", characters: available - PROMPT_FRAME_CHARACTERS }
 }
 
 function systemLimit(characters: number): number {

@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { advisorConfigPath } from "#synapse/composition"
+import { advisorConfigPath } from "#synapse/integration"
 import { CASES, type ConfigCase, DistributionEnvironment, runDistribution } from "../fixtures"
 
 let environment: DistributionEnvironment

@@ -1,5 +1,7 @@
 export * from "./advisor"
 export * from "./command"
+export * from "./config-path"
+export * from "./constants"
 export * from "./content-text"
 export * from "./host-contracts"
 export * from "./lifecycle"
