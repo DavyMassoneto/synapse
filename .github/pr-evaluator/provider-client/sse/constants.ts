@@ -18,12 +18,10 @@ export const StreamChunkSchema = Type.Object({
     Type.Array(
       Type.Object({
         delta: Type.Object({
-          content: Type.Optional(Type.Union([Type.String(), Type.Null()])),
           tool_calls: Type.Optional(
             Type.Array(
               Type.Object({
                 index: Type.Integer({ minimum: 0 }),
-                id: Type.Optional(Type.String()),
                 function: Type.Optional(
                   Type.Object({ name: Type.Optional(Type.String()), arguments: Type.Optional(Type.String()) }),
                 ),

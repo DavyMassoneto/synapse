@@ -6,8 +6,6 @@ export interface ToolCallFunction {
 }
 
 export interface ToolCall {
-  id: string
-  type: "function"
   function: ToolCallFunction
 }
 
@@ -53,6 +51,5 @@ export interface ChatBody {
 }
 
 export interface ModelReply {
-  content: string
   toolCalls: ToolCall[]
 }

@@ -22,16 +22,13 @@ function pendingCall(result: StreamResult, index: number): PendingToolCall {
   if (existing) {
     return existing
   }
-  const created = { id: "", name: "", arguments: "" }
+  const created = { name: "", arguments: "" }
   result.toolCalls.set(index, created)
   return created
 }
 
 function applyToolCall(result: StreamResult, delta: ToolCallDelta): void {
   const call = pendingCall(result, delta.index)
-  if (delta.id) {
-    call.id = delta.id
-  }
   if (delta.function?.name) {
     call.name = delta.function.name
   }
@@ -41,9 +38,6 @@ function applyToolCall(result: StreamResult, delta: ToolCallDelta): void {
 }
 
 function applyChoice(result: StreamResult, choice: StreamChoice): void {
-  if (choice.delta.content) {
-    result.content += choice.delta.content
-  }
   if (choice.delta.tool_calls) {
     for (const delta of choice.delta.tool_calls) {
       applyToolCall(result, delta)

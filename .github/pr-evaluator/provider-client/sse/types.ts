@@ -8,7 +8,6 @@ export type StreamChoice = NonNullable<StreamChunk["choices"]>[number]
 export type ToolCallDelta = NonNullable<StreamChoice["delta"]["tool_calls"]>[number]
 
 export interface PendingToolCall {
-  id: string
   name: string
   arguments: string
 }
@@ -16,7 +15,6 @@ export interface PendingToolCall {
 export type PendingToolCalls = Map<number, PendingToolCall>
 
 export interface StreamResult {
-  content: string
   finishReason?: string
   toolCalls: PendingToolCalls
 }

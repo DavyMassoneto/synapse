@@ -36,10 +36,8 @@ export const FUNCTION_TYPE = "function"
 
 export const USER_ROLE = "user"
 
-export const INCOMPLETE_TOOL_CALL = "O modelo pediu uma ferramenta sem identificador ou sem nome"
+export const INCOMPLETE_TOOL_CALL = "O modelo pediu uma ferramenta sem nome"
 
-export const UNEXPECTED_FINISH = "A resposta do modelo não terminou normalmente (término: "
-
-export const UNEXPECTED_FINISH_END = ")"
+export const UNEXPECTED_FINISH = "A resposta do modelo terminou de forma inesperada: "
 
 export const MISSING_FINISH = "A resposta do modelo não terminou normalmente (o fluxo acabou sem indicar o término)"
