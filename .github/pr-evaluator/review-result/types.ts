@@ -10,3 +10,8 @@ export interface ReviewResult {
   summary: string
   findings: Finding[]
 }
+
+export interface SubmissionIssue {
+  instancePath: string
+  message: string
+}

@@ -1,6 +1,6 @@
 import { spawnSync } from "node:child_process"
 import { type ModelConfiguration } from "#evaluator/configuration"
-import { parseReviewResult, type ReviewResult, SUBMIT_REVIEW } from "#evaluator/review-result"
+import { parseReviewResult, type ReviewResult } from "#evaluator/review-result"
 import {
   MAX_EXECUTION_MS,
   TIME_EXCEEDED,
@@ -18,7 +18,7 @@ export function runReviewAgent(model: ModelConfiguration, sha: string, diff: str
     encoding: WORKER_ENCODING,
     maxBuffer: WORKER_BUFFER_BYTES,
     timeout: MAX_EXECUTION_MS,
-    env: WORKER_ENVIRONMENT,
+    env: { ...WORKER_ENVIRONMENT },
   })
   process.stderr.write(result.stderr)
   if (result.error && "code" in result.error && result.error.code === TIMEOUT_ERROR_CODE) {
@@ -27,5 +27,5 @@ export function runReviewAgent(model: ModelConfiguration, sha: string, diff: str
   if (result.status !== 0 || result.error) {
     throw new Error(WORKER_FAILURE, { cause: result.error })
   }
-  return parseReviewResult({ toolCalls: [{ function: { name: SUBMIT_REVIEW, arguments: result.stdout } }] })
+  return parseReviewResult(result.stdout)
 }

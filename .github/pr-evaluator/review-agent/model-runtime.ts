@@ -21,7 +21,7 @@ export async function reviewModelRuntime(configuration: ModelConfiguration): Pro
   runtime.registerProvider(PROVIDER, {
     baseUrl: configuration.baseUrl,
     api: MODEL_API,
-    headers: CACHE_HEADERS,
+    headers: { ...CACHE_HEADERS },
     models: [
       {
         id: configuration.model,

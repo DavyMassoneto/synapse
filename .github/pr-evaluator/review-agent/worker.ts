@@ -1,5 +1,7 @@
 import { Value } from "typebox/value"
+import { InspectionFailure } from "#evaluator/repository-inspection"
 import { EMPTY_TEXT, FAILURE_EXIT_CODE, INPUT_ENCODING, WORKER_FAILURE, WorkerInputSchema } from "./constants"
+import { ReviewFailure } from "./review-failure"
 import { ReviewRun } from "./review-run"
 
 async function work(): Promise<void> {
@@ -15,7 +17,11 @@ async function work(): Promise<void> {
 
 try {
   await work()
-} catch {
-  console.error(WORKER_FAILURE)
+} catch (error) {
+  if (error instanceof ReviewFailure || error instanceof InspectionFailure) {
+    console.error(JSON.stringify(error.message))
+  } else {
+    console.error(WORKER_FAILURE)
+  }
   process.exitCode = FAILURE_EXIT_CODE
 }

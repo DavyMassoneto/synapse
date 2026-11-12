@@ -1,4 +1,6 @@
 export * from "./constants"
+export * from "./git"
 export * from "./inspect"
 export * from "./inspection-failure"
+export * from "./predicates"
 export * from "./types"

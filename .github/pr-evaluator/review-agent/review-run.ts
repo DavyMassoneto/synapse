@@ -1,78 +1,56 @@
 import { type AgentToolResult } from "@earendil-works/pi-agent-core"
+import { type AgentSessionEvent, createAgentSession } from "@earendil-works/pi-coding-agent"
+import { type PageRequest } from "#evaluator/output-page"
 import {
-  type AgentSessionEvent,
-  type CreateAgentSessionOptions,
-  createAgentSession,
-  SessionManager,
-  SettingsManager,
-} from "@earendil-works/pi-coding-agent"
-import {
-  DIFF_DESCRIPTION,
-  INSPECT_REPOSITORY,
-  INSPECTION_DESCRIPTION,
+  type InspectionContext,
   InspectionFailure,
   type InspectionRequest,
-  InspectionSchema,
-  inspectionPage,
+  inspectionRoot,
   inspectRepository,
-  type PageRequest,
-  PageSchema,
-  READ_DIFF,
   verifySnapshot,
 } from "#evaluator/repository-inspection"
+import { parseReviewResult, type ReviewResult } from "#evaluator/review-result"
 import {
-  parseReviewResult,
-  type ReviewResult,
-  ReviewSubmissionSchema,
-  SUBMIT_REVIEW,
-  SUBMIT_REVIEW_TOOL,
-} from "#evaluator/review-result"
-import {
-  ASSISTANT,
   FAILED,
   INSPECTION_REQUIRED,
   MAX_EXECUTION_MS,
   MAX_TURNS,
-  MESSAGE_END,
   NO_SUBMISSION,
   PENDING,
-  PROVIDER,
-  SEQUENTIAL,
-  SETTINGS,
+  READY,
   SUBMITTED,
   SUBMITTED_MESSAGE,
   TEXT,
-  THINKING_LEVEL,
   TIME_EXCEEDED,
-  TOOL_EXECUTION_START,
-  TOOL_LABEL,
-  TOOL_SEPARATOR,
   TURN_START,
   TURNS_EXCEEDED,
 } from "./constants"
 import { DiffCoverage } from "./diff-coverage"
-import { reviewModelRuntime } from "./model-runtime"
-import { ReviewResources } from "./resources"
+import { ReviewFailure } from "./review-failure"
+import { reviewSessionOptions } from "./session-options"
+import { reviewTools } from "./tools"
 import { type ReviewState, type ReviewSubmission, type SessionState, type WorkerInput } from "./types"
-import { logReviewUsage } from "./usage-log"
+import { logReviewEvent } from "./usage-log"
 
 export class ReviewRun {
   private state: ReviewState = { kind: PENDING }
   private turns = 0
   private inspected = false
   private readonly coverage: DiffCoverage
+  private readonly context: InspectionContext
   private readonly input: WorkerInput
   private session: SessionState = { kind: PENDING }
 
   constructor(input: WorkerInput) {
     this.input = input
+    this.context = { sha: input.sha, root: inspectionRoot() }
     this.coverage = new DiffCoverage(input.diff)
   }
 
   private async inspect(_id: string, request: InspectionRequest): Promise<AgentToolResult<string>> {
     this.ensurePending()
     try {
-      const text = inspectRepository(this.input, request)
+      const text = inspectRepository(this.context, request)
       this.inspected = true
       return { content: [{ type: TEXT, text }], details: text }
     } catch (error) {
@@ -85,108 +63,69 @@ export class ReviewRun {
 
   private async diff(_id: string, request: PageRequest): Promise<AgentToolResult<string>> {
     this.ensurePending()
-    const text = inspectionPage(this.input.diff, request)
-    this.coverage.record(request)
+    const text = this.coverage.page(request)
     return { content: [{ type: TEXT, text }], details: text }
   }
 
   private async submit(_id: string, submission: ReviewSubmission): Promise<AgentToolResult<string>> {
     this.ensurePending()
     if (!this.inspected) {
-      throw new Error(INSPECTION_REQUIRED)
+      throw new ReviewFailure(INSPECTION_REQUIRED)
     }
     this.coverage.ensureComplete()
-    const review = parseReviewResult({
-      toolCalls: [{ function: { name: SUBMIT_REVIEW, arguments: JSON.stringify(submission) } }],
-    })
+    const review = parseReviewResult(JSON.stringify(submission))
     this.state = { kind: SUBMITTED, review }
     return { content: [{ type: TEXT, text: SUBMITTED_MESSAGE }], details: SUBMITTED_MESSAGE, terminate: true }
   }
 
   private ensurePending(): void {
-    if (this.state.kind !== PENDING) {
-      throw new Error(SUBMITTED_MESSAGE)
+    if (this.state.kind === FAILED) {
+      throw new ReviewFailure(this.state.message)
+    }
+    if (this.state.kind === SUBMITTED) {
+      throw new ReviewFailure(SUBMITTED_MESSAGE)
     }
   }
 
   private observe(event: AgentSessionEvent): void {
     if (event.type === TURN_START) {
-      if (this.state.kind === SUBMITTED && this.session.kind === SUBMITTED) {
-        void this.session.value.abort()
-      }
+      this.startTurn()
+    }
+    logReviewEvent(event, this.turns)
+  }
+
+  private startTurn(): void {
+    if (this.state.kind === SUBMITTED) {
+      this.abortSession()
+    } else {
       this.turns += 1
       if (this.turns > MAX_TURNS) {
         this.state = { kind: FAILED, message: TURNS_EXCEEDED }
-        if (this.session.kind === SUBMITTED) {
-          void this.session.value.abort()
-        }
+        this.abortSession()
       }
     }
-    if (event.type === MESSAGE_END && event.message.role === ASSISTANT) {
-      logReviewUsage(this.turns, event.message.usage)
-    }
-    if (event.type === TOOL_EXECUTION_START) {
-      console.error(`${TOOL_LABEL}${JSON.stringify(event.toolName)}${TOOL_SEPARATOR}${JSON.stringify(event.args)}`)
+  }
+
+  private abortSession(): void {
+    if (this.session.kind === READY) {
+      void this.session.value.abort()
     }
   }
 
   private timeout(): void {
     this.state = { kind: FAILED, message: TIME_EXCEEDED }
-    if (this.session.kind === SUBMITTED) {
-      void this.session.value.abort()
-    }
-  }
-
-  private async options(): Promise<CreateAgentSessionOptions> {
-    const runtime = await reviewModelRuntime(this.input.model)
-    const model = runtime.getModel(PROVIDER, this.input.model.model)
-    if (!model) {
-      throw new Error(NO_SUBMISSION)
-    }
-    return {
-      cwd: process.cwd(),
-      model,
-      modelRuntime: runtime,
-      thinkingLevel: THINKING_LEVEL,
-      settingsManager: SettingsManager.inMemory(SETTINGS),
-      sessionManager: SessionManager.inMemory(),
-      resourceLoader: new ReviewResources(),
-      tools: [INSPECT_REPOSITORY, READ_DIFF, SUBMIT_REVIEW],
-      customTools: this.tools(),
-    }
-  }
-
-  private tools(): NonNullable<CreateAgentSessionOptions["customTools"]> {
-    return [
-      {
-        name: INSPECT_REPOSITORY,
-        label: INSPECT_REPOSITORY,
-        description: INSPECTION_DESCRIPTION,
-        parameters: InspectionSchema,
-        execute: this.inspect.bind(this),
-      },
-      {
-        name: READ_DIFF,
-        label: READ_DIFF,
-        description: DIFF_DESCRIPTION,
-        parameters: PageSchema,
-        execute: this.diff.bind(this),
-      },
-      {
-        name: SUBMIT_REVIEW,
-        label: SUBMIT_REVIEW,
-        description: SUBMIT_REVIEW_TOOL.function.description,
-        parameters: ReviewSubmissionSchema,
-        executionMode: SEQUENTIAL,
-        execute: this.submit.bind(this),
-      },
-    ]
+    this.abortSession()
   }
 
   async run(): Promise<ReviewResult> {
-    verifySnapshot(this.input.sha)
-    const { session } = await createAgentSession(await this.options())
-    this.session = { kind: SUBMITTED, value: session }
+    verifySnapshot(this.context)
+    const { session } = await createAgentSession(
+      await reviewSessionOptions(
+        this.input.model,
+        reviewTools({ inspect: this.inspect.bind(this), diff: this.diff.bind(this), submit: this.submit.bind(this) }),
+      ),
+    )
+    this.session = { kind: READY, value: session }
     const unsubscribe = session.subscribe(this.observe.bind(this))
     const timer = setTimeout(this.timeout.bind(this), MAX_EXECUTION_MS)
     try {
@@ -195,9 +134,9 @@ export class ReviewRun {
         return this.state.review
       }
       if (this.state.kind === FAILED) {
-        throw new Error(this.state.message)
+        throw new ReviewFailure(this.state.message)
       }
-      throw new Error(NO_SUBMISSION)
+      throw new ReviewFailure(NO_SUBMISSION)
     } finally {
       clearTimeout(timer)
       unsubscribe()

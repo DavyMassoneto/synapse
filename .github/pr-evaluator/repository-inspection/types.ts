@@ -1,9 +1,20 @@
-import { type Static } from "typebox"
-import { type InspectionSchema, type PageSchema } from "./constants"
-
-export type InspectionRequest = Static<typeof InspectionSchema>
-export type PageRequest = Static<typeof PageSchema>
+export type InspectionAction = "files" | "read" | "search" | "history"
+export interface InspectionRequest {
+  action: InspectionAction
+  path: string
+  text: string
+  startLine: number
+  endLine: number
+}
 export interface InspectionContext {
   sha: string
-  diff: string
+  root: string
+}
+export interface GitEnvironment {
+  PATH: NodeJS.ProcessEnv["PATH"]
+  LANG: string
+  GIT_CONFIG_NOSYSTEM: string
+  GIT_CONFIG_GLOBAL: string
+  GIT_ATTR_NOSYSTEM: string
+  GIT_TERMINAL_PROMPT: string
 }
