@@ -1,0 +1,44 @@
+import {
+  PI_PROCESS_BUFFER_FAILURE,
+  PI_PROCESS_DIAGNOSTIC_OVERLAP,
+  PI_PROCESS_LOAD_FAILURE,
+  PI_PROCESS_LOADING_ERROR,
+  PI_PROCESS_MAX_BUFFER_BYTES,
+} from "./constants"
+import { type PiProcessDiagnostic } from "./types"
+
+export class PiProcessDiagnostics {
+  private bufferedText = ""
+  private bytes = 0
+  private loadingFailure = false
+
+  get text(): string {
+    return this.bufferedText
+  }
+
+  private addBytes(chunk: string): number {
+    this.bytes += Buffer.byteLength(chunk)
+    return this.bytes
+  }
+
+  receive(chunk: string): PiProcessDiagnostic {
+    if (this.addBytes(chunk) > PI_PROCESS_MAX_BUFFER_BYTES) {
+      return { kind: "failure", error: new Error(PI_PROCESS_BUFFER_FAILURE) }
+    }
+    return this.collect(chunk)
+  }
+
+  private collect(chunk: string): PiProcessDiagnostic {
+    const boundary = this.bufferedText.slice(-PI_PROCESS_DIAGNOSTIC_OVERLAP)
+    this.bufferedText += chunk
+    return this.detect(boundary + chunk)
+  }
+
+  private detect(text: string): PiProcessDiagnostic {
+    if (!this.loadingFailure && PI_PROCESS_LOADING_ERROR.test(text)) {
+      this.loadingFailure = true
+      return { kind: "failure", error: new Error(`${PI_PROCESS_LOAD_FAILURE}${this.bufferedText}`) }
+    }
+    return { kind: "accepted" }
+  }
+}
