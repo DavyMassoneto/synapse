@@ -67,6 +67,10 @@ export class PiProcessRecords {
     throw new Error(PI_PROCESS_UI_RESPONSE_MISSING)
   }
 
+  records(): PiProcessRecord[] {
+    return [...this.responses]
+  }
+
   private search(match: PiProcessMatch, offset: number): PiProcessSearch {
     while (offset < this.responses.length) {
       const response = this.responses[offset]

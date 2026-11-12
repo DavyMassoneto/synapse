@@ -9,17 +9,15 @@ import {
   DISTRIBUTION_ADVISOR_STATUS,
   DISTRIBUTION_COMMANDS_COMMAND,
   DISTRIBUTION_COMPLETION_REPLY,
-  DISTRIBUTION_DATA_FIELD,
   DISTRIBUTION_ERROR_NOTICE,
   DISTRIBUTION_EXTENSION_SOURCE,
   DISTRIBUTION_INVALID_CONFIGURATION_PATTERN,
   DISTRIBUTION_MISSING_EXTENSION_PATTERN,
-  DISTRIBUTION_SUCCESS_FIELD,
   INVALID_CASES,
   type InvalidConfigCase,
   PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
-  PI_PROCESS_COMMANDS_RESPONSE_MISSING,
+  PI_PROCESS_GET_COMMANDS_COMMAND,
   PI_PROCESS_LOADING_ERROR,
   PI_PROCESS_MISSING_ENTRY,
   PI_PROCESS_NOTICE_METHOD,
@@ -40,10 +38,7 @@ import {
 
 async function registersPackagedAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
-  const response = await piProcess.command({ type: DISTRIBUTION_COMMANDS_COMMAND })
-  if (!(DISTRIBUTION_SUCCESS_FIELD in response) || !(DISTRIBUTION_DATA_FIELD in response)) {
-    throw new Error(PI_PROCESS_COMMANDS_RESPONSE_MISSING)
-  }
+  const response = await piProcess.query(PI_PROCESS_GET_COMMANDS_COMMAND)
   expect(response.success).toBe(true)
   expect(response.data.commands).toContainEqual(
     expect.objectContaining({ name: DISTRIBUTION_ADVISOR_NAME, source: DISTRIBUTION_EXTENSION_SOURCE }),

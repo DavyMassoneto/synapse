@@ -20,19 +20,30 @@ export const PI_PROCESS_NOTICE_SCHEMA = Type.Object({
   message: Type.String(),
 })
 
+export const PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA = Type.Object({
+  type: Type.Literal("response"),
+  command: Type.Literal("get_last_assistant_text"),
+  id: Type.Optional(Type.String()),
+  success: Type.Literal(true),
+  data: Type.Object({ text: Type.Union([Type.String(), Type.Null()]) }),
+})
+
+export const PI_PROCESS_COMMANDS_SCHEMA = Type.Object({
+  type: Type.Literal("response"),
+  command: Type.Literal("get_commands"),
+  id: Type.Optional(Type.String()),
+  success: Type.Literal(true),
+  data: Type.Object({ commands: Type.Array(Type.Object({ name: Type.String(), source: Type.String() })) }),
+})
+
 export const PI_PROCESS_RECORD_SCHEMA = Type.Union([
+  PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA,
   PI_PROCESS_STATUS_SCHEMA,
   PI_PROCESS_NOTICE_SCHEMA,
+  PI_PROCESS_COMMANDS_SCHEMA,
   Type.Object({
     type: Type.Literal("response"),
-    command: Type.Literal("get_commands"),
-    id: Type.Optional(Type.String()),
-    success: Type.Literal(true),
-    data: Type.Object({ commands: Type.Array(Type.Object({ name: Type.String(), source: Type.String() })) }),
-  }),
-  Type.Object({
-    type: Type.Literal("response"),
-    command: Type.Literal("get_commands"),
+    command: Type.Union([Type.Literal("get_commands"), Type.Literal("get_last_assistant_text")]),
     id: Type.Optional(Type.String()),
     success: Type.Literal(false),
     error: Type.String({ minLength: 1 }),

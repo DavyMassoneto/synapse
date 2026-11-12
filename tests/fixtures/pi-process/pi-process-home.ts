@@ -7,6 +7,8 @@ import {
   PI_PROCESS_PI_DIRECTORY,
   PI_PROCESS_PREFIX,
   PI_PROCESS_REMOVE_RETRIES,
+  PI_PROCESS_RETRY_SETTINGS,
+  PI_PROCESS_SETTINGS_FILE,
 } from "./constants"
 
 export class PiProcessHome {
@@ -16,6 +18,7 @@ export class PiProcessHome {
 
   constructor() {
     mkdirSync(this.agentDirectory, { recursive: true })
+    writeFileSync(join(this.agentDirectory, PI_PROCESS_SETTINGS_FILE), JSON.stringify(PI_PROCESS_RETRY_SETTINGS))
     this.script([])
   }
 

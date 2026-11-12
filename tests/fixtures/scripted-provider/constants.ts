@@ -38,6 +38,12 @@ export const SCRIPTED_PROVIDER_ENV_FAILURE = "Variáveis do roteiro de teste aus
 
 export const SCRIPTED_PROVIDER_SCRIPT_VARIABLE = "SYNAPSE_TEST_SCRIPT"
 
+export const SCRIPTED_PROVIDER_ERROR_KIND = "error"
+
+export const SCRIPTED_PROVIDER_STREAM_ERROR_EVENT = "error"
+
+export const SCRIPTED_PROVIDER_ERROR_REASON = "error"
+
 export const SCRIPTED_PROVIDER_TEXT_KIND = "text"
 
 export const SCRIPTED_PROVIDER_TEXT_CONTENT = "text"

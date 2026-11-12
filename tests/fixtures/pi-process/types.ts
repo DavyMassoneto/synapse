@@ -1,10 +1,20 @@
 import { type Static } from "typebox"
 import { type ScriptedProviderScript } from "../scripted-provider"
-import { type PI_PROCESS_NOTICE_SCHEMA, type PI_PROCESS_RECORD_SCHEMA, type PI_PROCESS_STATUS_SCHEMA } from "./schemas"
+import {
+  type PI_PROCESS_COMMANDS_SCHEMA,
+  type PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA,
+  type PI_PROCESS_NOTICE_SCHEMA,
+  type PI_PROCESS_RECORD_SCHEMA,
+  type PI_PROCESS_STATUS_SCHEMA,
+} from "./schemas"
 
 export type PiProcessStatus = Static<typeof PI_PROCESS_STATUS_SCHEMA>
 
 export type PiProcessNotice = Static<typeof PI_PROCESS_NOTICE_SCHEMA>
+
+export type PiProcessCommands = Static<typeof PI_PROCESS_COMMANDS_SCHEMA>
+
+export type PiProcessLastAssistantText = Static<typeof PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA>
 
 export type PiProcessRecord = Static<typeof PI_PROCESS_RECORD_SCHEMA>
 
@@ -45,6 +55,7 @@ export interface PiProcessScenarioHome {
 }
 
 export interface PiProcessScenarioRecords {
+  records(): PiProcessRecord[]
   waitForUi(method: "setStatus", timeoutMs: number): Promise<PiProcessStatus>
   waitForUi(method: "notify", timeoutMs: number): Promise<PiProcessNotice>
   waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessRecord>
@@ -56,6 +67,8 @@ export interface PiProcessScenarioHandle {
   readonly stderr: string
   start(entrypoint: string): void
   command(command: PiProcessCommand): Promise<PiProcessRecord>
+  query(command: "get_commands"): Promise<PiProcessCommands>
+  query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
 }
 
 export type PiProcessScenario = (piProcess: PiProcessScenarioHandle) => Promise<void>
@@ -78,4 +91,13 @@ export type PiProcessUiEvent = PiProcessStatus | PiProcessNotice
 export interface PiProcessUiMatches {
   setStatus: PiProcessMatch
   notify: PiProcessMatch
+}
+
+export type PiProcessQuery = "get_commands" | "get_last_assistant_text"
+
+export type PiProcessQueryResponse = PiProcessCommands | PiProcessLastAssistantText
+
+export interface PiProcessQueryErrors {
+  get_commands: string
+  get_last_assistant_text: string
 }

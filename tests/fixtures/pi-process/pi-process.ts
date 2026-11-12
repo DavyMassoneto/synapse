@@ -14,6 +14,7 @@ import {
   PI_PROCESS_KILL_SIGNAL,
   PI_PROCESS_NEWLINE,
   PI_PROCESS_NOT_STARTED,
+  PI_PROCESS_QUERY_ERRORS,
   PI_PROCESS_RESPONSE_TYPE,
   PI_PROCESS_SHUTDOWN_TIMEOUT,
   PI_PROCESS_SHUTDOWN_TIMEOUT_MS,
@@ -27,7 +28,11 @@ import {
   type PiProcessClosePromise,
   type PiProcessCloseResolver,
   type PiProcessCommand,
+  type PiProcessCommands,
   type PiProcessExitCode,
+  type PiProcessLastAssistantText,
+  type PiProcessQuery,
+  type PiProcessQueryResponse,
   type PiProcessRecord,
 } from "./types"
 
@@ -80,6 +85,16 @@ export class PiProcess {
       await once(child.stdin, PI_PROCESS_DRAIN_EVENT, { signal: AbortSignal.timeout(PI_PROCESS_COMMAND_TIMEOUT_MS) })
     }
     return response
+  }
+
+  query(command: "get_commands"): Promise<PiProcessCommands>
+  query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
+  async query(command: PiProcessQuery): Promise<PiProcessQueryResponse> {
+    const record = await this.command({ type: command })
+    if (record.type === PI_PROCESS_RESPONSE_TYPE && record.command === command && record.success) {
+      return record
+    }
+    throw new Error(PI_PROCESS_QUERY_ERRORS[command])
   }
 
   async dispose(): Promise<void> {

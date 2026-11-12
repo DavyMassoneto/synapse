@@ -1,4 +1,5 @@
-import { type PiProcessMatch, type PiProcessUiMatches } from "./types"
+import { type PiProcessSettings } from "../pi-process-settings"
+import { type PiProcessMatch, type PiProcessQueryErrors, type PiProcessUiMatches } from "./types"
 
 export const PI_PROCESS_TIMEOUT_MS = 60_000
 
@@ -126,4 +127,23 @@ export const PI_PROCESS_UI_RESPONSE_MISSING = "Registro RPC recebido não corres
 export const PI_PROCESS_UI_MATCHES: PiProcessUiMatches = {
   setStatus: PI_PROCESS_STATUS_EVENT,
   notify: PI_PROCESS_NOTICE_EVENT,
+}
+
+export const PI_PROCESS_SETTINGS_FILE = "settings.json"
+
+export const PI_PROCESS_RETRY_SETTINGS: PiProcessSettings = {
+  retry: { enabled: true, maxRetries: 1, baseDelayMs: 10, maxAgentDelayMs: 10 },
+  enableInstallTelemetry: false,
+  enableAnalytics: false,
+}
+
+export const PI_PROCESS_LAST_ASSISTANT_TEXT_COMMAND = "get_last_assistant_text"
+
+export const PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING = "Registro RPC recebido não corresponde ao texto final do modelo."
+
+export const PI_PROCESS_GET_COMMANDS_COMMAND = "get_commands"
+
+export const PI_PROCESS_QUERY_ERRORS: PiProcessQueryErrors = {
+  get_commands: PI_PROCESS_COMMANDS_RESPONSE_MISSING,
+  get_last_assistant_text: PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING,
 }

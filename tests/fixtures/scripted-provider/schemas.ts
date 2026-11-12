@@ -1,6 +1,7 @@
 import { Type } from "typebox"
 
 const SCRIPTED_PROVIDER_STEP_SCHEMA = Type.Union([
+  Type.Object({ kind: Type.Literal("error"), text: Type.String() }),
   Type.Object({ kind: Type.Literal("text"), text: Type.String() }),
   Type.Object({ kind: Type.Literal("toolCall"), name: Type.String(), argumentsJson: Type.String() }),
 ])

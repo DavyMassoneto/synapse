@@ -10,8 +10,11 @@ import { TEST_USAGE } from "../context"
 import {
   SCRIPTED_PROVIDER_ASSISTANT_ROLE,
   SCRIPTED_PROVIDER_DONE_EVENT,
+  SCRIPTED_PROVIDER_ERROR_KIND,
+  SCRIPTED_PROVIDER_ERROR_REASON,
   SCRIPTED_PROVIDER_PENDING_REASON,
   SCRIPTED_PROVIDER_STOP_REASON,
+  SCRIPTED_PROVIDER_STREAM_ERROR_EVENT,
   SCRIPTED_PROVIDER_TEXT_CONTENT,
   SCRIPTED_PROVIDER_TEXT_DELTA_EVENT,
   SCRIPTED_PROVIDER_TEXT_END_EVENT,
@@ -36,6 +39,12 @@ export function assistantMessage(model: Model<Api>): AssistantMessage {
     stopReason: SCRIPTED_PROVIDER_PENDING_REASON,
     usage: TEST_USAGE,
   }
+}
+
+export function emitError(stream: AssistantMessageEventStream, message: AssistantMessage, text: string): void {
+  message.stopReason = SCRIPTED_PROVIDER_ERROR_REASON
+  message.errorMessage = text
+  stream.push({ type: SCRIPTED_PROVIDER_STREAM_ERROR_EVENT, reason: SCRIPTED_PROVIDER_ERROR_REASON, error: message })
 }
 
 export function emitText(stream: AssistantMessageEventStream, message: AssistantMessage, text: string): void {
@@ -75,7 +84,9 @@ export function emitStep(
   step: ScriptedProviderStep,
   id: string,
 ): void {
-  if (step.kind === SCRIPTED_PROVIDER_TEXT_KIND) {
+  if (step.kind === SCRIPTED_PROVIDER_ERROR_KIND) {
+    emitError(stream, message, step.text)
+  } else if (step.kind === SCRIPTED_PROVIDER_TEXT_KIND) {
     emitText(stream, message, step.text)
   } else {
     emitToolCall(stream, message, step.name, step.argumentsJson, id)
