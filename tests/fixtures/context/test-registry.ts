@@ -1,6 +1,6 @@
 import { type Api, type Context, type Model, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
 import { assistantStream } from "./assistant-stream"
-import { DEFAULT_WINDOW } from "./constants"
+import { ADVISOR_ANSWER, DEFAULT_WINDOW } from "./constants"
 import { fixtureModel } from "./fixture-model"
 import { type ContextRegistry, type TestStopReason } from "./types"
 
@@ -40,6 +40,6 @@ export class TestRegistry implements ContextRegistry {
     if (options) {
       this.options = options
     }
-    return assistantStream(model.id, "conselho", this.stopReason)
+    return assistantStream(model.id, ADVISOR_ANSWER, this.stopReason)
   }
 }

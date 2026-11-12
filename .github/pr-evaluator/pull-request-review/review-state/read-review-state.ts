@@ -1,15 +1,14 @@
 import { type GithubConfiguration } from "#evaluator/configuration"
 import { getJson } from "#evaluator/github-rest-client"
-import { pullPath } from "../pull-lookup"
 import { MAX_PAGES, PER_PAGE } from "./constants"
-import { isEvaluatorReview, isLastPage } from "./predicates"
+import { isEvaluatorReview } from "./predicates"
 import { ReviewListSchema } from "./schemas"
 import { type ListedReview, type ReviewState } from "./types"
 
 function fetchReviewPage(configuration: GithubConfiguration, page: number): Promise<ListedReview[]> {
   return getJson(
     configuration,
-    `${pullPath(configuration)}/reviews?per_page=${PER_PAGE}&page=${page}`,
+    `/repos/${configuration.repository}/pulls/${configuration.pullNumber}/reviews?per_page=${PER_PAGE}&page=${page}`,
     ReviewListSchema,
   )
 }
@@ -20,7 +19,7 @@ export async function readReviewState(configuration: GithubConfiguration, marker
     if (reviews.some((review) => isEvaluatorReview(review, configuration.headSha, marker))) {
       return { kind: "reviewed" }
     }
-    if (isLastPage(reviews)) {
+    if (reviews.length < PER_PAGE) {
       return { kind: "unreviewed" }
     }
   }
