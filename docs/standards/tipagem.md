@@ -37,6 +37,7 @@
 ## 5. Onde ficam os tipos
 
 - `interface` e `type` ficam no `types.ts` do módulo, separados das funções.
+- O tipo derivado de um esquema (`Static<typeof ESQUEMA>`) importa o esquema de `schemas.ts`, conforme [AGENTS.md](../../AGENTS.md). `types.ts` não importa nada de `constants.ts`, nem diretamente nem por meio de outro arquivo; `constants.ts` importa de `types.ts` a interface que anota as suas constantes, sem formar ciclo.
 
 ## 6. Supressões
 
