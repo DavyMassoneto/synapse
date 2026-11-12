@@ -1,27 +1,27 @@
 import { setTimeout as delay } from "node:timers/promises"
 import { type GithubConfiguration } from "#evaluator/configuration"
 import { GithubTransportFailure } from "#evaluator/github-rest-client"
-import { currentHeadSha } from "#evaluator/pull-request-review"
-import { decideReviewState } from "../decision"
 import {
   PUBLICATION_RECONCILED,
   PUBLICATION_UNCERTAIN,
+  RECONCILED_PUBLICATION,
   RECONCILIATION_ATTEMPTS,
   RECONCILIATION_DELAY_MS,
   RECONCILIATION_FAILURE,
   RECONCILIATION_HEAD,
+  SUPERSEDED_PUBLICATION,
 } from "./constants"
+import { observePublication } from "./observe-publication"
 
 export async function reconcilePublication(github: GithubConfiguration): Promise<string> {
   for (let attempt = 1; attempt <= RECONCILIATION_ATTEMPTS; attempt += 1) {
     try {
-      const currentSha = await currentHeadSha(github)
-      const decision = await decideReviewState(github)
-      if (decision.kind === "skip") {
+      const observation = await observePublication(github)
+      if (observation.kind === RECONCILED_PUBLICATION) {
         return PUBLICATION_RECONCILED
       }
-      if (currentSha !== github.headSha) {
-        throw new Error(`${PUBLICATION_UNCERTAIN}${RECONCILIATION_HEAD}${JSON.stringify(currentSha)}`)
+      if (observation.kind === SUPERSEDED_PUBLICATION) {
+        throw new Error(`${PUBLICATION_UNCERTAIN}${RECONCILIATION_HEAD}${JSON.stringify(observation.currentSha)}`)
       }
     } catch (error) {
       if (error instanceof GithubTransportFailure) {

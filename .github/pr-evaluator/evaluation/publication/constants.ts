@@ -1,5 +1,8 @@
 export const MESSAGE_SUPERSEDED = "A PR recebeu um commit novo durante a avaliação; esta avaliação não será publicada."
 
+export const RECONCILED_PUBLICATION = "reconciled"
+export const ABSENT_PUBLICATION = "absent"
+export const SUPERSEDED_PUBLICATION = "superseded"
 export const RECONCILIATION_ATTEMPTS = 3
 export const RECONCILIATION_DELAY_MS = 1000
 export const PUBLICATION_UNCERTAIN =
