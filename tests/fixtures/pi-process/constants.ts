@@ -110,3 +110,17 @@ export const PI_PROCESS_ALREADY_STARTED = "Processo pi já iniciado; não é pos
 export const PI_PROCESS_SHUTDOWN_TIMEOUT = "O pi não encerrou dentro do prazo."
 
 export const PI_PROCESS_COMMANDS_RESPONSE_MISSING = "Resposta de comandos ausente"
+
+export const PI_PROCESS_DIAGNOSTIC_FAILURE = "failure"
+
+export const PI_PROCESS_DIAGNOSTIC_ACCEPTED = "accepted"
+
+export const PI_PROCESS_STATUS_RESPONSE_MISSING = "Registro RPC recebido não apresenta o estado da extensão."
+
+export const PI_PROCESS_NOTICE_RESPONSE_MISSING = "Registro RPC recebido não apresenta o aviso da extensão."
+
+export const PI_PROCESS_UI_REQUEST_TYPE = "extension_ui_request"
+
+export const PI_PROCESS_STATUS_METHOD = "setStatus"
+
+export const PI_PROCESS_NOTICE_METHOD = "notify"

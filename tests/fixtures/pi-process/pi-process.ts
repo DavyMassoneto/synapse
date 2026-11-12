@@ -6,6 +6,7 @@ import {
   PI_PROCESS_CLOSE_EVENT,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
   PI_PROCESS_DATA_EVENT,
+  PI_PROCESS_DIAGNOSTIC_FAILURE,
   PI_PROCESS_DRAIN_EVENT,
   PI_PROCESS_ENCODING,
   PI_PROCESS_ERROR_EVENT,
@@ -41,9 +42,9 @@ export class PiProcess {
 
   private readonly diagnostics = new PiProcessDiagnostics()
 
-  private closePromise?: PiProcessClosePromise
-
   private resolveClose?: PiProcessCloseResolver
+
+  private readonly closePromise = new Promise<void>(this.observeClose.bind(this))
 
   private sequence = 0
 
@@ -61,7 +62,6 @@ export class PiProcess {
       env: piProcessEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory),
       stdio: PI_PROCESS_STDIO,
     })
-    this.closePromise = new Promise<void>(this.observeClose.bind(this))
     this.child.stdout.setEncoding(PI_PROCESS_ENCODING)
     this.child.stderr.setEncoding(PI_PROCESS_ENCODING)
     this.child.stdout.on(PI_PROCESS_DATA_EVENT, this.received.receive.bind(this.received))
@@ -94,9 +94,6 @@ export class PiProcess {
     const child = this.child
     if (child && this.running) {
       const closed = this.closePromise
-      if (!closed) {
-        throw new Error(PI_PROCESS_NOT_STARTED)
-      }
       child.stdin.end()
       try {
         await this.waitForClose(closed)
@@ -136,7 +133,7 @@ export class PiProcess {
 
   private diagnostic(chunk: string): void {
     const result = this.diagnostics.receive(chunk)
-    if (result.kind === "failure") {
+    if (result.kind === PI_PROCESS_DIAGNOSTIC_FAILURE) {
       this.received.fail(result.error)
     }
   }

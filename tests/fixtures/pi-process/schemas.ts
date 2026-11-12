@@ -4,7 +4,25 @@ export const PI_PROCESS_MANIFEST_SCHEMA = Type.Object({ pi: Type.Object({ extens
 
 export const PI_PROCESS_SDK_SCHEMA = Type.Object({ bin: Type.Object({ pi: Type.String() }) })
 
+export const PI_PROCESS_STATUS_SCHEMA = Type.Object({
+  type: Type.Literal("extension_ui_request"),
+  method: Type.Literal("setStatus"),
+  id: Type.String(),
+  statusKey: Type.String(),
+  statusText: Type.Optional(Type.String()),
+})
+
+export const PI_PROCESS_NOTICE_SCHEMA = Type.Object({
+  type: Type.Literal("extension_ui_request"),
+  method: Type.Literal("notify"),
+  id: Type.String(),
+  notifyType: Type.String(),
+  message: Type.String(),
+})
+
 export const PI_PROCESS_RECORD_SCHEMA = Type.Union([
+  PI_PROCESS_STATUS_SCHEMA,
+  PI_PROCESS_NOTICE_SCHEMA,
   Type.Object({
     type: Type.Literal("response"),
     command: Type.Literal("get_commands"),
@@ -27,7 +45,6 @@ export const PI_PROCESS_RECORD_SCHEMA = Type.Union([
   }),
   Type.Object({
     type: Type.Union([
-      Type.Literal("extension_ui_request"),
       Type.Literal("agent_start"),
       Type.Literal("agent_end"),
       Type.Literal("agent_settled"),

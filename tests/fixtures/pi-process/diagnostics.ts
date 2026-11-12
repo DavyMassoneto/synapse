@@ -1,5 +1,7 @@
 import {
   PI_PROCESS_BUFFER_FAILURE,
+  PI_PROCESS_DIAGNOSTIC_ACCEPTED,
+  PI_PROCESS_DIAGNOSTIC_FAILURE,
   PI_PROCESS_DIAGNOSTIC_OVERLAP,
   PI_PROCESS_LOAD_FAILURE,
   PI_PROCESS_LOADING_ERROR,
@@ -23,7 +25,7 @@ export class PiProcessDiagnostics {
 
   receive(chunk: string): PiProcessDiagnostic {
     if (this.addBytes(chunk) > PI_PROCESS_MAX_BUFFER_BYTES) {
-      return { kind: "failure", error: new Error(PI_PROCESS_BUFFER_FAILURE) }
+      return { kind: PI_PROCESS_DIAGNOSTIC_FAILURE, error: new Error(PI_PROCESS_BUFFER_FAILURE) }
     }
     return this.collect(chunk)
   }
@@ -37,8 +39,8 @@ export class PiProcessDiagnostics {
   private detect(text: string): PiProcessDiagnostic {
     if (!this.loadingFailure && PI_PROCESS_LOADING_ERROR.test(text)) {
       this.loadingFailure = true
-      return { kind: "failure", error: new Error(`${PI_PROCESS_LOAD_FAILURE}${this.bufferedText}`) }
+      return { kind: PI_PROCESS_DIAGNOSTIC_FAILURE, error: new Error(`${PI_PROCESS_LOAD_FAILURE}${this.bufferedText}`) }
     }
-    return { kind: "accepted" }
+    return { kind: PI_PROCESS_DIAGNOSTIC_ACCEPTED }
   }
 }

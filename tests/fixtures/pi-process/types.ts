@@ -1,6 +1,10 @@
 import { type Static } from "typebox"
 import { type PiProcessScript } from "../scripted-provider"
-import { type PI_PROCESS_RECORD_SCHEMA } from "./schemas"
+import { type PI_PROCESS_NOTICE_SCHEMA, type PI_PROCESS_RECORD_SCHEMA, type PI_PROCESS_STATUS_SCHEMA } from "./schemas"
+
+export type PiProcessStatus = Static<typeof PI_PROCESS_STATUS_SCHEMA>
+
+export type PiProcessNotice = Static<typeof PI_PROCESS_NOTICE_SCHEMA>
 
 export type PiProcessRecord = Static<typeof PI_PROCESS_RECORD_SCHEMA>
 
@@ -41,6 +45,8 @@ export interface PiProcessScenarioHome {
 }
 
 export interface PiProcessScenarioRecords {
+  waitForStatus(timeoutMs: number): Promise<PiProcessStatus>
+  waitForNotice(timeoutMs: number): Promise<PiProcessNotice>
   waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessRecord>
 }
 

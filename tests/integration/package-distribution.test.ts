@@ -10,8 +10,6 @@ import {
   PI_PROCESS_LOADING_ERROR,
   PI_PROCESS_MISSING_ENTRY,
   PI_PROCESS_MODEL_REFERENCE,
-  PI_PROCESS_NOTICE_EVENT,
-  PI_PROCESS_STATUS_EVENT,
   PI_PROCESS_TIMEOUT_MS,
   type PiProcessScenarioHandle,
   packageAdvisorPath,
@@ -37,16 +35,16 @@ async function registersPackagedAdvisor(piProcess: PiProcessScenarioHandle): Pro
 
 async function disablesMissingConfiguration(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
-  const status = await piProcess.received.waitFor(PI_PROCESS_STATUS_EVENT, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect("statusText" in status ? status.statusText : undefined).toBeUndefined()
+  const status = await piProcess.received.waitForStatus(PI_PROCESS_COMMAND_TIMEOUT_MS)
+  expect(status.statusText).toBeUndefined()
   expect(existsSync(packageAdvisorPath(piProcess.homeDirectory.agentDirectory))).toBe(false)
 }
 
 async function readsValidConfiguration(piProcess: PiProcessScenarioHandle): Promise<void> {
   writePackageAdvisorConfig(piProcess, VALID_CONFIG)
   piProcess.start(resolvePiProcessEntrypoint())
-  const status = await piProcess.received.waitFor(PI_PROCESS_STATUS_EVENT, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect("statusText" in status ? status.statusText : undefined).toBe(`advisor: ${PI_PROCESS_MODEL_REFERENCE}`)
+  const status = await piProcess.received.waitForStatus(PI_PROCESS_COMMAND_TIMEOUT_MS)
+  expect(status.statusText).toBe(`advisor: ${PI_PROCESS_MODEL_REFERENCE}`)
   expect(readPackageAdvisorConfig(piProcess)).toBe(VALID_CONFIG)
 }
 
@@ -56,9 +54,9 @@ async function rejectsInvalidConfiguration(
 ): Promise<void> {
   writePackageAdvisorConfig(piProcess, input.content)
   piProcess.start(resolvePiProcessEntrypoint())
-  const notice = await piProcess.received.waitFor(PI_PROCESS_NOTICE_EVENT, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect("notifyType" in notice ? notice.notifyType : undefined).toBe("error")
-  expect("message" in notice ? notice.message : undefined).toMatch(/inválida/)
+  const notice = await piProcess.received.waitForNotice(PI_PROCESS_COMMAND_TIMEOUT_MS)
+  expect(notice.notifyType).toBe("error")
+  expect(notice.message).toMatch(/inválida/)
   expect(readPackageAdvisorConfig(piProcess)).toBe(input.content)
 }
 
