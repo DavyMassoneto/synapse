@@ -7,7 +7,7 @@ export const PUBLICATION_UNCERTAIN =
 export const PUBLICATION_RECONCILED =
   "A review deste avaliador para o commit foi encontrada após a falha de transporte; nenhum POST foi repetido."
 export const RECONCILIATION_FAILURE = "A consulta de reconciliação falhou: "
-export const RECONCILIATION_HEAD = "Commit atual observado durante a reconciliação: "
+export const RECONCILIATION_HEAD = " Commit atual observado durante a reconciliação: "
 export const PRESERVED_REVIEW_LABEL = "Avaliação preservada: "
 export const LINE_SEPARATOR_PATTERN = /\u2028/g
 export const PARAGRAPH_SEPARATOR_PATTERN = /\u2029/g
