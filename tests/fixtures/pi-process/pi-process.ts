@@ -1,5 +1,7 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process"
 import { once } from "node:events"
+import { type PiProcessModelSelection } from "../model-selection"
+import { PI_PROCESS_DEFAULT_SELECTION } from "../scripted-provider"
 import {
   PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_CLOSE_EVENT,
@@ -18,7 +20,7 @@ import {
 import { PiProcessDiagnostics } from "./diagnostics"
 import { PiProcessHome } from "./pi-process-home"
 import { PiProcessRecords } from "./pi-process-records"
-import { piProcessArguments, piProcessEnvironment } from "./process-start"
+import { piProcessSelectedArguments, piProcessSelectedEnvironment } from "./process-start"
 import { type PiProcessCommand, type PiProcessExitCode, type PiProcessResponse } from "./types"
 import { waitForPiProcessClose } from "./wait-for-close"
 
@@ -26,6 +28,8 @@ export class PiProcess {
   readonly homeDirectory = new PiProcessHome()
 
   readonly received = new PiProcessRecords()
+
+  private selection: PiProcessModelSelection = PI_PROCESS_DEFAULT_SELECTION
 
   private running = false
 
@@ -39,14 +43,19 @@ export class PiProcess {
     return this.diagnostics.text
   }
 
+  configureSelection(selection: PiProcessModelSelection): void {
+    this.selection = selection
+  }
+
   start(entrypoint: string): void {
     if (this.child) {
       throw new Error(PI_PROCESS_ALREADY_STARTED)
     }
+    const selection = this.selection
     this.running = true
-    this.child = spawn(process.execPath, piProcessArguments(entrypoint), {
+    this.child = spawn(process.execPath, piProcessSelectedArguments(entrypoint, selection), {
       cwd: this.homeDirectory.home,
-      env: piProcessEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory),
+      env: piProcessSelectedEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory, selection),
       stdio: PI_PROCESS_STDIO,
     })
     this.child.stdout.setEncoding(PI_PROCESS_ENCODING)

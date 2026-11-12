@@ -136,6 +136,12 @@ function ignoresMissingResponseRules(): void {
   expect(result).toBeUndefined()
 }
 
+function registersModelRouter(): void {
+  compose(host)
+  const model = host.requireVirtualModel()
+  expect([model.provider, model.id]).toStrictEqual(["jev", "auto"])
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -149,6 +155,7 @@ function registerTests(): void {
   test("configuração inválida recusa a consulta sem chamar o modelo", invalidConfigurationRefusesConsultation)
   test("configuração inválida não sobrescreve o arquivo", invalidConfigurationIsPreserved)
   test("composição registra a repetição por cooldown", registersCooldownRetry)
+  test("composição registra o modelo virtual do roteador", registersModelRouter)
   test("composição registra as regras de resposta", registersResponseRules)
   test("sem arquivo de instruções o pedido segue sem lembrete", ignoresMissingResponseRules)
 }

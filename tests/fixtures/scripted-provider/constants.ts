@@ -1,4 +1,5 @@
 import { Type } from "typebox"
+import { type PiProcessModelSelection } from "../model-selection"
 import { type PiProcessModelDefinition } from "../scripted-model"
 
 export const PI_PROCESS_PROVIDER = "synapse-scripted"
@@ -72,6 +73,16 @@ const PI_PROCESS_STEP_SCHEMA = Type.Union([
 ])
 
 export const PI_PROCESS_SCRIPT_SCHEMA = Type.Array(PI_PROCESS_STEP_SCHEMA)
+
+export const PI_PROCESS_PROVIDER_VARIABLE = "SYNAPSE_TEST_PROVIDER"
+
+export const PI_PROCESS_MODEL_VARIABLE = "SYNAPSE_TEST_MODEL"
+
+export const PI_PROCESS_DEFAULT_SELECTION: PiProcessModelSelection = {
+  provider: PI_PROCESS_PROVIDER,
+  model: PI_PROCESS_MODEL,
+  startupModel: PI_PROCESS_MODEL_REFERENCE,
+}
 
 export const PI_PROCESS_MODEL_DEFINITION: PiProcessModelDefinition = {
   id: PI_PROCESS_MODEL,

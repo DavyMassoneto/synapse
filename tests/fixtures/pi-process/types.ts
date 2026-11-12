@@ -1,4 +1,5 @@
 import { type Static } from "typebox"
+import { type PiProcessModelSelection } from "../model-selection"
 import { type PiProcessMatch } from "../pi-process-matching"
 import { type PiProcessScript } from "../scripted-provider"
 import {
@@ -60,6 +61,7 @@ export interface PiProcessScenarioHandle {
   readonly received: PiProcessScenarioRecords
   readonly stderr: string
   start(entrypoint: string): void
+  configureSelection(selection: PiProcessModelSelection): void
   command(command: PiProcessCommand): Promise<PiProcessResponse>
 }
 

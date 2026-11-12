@@ -2,10 +2,11 @@ import {
   advisorConfigPath,
   registerAdvisor,
   registerCooldownRetry,
+  registerModelRouter,
   registerResponseRules,
   responseRulesInstructionsPath,
 } from "#synapse/integration"
-import { createAdvisor } from "#synapse/modules"
+import { createAdvisor, createModelRouter } from "#synapse/modules"
 import { type SynapseHost } from "./types"
 
 export function compose(pi: SynapseHost): void {
@@ -13,4 +14,5 @@ export function compose(pi: SynapseHost): void {
   registerAdvisor(pi, createAdvisor(advisorConfigPath()), controller.signal, () => controller.abort())
   registerCooldownRetry(pi)
   registerResponseRules(pi, responseRulesInstructionsPath())
+  registerModelRouter(pi, createModelRouter)
 }
