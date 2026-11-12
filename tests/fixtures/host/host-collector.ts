@@ -26,6 +26,10 @@ export class AdvisorHostCollector implements AdvisorHost {
   on(event: "before_agent_start", handler: AdvisorBeforeStartHandler): Unsubscribe
   on(event: "turn_end", handler: AdvisorTurnEndHandler): Unsubscribe
   on(...registration: AdvisorEventRegistration): Unsubscribe {
+    return this.collect(registration)
+  }
+
+  protected collect(registration: AdvisorEventRegistration): Unsubscribe {
     switch (registration[0]) {
       case "session_start":
         this.starts.push(registration[1])
