@@ -14,4 +14,6 @@ export const RENDERED_MESSAGES: RenderedMessage[] = [
   },
 ]
 
+export const BYTE_ORDER_MARK = "\uFEFF"
+
 export const WITH_TOOLS: ReminderTurn = { completed: true, usedTools: true }

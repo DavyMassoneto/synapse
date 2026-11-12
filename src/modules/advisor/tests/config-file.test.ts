@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { FileConfig } from "../adapters"
 import { AdvisorService } from "../internal"
 import { THINKING_LEVELS, type ThinkingLevel } from "../public"
-import { INVALID_FILE } from "./constants"
+import { BYTE_ORDER_MARK, INVALID_FILE } from "./constants"
 import { serviceFor } from "./doubles"
 
 let directory = ""
@@ -49,6 +49,19 @@ function loadsLevel(level: ThinkingLevel): void {
   expect(new FileConfig(file).load()).toStrictEqual({ kind: "loaded", config: { thinking: level } })
 }
 
+function loadsMarkedFile(): void {
+  writeFileSync(file, `${BYTE_ORDER_MARK}${JSON.stringify({ model: "provider/model", thinking: "low" })}`)
+  expect(new FileConfig(file).load()).toStrictEqual({
+    kind: "loaded",
+    config: { model: "provider/model", thinking: "low" },
+  })
+}
+
+function rejectsMarkedGarbage(): void {
+  writeFileSync(file, `${BYTE_ORDER_MARK}lixo`)
+  expect(new FileConfig(file).load()).toStrictEqual(INVALID_FILE)
+}
+
 function rejectsUnknownLevel(): void {
   writeFileSync(file, JSON.stringify({ thinking: "banana" }))
   expect(new FileConfig(file).load()).toStrictEqual(INVALID_FILE)
@@ -88,6 +101,8 @@ function registerTests(): void {
   test("modelo vazio desliga advisor", disabledConfiguration)
   test("configuração sem nível usa padrão", defaultThinking)
   test.each(THINKING_LEVELS)("nível %s é lido do arquivo", loadsLevel)
+  test("arquivo com marca de ordem de bytes é lido", loadsMarkedFile)
+  test("marca de ordem de bytes seguida de conteúdo inválido é recusada", rejectsMarkedGarbage)
   test("nível desconhecido no arquivo é recusado", rejectsUnknownLevel)
   test.each(["lixo", "provedor/", "/id"])("modelo %s fora do formato provedor/id é recusado", rejectsMalformedModel)
   test("gravação substitui arquivo", replacesFile)

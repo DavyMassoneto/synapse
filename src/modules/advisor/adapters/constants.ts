@@ -16,8 +16,6 @@ export const CLEANUP_FAILED = " O arquivo temporário também não foi removido:
 
 export const MISSING_FILE_CODE = "ENOENT"
 
-export const CONFIG_ENCODING = "utf8"
-
 export const CONFIG_INDENT = 2
 
 export const CONFIG_FILE_END = "\n"
