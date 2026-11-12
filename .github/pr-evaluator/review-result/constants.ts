@@ -21,8 +21,11 @@ export const FindingSchema = Type.Object({
   fix: Type.String(),
 })
 
-export const ReviewResultSchema = Type.Object({
-  verdict: Type.Union([Type.Literal("approve"), Type.Literal("approve_with_remarks"), Type.Literal("request_changes")]),
+export const APPROVE = "approve"
+
+export const REQUEST_CHANGES = "request_changes"
+
+export const ReviewSubmissionSchema = Type.Object({
   summary: Type.String(),
   findings: Type.Array(FindingSchema),
 })
@@ -35,8 +38,8 @@ export const SUBMIT_REVIEW_TOOL: ToolDefinition = {
   type: FUNCTION_TYPE,
   function: {
     name: SUBMIT_REVIEW,
-    description: "Entrega a avaliação da pull request: o veredito, o resumo e os apontamentos.",
-    parameters: ReviewResultSchema,
+    description: "Entrega a avaliação da pull request: o resumo e os apontamentos.",
+    parameters: ReviewSubmissionSchema,
   },
 }
 

@@ -20,7 +20,6 @@ export const COMMENT_BREAK = "\n\n---\n\n"
 
 export const VERDICT_LABELS: VerdictLabels = {
   approve: "aprovar",
-  approve_with_remarks: "aprovar com ressalvas",
   request_changes: "pedir mudanças",
 }
 

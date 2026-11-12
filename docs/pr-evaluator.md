@@ -13,7 +13,7 @@ O avaliador roda sozinho em toda PR do próprio repositório que não é rascunh
 - O avaliador monta o diff entre o commit base e o commit avaliado, numera cada linha, chama o modelo com streaming e publica uma única review por commit avaliado, com todos os comentários em lote. A review é identificada por um marcador com o SHA e só conta se foi publicada por `github-actions[bot]` para o commit avaliado: reexecutar o mesmo commit não duplica a review. O grupo de concorrência do workflow cancela a execução anterior da mesma PR; a conferência antes de publicar não é atômica.
 - Antes de publicar, confere se a cabeça da PR ainda é o commit avaliado. Se a PR recebeu um commit novo, descarta a avaliação.
 - Comentário em outra linha nunca substitui o apontamento: se a linha do apontamento não está no diff, ele entra na lista "sem linha no diff" do resumo da review. Se só o intervalo (`startLine`) não está inteiro no diff, o comentário fica na linha final do apontamento, sem intervalo.
-- O modelo entrega a avaliação chamando a ferramenta `submit_review`, que o pedido obriga a usar. Os argumentos da chamada são validados pelo esquema da avaliação. Resposta truncada (término diferente de `stop` ou `tool_calls`), maior que 32 MiB, sem a chamada de `submit_review`, com argumentos fora do formato ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado: acima de 8 MiB, a leitura falha antes da avaliação.
+- O modelo entrega a avaliação chamando a ferramenta `submit_review`, que o pedido obriga a usar. Os argumentos da chamada são validados pelo esquema da avaliação. O veredito não vem do modelo: é `aprovar` quando não há apontamentos e `pedir mudanças` quando há ao menos um. Resposta truncada (término diferente de `stop` ou `tool_calls`), maior que 32 MiB, sem a chamada de `submit_review`, com argumentos fora do formato ou prompt maior que a janela do modelo fazem o job falhar. O diff nunca é truncado: acima de 8 MiB, a leitura falha antes da avaliação.
 - A janela é a do modelo configurado: 1 000 000 de tokens de entrada, dos quais 128 000 ficam reservados para a resposta, o máximo de saída que o provedor declara para o modelo. O prompt pode ter até a diferença, 872 000 bytes em UTF-8: cada token do modelo cobre pelo menos um byte, mas um caractere pode custar mais de um token (emoji e ideogramas), por isso o limite conta bytes, não caracteres.
 - O pedido ao provedor sai com `Cache-Control: no-cache`. Sem ele, o provedor respondeu do cache (`x-omniroute-cache: HIT`) com uma avaliação vazia para um prompt idêntico ao de uma resposta anterior cortada no limite de saída.
 - Mudar a base da PR, sem commit novo, não dispara outra avaliação.
@@ -89,8 +89,7 @@ Regras de avaliação:
 
 Resposta: entregue a avaliação chamando a ferramenta submit_review, com os textos no idioma do usuário, neste formato:
 {
-  "verdict": "approve" | "approve_with_remarks" | "request_changes",
-  "summary": "duas ou três frases com o motivo principal do veredito",
+  "summary": "duas ou três frases com o resultado principal da avaliação",
   "findings": [
     {
       "criterion": "clean-code" | "dry" | "yagni" | "srp" | "performance" | "architecture",
@@ -107,4 +106,5 @@ Resposta: entregue a avaliação chamando a ferramenta submit_review, com os tex
   ]
 }
 O campo startLine é opcional e só existe quando o apontamento cobre um intervalo que termina em line. Sem problemas, "findings" é uma lista vazia.
+Você não escolhe o veredito: ele sai dos apontamentos. Com "findings" vazia a PR é aprovada; com ao menos um apontamento, o avaliador pede mudanças. Por isso só entregue o que o diff comprova.
 ```
