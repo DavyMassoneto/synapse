@@ -13,9 +13,3 @@ export interface VariableUnset {
 }
 
 export type SavedVariable = VariableSet | VariableUnset
-
-export interface DistributionResult {
-  notices: string[]
-  lookups: number
-  isError: boolean
-}
