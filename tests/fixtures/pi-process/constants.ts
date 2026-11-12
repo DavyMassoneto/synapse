@@ -1,4 +1,4 @@
-import { type PiProcessMatch } from "./types"
+import { type PiProcessMatch, type PiProcessUiMatches } from "./types"
 
 export const PI_PROCESS_TIMEOUT_MS = 60_000
 
@@ -115,12 +115,15 @@ export const PI_PROCESS_DIAGNOSTIC_FAILURE = "failure"
 
 export const PI_PROCESS_DIAGNOSTIC_ACCEPTED = "accepted"
 
-export const PI_PROCESS_STATUS_RESPONSE_MISSING = "Registro RPC recebido não apresenta o estado da extensão."
-
-export const PI_PROCESS_NOTICE_RESPONSE_MISSING = "Registro RPC recebido não apresenta o aviso da extensão."
-
 export const PI_PROCESS_UI_REQUEST_TYPE = "extension_ui_request"
 
 export const PI_PROCESS_STATUS_METHOD = "setStatus"
 
 export const PI_PROCESS_NOTICE_METHOD = "notify"
+
+export const PI_PROCESS_UI_RESPONSE_MISSING = "Registro RPC recebido não corresponde ao evento de interface esperado."
+
+export const PI_PROCESS_UI_MATCHES: PiProcessUiMatches = {
+  setStatus: PI_PROCESS_STATUS_EVENT,
+  notify: PI_PROCESS_NOTICE_EVENT,
+}

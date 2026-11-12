@@ -105,3 +105,11 @@ Resposta: entregue a avaliação chamando a ferramenta submit_review, com os tex
 O campo startLine é opcional e só existe quando o apontamento cobre um intervalo que termina em line. Sem problemas, "findings" é uma lista vazia.
 Você não escolhe o veredito: ele sai dos apontamentos. Com "findings" vazia a PR é aprovada; com ao menos um apontamento, o avaliador pede mudanças. Por isso só entregue o que o diff comprova.
 ```
+
+## Falhas de transporte na publicação
+
+A avaliação entregue pelo agente é registrada uma vez no log do publicador, antes das consultas finais, como JSON numa linha com prefixo fixo e separadores de linha escapados. O registro contém o resumo e os apontamentos validados, não credenciais nem o corpo dos pedidos HTTP. Isso mantém o resultado disponível para leitura humana se a rede impedir a publicação; não é um mecanismo de retomada nem garante retenção além dos limites dos logs do GitHub Actions.
+
+Consultas GET ao GitHub repetem falhas de transporte até três tentativas, com intervalo de um segundo; cada falha informa método e caminho, sem corpo ou credencial. O POST de review nunca é repetido automaticamente, nem após resposta HTTP de limite de taxa. Se a conexão ou a leitura da resposta do POST falhar, o publicador consulta de forma limitada o commit atual e a review do bot identificada pelo marcador do commit. Se a review aparecer, reconhece a publicação; se não aparecer, falha com mensagem de publicação incerta, sem novo POST e com a avaliação preservada no log.
+
+O marcador não é uma chave de idempotência do servidor. Um POST pode continuar sendo processado após a perda da conexão; uma consulta sem resultado não prova que ele não será aplicado. Portanto não há promessa de publicação exatamente uma vez: a política evita reenviar um POST incerto, mas não resolve concorrência externa nem garante que uma publicação ausente será concluída. Uma falha persistente continua falhando o check, sem chamar o agente novamente.

@@ -18,19 +18,11 @@ export class PiProcessDiagnostics {
     return this.bufferedText
   }
 
-  private addBytes(chunk: string): number {
-    this.bytes += Buffer.byteLength(chunk)
-    return this.bytes
-  }
-
   receive(chunk: string): PiProcessDiagnostic {
-    if (this.addBytes(chunk) > PI_PROCESS_MAX_BUFFER_BYTES) {
+    this.bytes += Buffer.byteLength(chunk)
+    if (this.bytes > PI_PROCESS_MAX_BUFFER_BYTES) {
       return { kind: PI_PROCESS_DIAGNOSTIC_FAILURE, error: new Error(PI_PROCESS_BUFFER_FAILURE) }
     }
-    return this.collect(chunk)
-  }
-
-  private collect(chunk: string): PiProcessDiagnostic {
     const boundary = this.bufferedText.slice(-PI_PROCESS_DIAGNOSTIC_OVERLAP)
     this.bufferedText += chunk
     return this.detect(boundary + chunk)

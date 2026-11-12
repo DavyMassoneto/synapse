@@ -22,6 +22,12 @@ export function readPiProcessRequests(home: string): PiProcessRequestLog[] {
   if (!existsSync(path)) {
     return []
   }
+  const content = readBoundedPiRequestLog(path)
+  const lines = new TextDecoder().decode(content).trimEnd().split(PI_REQUEST_LOG_NEWLINE)
+  return lines.map(parsePiProcessRequest)
+}
+
+function readBoundedPiRequestLog(path: string): Buffer {
   const descriptor = openSync(path, PI_REQUEST_LOG_READ_FLAG)
   const buffer = Buffer.alloc(PI_REQUEST_LOG_CHUNK_BYTES)
   const chunks: Buffer[] = []
@@ -39,8 +45,7 @@ export function readPiProcessRequests(home: string): PiProcessRequestLog[] {
   } finally {
     closeSync(descriptor)
   }
-  const lines = new TextDecoder().decode(Buffer.concat(chunks, bytes)).trimEnd().split(PI_REQUEST_LOG_NEWLINE)
-  return lines.map(parsePiProcessRequest)
+  return Buffer.concat(chunks, bytes)
 }
 
 export function requirePiProcessRequest(requests: PiProcessRequestLog[], index: number): PiProcessRequestLog {

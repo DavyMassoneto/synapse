@@ -1,7 +1,7 @@
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { PI_PROCESS_SCRIPT_FILE, type PiProcessScript } from "../scripted-provider"
+import { SCRIPTED_PROVIDER_SCRIPT_FILE, type ScriptedProviderScript } from "../scripted-provider"
 import {
   PI_PROCESS_AGENT_DIRECTORY,
   PI_PROCESS_PI_DIRECTORY,
@@ -19,8 +19,8 @@ export class PiProcessHome {
     this.script([])
   }
 
-  script(steps: PiProcessScript): void {
-    writeFileSync(join(this.home, PI_PROCESS_SCRIPT_FILE), JSON.stringify(steps))
+  script(steps: ScriptedProviderScript): void {
+    writeFileSync(join(this.home, SCRIPTED_PROVIDER_SCRIPT_FILE), JSON.stringify(steps))
   }
 
   remove(): void {

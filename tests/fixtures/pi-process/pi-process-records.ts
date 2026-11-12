@@ -1,17 +1,13 @@
 import { EventEmitter, once } from "node:events"
 import { Value } from "typebox/value"
 import {
-  PI_PROCESS_NOTICE_EVENT,
-  PI_PROCESS_NOTICE_METHOD,
-  PI_PROCESS_NOTICE_RESPONSE_MISSING,
   PI_PROCESS_RECORD_EVENT,
   PI_PROCESS_SEARCH_FOUND,
   PI_PROCESS_SEARCH_PENDING,
-  PI_PROCESS_STATUS_EVENT,
-  PI_PROCESS_STATUS_METHOD,
-  PI_PROCESS_STATUS_RESPONSE_MISSING,
   PI_PROCESS_TIMEOUT_FAILURE,
+  PI_PROCESS_UI_MATCHES,
   PI_PROCESS_UI_REQUEST_TYPE,
+  PI_PROCESS_UI_RESPONSE_MISSING,
 } from "./constants"
 import { PiProcessLineFramer } from "./line-framer"
 import { isPiProcessRecordMatch } from "./predicates"
@@ -22,6 +18,8 @@ import {
   type PiProcessRecord,
   type PiProcessSearch,
   type PiProcessStatus,
+  type PiProcessUiEvent,
+  type PiProcessUiMethod,
 } from "./types"
 
 export class PiProcessRecords {
@@ -58,20 +56,15 @@ export class PiProcessRecords {
     }
   }
 
-  async waitForStatus(timeoutMs: number): Promise<PiProcessStatus> {
-    const record = await this.waitFor(PI_PROCESS_STATUS_EVENT, timeoutMs)
-    if (record.type === PI_PROCESS_UI_REQUEST_TYPE && record.method === PI_PROCESS_STATUS_METHOD) {
+  waitForUi(method: "setStatus", timeoutMs: number): Promise<PiProcessStatus>
+  waitForUi(method: "notify", timeoutMs: number): Promise<PiProcessNotice>
+  async waitForUi(method: PiProcessUiMethod, timeoutMs: number): Promise<PiProcessUiEvent> {
+    const match = PI_PROCESS_UI_MATCHES[method]
+    const record = await this.waitFor(match, timeoutMs)
+    if (record.type === PI_PROCESS_UI_REQUEST_TYPE && record.method === method) {
       return record
     }
-    throw new Error(PI_PROCESS_STATUS_RESPONSE_MISSING)
-  }
-
-  async waitForNotice(timeoutMs: number): Promise<PiProcessNotice> {
-    const record = await this.waitFor(PI_PROCESS_NOTICE_EVENT, timeoutMs)
-    if (record.type === PI_PROCESS_UI_REQUEST_TYPE && record.method === PI_PROCESS_NOTICE_METHOD) {
-      return record
-    }
-    throw new Error(PI_PROCESS_NOTICE_RESPONSE_MISSING)
+    throw new Error(PI_PROCESS_UI_RESPONSE_MISSING)
   }
 
   private search(match: PiProcessMatch, offset: number): PiProcessSearch {

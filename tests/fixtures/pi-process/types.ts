@@ -1,5 +1,5 @@
 import { type Static } from "typebox"
-import { type PiProcessScript } from "../scripted-provider"
+import { type ScriptedProviderScript } from "../scripted-provider"
 import { type PI_PROCESS_NOTICE_SCHEMA, type PI_PROCESS_RECORD_SCHEMA, type PI_PROCESS_STATUS_SCHEMA } from "./schemas"
 
 export type PiProcessStatus = Static<typeof PI_PROCESS_STATUS_SCHEMA>
@@ -41,12 +41,12 @@ export type PiProcessDiagnostic = PiProcessDiagnosticAccepted | PiProcessDiagnos
 export interface PiProcessScenarioHome {
   readonly home: string
   readonly agentDirectory: string
-  script(steps: PiProcessScript): void
+  script(steps: ScriptedProviderScript): void
 }
 
 export interface PiProcessScenarioRecords {
-  waitForStatus(timeoutMs: number): Promise<PiProcessStatus>
-  waitForNotice(timeoutMs: number): Promise<PiProcessNotice>
+  waitForUi(method: "setStatus", timeoutMs: number): Promise<PiProcessStatus>
+  waitForUi(method: "notify", timeoutMs: number): Promise<PiProcessNotice>
   waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessRecord>
 }
 
@@ -69,4 +69,13 @@ export interface PiProcessMatch {
   id?: string
   method?: string
   statusKey?: string
+}
+
+export type PiProcessUiMethod = "setStatus" | "notify"
+
+export type PiProcessUiEvent = PiProcessStatus | PiProcessNotice
+
+export interface PiProcessUiMatches {
+  setStatus: PiProcessMatch
+  notify: PiProcessMatch
 }
