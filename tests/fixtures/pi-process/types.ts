@@ -52,6 +52,7 @@ export interface PiProcessScenarioHome {
 
 export interface PiProcessScenarioRecords {
   waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessResponse>
+  records(): PiProcessRecord[]
 }
 
 export interface PiProcessScenarioHandle {

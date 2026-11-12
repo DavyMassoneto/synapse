@@ -10,8 +10,11 @@ import { TEST_USAGE } from "../context"
 import {
   PI_PROCESS_ASSISTANT_ROLE,
   PI_PROCESS_DONE_EVENT,
+  PI_PROCESS_ERROR_KIND,
+  PI_PROCESS_ERROR_REASON,
   PI_PROCESS_PENDING_REASON,
   PI_PROCESS_STOP_REASON,
+  PI_PROCESS_STREAM_ERROR_EVENT,
   PI_PROCESS_TEXT_CONTENT,
   PI_PROCESS_TEXT_DELTA_EVENT,
   PI_PROCESS_TEXT_END_EVENT,
@@ -36,6 +39,12 @@ export function assistantMessage(model: Model<Api>): AssistantMessage {
     stopReason: PI_PROCESS_PENDING_REASON,
     usage: TEST_USAGE,
   }
+}
+
+export function emitError(stream: AssistantMessageEventStream, message: AssistantMessage, text: string): void {
+  message.stopReason = PI_PROCESS_ERROR_REASON
+  message.errorMessage = text
+  stream.push({ type: PI_PROCESS_STREAM_ERROR_EVENT, reason: PI_PROCESS_ERROR_REASON, error: message })
 }
 
 export function emitText(stream: AssistantMessageEventStream, message: AssistantMessage, text: string): void {
@@ -75,7 +84,9 @@ export function emitStep(
   step: PiProcessStep,
   id: string,
 ): void {
-  if (step.kind === PI_PROCESS_TEXT_KIND) {
+  if (step.kind === PI_PROCESS_ERROR_KIND) {
+    emitError(stream, message, step.text)
+  } else if (step.kind === PI_PROCESS_TEXT_KIND) {
     emitText(stream, message, step.text)
   } else {
     emitToolCall(stream, message, step.name, step.argumentsJson, id)

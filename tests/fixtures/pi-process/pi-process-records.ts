@@ -9,7 +9,7 @@ import {
   PI_PROCESS_TIMEOUT_FAILURE,
 } from "./constants"
 import { PiProcessLineFramer } from "./line-framer"
-import { type PiProcessResponse, type PiProcessSearch } from "./types"
+import { type PiProcessRecord, type PiProcessResponse, type PiProcessSearch } from "./types"
 
 export class PiProcessRecords {
   private readonly responses: PiProcessResponse[] = []
@@ -43,6 +43,10 @@ export class PiProcessRecords {
         throw error
       }
     }
+  }
+
+  records(): PiProcessRecord[] {
+    return this.responses.map((response) => response.record)
   }
 
   private search(match: PiProcessMatch, offset: number): PiProcessSearch {

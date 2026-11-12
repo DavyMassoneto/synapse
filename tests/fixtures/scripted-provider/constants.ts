@@ -27,6 +27,12 @@ export const PI_PROCESS_MAX_TOKENS = 4096
 
 export const PI_PROCESS_SCRIPT_VARIABLE = "SYNAPSE_TEST_SCRIPT"
 
+export const PI_PROCESS_ERROR_KIND = "error"
+
+export const PI_PROCESS_STREAM_ERROR_EVENT = "error"
+
+export const PI_PROCESS_ERROR_REASON = "error"
+
 export const PI_PROCESS_TEXT_KIND = "text"
 
 export const PI_PROCESS_TEXT_CONTENT = "text"
@@ -60,6 +66,7 @@ export const PI_PROCESS_TOOL_END_EVENT = "toolcall_end"
 export const PI_PROCESS_TOOL_USE_REASON = "toolUse"
 
 const PI_PROCESS_STEP_SCHEMA = Type.Union([
+  Type.Object({ kind: Type.Literal(PI_PROCESS_ERROR_KIND), text: Type.String() }),
   Type.Object({ kind: Type.Literal(PI_PROCESS_TEXT_KIND), text: Type.String() }),
   Type.Object({ kind: Type.Literal(PI_PROCESS_TOOL_CALL_KIND), name: Type.String(), argumentsJson: Type.String() }),
 ])

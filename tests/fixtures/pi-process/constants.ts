@@ -1,5 +1,6 @@
 import { Type } from "typebox"
 import { type PiProcessMatch } from "../pi-process-matching"
+import { type PiProcessSettings } from "../pi-process-settings"
 
 export const PI_PROCESS_TIMEOUT_MS = 60_000
 
@@ -14,6 +15,8 @@ export const PI_PROCESS_MAX_BUFFER_BYTES = 8_388_608
 export const PI_PROCESS_PREFIX = "synapse-pi-process-"
 
 export const PI_PROCESS_ENCODING = "utf8"
+
+export const PI_PROCESS_SETTINGS_FILE = "settings.json"
 
 export const PI_PROCESS_PI_DIRECTORY = ".pi"
 
@@ -53,6 +56,12 @@ export const PI_PROCESS_STATUS_EVENT: PiProcessMatch = {
 export const PI_PROCESS_SETTLED_EVENT: PiProcessMatch = { type: "agent_settled" }
 
 export const PI_PROCESS_NOTICE_EVENT: PiProcessMatch = { type: "extension_ui_request", method: "notify" }
+
+export const PI_PROCESS_RETRY_SETTINGS: PiProcessSettings = {
+  retry: { enabled: true, maxRetries: 1, baseDelayMs: 10, maxAgentDelayMs: 10 },
+  enableInstallTelemetry: false,
+  enableAnalytics: false,
+}
 
 export const PI_PROCESS_MANIFEST_SCHEMA = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })
 
@@ -124,6 +133,10 @@ export const PI_PROCESS_NOT_STARTED = "Processo pi não iniciado: chame start() 
 
 export const PI_PROCESS_GET_COMMANDS_SCHEMA = Type.Object({
   data: Type.Object({ commands: Type.Array(Type.Object({ name: Type.String(), source: Type.String() })) }),
+})
+
+export const PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA = Type.Object({
+  data: Type.Object({ text: Type.Union([Type.String(), Type.Null()]) }),
 })
 
 export const PI_PROCESS_DIAGNOSTIC_OVERLAP = 128

@@ -19,3 +19,11 @@ export const RATE_LIMIT_ERROR = "All credentials for model grok are cooling down
 export const UNRELATED_ERROR = "connection refused"
 
 export const REWRITE_PREFIX = "429 rate limit: "
+
+export const COOLDOWN_DISTRIBUTION_PROMPT = "Olá\u2028mundo\u2029!"
+
+export const COOLDOWN_DISTRIBUTION_REPLY = "ok"
+
+export const COOLDOWN_DISTRIBUTION_ERROR = "All credentials for model x are cooling down"
+
+export const COOLDOWN_DISTRIBUTION_PERMANENT_ERROR = "Invalid API key: credencial de teste recusada"
