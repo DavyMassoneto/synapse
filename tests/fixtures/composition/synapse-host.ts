@@ -13,6 +13,7 @@ import {
   type AgentTeamStartHandler,
   type AgentTeamTurnHandler,
   type CooldownMessageEndHandler,
+  type PiComputerShutdown,
   type PiRouterVirtualModel,
   type ResponseRulesContextHandler,
   type Unsubscribe,
@@ -62,6 +63,7 @@ export class SynapseHostCollector implements SynapseHost {
 
   private virtualModel?: PiRouterVirtualModel
 
+  on(event: "session_shutdown", handler: PiComputerShutdown): Unsubscribe
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe
   on(event: "before_agent_start", handler: AdvisorBeforeStartHandler): Unsubscribe

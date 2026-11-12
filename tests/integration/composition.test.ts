@@ -28,11 +28,16 @@ function configureModel(): void {
   compose(host)
 }
 
+function registersComputer(): void {
+  compose(host)
+  expect(host.tools.has("computer_use")).toBe(true)
+}
+
 async function registersAdvisor(): Promise<void> {
   configureModel()
   await host.emitSessionStart(context)
   expect(host.active).toContain("advisor")
-  expect(host.shutdowns).toHaveLength(2)
+  expect(host.shutdowns).toHaveLength(3)
 }
 
 async function consultsWithLiveSignal(): Promise<void> {
@@ -161,6 +166,7 @@ function registersTeamTools(): void {
 }
 
 function registerTests(): void {
+  test("registra computer_use sem iniciar driver", registersComputer)
   test("composição registra as dez ferramentas da equipe", registersTeamTools)
   beforeEach(prepare)
   afterEach(cleanup)
