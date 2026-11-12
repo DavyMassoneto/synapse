@@ -5,3 +5,18 @@ export interface PreparedReview {
   comments: ReviewComment[]
   unplacedCount: number
 }
+
+export interface ReconciledPublication {
+  kind: "reconciled"
+}
+
+export interface AbsentPublication {
+  kind: "absent"
+}
+
+export interface SupersededPublication {
+  kind: "superseded"
+  currentSha: string
+}
+
+export type PublicationObservation = ReconciledPublication | AbsentPublication | SupersededPublication
