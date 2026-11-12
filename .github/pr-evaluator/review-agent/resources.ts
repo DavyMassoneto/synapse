@@ -1,5 +1,5 @@
 import { createExtensionRuntime, type ResourceLoader } from "@earendil-works/pi-coding-agent"
-import { EMPTY_RESOURCES, SYSTEM_PROMPT } from "./constants"
+import { SYSTEM_PROMPT } from "./constants"
 
 export class ReviewResources implements ResourceLoader {
   getExtensions(): ReturnType<ResourceLoader["getExtensions"]> {
@@ -24,7 +24,7 @@ export class ReviewResources implements ResourceLoader {
     return this.getAppendSystemPromptSources().at(0)
   }
   getAppendSystemPrompt(): string[] {
-    return EMPTY_RESOURCES
+    return []
   }
   getAppendSystemPromptSources(): ReturnType<ResourceLoader["getAppendSystemPromptSources"]> {
     return []

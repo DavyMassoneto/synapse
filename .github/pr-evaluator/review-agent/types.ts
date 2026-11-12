@@ -1,17 +1,12 @@
 import { type AgentToolResult } from "@earendil-works/pi-agent-core"
 import { type AgentSession, type CreateAgentSessionOptions } from "@earendil-works/pi-coding-agent"
 import { type Static } from "typebox"
-import { type ModelConfiguration } from "#evaluator/configuration"
 import { type PageRequest } from "#evaluator/output-page"
 import { type InspectionRequest } from "#evaluator/repository-inspection"
 import { type ReviewSubmissionSchema } from "#evaluator/review-result"
+import { type WorkerInputSchema } from "./schemas"
 
-export interface WorkerInput {
-  sha: string
-  diff: string
-  prompt: string
-  model: ModelConfiguration
-}
+export type WorkerInput = Static<typeof WorkerInputSchema>
 export type ReviewSubmission = Static<typeof ReviewSubmissionSchema>
 export interface ReadySession {
   kind: "ready"

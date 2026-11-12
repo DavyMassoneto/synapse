@@ -1,16 +1,17 @@
 import { AssertError, Value } from "typebox/value"
-import { APPROVE, INVALID_SUBMISSION, ISSUE_BREAK, REQUEST_CHANGES, ReviewSubmissionSchema } from "./constants"
-import { type Finding, type ReviewResult, type ReviewVerdict, type SubmissionIssue } from "./types"
+import { APPROVE, INVALID_SUBMISSION, ISSUE_BREAK, REQUEST_CHANGES } from "./constants"
+import { ReviewSubmissionSchema } from "./schemas"
+import { type Finding, type ReviewResult, type ReviewVerdict } from "./types"
 
 function failureDetail(error: Error): string {
   if (error instanceof AssertError) {
-    return error.cause.errors.map(submissionIssue).join(ISSUE_BREAK)
+    const details: string[] = []
+    for (const issue of error.cause.errors) {
+      details.push(`${issue.instancePath} ${issue.message}`)
+    }
+    return details.join(ISSUE_BREAK)
   }
   return error.message
-}
-
-function submissionIssue(issue: SubmissionIssue): string {
-  return `${issue.instancePath} ${issue.message}`
 }
 
 function verdictOf(findings: Finding[]): ReviewVerdict {

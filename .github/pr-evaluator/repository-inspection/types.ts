@@ -1,11 +1,6 @@
-export type InspectionAction = "files" | "read" | "search" | "history"
-export interface InspectionRequest {
-  action: InspectionAction
-  path: string
-  text: string
-  startLine: number
-  endLine: number
-}
+import { type Static } from "typebox"
+import { type InspectionSchema } from "./schemas"
+export type InspectionRequest = Static<typeof InspectionSchema>
 export interface InspectionContext {
   sha: string
   root: string

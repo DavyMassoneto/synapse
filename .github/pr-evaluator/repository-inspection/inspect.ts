@@ -8,7 +8,9 @@ import {
   INVALID_PATH,
   LIST_ARGUMENTS,
   NO_MATCHES,
+  PATHSPEC_SEPARATOR,
   READ_ACTION,
+  ROOT_LIST_ARGUMENTS,
   SEARCH_ACTION,
   SEARCH_ARGUMENTS,
   SHOW_ARGUMENTS,
@@ -30,7 +32,7 @@ function listFiles(context: InspectionContext, prefix: string): string {
 }
 
 function requirePath(context: InspectionContext, path: string): void {
-  const paths = inspectionGit(context, [...LIST_ARGUMENTS, context.sha, "--", path]).split(LINE_BREAK)
+  const paths = inspectionGit(context, [...LIST_ARGUMENTS, context.sha, PATHSPEC_SEPARATOR, path]).split(LINE_BREAK)
   if (!path || !paths.includes(path)) {
     throw new Error(INVALID_PATH)
   }
@@ -38,7 +40,7 @@ function requirePath(context: InspectionContext, path: string): void {
 
 function searchCode(context: InspectionContext, text: string): string {
   try {
-    return inspectionGit(context, [...SEARCH_ARGUMENTS, text, context.sha, "--"])
+    return inspectionGit(context, [...SEARCH_ARGUMENTS, text, context.sha, PATHSPEC_SEPARATOR])
   } catch (error) {
     if (error instanceof InspectionFailure && isNoMatch(error)) {
       return NO_MATCHES
@@ -49,7 +51,7 @@ function searchCode(context: InspectionContext, text: string): string {
 
 export function verifySnapshot(context: InspectionContext): void {
   inspectionGit(context, [...VERIFY_COMMIT_ARGUMENTS, `${context.sha}${COMMIT_SUFFIX}`])
-  if (!inspectionGit(context, [...LIST_ARGUMENTS, context.sha]).trim()) {
+  if (!inspectionGit(context, [...ROOT_LIST_ARGUMENTS, context.sha])) {
     throw new InspectionFailure(INSPECTION_FAILED)
   }
 }
@@ -64,7 +66,7 @@ function runAction(context: InspectionContext, request: InspectionRequest): stri
     case SEARCH_ACTION:
       return searchCode(context, request.text)
     case HISTORY_ACTION:
-      return inspectionGit(context, [...HISTORY_ARGUMENTS, context.sha, "--", request.path])
+      return inspectionGit(context, [...HISTORY_ARGUMENTS, context.sha, PATHSPEC_SEPARATOR, request.path])
   }
 }
 

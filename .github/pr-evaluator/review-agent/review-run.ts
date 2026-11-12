@@ -9,7 +9,6 @@ import {
   inspectRepository,
   verifySnapshot,
 } from "#evaluator/repository-inspection"
-import { MAX_EXECUTION_MS, TIME_EXCEEDED } from "#evaluator/review-configuration"
 import {
   FAILED,
   INSPECTION_REQUIRED,
@@ -109,11 +108,6 @@ export class ReviewRun {
     }
   }
 
-  private timeout(): void {
-    this.state = { kind: FAILED, message: TIME_EXCEEDED }
-    this.abortSession()
-  }
-
   private outcome(): ReviewSubmission {
     if (this.state.kind === SUBMITTED) {
       return this.state.review
@@ -139,12 +133,10 @@ export class ReviewRun {
   async run(): Promise<ReviewSubmission> {
     const session = await this.createSession()
     const unsubscribe = session.subscribe(this.observe.bind(this))
-    const timer = setTimeout(this.timeout.bind(this), MAX_EXECUTION_MS)
     try {
       await session.prompt(this.input.prompt)
       return this.outcome()
     } finally {
-      clearTimeout(timer)
       unsubscribe()
       session.dispose()
     }

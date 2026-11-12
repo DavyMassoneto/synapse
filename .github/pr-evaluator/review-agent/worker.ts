@@ -1,9 +1,10 @@
 import { Value } from "typebox/value"
 import { InspectionFailure } from "#evaluator/repository-inspection"
 import { WORKER_ENCODING, WORKER_FAILURE } from "#evaluator/review-configuration"
-import { EMPTY_TEXT, FAILURE_EXIT_CODE, WorkerInputSchema } from "./constants"
+import { EMPTY_TEXT, FAILURE_EXIT_CODE } from "./constants"
 import { ReviewFailure } from "./review-failure"
 import { ReviewRun } from "./review-run"
+import { WorkerInputSchema } from "./schemas"
 
 async function work(): Promise<void> {
   process.stdin.setEncoding(WORKER_ENCODING)
