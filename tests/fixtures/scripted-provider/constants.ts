@@ -1,10 +1,8 @@
 import { Type } from "typebox"
 import { type PiProcessModelSelection } from "../model-selection"
-import { type PiProcessModelDefinition } from "../scripted-model"
+import { PI_PROCESS_MODEL } from "../scripted-model"
 
 export const PI_PROCESS_PROVIDER = "synapse-scripted"
-
-export const PI_PROCESS_MODEL = "scripted-model"
 
 export const PI_PROCESS_MODEL_REFERENCE = `${PI_PROCESS_PROVIDER}/${PI_PROCESS_MODEL}`
 
@@ -22,10 +20,6 @@ export const PI_PROCESS_SCRIPT_FAILURE = "Roteiro do provedor esgotado."
 
 export const PI_PROCESS_ENV_FAILURE = "Variáveis do roteiro de teste ausentes."
 
-export const PI_PROCESS_CONTEXT_WINDOW = 128_000
-
-export const PI_PROCESS_MAX_TOKENS = 4096
-
 export const PI_PROCESS_SCRIPT_VARIABLE = "SYNAPSE_TEST_SCRIPT"
 
 export const PI_PROCESS_ERROR_KIND = "error"
@@ -37,8 +31,6 @@ export const PI_PROCESS_ERROR_REASON = "error"
 export const PI_PROCESS_TEXT_KIND = "text"
 
 export const PI_PROCESS_TEXT_CONTENT = "text"
-
-export const PI_PROCESS_TEXT_INPUT = "text"
 
 export const PI_PROCESS_ASSISTANT_ROLE = "assistant"
 
@@ -99,14 +91,4 @@ export const PI_PROCESS_DEFAULT_SELECTION: PiProcessModelSelection = {
   provider: PI_PROCESS_PROVIDER,
   model: PI_PROCESS_MODEL,
   startupModel: PI_PROCESS_MODEL_REFERENCE,
-}
-
-export const PI_PROCESS_MODEL_DEFINITION: PiProcessModelDefinition = {
-  id: PI_PROCESS_MODEL,
-  name: PI_PROCESS_MODEL,
-  reasoning: true,
-  input: [PI_PROCESS_TEXT_INPUT],
-  cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
-  contextWindow: PI_PROCESS_CONTEXT_WINDOW,
-  maxTokens: PI_PROCESS_MAX_TOKENS,
 }
