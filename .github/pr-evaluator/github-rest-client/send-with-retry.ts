@@ -3,6 +3,7 @@ import { type GithubConfiguration } from "#evaluator/configuration"
 import { ensureOk } from "#evaluator/http-failure"
 import {
   DEFAULT_RETRY_SECONDS,
+  GET_METHOD,
   MAX_RETRY_SECONDS,
   MILLISECONDS_PER_SECOND,
   REQUEST_ATTEMPTS,
@@ -28,11 +29,17 @@ export async function sendWithRetry(
   init: RequestInit,
 ): Promise<Response> {
   let response = await fetchGithub(configuration, path, init)
-  for (let attempt = 1; attempt < REQUEST_ATTEMPTS && isRateLimited(response); attempt += 1) {
-    console.log(`GitHub limitou a taxa (${response.status}); nova tentativa`)
+  for (
+    let attempt = 1;
+    attempt < REQUEST_ATTEMPTS && init.method === GET_METHOD && isRateLimited(response);
+    attempt += 1
+  ) {
+    console.log(
+      `GitHub ${JSON.stringify(init.method)} ${JSON.stringify(path)} limitou a taxa (${response.status}); nova tentativa`,
+    )
     await response.body?.cancel()
     await delay(retryDelayMs(response))
     response = await fetchGithub(configuration, path, init)
   }
-  return ensureOk(response, `GitHub (${path})`)
+  return ensureOk(response, `GitHub ${JSON.stringify(init.method)} ${JSON.stringify(path)}`)
 }
