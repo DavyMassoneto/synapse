@@ -1,10 +1,11 @@
 import { type Static, type TSchema } from "typebox"
 import { Value } from "typebox/value"
 import { GithubTransportFailure } from "./transport-failure"
+import { type GithubMethod } from "./types"
 
 export async function readGithubResponse<Schema extends TSchema>(
   response: Response,
-  method: string,
+  method: GithubMethod,
   path: string,
   schema: Schema,
 ): Promise<Static<Schema>> {

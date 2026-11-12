@@ -6,6 +6,15 @@ import { readGithubResponse } from "./read-response"
 import { sendWithRetry } from "./send-with-retry"
 import { GithubTransportFailure } from "./transport-failure"
 
+async function queryJson<Schema extends TSchema>(
+  configuration: GithubConfiguration,
+  path: string,
+  schema: Schema,
+): Promise<Static<Schema>> {
+  const response = await sendWithRetry(configuration, path, { method: GET_METHOD })
+  return readGithubResponse(response, GET_METHOD, path, schema)
+}
+
 export async function getJson<Schema extends TSchema>(
   configuration: GithubConfiguration,
   path: string,
@@ -13,8 +22,7 @@ export async function getJson<Schema extends TSchema>(
 ): Promise<Static<Schema>> {
   for (let attempt = 1; attempt < REQUEST_ATTEMPTS; attempt += 1) {
     try {
-      const response = await sendWithRetry(configuration, path, { method: GET_METHOD })
-      return await readGithubResponse(response, GET_METHOD, path, schema)
+      return await queryJson(configuration, path, schema)
     } catch (error) {
       if (!(error instanceof GithubTransportFailure)) {
         throw error
@@ -23,8 +31,7 @@ export async function getJson<Schema extends TSchema>(
       await delay(TRANSPORT_RETRY_DELAY_MS)
     }
   }
-  const response = await sendWithRetry(configuration, path, { method: GET_METHOD })
-  return readGithubResponse(response, GET_METHOD, path, schema)
+  return queryJson(configuration, path, schema)
 }
 
 export async function postJson<Schema extends TSchema>(
