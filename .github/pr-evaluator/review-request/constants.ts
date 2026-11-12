@@ -20,11 +20,7 @@ export const PLACEHOLDER_RULES = "{{REGRAS}}"
 
 export const PLACEHOLDER_STANDARDS = "{{PADROES}}"
 
-export const PLACEHOLDER_DIFF = "{{DIFF}}"
-
-export const PLACEHOLDER_SOURCE = "{{CODIGO}}"
-
-export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
+export const PROMPT_TOO_LARGE = "As regras e os documentos excedem o limite do prompt; nenhuma review foi publicada."
 
 export const MODEL_CONTEXT_TOKENS = 1_000_000
 
