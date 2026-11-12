@@ -1,10 +1,10 @@
 import { type ExtensionAPI } from "@earendil-works/pi-coding-agent"
+import { PI_PROCESS_MODEL_DEFINITION } from "../scripted-model"
 import { readJsonFile } from "../validated-json"
 import {
   PI_PROCESS_API,
   PI_PROCESS_API_KEY,
   PI_PROCESS_BASE_URL,
-  PI_PROCESS_MODEL_DEFINITION,
   PI_PROCESS_MODEL_VARIABLE,
   PI_PROCESS_PROVIDER_VARIABLE,
   PI_PROCESS_SCRIPT_SCHEMA,
