@@ -1,6 +1,5 @@
-import { Type } from "typebox"
-import { type PiProcessMatch } from "../pi-process-matching"
 import { type PiProcessSettings } from "../pi-process-settings"
+import { type PiProcessMatch, type PiProcessUiMatches } from "./types"
 
 export const PI_PROCESS_TIMEOUT_MS = 60_000
 
@@ -15,8 +14,6 @@ export const PI_PROCESS_MAX_BUFFER_BYTES = 8_388_608
 export const PI_PROCESS_PREFIX = "synapse-pi-process-"
 
 export const PI_PROCESS_ENCODING = "utf8"
-
-export const PI_PROCESS_SETTINGS_FILE = "settings.json"
 
 export const PI_PROCESS_PI_DIRECTORY = ".pi"
 
@@ -56,36 +53,6 @@ export const PI_PROCESS_STATUS_EVENT: PiProcessMatch = {
 export const PI_PROCESS_SETTLED_EVENT: PiProcessMatch = { type: "agent_settled" }
 
 export const PI_PROCESS_NOTICE_EVENT: PiProcessMatch = { type: "extension_ui_request", method: "notify" }
-
-export const PI_PROCESS_RETRY_SETTINGS: PiProcessSettings = {
-  retry: { enabled: true, maxRetries: 1, baseDelayMs: 10, maxAgentDelayMs: 10 },
-  enableInstallTelemetry: false,
-  enableAnalytics: false,
-}
-
-export const PI_PROCESS_MANIFEST_SCHEMA = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })
-
-export const PI_PROCESS_SDK_SCHEMA = Type.Object({ bin: Type.Object({ pi: Type.String() }) })
-
-export const PI_PROCESS_RECORD_SCHEMA = Type.Object({
-  type: Type.String(),
-  id: Type.Optional(Type.String()),
-  success: Type.Optional(Type.Boolean()),
-  method: Type.Optional(Type.String()),
-  message: Type.Optional(
-    Type.Union([
-      Type.String(),
-      Type.Object({
-        role: Type.String(),
-        stopReason: Type.Optional(Type.String()),
-        errorMessage: Type.Optional(Type.String()),
-      }),
-    ]),
-  ),
-  notifyType: Type.Optional(Type.String()),
-  statusKey: Type.Optional(Type.String()),
-  statusText: Type.Optional(Type.String()),
-})
 
 export const PI_PROCESS_DATA_EVENT = "data"
 
@@ -131,14 +98,6 @@ export const PI_PROCESS_RESPONSE_TYPE = "response"
 
 export const PI_PROCESS_NOT_STARTED = "Processo pi não iniciado: chame start() antes de enviar comandos"
 
-export const PI_PROCESS_GET_COMMANDS_SCHEMA = Type.Object({
-  data: Type.Object({ commands: Type.Array(Type.Object({ name: Type.String(), source: Type.String() })) }),
-})
-
-export const PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA = Type.Object({
-  data: Type.Object({ text: Type.Union([Type.String(), Type.Null()]) }),
-})
-
 export const PI_PROCESS_DIAGNOSTIC_OVERLAP = 128
 
 export const PI_PROCESS_PROMPT_COMMAND = "prompt"
@@ -148,3 +107,38 @@ export const PI_PROCESS_SEARCH_FOUND = "found"
 export const PI_PROCESS_SEARCH_PENDING = "pending"
 
 export const PI_PROCESS_ALREADY_STARTED = "Processo pi já iniciado; não é possível iniciá-lo novamente."
+
+export const PI_PROCESS_SHUTDOWN_TIMEOUT = "O pi não encerrou dentro do prazo."
+
+export const PI_PROCESS_COMMANDS_RESPONSE_MISSING = "Resposta de comandos ausente"
+
+export const PI_PROCESS_DIAGNOSTIC_FAILURE = "failure"
+
+export const PI_PROCESS_DIAGNOSTIC_ACCEPTED = "accepted"
+
+export const PI_PROCESS_UI_REQUEST_TYPE = "extension_ui_request"
+
+export const PI_PROCESS_STATUS_METHOD = "setStatus"
+
+export const PI_PROCESS_NOTICE_METHOD = "notify"
+
+export const PI_PROCESS_UI_RESPONSE_MISSING = "Registro RPC recebido não corresponde ao evento de interface esperado."
+
+export const PI_PROCESS_UI_MATCHES: PiProcessUiMatches = {
+  setStatus: PI_PROCESS_STATUS_EVENT,
+  notify: PI_PROCESS_NOTICE_EVENT,
+}
+
+export const PI_PROCESS_SETTINGS_FILE = "settings.json"
+
+export const PI_PROCESS_RETRY_SETTINGS: PiProcessSettings = {
+  retry: { enabled: true, maxRetries: 1, baseDelayMs: 10, maxAgentDelayMs: 10 },
+  enableInstallTelemetry: false,
+  enableAnalytics: false,
+}
+
+export const PI_PROCESS_LAST_ASSISTANT_TEXT_COMMAND = "get_last_assistant_text"
+
+export const PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING = "Registro RPC recebido não corresponde ao texto final do modelo."
+
+export const PI_PROCESS_GET_COMMANDS_COMMAND = "get_commands"

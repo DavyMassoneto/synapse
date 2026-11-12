@@ -1,4 +1,3 @@
-import { Value } from "typebox/value"
 import { describe, expect, test } from "vitest"
 import {
   COOLDOWN_DISTRIBUTION_ERROR,
@@ -6,23 +5,23 @@ import {
   COOLDOWN_DISTRIBUTION_PROMPT,
   COOLDOWN_DISTRIBUTION_REPLY,
   lastPiProcessUserText,
-  PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA,
   PI_PROCESS_TIMEOUT_MS,
   type PiProcessScenarioHandle,
   requirePiProcessRequest,
   runPiProcessPrompt,
   runWithPiProcess,
+  SCRIPTED_PROVIDER_ERROR_KIND,
+  SCRIPTED_PROVIDER_TEXT_KIND,
 } from "../fixtures"
 
 async function retriesCooldown(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.homeDirectory.script([
-    { kind: "error", text: COOLDOWN_DISTRIBUTION_ERROR },
-    { kind: "text", text: COOLDOWN_DISTRIBUTION_REPLY },
+    { kind: SCRIPTED_PROVIDER_ERROR_KIND, text: COOLDOWN_DISTRIBUTION_ERROR },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: COOLDOWN_DISTRIBUTION_REPLY },
   ])
   const requests = await runPiProcessPrompt(piProcess, COOLDOWN_DISTRIBUTION_PROMPT)
-  const response = await piProcess.command({ type: "get_last_assistant_text" })
-  const reply = Value.Parse(PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA, JSON.parse(response.line))
-  expect(reply.data.text).toBe(COOLDOWN_DISTRIBUTION_REPLY)
+  const response = await piProcess.lastAssistantText()
+  expect(response.data.text).toBe(COOLDOWN_DISTRIBUTION_REPLY)
   expect(requests).toHaveLength(2)
   const first = requirePiProcessRequest(requests, 0)
   const second = requirePiProcessRequest(requests, 1)
@@ -31,7 +30,7 @@ async function retriesCooldown(piProcess: PiProcessScenarioHandle): Promise<void
 }
 
 async function refusesPermanentFailure(piProcess: PiProcessScenarioHandle): Promise<void> {
-  piProcess.homeDirectory.script([{ kind: "error", text: COOLDOWN_DISTRIBUTION_PERMANENT_ERROR }])
+  piProcess.homeDirectory.script([{ kind: SCRIPTED_PROVIDER_ERROR_KIND, text: COOLDOWN_DISTRIBUTION_PERMANENT_ERROR }])
   const requests = await runPiProcessPrompt(piProcess, COOLDOWN_DISTRIBUTION_PROMPT)
   expect(requests).toHaveLength(1)
   expect(piProcess.received.records()).toContainEqual(

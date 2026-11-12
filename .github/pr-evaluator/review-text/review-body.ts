@@ -1,7 +1,6 @@
 import { type Finding, type ReviewResult } from "#evaluator/review-result"
-import { ITEM_BREAK, SECTION_BREAK, UNPLACED_TITLE, VERDICT_LABELS } from "./constants"
+import { ITEM_BREAK, MARKER_PREFIX, MARKER_SUFFIX, SECTION_BREAK, UNPLACED_TITLE, VERDICT_LABELS } from "./constants"
 import { findingLabel } from "./finding-label"
-import { reviewMarker } from "./review-marker"
 
 function unplacedItem(finding: Finding): string {
   const location = `\`${finding.path}:${finding.line}\``
@@ -17,7 +16,7 @@ function unplacedSection(unplaced: Finding[]): string[] {
 
 export function reviewBody(result: ReviewResult, unplaced: Finding[], inlineCount: number, headSha: string): string {
   return [
-    reviewMarker(headSha),
+    `${MARKER_PREFIX}${headSha}${MARKER_SUFFIX}`,
     `## Avaliação automática: ${VERDICT_LABELS[result.verdict]}`,
     result.summary,
     `${inlineCount} comentário(s) nas linhas do diff e ${unplaced.length} apontamento(s) sem linha no diff.`,

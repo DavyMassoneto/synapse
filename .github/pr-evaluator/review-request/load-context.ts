@@ -3,6 +3,7 @@ import { join } from "node:path"
 import {
   ARCHITECTURE_FILE,
   MARKDOWN_EXTENSION,
+  PROMPT_ENCODING,
   RULES_FILE,
   STANDARD_BREAK,
   STANDARDS_DIRECTORY,
@@ -12,7 +13,7 @@ import {
 import { type PromptContext } from "./types"
 
 function readText(root: string, file: string): string {
-  return readFileSync(join(root, file), "utf8")
+  return readFileSync(join(root, file), PROMPT_ENCODING)
 }
 
 function readTemplate(root: string): string {
