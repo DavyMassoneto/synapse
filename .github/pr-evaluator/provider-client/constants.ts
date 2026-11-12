@@ -12,8 +12,6 @@ export const AUTHORIZATION_HEADER = "Authorization"
 
 export const BEARER_PREFIX = "Bearer "
 
-export const PROMPT_ROLE = "user"
-
 export const CONTENT_TYPE_HEADER = "Content-Type"
 
 export const JSON_CONTENT_TYPE = "application/json"
@@ -27,3 +25,19 @@ export const RETRY_DELAY_MS = 20_000
 export const SERVER_ERROR_STATUS = 500
 
 export const MODEL_ORIGIN = "Modelo"
+
+export const EMPTY_BODY = "O modelo respondeu sem corpo"
+
+export const STOP_FINISH = "stop"
+
+export const TOOL_CALLS_FINISH = "tool_calls"
+
+export const FUNCTION_TYPE = "function"
+
+export const USER_ROLE = "user"
+
+export const INCOMPLETE_TOOL_CALL = "O modelo pediu uma ferramenta sem nome"
+
+export const UNEXPECTED_FINISH = "A resposta do modelo terminou de forma inesperada: "
+
+export const MISSING_FINISH = "A resposta do modelo não terminou normalmente (o fluxo acabou sem indicar o término)"

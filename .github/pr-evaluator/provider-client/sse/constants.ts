@@ -6,8 +6,6 @@ export const DATA_PREFIX = "data:"
 
 export const DONE_PAYLOAD = "[DONE]"
 
-export const STOP_FINISH = "stop"
-
 export const MAX_STREAM_BYTES = 33_554_432
 
 export const PROVIDER_ERROR_PREFIX = "Erro do provedor"
@@ -19,7 +17,18 @@ export const StreamChunkSchema = Type.Object({
   choices: Type.Optional(
     Type.Array(
       Type.Object({
-        delta: Type.Object({ content: Type.Optional(Type.Union([Type.String(), Type.Null()])) }),
+        delta: Type.Object({
+          tool_calls: Type.Optional(
+            Type.Array(
+              Type.Object({
+                index: Type.Integer({ minimum: 0 }),
+                function: Type.Optional(
+                  Type.Object({ name: Type.Optional(Type.String()), arguments: Type.Optional(Type.String()) }),
+                ),
+              }),
+            ),
+          ),
+        }),
         finish_reason: Type.Optional(Type.Union([Type.String(), Type.Null()])),
       }),
     ),

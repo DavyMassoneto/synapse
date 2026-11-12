@@ -1,6 +1,12 @@
 import { Value } from "typebox/value"
 import { PROVIDER_ERROR_PREFIX, PROVIDER_ERROR_WITHOUT_MESSAGE, StreamChunkSchema } from "./constants"
-import { type StreamChoice, type StreamChunk, type StreamResult } from "./types"
+import {
+  type PendingToolCall,
+  type StreamChoice,
+  type StreamChunk,
+  type StreamResult,
+  type ToolCallDelta,
+} from "./types"
 
 function ensureNoProviderError(chunk: StreamChunk): void {
   if (chunk.error?.message) {
@@ -11,9 +17,31 @@ function ensureNoProviderError(chunk: StreamChunk): void {
   }
 }
 
+function pendingCall(result: StreamResult, index: number): PendingToolCall {
+  const existing = result.toolCalls.get(index)
+  if (existing) {
+    return existing
+  }
+  const created = { name: "", arguments: "" }
+  result.toolCalls.set(index, created)
+  return created
+}
+
+function applyToolCall(result: StreamResult, delta: ToolCallDelta): void {
+  const call = pendingCall(result, delta.index)
+  if (delta.function?.name) {
+    call.name = delta.function.name
+  }
+  if (delta.function?.arguments) {
+    call.arguments += delta.function.arguments
+  }
+}
+
 function applyChoice(result: StreamResult, choice: StreamChoice): void {
-  if (choice.delta.content) {
-    result.content += choice.delta.content
+  if (choice.delta.tool_calls) {
+    for (const delta of choice.delta.tool_calls) {
+      applyToolCall(result, delta)
+    }
   }
   if (choice.finish_reason) {
     result.finishReason = choice.finish_reason
