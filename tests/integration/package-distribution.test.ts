@@ -3,8 +3,21 @@ import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 import {
   ADVISOR_PROMPT,
+  DISTRIBUTION_ADVISOR_ARGUMENTS_JSON,
+  DISTRIBUTION_ADVISOR_NAME,
+  DISTRIBUTION_ADVISOR_REPLY,
+  DISTRIBUTION_ADVISOR_STATUS,
+  DISTRIBUTION_COMMANDS_COMMAND,
+  DISTRIBUTION_COMPLETION_REPLY,
+  DISTRIBUTION_DATA_FIELD,
+  DISTRIBUTION_ERROR_NOTICE,
+  DISTRIBUTION_EXTENSION_SOURCE,
+  DISTRIBUTION_INVALID_CONFIGURATION_PATTERN,
+  DISTRIBUTION_MISSING_EXTENSION_PATTERN,
+  DISTRIBUTION_SUCCESS_FIELD,
   INVALID_CASES,
   type InvalidConfigCase,
+  PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
   PI_PROCESS_COMMANDS_RESPONSE_MISSING,
   PI_PROCESS_LOADING_ERROR,
@@ -19,19 +32,22 @@ import {
   resolvePiProcessEntrypoint,
   runPiProcessPrompt,
   runWithPiProcess,
-  SCRIPTED_PROVIDER_MODEL_REFERENCE,
+  SCRIPTED_PROVIDER_TEXT_KIND,
+  SCRIPTED_PROVIDER_TOOL_CALL_KIND,
   VALID_CONFIG,
   writePackageAdvisorConfig,
 } from "../fixtures"
 
 async function registersPackagedAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
-  const response = await piProcess.command({ type: "get_commands" })
-  if (!("success" in response) || !("data" in response)) {
+  const response = await piProcess.command({ type: DISTRIBUTION_COMMANDS_COMMAND })
+  if (!(DISTRIBUTION_SUCCESS_FIELD in response) || !(DISTRIBUTION_DATA_FIELD in response)) {
     throw new Error(PI_PROCESS_COMMANDS_RESPONSE_MISSING)
   }
   expect(response.success).toBe(true)
-  expect(response.data.commands).toContainEqual(expect.objectContaining({ name: "advisor", source: "extension" }))
+  expect(response.data.commands).toContainEqual(
+    expect.objectContaining({ name: DISTRIBUTION_ADVISOR_NAME, source: DISTRIBUTION_EXTENSION_SOURCE }),
+  )
   expect(piProcess.stderr).not.toMatch(PI_PROCESS_LOADING_ERROR)
 }
 
@@ -46,7 +62,7 @@ async function readsValidConfiguration(piProcess: PiProcessScenarioHandle): Prom
   writePackageAdvisorConfig(piProcess, VALID_CONFIG)
   piProcess.start(resolvePiProcessEntrypoint())
   const status = await piProcess.received.waitForUi(PI_PROCESS_STATUS_METHOD, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect(status.statusText).toBe(`advisor: ${SCRIPTED_PROVIDER_MODEL_REFERENCE}`)
+  expect(status.statusText).toBe(DISTRIBUTION_ADVISOR_STATUS)
   expect(readPackageAdvisorConfig(piProcess)).toBe(VALID_CONFIG)
 }
 
@@ -57,27 +73,33 @@ async function rejectsInvalidConfiguration(
   writePackageAdvisorConfig(piProcess, input.content)
   piProcess.start(resolvePiProcessEntrypoint())
   const notice = await piProcess.received.waitForUi(PI_PROCESS_NOTICE_METHOD, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect(notice.notifyType).toBe("error")
-  expect(notice.message).toMatch(/inválida/)
+  expect(notice.notifyType).toBe(DISTRIBUTION_ERROR_NOTICE)
+  expect(notice.message).toMatch(DISTRIBUTION_INVALID_CONFIGURATION_PATTERN)
   expect(readPackageAdvisorConfig(piProcess)).toBe(input.content)
 }
 
 async function refusesMissingEntrypoint(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(join(piProcess.homeDirectory.home, PI_PROCESS_MISSING_ENTRY))
-  await expect(piProcess.command({ type: "get_commands" })).rejects.toThrow(/extensão|extension/i)
+  await expect(piProcess.command({ type: DISTRIBUTION_COMMANDS_COMMAND })).rejects.toThrow(
+    DISTRIBUTION_MISSING_EXTENSION_PATTERN,
+  )
   expect(piProcess.stderr).toContain(PI_PROCESS_MISSING_ENTRY)
 }
 
 async function consultsConfiguredAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   writePackageAdvisorConfig(piProcess, VALID_CONFIG)
   piProcess.homeDirectory.script([
-    { kind: "toolCall", name: "advisor", argumentsJson: "{}" },
-    { kind: "text", text: "conselho" },
-    { kind: "text", text: "concluído" },
+    {
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+      name: DISTRIBUTION_ADVISOR_NAME,
+      argumentsJson: DISTRIBUTION_ADVISOR_ARGUMENTS_JSON,
+    },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: DISTRIBUTION_ADVISOR_REPLY },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: DISTRIBUTION_COMPLETION_REPLY },
   ])
   const requests = await runPiProcessPrompt(piProcess, ADVISOR_PROMPT)
   expect(requests).toHaveLength(3)
-  expect(JSON.stringify(requirePiProcessRequest(requests, 2))).toContain("conselho")
+  expect(JSON.stringify(requirePiProcessRequest(requests, 2))).toContain(DISTRIBUTION_ADVISOR_REPLY)
 }
 
 async function runInvalidConfiguration(input: InvalidConfigCase): Promise<void> {
@@ -86,7 +108,7 @@ async function runInvalidConfiguration(input: InvalidConfigCase): Promise<void> 
 
 async function refusesSecondStart(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
-  expect(piProcess.start.bind(piProcess, resolvePiProcessEntrypoint())).toThrow(/já iniciado/)
+  expect(piProcess.start.bind(piProcess, resolvePiProcessEntrypoint())).toThrow(PI_PROCESS_ALREADY_STARTED)
 }
 
 function registerTests(): void {
