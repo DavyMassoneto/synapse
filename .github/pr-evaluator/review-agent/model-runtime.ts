@@ -1,15 +1,8 @@
 import { InMemoryCredentialStore, InMemoryModelsStore } from "@earendil-works/pi-ai"
 import { ModelRuntime } from "@earendil-works/pi-coding-agent"
 import { type ModelConfiguration } from "#evaluator/configuration"
-import {
-  CACHE_HEADERS,
-  MAX_OUTPUT_TOKENS,
-  MODEL_API,
-  MODEL_CONTEXT_TOKENS,
-  MODEL_COST,
-  MODEL_INPUT,
-  PROVIDER,
-} from "./constants"
+import { MAX_OUTPUT_TOKENS, MODEL_CONTEXT_TOKENS } from "#evaluator/review-configuration"
+import { CACHE_HEADERS, MODEL_API, MODEL_COST, MODEL_INPUT, PROVIDER } from "./constants"
 
 export async function reviewModelRuntime(configuration: ModelConfiguration): Promise<ModelRuntime> {
   const runtime = await ModelRuntime.create({

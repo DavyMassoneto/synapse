@@ -1,5 +1,5 @@
 import { type AgentToolResult } from "@earendil-works/pi-agent-core"
-import { type AgentSessionEvent, createAgentSession } from "@earendil-works/pi-coding-agent"
+import { type AgentSession, type AgentSessionEvent, createAgentSession } from "@earendil-works/pi-coding-agent"
 import { type PageRequest } from "#evaluator/output-page"
 import {
   type InspectionContext,
@@ -9,11 +9,10 @@ import {
   inspectRepository,
   verifySnapshot,
 } from "#evaluator/repository-inspection"
-import { parseReviewResult, type ReviewResult } from "#evaluator/review-result"
+import { MAX_EXECUTION_MS, TIME_EXCEEDED } from "#evaluator/review-configuration"
 import {
   FAILED,
   INSPECTION_REQUIRED,
-  MAX_EXECUTION_MS,
   MAX_TURNS,
   NO_SUBMISSION,
   PENDING,
@@ -21,7 +20,6 @@ import {
   SUBMITTED,
   SUBMITTED_MESSAGE,
   TEXT,
-  TIME_EXCEEDED,
   TURN_START,
   TURNS_EXCEEDED,
 } from "./constants"
@@ -73,8 +71,7 @@ export class ReviewRun {
       throw new ReviewFailure(INSPECTION_REQUIRED)
     }
     this.coverage.ensureComplete()
-    const review = parseReviewResult(JSON.stringify(submission))
-    this.state = { kind: SUBMITTED, review }
+    this.state = { kind: SUBMITTED, review: submission }
     return { content: [{ type: TEXT, text: SUBMITTED_MESSAGE }], details: SUBMITTED_MESSAGE, terminate: true }
   }
 
@@ -117,26 +114,35 @@ export class ReviewRun {
     this.abortSession()
   }
 
-  async run(): Promise<ReviewResult> {
+  private outcome(): ReviewSubmission {
+    if (this.state.kind === SUBMITTED) {
+      return this.state.review
+    }
+    if (this.state.kind === FAILED) {
+      throw new ReviewFailure(this.state.message)
+    }
+    throw new ReviewFailure(NO_SUBMISSION)
+  }
+
+  private async createSession(): Promise<AgentSession> {
     verifySnapshot(this.context)
-    const { session } = await createAgentSession(
-      await reviewSessionOptions(
-        this.input.model,
-        reviewTools({ inspect: this.inspect.bind(this), diff: this.diff.bind(this), submit: this.submit.bind(this) }),
-      ),
-    )
+    const tools = reviewTools({
+      inspect: this.inspect.bind(this),
+      diff: this.diff.bind(this),
+      submit: this.submit.bind(this),
+    })
+    const { session } = await createAgentSession(await reviewSessionOptions(this.input.model, tools))
     this.session = { kind: READY, value: session }
+    return session
+  }
+
+  async run(): Promise<ReviewSubmission> {
+    const session = await this.createSession()
     const unsubscribe = session.subscribe(this.observe.bind(this))
     const timer = setTimeout(this.timeout.bind(this), MAX_EXECUTION_MS)
     try {
       await session.prompt(this.input.prompt)
-      if (this.state.kind === SUBMITTED) {
-        return this.state.review
-      }
-      if (this.state.kind === FAILED) {
-        throw new ReviewFailure(this.state.message)
-      }
-      throw new ReviewFailure(NO_SUBMISSION)
+      return this.outcome()
     } finally {
       clearTimeout(timer)
       unsubscribe()

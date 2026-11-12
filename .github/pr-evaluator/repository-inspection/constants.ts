@@ -1,3 +1,4 @@
+import { type ExecFileSyncOptions } from "node:child_process"
 import { Type } from "typebox"
 import { MAX_OUTPUT_BYTES, MAX_PAGE_LINES } from "#evaluator/output-page"
 import { type GitEnvironment } from "./types"
@@ -47,4 +48,4 @@ export const GIT_ENVIRONMENT: GitEnvironment = {
 
 export const NO_MATCH_EXIT_CODE = 1
 
-export const EMPTY_TEXT = ""
+export const GIT_STDIO: NonNullable<ExecFileSyncOptions["stdio"]> = ["ignore", "pipe", "pipe"]

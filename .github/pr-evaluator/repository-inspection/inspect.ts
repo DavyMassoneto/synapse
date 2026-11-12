@@ -1,7 +1,6 @@
 import { LINE_BREAK, renderPage } from "#evaluator/output-page"
 import {
   COMMIT_SUFFIX,
-  EMPTY_TEXT,
   FILES_ACTION,
   HISTORY_ACTION,
   HISTORY_ARGUMENTS,
@@ -55,22 +54,20 @@ export function verifySnapshot(context: InspectionContext): void {
   }
 }
 
-export function inspectRepository(context: InspectionContext, request: InspectionRequest): string {
-  let output = EMPTY_TEXT
+function runAction(context: InspectionContext, request: InspectionRequest): string {
   switch (request.action) {
     case FILES_ACTION:
-      output = listFiles(context, request.path)
-      break
+      return listFiles(context, request.path)
     case READ_ACTION:
       requirePath(context, request.path)
-      output = inspectionGit(context, [...SHOW_ARGUMENTS, `${context.sha}:${request.path}`])
-      break
+      return inspectionGit(context, [...SHOW_ARGUMENTS, `${context.sha}:${request.path}`])
     case SEARCH_ACTION:
-      output = searchCode(context, request.text)
-      break
+      return searchCode(context, request.text)
     case HISTORY_ACTION:
-      output = inspectionGit(context, [...HISTORY_ARGUMENTS, context.sha, "--", request.path])
-      break
+      return inspectionGit(context, [...HISTORY_ARGUMENTS, context.sha, "--", request.path])
   }
-  return renderPage(output.split(LINE_BREAK), request).text
+}
+
+export function inspectRepository(context: InspectionContext, request: InspectionRequest): string {
+  return renderPage(runAction(context, request).split(LINE_BREAK), request).text
 }

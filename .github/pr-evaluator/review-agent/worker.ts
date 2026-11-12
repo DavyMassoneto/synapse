@@ -1,11 +1,12 @@
 import { Value } from "typebox/value"
 import { InspectionFailure } from "#evaluator/repository-inspection"
-import { EMPTY_TEXT, FAILURE_EXIT_CODE, INPUT_ENCODING, WORKER_FAILURE, WorkerInputSchema } from "./constants"
+import { WORKER_ENCODING, WORKER_FAILURE } from "#evaluator/review-configuration"
+import { EMPTY_TEXT, FAILURE_EXIT_CODE, WorkerInputSchema } from "./constants"
 import { ReviewFailure } from "./review-failure"
 import { ReviewRun } from "./review-run"
 
 async function work(): Promise<void> {
-  process.stdin.setEncoding(INPUT_ENCODING)
+  process.stdin.setEncoding(WORKER_ENCODING)
   let text = EMPTY_TEXT
   for await (const chunk of process.stdin) {
     text += chunk

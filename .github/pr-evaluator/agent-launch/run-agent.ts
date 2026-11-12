@@ -1,6 +1,5 @@
 import { spawnSync } from "node:child_process"
 import { type ModelConfiguration } from "#evaluator/configuration"
-import { parseReviewResult, type ReviewResult } from "#evaluator/review-result"
 import {
   MAX_EXECUTION_MS,
   TIME_EXCEEDED,
@@ -10,7 +9,8 @@ import {
   WORKER_ENCODING,
   WORKER_ENVIRONMENT,
   WORKER_FAILURE,
-} from "./constants"
+} from "#evaluator/review-configuration"
+import { parseReviewResult, type ReviewResult } from "#evaluator/review-result"
 
 export function runReviewAgent(model: ModelConfiguration, sha: string, diff: string, prompt: string): ReviewResult {
   const result = spawnSync(process.execPath, WORKER_ARGUMENTS, {

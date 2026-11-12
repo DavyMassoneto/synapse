@@ -1,4 +1,4 @@
-import { MAX_OUTPUT_TOKENS, MODEL_CONTEXT_TOKENS } from "#evaluator/review-agent"
+import { MAX_OUTPUT_TOKENS, MODEL_CONTEXT_TOKENS } from "#evaluator/review-configuration"
 
 export const TEMPLATE_FILE = "docs/pr-evaluator.md"
 

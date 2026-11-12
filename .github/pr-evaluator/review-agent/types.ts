@@ -1,10 +1,10 @@
 import { type AgentToolResult } from "@earendil-works/pi-agent-core"
-import { type AgentSession } from "@earendil-works/pi-coding-agent"
+import { type AgentSession, type CreateAgentSessionOptions } from "@earendil-works/pi-coding-agent"
 import { type Static } from "typebox"
 import { type ModelConfiguration } from "#evaluator/configuration"
 import { type PageRequest } from "#evaluator/output-page"
 import { type InspectionRequest } from "#evaluator/repository-inspection"
-import { type ReviewResult, type ReviewSubmissionSchema } from "#evaluator/review-result"
+import { type ReviewSubmissionSchema } from "#evaluator/review-result"
 
 export interface WorkerInput {
   sha: string
@@ -23,7 +23,7 @@ export interface PendingReview {
 }
 export interface SubmittedReview {
   kind: "submitted"
-  review: ReviewResult
+  review: ReviewSubmission
 }
 export interface FailedReview {
   kind: "failed"
@@ -54,8 +54,6 @@ export interface ModelCost {
   cacheRead: number
   cacheWrite: number
 }
-export interface WorkerEnvironment {
-  PATH: NodeJS.ProcessEnv["PATH"]
-  LANG: string
-}
 export type ModelInput = "text"[]
+
+export type ReviewTools = NonNullable<CreateAgentSessionOptions["customTools"]>

@@ -1,11 +1,10 @@
-import { type CreateAgentSessionOptions } from "@earendil-works/pi-coding-agent"
 import { DIFF_DESCRIPTION, PageSchema, READ_DIFF } from "#evaluator/output-page"
 import { INSPECT_REPOSITORY, INSPECTION_DESCRIPTION, InspectionSchema } from "#evaluator/repository-inspection"
 import { ReviewSubmissionSchema, SUBMISSION_DESCRIPTION, SUBMIT_REVIEW } from "#evaluator/review-result"
 import { SEQUENTIAL } from "./constants"
-import { type ReviewToolExecutors } from "./types"
+import { type ReviewToolExecutors, type ReviewTools } from "./types"
 
-export function reviewTools(executors: ReviewToolExecutors): NonNullable<CreateAgentSessionOptions["customTools"]> {
+export function reviewTools(executors: ReviewToolExecutors): ReviewTools {
   return [
     {
       name: INSPECT_REPOSITORY,
