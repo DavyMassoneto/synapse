@@ -68,6 +68,16 @@ async function refusesMissingEntrypoint(piProcess: PiProcessScenarioHandle): Pro
   expect(piProcess.stderr).toContain(PI_PROCESS_MISSING_ENTRY)
 }
 
+async function callsDisabledAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
+  piProcess.homeDirectory.script([
+    { kind: "toolCall", name: "advisor", argumentsJson: "{}" },
+    { kind: "text", text: "ok" },
+  ])
+  const requests = await runPiProcessPrompt(piProcess, ADVISOR_PROMPT)
+  expect(requests).toHaveLength(2)
+  expect(JSON.stringify(requirePiProcessRequest(requests, 1))).toContain("Tool advisor not found")
+}
+
 async function consultsConfiguredAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   writePackageAdvisorConfig(piProcess, VALID_CONFIG)
   piProcess.homeDirectory.script([
@@ -78,6 +88,16 @@ async function consultsConfiguredAdvisor(piProcess: PiProcessScenarioHandle): Pr
   const requests = await runPiProcessPrompt(piProcess, ADVISOR_PROMPT)
   expect(requests).toHaveLength(3)
   expect(JSON.stringify(requirePiProcessRequest(requests, 2))).toContain("conselho")
+}
+
+async function reportsInvalidArguments(piProcess: PiProcessScenarioHandle): Promise<void> {
+  writePackageAdvisorConfig(piProcess, VALID_CONFIG)
+  piProcess.homeDirectory.script([
+    { kind: "toolCall", name: "advisor", argumentsJson: "[]" },
+    { kind: "text", text: "ok" },
+  ])
+  const requests = await runPiProcessPrompt(piProcess, ADVISOR_PROMPT)
+  expect(JSON.stringify(requirePiProcessRequest(requests, 1))).toContain("Tool arguments must be a JSON object")
 }
 
 async function runInvalidConfiguration(input: InvalidConfigCase): Promise<void> {
@@ -98,6 +118,16 @@ function registerTests(): void {
   test(
     "consulta advisor configurado pelo modelo roteirizado",
     runWithPiProcess.bind(undefined, consultsConfiguredAdvisor),
+    PI_PROCESS_TIMEOUT_MS,
+  )
+  test(
+    "argumentos que não são um objeto voltam ao modelo como erro da ferramenta",
+    runWithPiProcess.bind(undefined, reportsInvalidArguments),
+    PI_PROCESS_TIMEOUT_MS,
+  )
+  test(
+    "o modelo chama advisor sem configuração",
+    runWithPiProcess.bind(undefined, callsDisabledAdvisor),
     PI_PROCESS_TIMEOUT_MS,
   )
   test(
