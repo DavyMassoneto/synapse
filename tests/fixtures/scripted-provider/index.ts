@@ -1,5 +1,6 @@
 export * from "./constants"
 export * from "./require-environment"
+export * from "./script-track"
 export * from "./scripted-model-provider"
 export * from "./stream-events"
 export * from "./types"

@@ -72,7 +72,24 @@ const PI_PROCESS_STEP_SCHEMA = Type.Union([
   Type.Object({ kind: Type.Literal(PI_PROCESS_TOOL_CALL_KIND), name: Type.String(), argumentsJson: Type.String() }),
 ])
 
-export const PI_PROCESS_SCRIPT_SCHEMA = Type.Array(PI_PROCESS_STEP_SCHEMA)
+export const PI_PROCESS_STEPS_SCHEMA = Type.Array(PI_PROCESS_STEP_SCHEMA)
+
+export const PI_PROCESS_TRACKS_SCHEMA = Type.Array(
+  Type.Object({ marker: Type.Optional(Type.String()), steps: PI_PROCESS_STEPS_SCHEMA }),
+)
+
+export const PI_PROCESS_SCRIPT_SCHEMA = Type.Union([
+  PI_PROCESS_STEPS_SCHEMA,
+  Type.Object({ tracks: PI_PROCESS_TRACKS_SCHEMA }),
+])
+
+export const PI_PROCESS_TRACK_OFFSET_SUFFIX = ".offset.json"
+
+export const PI_PROCESS_TRACK_OFFSET_SCHEMA = Type.Object({ index: Type.Integer({ minimum: 0 }) })
+
+export const PI_PROCESS_SYSTEM_ROLE = "system"
+
+export const PI_PROCESS_PROVIDER_NEWLINE = "\n"
 
 export const PI_PROCESS_PROVIDER_VARIABLE = "SYNAPSE_TEST_PROVIDER"
 

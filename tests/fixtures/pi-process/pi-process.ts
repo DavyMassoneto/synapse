@@ -20,16 +20,24 @@ import {
 import { PiProcessDiagnostics } from "./diagnostics"
 import { PiProcessHome } from "./pi-process-home"
 import { PiProcessRecords } from "./pi-process-records"
-import { piProcessSelectedArguments, piProcessSelectedEnvironment } from "./process-start"
-import { type PiProcessCommand, type PiProcessExitCode, type PiProcessResponse } from "./types"
+import { piProcessSelectedArguments, piProcessSelectedEnvironment, piProcessSessionArguments } from "./process-start"
+import {
+  type PiProcessCommand,
+  type PiProcessExitCode,
+  type PiProcessResponse,
+  type PiProcessScenarioHome,
+  type PiProcessSession,
+} from "./types"
 import { waitForPiProcessClose } from "./wait-for-close"
 
 export class PiProcess {
-  readonly homeDirectory = new PiProcessHome()
+  homeDirectory: PiProcessScenarioHome = new PiProcessHome()
 
   readonly received = new PiProcessRecords()
 
   private selection: PiProcessModelSelection = PI_PROCESS_DEFAULT_SELECTION
+
+  private session?: PiProcessSession
 
   private running = false
 
@@ -47,13 +55,28 @@ export class PiProcess {
     this.selection = selection
   }
 
+  configureSession(session: PiProcessSession): void {
+    this.session = session
+  }
+
+  replaceHome(home: PiProcessScenarioHome): void {
+    this.homeDirectory.remove()
+    this.homeDirectory = home
+  }
+
   start(entrypoint: string): void {
     if (this.child) {
       throw new Error(PI_PROCESS_ALREADY_STARTED)
     }
     const selection = this.selection
     this.running = true
-    this.child = spawn(process.execPath, piProcessSelectedArguments(entrypoint, selection), {
+    let args: string[]
+    if (this.session) {
+      args = piProcessSessionArguments(entrypoint, selection, this.session)
+    } else {
+      args = piProcessSelectedArguments(entrypoint, selection)
+    }
+    this.child = spawn(process.execPath, args, {
       cwd: this.homeDirectory.home,
       env: piProcessSelectedEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory, selection),
       stdio: PI_PROCESS_STDIO,
@@ -78,7 +101,7 @@ export class PiProcess {
     return response
   }
 
-  async dispose(): Promise<void> {
+  async close(): Promise<void> {
     const child = this.child
     if (child && this.running) {
       const closed = waitForPiProcessClose(child)
@@ -91,6 +114,10 @@ export class PiProcess {
         await killed
       }
     }
+  }
+
+  async dispose(): Promise<void> {
+    await this.close()
     this.homeDirectory.remove()
   }
 

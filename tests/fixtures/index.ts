@@ -1,4 +1,5 @@
 export * from "./agent-team"
+export * from "./agent-team-distribution"
 export * from "./composition"
 export * from "./context"
 export * from "./cooldown-retry"

@@ -17,6 +17,11 @@ export interface PiProcessCommand {
 
 export type PiProcessExitCode = number | null
 
+export interface PiProcessSession {
+  path: string
+  directory: string
+}
+
 export interface PiProcessResponse {
   record: PiProcessRecord
   line: string
@@ -49,6 +54,7 @@ export interface PiProcessScenarioHome {
   readonly home: string
   readonly agentDirectory: string
   script(steps: PiProcessScript): void
+  remove(): void
 }
 
 export interface PiProcessScenarioRecords {
@@ -62,6 +68,8 @@ export interface PiProcessScenarioHandle {
   readonly stderr: string
   start(entrypoint: string): void
   configureSelection(selection: PiProcessModelSelection): void
+  configureSession(session: PiProcessSession): void
+  close(): Promise<void>
   command(command: PiProcessCommand): Promise<PiProcessResponse>
 }
 
