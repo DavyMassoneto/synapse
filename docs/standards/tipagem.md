@@ -38,6 +38,7 @@
 
 - `interface` e `type` ficam no `types.ts` do módulo, separados das funções.
 - O tipo derivado de um esquema (`Static<typeof ESQUEMA>`) importa o esquema de `schemas.ts`, conforme [AGENTS.md](../../AGENTS.md). `types.ts` não importa nada de `constants.ts`, nem diretamente nem por meio de outro arquivo; `constants.ts` importa de `types.ts` a interface que anota as suas constantes, sem formar ciclo.
+- O discriminante de uma união é escrito no `types.ts` como literal (`kind: "found"`), nunca como `typeof` de uma constante importada de `constants.ts`. A constante com o mesmo valor continua em `constants.ts`, e a implementação a usa para construir e comparar o valor. O literal escrito no `types.ts` declara o tipo e não é um literal de identificação no código de implementação, conforme [AGENTS.md](../../AGENTS.md).
 
 ## 6. Supressões
 
