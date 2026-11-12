@@ -4,23 +4,23 @@ import { compose } from "#synapse/composition"
 import { advisorConfigPath, responseRulesInstructionsPath } from "#synapse/integration"
 import {
   COOLING_DOWN_ERROR,
+  CompositionContext,
   DistributionEnvironment,
   failedAssistantMessage,
   REWRITE_PREFIX,
   responseRulesContextEvent,
   SynapseHostCollector,
-  TestContext,
   toolText,
 } from "../fixtures"
 
 let environment: DistributionEnvironment
 let host: SynapseHostCollector
-let context: TestContext
+let context: CompositionContext
 
 function prepare(): void {
   environment = new DistributionEnvironment()
   host = new SynapseHostCollector()
-  context = new TestContext()
+  context = new CompositionContext()
 }
 
 function configureModel(): void {
@@ -32,7 +32,7 @@ async function registersAdvisor(): Promise<void> {
   configureModel()
   await host.emitSessionStart(context)
   expect(host.active).toContain("advisor")
-  expect(host.shutdowns).toHaveLength(1)
+  expect(host.shutdowns).toHaveLength(2)
 }
 
 async function consultsWithLiveSignal(): Promise<void> {
@@ -108,7 +108,7 @@ function cleanup(): void {
 function registersCooldownRetry(): void {
   compose(host)
   const message = failedAssistantMessage(COOLING_DOWN_ERROR)
-  const results = host.messageEnds.map((handler) => handler({ type: "message_end", message }))
+  const results = host.messageEnds.map((handler) => handler({ type: "message_end", message })).filter(Boolean)
   expect(results).toStrictEqual([{ message: { ...message, errorMessage: `${REWRITE_PREFIX}${COOLING_DOWN_ERROR}` } }])
 }
 
@@ -142,7 +142,26 @@ function registersModelRouter(): void {
   expect([model.provider, model.id]).toStrictEqual(["jev", "auto"])
 }
 
+function registersTeamTools(): void {
+  compose(host)
+  expect(Array.from(host.tools.keys())).toEqual(
+    expect.arrayContaining([
+      "subagent",
+      "interrupt_agent",
+      "list_models",
+      "send_message",
+      "list_agents",
+      "wait_agent",
+      "team_task_create",
+      "team_task_list",
+      "team_task_get",
+      "team_task_update",
+    ]),
+  )
+}
+
 function registerTests(): void {
+  test("composição registra as dez ferramentas da equipe", registersTeamTools)
   beforeEach(prepare)
   afterEach(cleanup)
   test("composição registra a ferramenta e o encerramento", registersAdvisor)

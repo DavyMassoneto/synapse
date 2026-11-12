@@ -1,8 +1,11 @@
 import {
   type AdvisorHost,
+  type AgentTeamHost,
   type CooldownRetryHost,
   type ModelRouterHost,
   type ResponseRulesHost,
 } from "#synapse/integration"
 
-export type SynapseHost = AdvisorHost & CooldownRetryHost & ResponseRulesHost & ModelRouterHost
+export type SynapseHost = AdvisorHost & CooldownRetryHost & ResponseRulesHost & ModelRouterHost & AgentTeamHost
+
+export type SynapseMemberHost = CooldownRetryHost & ResponseRulesHost & ModelRouterHost

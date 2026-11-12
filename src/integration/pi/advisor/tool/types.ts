@@ -2,7 +2,7 @@ import { type ExtensionContext, type ToolDefinition } from "@earendil-works/pi-c
 import { type Static } from "typebox"
 import { type AdvisorModelRegistry } from "../model-consultation"
 import { type TranscriptSource } from "../transcript"
-import { type advisorParameters } from "./constants"
+import { type ADVISOR_NAME, type advisorParameters } from "./constants"
 
 export type AdvisorToolInput = Static<typeof advisorParameters>
 
@@ -24,6 +24,11 @@ export type AdvisorToolResult = ReturnType<PiAdvisorTool["execute"]>
 
 export type AdvisorToolOutput = Awaited<AdvisorToolResult>
 
-export type AdvisorToolBase = Omit<PiAdvisorTool, "execute" | "renderCall" | "renderResult">
+export type AdvisorToolBase = Omit<PiAdvisorTool, "name" | "execute" | "renderCall" | "renderResult"> &
+  AdvisorToolIdentity
+
+export interface AdvisorToolIdentity {
+  name: typeof ADVISOR_NAME
+}
 
 export type AdvisorToolSignal = Parameters<PiAdvisorTool["execute"]>[2]

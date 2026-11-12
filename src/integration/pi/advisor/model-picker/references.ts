@@ -1,4 +1,4 @@
-import { REFERENCE_SEPARATOR } from "#synapse/modules"
+import { PI_MODEL_REFERENCE_SEPARATOR } from "#synapse/integration/pi/model-reference"
 import { type ListedModel, type PickerContext } from "./types"
 
 function* listedModels(context: PickerContext): Generator<ListedModel> {
@@ -12,5 +12,5 @@ function* listedModels(context: PickerContext): Generator<ListedModel> {
 }
 
 export function modelReferences(context: PickerContext): string[] {
-  return Array.from(listedModels(context), (model) => `${model.provider}${REFERENCE_SEPARATOR}${model.id}`)
+  return Array.from(listedModels(context), (model) => `${model.provider}${PI_MODEL_REFERENCE_SEPARATOR}${model.id}`)
 }

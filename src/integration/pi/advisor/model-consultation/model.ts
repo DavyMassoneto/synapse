@@ -1,9 +1,9 @@
 import { clampThinkingLevel } from "@earendil-works/pi-ai"
+import { parsePiModelReference } from "#synapse/integration/pi/model-reference"
 import {
   type ModelRequest,
   type ModelResolution,
   type ModelResponse,
-  parseModelReference,
   type ResolvedModel,
   type ThinkingLevel,
 } from "#synapse/modules"
@@ -27,7 +27,7 @@ export class AdvisorModel {
   }
 
   private findModel(reference: string): ModelLookup {
-    const parsed = parseModelReference(reference)
+    const parsed = parsePiModelReference(reference)
     if (parsed.kind === "invalid") {
       return { kind: "failure", message: INVALID_REFERENCE }
     }
