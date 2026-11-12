@@ -2,15 +2,23 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { compose } from "#synapse/composition"
 import { advisorConfigPath } from "#synapse/integration"
-import { AdvisorHostCollector, DistributionEnvironment, TestContext, toolText } from "../fixtures"
+import {
+  COOLING_DOWN_ERROR,
+  DistributionEnvironment,
+  failedAssistantMessage,
+  REWRITE_PREFIX,
+  SynapseHostCollector,
+  TestContext,
+  toolText,
+} from "../fixtures"
 
 let environment: DistributionEnvironment
-let host: AdvisorHostCollector
+let host: SynapseHostCollector
 let context: TestContext
 
 function prepare(): void {
   environment = new DistributionEnvironment()
-  host = new AdvisorHostCollector()
+  host = new SynapseHostCollector()
   context = new TestContext()
 }
 
@@ -96,6 +104,13 @@ function cleanup(): void {
   environment.restore()
 }
 
+function registersCooldownRetry(): void {
+  compose(host)
+  const message = failedAssistantMessage(COOLING_DOWN_ERROR)
+  const results = host.messageEnds.map((handler) => handler({ type: "message_end", message }))
+  expect(results).toStrictEqual([{ message: { ...message, errorMessage: `${REWRITE_PREFIX}${COOLING_DOWN_ERROR}` } }])
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -108,6 +123,7 @@ function registerTests(): void {
   test("configuração inválida desliga a ferramenta", invalidConfigurationDisablesTool)
   test("configuração inválida recusa a consulta sem chamar o modelo", invalidConfigurationRefusesConsultation)
   test("configuração inválida não sobrescreve o arquivo", invalidConfigurationIsPreserved)
+  test("composição registra a repetição por cooldown", registersCooldownRetry)
 }
 
 describe("composition", registerTests)
