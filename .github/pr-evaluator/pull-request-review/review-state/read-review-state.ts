@@ -1,8 +1,9 @@
 import { type GithubConfiguration } from "#evaluator/configuration"
 import { getJson } from "#evaluator/github-rest-client"
 import { pullPath } from "../pull-lookup"
-import { MAX_PAGES, PER_PAGE, ReviewListSchema } from "./constants"
+import { MAX_PAGES, PER_PAGE } from "./constants"
 import { isEvaluatorReview, isLastPage } from "./predicates"
+import { ReviewListSchema } from "./schemas"
 import { type ListedReview, type ReviewState } from "./types"
 
 function fetchReviewPage(configuration: GithubConfiguration, page: number): Promise<ListedReview[]> {

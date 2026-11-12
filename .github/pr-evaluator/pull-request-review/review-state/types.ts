@@ -1,5 +1,5 @@
 import { type Static } from "typebox"
-import { type ReviewListSchema } from "./constants"
+import { type ReviewListSchema } from "./schemas"
 
 export type ListedReview = Static<typeof ReviewListSchema>[number]
 
