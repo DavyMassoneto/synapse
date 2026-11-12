@@ -1,5 +1,4 @@
-import { Type } from "typebox"
-import { type PiProcessMatch } from "../pi-process-matching"
+import { type PiProcessMatch } from "./types"
 
 export const PI_PROCESS_TIMEOUT_MS = 60_000
 
@@ -54,30 +53,6 @@ export const PI_PROCESS_SETTLED_EVENT: PiProcessMatch = { type: "agent_settled" 
 
 export const PI_PROCESS_NOTICE_EVENT: PiProcessMatch = { type: "extension_ui_request", method: "notify" }
 
-export const PI_PROCESS_MANIFEST_SCHEMA = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })
-
-export const PI_PROCESS_SDK_SCHEMA = Type.Object({ bin: Type.Object({ pi: Type.String() }) })
-
-export const PI_PROCESS_RECORD_SCHEMA = Type.Object({
-  type: Type.String(),
-  id: Type.Optional(Type.String()),
-  success: Type.Optional(Type.Boolean()),
-  method: Type.Optional(Type.String()),
-  message: Type.Optional(
-    Type.Union([
-      Type.String(),
-      Type.Object({
-        role: Type.String(),
-        stopReason: Type.Optional(Type.String()),
-        errorMessage: Type.Optional(Type.String()),
-      }),
-    ]),
-  ),
-  notifyType: Type.Optional(Type.String()),
-  statusKey: Type.Optional(Type.String()),
-  statusText: Type.Optional(Type.String()),
-})
-
 export const PI_PROCESS_DATA_EVENT = "data"
 
 export const PI_PROCESS_ERROR_EVENT = "error"
@@ -122,10 +97,6 @@ export const PI_PROCESS_RESPONSE_TYPE = "response"
 
 export const PI_PROCESS_NOT_STARTED = "Processo pi não iniciado: chame start() antes de enviar comandos"
 
-export const PI_PROCESS_GET_COMMANDS_SCHEMA = Type.Object({
-  data: Type.Object({ commands: Type.Array(Type.Object({ name: Type.String(), source: Type.String() })) }),
-})
-
 export const PI_PROCESS_DIAGNOSTIC_OVERLAP = 128
 
 export const PI_PROCESS_PROMPT_COMMAND = "prompt"
@@ -135,3 +106,7 @@ export const PI_PROCESS_SEARCH_FOUND = "found"
 export const PI_PROCESS_SEARCH_PENDING = "pending"
 
 export const PI_PROCESS_ALREADY_STARTED = "Processo pi já iniciado; não é possível iniciá-lo novamente."
+
+export const PI_PROCESS_SHUTDOWN_TIMEOUT = "O pi não encerrou dentro do prazo."
+
+export const PI_PROCESS_COMMANDS_RESPONSE_MISSING = "Resposta de comandos ausente"

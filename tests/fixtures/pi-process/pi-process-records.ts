@@ -1,18 +1,18 @@
 import { EventEmitter, once } from "node:events"
 import { Value } from "typebox/value"
-import { isPiProcessRecordMatch, type PiProcessMatch } from "../pi-process-matching"
 import {
   PI_PROCESS_RECORD_EVENT,
-  PI_PROCESS_RECORD_SCHEMA,
   PI_PROCESS_SEARCH_FOUND,
   PI_PROCESS_SEARCH_PENDING,
   PI_PROCESS_TIMEOUT_FAILURE,
 } from "./constants"
 import { PiProcessLineFramer } from "./line-framer"
-import { type PiProcessResponse, type PiProcessSearch } from "./types"
+import { isPiProcessRecordMatch } from "./predicates"
+import { PI_PROCESS_RECORD_SCHEMA } from "./schemas"
+import { type PiProcessMatch, type PiProcessRecord, type PiProcessSearch } from "./types"
 
 export class PiProcessRecords {
-  private readonly responses: PiProcessResponse[] = []
+  private readonly responses: PiProcessRecord[] = []
 
   private readonly events = new EventEmitter()
 
@@ -20,7 +20,7 @@ export class PiProcessRecords {
 
   private failure?: Error
 
-  async waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessResponse> {
+  async waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessRecord> {
     const signal = AbortSignal.timeout(timeoutMs)
     let offset = 0
     while (true) {
@@ -49,7 +49,7 @@ export class PiProcessRecords {
     while (offset < this.responses.length) {
       const response = this.responses[offset]
       offset += 1
-      if (response && isPiProcessRecordMatch(response.record, match)) {
+      if (response && isPiProcessRecordMatch(response, match)) {
         return { kind: PI_PROCESS_SEARCH_FOUND, response }
       }
     }
@@ -60,7 +60,7 @@ export class PiProcessRecords {
     try {
       for (const line of this.framer.append(chunk)) {
         const record = Value.Parse(PI_PROCESS_RECORD_SCHEMA, JSON.parse(line))
-        this.responses.push({ record, line })
+        this.responses.push(record)
         this.events.emit(PI_PROCESS_RECORD_EVENT)
       }
     } catch (error) {

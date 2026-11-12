@@ -1,11 +1,6 @@
 import { type Static } from "typebox"
-import { type PiProcessMatch } from "../pi-process-matching"
 import { type PiProcessScript } from "../scripted-provider"
-import {
-  type PI_PROCESS_RECORD_SCHEMA,
-  type PI_PROCESS_SEARCH_FOUND,
-  type PI_PROCESS_SEARCH_PENDING,
-} from "./constants"
+import { type PI_PROCESS_RECORD_SCHEMA } from "./schemas"
 
 export type PiProcessRecord = Static<typeof PI_PROCESS_RECORD_SCHEMA>
 
@@ -16,18 +11,13 @@ export interface PiProcessCommand {
 
 export type PiProcessExitCode = number | null
 
-export interface PiProcessResponse {
-  record: PiProcessRecord
-  line: string
-}
-
 export interface PiProcessSearchFound {
-  kind: typeof PI_PROCESS_SEARCH_FOUND
-  response: PiProcessResponse
+  kind: "found"
+  response: PiProcessRecord
 }
 
 export interface PiProcessSearchPending {
-  kind: typeof PI_PROCESS_SEARCH_PENDING
+  kind: "pending"
   offset: number
 }
 
@@ -51,7 +41,7 @@ export interface PiProcessScenarioHome {
 }
 
 export interface PiProcessScenarioRecords {
-  waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessResponse>
+  waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessRecord>
 }
 
 export interface PiProcessScenarioHandle {
@@ -59,7 +49,18 @@ export interface PiProcessScenarioHandle {
   readonly received: PiProcessScenarioRecords
   readonly stderr: string
   start(entrypoint: string): void
-  command(command: PiProcessCommand): Promise<PiProcessResponse>
+  command(command: PiProcessCommand): Promise<PiProcessRecord>
 }
 
 export type PiProcessScenario = (piProcess: PiProcessScenarioHandle) => Promise<void>
+
+export type PiProcessClosePromise = Promise<void>
+
+export type PiProcessCloseResolver = () => void
+
+export interface PiProcessMatch {
+  type: string
+  id?: string
+  method?: string
+  statusKey?: string
+}

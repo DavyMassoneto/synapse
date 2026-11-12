@@ -1,5 +1,5 @@
 export * from "./constants"
 export * from "./read"
-export * from "./require-request"
+export * from "./schemas"
 export * from "./types"
 export * from "./write"

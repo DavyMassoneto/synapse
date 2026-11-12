@@ -1,13 +1,12 @@
 import { existsSync } from "node:fs"
 import { join } from "node:path"
-import { Value } from "typebox/value"
 import { describe, expect, test } from "vitest"
 import {
   ADVISOR_PROMPT,
   INVALID_CASES,
   type InvalidConfigCase,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
-  PI_PROCESS_GET_COMMANDS_SCHEMA,
+  PI_PROCESS_COMMANDS_RESPONSE_MISSING,
   PI_PROCESS_LOADING_ERROR,
   PI_PROCESS_MISSING_ENTRY,
   PI_PROCESS_MODEL_REFERENCE,
@@ -28,17 +27,18 @@ import {
 async function registersPackagedAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
   const response = await piProcess.command({ type: "get_commands" })
-  expect(response.record.success).toBe(true)
-  expect(Value.Parse(PI_PROCESS_GET_COMMANDS_SCHEMA, JSON.parse(response.line)).data.commands).toContainEqual(
-    expect.objectContaining({ name: "advisor", source: "extension" }),
-  )
+  if (!("success" in response) || !("data" in response)) {
+    throw new Error(PI_PROCESS_COMMANDS_RESPONSE_MISSING)
+  }
+  expect(response.success).toBe(true)
+  expect(response.data.commands).toContainEqual(expect.objectContaining({ name: "advisor", source: "extension" }))
   expect(piProcess.stderr).not.toMatch(PI_PROCESS_LOADING_ERROR)
 }
 
 async function disablesMissingConfiguration(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
   const status = await piProcess.received.waitFor(PI_PROCESS_STATUS_EVENT, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect(status.record.statusText).toBeUndefined()
+  expect("statusText" in status ? status.statusText : undefined).toBeUndefined()
   expect(existsSync(packageAdvisorPath(piProcess.homeDirectory.agentDirectory))).toBe(false)
 }
 
@@ -46,7 +46,7 @@ async function readsValidConfiguration(piProcess: PiProcessScenarioHandle): Prom
   writePackageAdvisorConfig(piProcess, VALID_CONFIG)
   piProcess.start(resolvePiProcessEntrypoint())
   const status = await piProcess.received.waitFor(PI_PROCESS_STATUS_EVENT, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect(status.record.statusText).toBe(`advisor: ${PI_PROCESS_MODEL_REFERENCE}`)
+  expect("statusText" in status ? status.statusText : undefined).toBe(`advisor: ${PI_PROCESS_MODEL_REFERENCE}`)
   expect(readPackageAdvisorConfig(piProcess)).toBe(VALID_CONFIG)
 }
 
@@ -57,8 +57,8 @@ async function rejectsInvalidConfiguration(
   writePackageAdvisorConfig(piProcess, input.content)
   piProcess.start(resolvePiProcessEntrypoint())
   const notice = await piProcess.received.waitFor(PI_PROCESS_NOTICE_EVENT, PI_PROCESS_COMMAND_TIMEOUT_MS)
-  expect(notice.record.notifyType).toBe("error")
-  expect(notice.record.message).toMatch(/inválida/)
+  expect("notifyType" in notice ? notice.notifyType : undefined).toBe("error")
+  expect("message" in notice ? notice.message : undefined).toMatch(/inválida/)
   expect(readPackageAdvisorConfig(piProcess)).toBe(input.content)
 }
 

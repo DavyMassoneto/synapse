@@ -17,7 +17,7 @@ export async function evaluate(configuration: Configuration, diff: AnnotatedDiff
   if (decision.kind === "skip") {
     return decision.message
   }
-  const result = await askReviewer(configuration, diff)
+  const result = askReviewer(configuration, diff)
   console.log(`Veredito: ${result.verdict}; ${result.findings.length} apontamento(s)`)
   return publishIfCurrent(configuration.github, diff, result)
 }
