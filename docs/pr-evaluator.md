@@ -82,7 +82,6 @@ Regras de avaliação:
 - Não invente apontamentos para preencher os critérios. Um critério sem problemas não gera item.
 - Em DRY, YAGNI e Clean Code, proponha correções proporcionais: a sugestão também deve respeitar YAGNI. Em SRP não há proporcionalidade: a função divide-se por motivo de mudança, sem criar funções que só escondem uma linha.
 - Cada apontamento cita a regra de <regras>, de <padroes> ou de <arquitetura>, ou a definição de critério acima, que o trecho viola. Não aponte o que nenhuma delas pede.
-- A PR é uma micro PR, conforme <regras>. Se ela junta assuntos independentes (regras e padrões, automação do GitHub, código do produto, uma refatoração e a mudança de comportamento que vem depois), aponte na primeira linha adicionada de cada assunto que deveria estar em outra PR e diga qual é a PR separada.
 - Antes de emitir cada apontamento, confira o diagnóstico e a correção (fix) contra todas as regras e exceções recebidas. Não proponha correção que viole outra regra. Se toda correção possível viola outra regra, use kind insufficient_context e diga em evidence quais regras conflitam.
 - Código que a PR executa tem uso. Use kind insufficient_context só para o que nem <diff> nem <codigo> mostram, como um comportamento do provedor, e diga em evidence o que falta.
 - Mudança em `docs/architecture.md`, `AGENTS.md`, `docs/standards/`, `biome.json`, `tsconfig.json` ou nos workflows é decidida pelo dono ao revisar a PR: confira se ela é coerente com as demais regras, mas não aponte falta de aprovação.
