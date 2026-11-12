@@ -67,8 +67,8 @@ export interface PiProcessScenarioHandle {
   readonly stderr: string
   start(entrypoint: string): void
   command(command: PiProcessCommand): Promise<PiProcessRecord>
-  lastAssistantText(): Promise<PiProcessLastAssistantText>
-  commands(): Promise<PiProcessCommands>
+  query(command: "get_commands"): Promise<PiProcessCommands>
+  query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
 }
 
 export type PiProcessScenario = (piProcess: PiProcessScenarioHandle) => Promise<void>
@@ -91,4 +91,13 @@ export type PiProcessUiEvent = PiProcessStatus | PiProcessNotice
 export interface PiProcessUiMatches {
   setStatus: PiProcessMatch
   notify: PiProcessMatch
+}
+
+export type PiProcessQuery = "get_commands" | "get_last_assistant_text"
+
+export type PiProcessQueryResponse = PiProcessCommands | PiProcessLastAssistantText
+
+export interface PiProcessQueryErrors {
+  get_commands: string
+  get_last_assistant_text: string
 }

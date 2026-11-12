@@ -5,19 +5,16 @@ import {
   PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_CLOSE_EVENT,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
-  PI_PROCESS_COMMANDS_RESPONSE_MISSING,
   PI_PROCESS_DATA_EVENT,
   PI_PROCESS_DIAGNOSTIC_FAILURE,
   PI_PROCESS_DRAIN_EVENT,
   PI_PROCESS_ENCODING,
   PI_PROCESS_ERROR_EVENT,
   PI_PROCESS_EXIT_FAILURE,
-  PI_PROCESS_GET_COMMANDS_COMMAND,
   PI_PROCESS_KILL_SIGNAL,
-  PI_PROCESS_LAST_ASSISTANT_TEXT_COMMAND,
-  PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING,
   PI_PROCESS_NEWLINE,
   PI_PROCESS_NOT_STARTED,
+  PI_PROCESS_QUERY_ERRORS,
   PI_PROCESS_RESPONSE_TYPE,
   PI_PROCESS_SHUTDOWN_TIMEOUT,
   PI_PROCESS_SHUTDOWN_TIMEOUT_MS,
@@ -34,6 +31,8 @@ import {
   type PiProcessCommands,
   type PiProcessExitCode,
   type PiProcessLastAssistantText,
+  type PiProcessQuery,
+  type PiProcessQueryResponse,
   type PiProcessRecord,
 } from "./types"
 
@@ -88,28 +87,14 @@ export class PiProcess {
     return response
   }
 
-  async commands(): Promise<PiProcessCommands> {
-    const record = await this.command({ type: PI_PROCESS_GET_COMMANDS_COMMAND })
-    if (
-      record.type === PI_PROCESS_RESPONSE_TYPE &&
-      record.command === PI_PROCESS_GET_COMMANDS_COMMAND &&
-      record.success
-    ) {
+  query(command: "get_commands"): Promise<PiProcessCommands>
+  query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
+  async query(command: PiProcessQuery): Promise<PiProcessQueryResponse> {
+    const record = await this.command({ type: command })
+    if (record.type === PI_PROCESS_RESPONSE_TYPE && record.command === command && record.success) {
       return record
     }
-    throw new Error(PI_PROCESS_COMMANDS_RESPONSE_MISSING)
-  }
-
-  async lastAssistantText(): Promise<PiProcessLastAssistantText> {
-    const record = await this.command({ type: PI_PROCESS_LAST_ASSISTANT_TEXT_COMMAND })
-    if (
-      record.type === PI_PROCESS_RESPONSE_TYPE &&
-      record.command === PI_PROCESS_LAST_ASSISTANT_TEXT_COMMAND &&
-      record.success
-    ) {
-      return record
-    }
-    throw new Error(PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING)
+    throw new Error(PI_PROCESS_QUERY_ERRORS[command])
   }
 
   async dispose(): Promise<void> {

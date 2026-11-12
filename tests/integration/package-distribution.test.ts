@@ -17,6 +17,7 @@ import {
   type InvalidConfigCase,
   PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
+  PI_PROCESS_GET_COMMANDS_COMMAND,
   PI_PROCESS_LOADING_ERROR,
   PI_PROCESS_MISSING_ENTRY,
   PI_PROCESS_NOTICE_METHOD,
@@ -37,7 +38,7 @@ import {
 
 async function registersPackagedAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.start(resolvePiProcessEntrypoint())
-  const response = await piProcess.commands()
+  const response = await piProcess.query(PI_PROCESS_GET_COMMANDS_COMMAND)
   expect(response.success).toBe(true)
   expect(response.data.commands).toContainEqual(
     expect.objectContaining({ name: DISTRIBUTION_ADVISOR_NAME, source: DISTRIBUTION_EXTENSION_SOURCE }),

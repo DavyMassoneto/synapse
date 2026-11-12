@@ -19,10 +19,6 @@ export const ADVISOR_PROMPT = "Consulte o advisor"
 
 export const DISTRIBUTION_COMMANDS_COMMAND = "get_commands"
 
-export const DISTRIBUTION_SUCCESS_FIELD = "success"
-
-export const DISTRIBUTION_DATA_FIELD = "data"
-
 export const DISTRIBUTION_ADVISOR_NAME = "advisor"
 
 export const DISTRIBUTION_EXTENSION_SOURCE = "extension"
