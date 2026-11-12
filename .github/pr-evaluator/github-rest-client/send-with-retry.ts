@@ -11,6 +11,7 @@ import {
 } from "./constants"
 import { fetchGithub } from "./fetch-github"
 import { isRateLimited } from "./predicates"
+import { type GithubRequest } from "./types"
 
 function retryDelayMs(response: Response): number {
   const seconds = Number(response.headers.get(RETRY_AFTER_HEADER))
@@ -26,7 +27,7 @@ function retryDelayMs(response: Response): number {
 export async function sendWithRetry(
   configuration: GithubConfiguration,
   path: string,
-  init: RequestInit,
+  init: GithubRequest,
 ): Promise<Response> {
   let response = await fetchGithub(configuration, path, init)
   for (

@@ -12,25 +12,16 @@ import {
   RECONCILIATION_HEAD,
 } from "./constants"
 
-async function observeCurrentHead(github: GithubConfiguration): Promise<void> {
-  try {
-    console.log(`${RECONCILIATION_HEAD}${JSON.stringify(await currentHeadSha(github))}`)
-  } catch (error) {
-    if (error instanceof GithubTransportFailure) {
-      console.log(`${RECONCILIATION_FAILURE}${error.message}`)
-    } else {
-      throw error
-    }
-  }
-}
-
 export async function reconcilePublication(github: GithubConfiguration): Promise<string> {
   for (let attempt = 1; attempt <= RECONCILIATION_ATTEMPTS; attempt += 1) {
-    await observeCurrentHead(github)
     try {
+      const currentSha = await currentHeadSha(github)
       const decision = await decideReviewState(github)
       if (decision.kind === "skip") {
         return PUBLICATION_RECONCILED
+      }
+      if (currentSha !== github.headSha) {
+        throw new Error(`${PUBLICATION_UNCERTAIN}${RECONCILIATION_HEAD}${JSON.stringify(currentSha)}`)
       }
     } catch (error) {
       if (error instanceof GithubTransportFailure) {

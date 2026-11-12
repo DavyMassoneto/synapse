@@ -11,19 +11,20 @@ export async function getJson<Schema extends TSchema>(
   path: string,
   schema: Schema,
 ): Promise<Static<Schema>> {
-  for (let attempt = 1; attempt <= REQUEST_ATTEMPTS; attempt += 1) {
+  for (let attempt = 1; attempt < REQUEST_ATTEMPTS; attempt += 1) {
     try {
       const response = await sendWithRetry(configuration, path, { method: GET_METHOD })
       return await readGithubResponse(response, GET_METHOD, path, schema)
     } catch (error) {
-      if (!(error instanceof GithubTransportFailure) || attempt === REQUEST_ATTEMPTS) {
+      if (!(error instanceof GithubTransportFailure)) {
         throw error
       }
       console.log(`${TRANSPORT_RETRY_LABEL}${JSON.stringify(GET_METHOD)} ${JSON.stringify(path)}`)
       await delay(TRANSPORT_RETRY_DELAY_MS)
     }
   }
-  throw new GithubTransportFailure(GET_METHOD, path)
+  const response = await sendWithRetry(configuration, path, { method: GET_METHOD })
+  return readGithubResponse(response, GET_METHOD, path, schema)
 }
 
 export async function postJson<Schema extends TSchema>(

@@ -1,11 +1,12 @@
 import { type GithubConfiguration } from "#evaluator/configuration"
-import { API_URL, API_VERSION, GET_METHOD, REQUEST_TIMEOUT_MS } from "./constants"
+import { API_URL, API_VERSION, REQUEST_TIMEOUT_MS } from "./constants"
 import { GithubTransportFailure } from "./transport-failure"
+import { type GithubRequest } from "./types"
 
 export async function fetchGithub(
   configuration: GithubConfiguration,
   path: string,
-  init: RequestInit,
+  init: GithubRequest,
 ): Promise<Response> {
   try {
     return await fetch(`${API_URL}${path}`, {
@@ -19,10 +20,6 @@ export async function fetchGithub(
       },
     })
   } catch {
-    let method = GET_METHOD
-    if (init.method) {
-      method = init.method
-    }
-    throw new GithubTransportFailure(method, path)
+    throw new GithubTransportFailure(init.method, path)
   }
 }
