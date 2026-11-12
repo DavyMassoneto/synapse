@@ -11,9 +11,10 @@
     "typecheck": "tsgo --noEmit",
     "format": "biome check --write .",
     "lint": "biome ci .",
+    "pretest": "npm run build",
     "test": "vitest run",
     "evaluate": "tsx .github/pr-evaluator/main.ts",
-    "validate": "npm run lint && npm run typecheck && npm run build && npm test"
+    "validate": "npm run lint && npm run typecheck && npm test"
   },
   "peerDependencies": {
     "@earendil-works/pi-agent-core": "~1.5.0",
