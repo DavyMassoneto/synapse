@@ -4,6 +4,8 @@ import {
   type CooldownRetryHost,
   type ModelRouterHost,
   type PiComputerHost,
+  type PiIphoneExecutionHost,
+  type PiIphoneHost,
   type ResponseRulesHost,
 } from "#synapse/integration"
 
@@ -12,6 +14,8 @@ export type SynapseHost = AdvisorHost &
   ResponseRulesHost &
   ModelRouterHost &
   AgentTeamHost &
-  PiComputerHost
+  PiComputerHost &
+  PiIphoneHost &
+  PiIphoneExecutionHost
 
 export type SynapseMemberHost = CooldownRetryHost & ResponseRulesHost & ModelRouterHost

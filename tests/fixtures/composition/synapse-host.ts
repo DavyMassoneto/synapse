@@ -14,6 +14,7 @@ import {
   type AgentTeamTurnHandler,
   type CooldownMessageEndHandler,
   type PiComputerShutdown,
+  type PiIphoneShutdownHandler,
   type PiRouterVirtualModel,
   type ResponseRulesContextHandler,
   type Unsubscribe,
@@ -24,6 +25,7 @@ import {
   COMPOSITION_BEFORE_AGENT_START,
   COMPOSITION_CONTEXT,
   COMPOSITION_CONTEXT_MISSING,
+  COMPOSITION_EXECUTION_FORBIDDEN,
   COMPOSITION_MESSAGE_END,
   COMPOSITION_MODEL_MISSING,
   COMPOSITION_SESSION_SHUTDOWN,
@@ -32,6 +34,8 @@ import {
 } from "./constants"
 import { type CompositionContext } from "./context"
 import {
+  type CompositionExecuteArguments,
+  type CompositionExecuteResult,
   type CompositionToolsByName,
   type SynapseCollectedRegistration,
   type SynapseCollectedTool,
@@ -64,6 +68,7 @@ export class SynapseHostCollector implements SynapseHost {
   private virtualModel?: PiRouterVirtualModel
 
   on(event: "session_shutdown", handler: PiComputerShutdown): Unsubscribe
+  on(event: "session_shutdown", handler: PiIphoneShutdownHandler): Unsubscribe
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe
   on(event: "before_agent_start", handler: AdvisorBeforeStartHandler): Unsubscribe
@@ -93,6 +98,10 @@ export class SynapseHostCollector implements SynapseHost {
       default:
         return this.unsubscribe
     }
+  }
+
+  async exec(..._args: CompositionExecuteArguments): Promise<CompositionExecuteResult> {
+    throw new Error(COMPOSITION_EXECUTION_FORBIDDEN)
   }
 
   registerTool(tool: SynapseCollectedTool): void {

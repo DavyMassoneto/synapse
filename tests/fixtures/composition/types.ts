@@ -10,12 +10,19 @@ import {
   type CooldownMessageEndHandler,
   type PiComputerShutdown,
   type PiComputerToolDefinition,
+  type PiIphoneExecutionHost,
+  type PiIphoneShutdownHandler,
+  type PiIphoneToolDefinition,
   type ResponseRulesContextHandler,
 } from "#synapse/integration"
 import { type TeamWidgetContent, type TeamWidgetOptions } from "../agent-team"
 import { type AdvisorEventRegistration } from "../host"
 
-export type SynapseCollectedTool = AdvisorTool | AgentTeamToolDefinition | PiComputerToolDefinition
+export type SynapseCollectedTool =
+  | AdvisorTool
+  | AgentTeamToolDefinition
+  | PiComputerToolDefinition
+  | PiIphoneToolDefinition
 
 export type SynapseEventRegistration =
   | AdvisorEventRegistration
@@ -26,6 +33,7 @@ export type SynapseTeamEventRegistration =
   | ["session_start", AgentTeamStartHandler]
   | ["session_shutdown", AgentTeamShutdownHandler]
   | ["session_shutdown", PiComputerShutdown]
+  | ["session_shutdown", PiIphoneShutdownHandler]
   | ["before_agent_start", AgentTeamBeforeStartHandler]
   | ["turn_start", AgentTeamTurnHandler]
   | ["message_end", AgentTeamMessageHandler]
@@ -40,5 +48,9 @@ export interface CompositionWidget {
   content?: TeamWidgetContent
   options?: TeamWidgetOptions
 }
+
+export type CompositionExecuteArguments = Parameters<PiIphoneExecutionHost["exec"]>
+
+export type CompositionExecuteResult = Awaited<ReturnType<PiIphoneExecutionHost["exec"]>>
 
 export type CompositionToolsByName = Map<string, SynapseCollectedTool>
