@@ -4,7 +4,10 @@ import { TEAM_PI_MEMBER_ENTRY_SCHEMA, TEAM_PI_MEMBER_HEADER_SCHEMA } from "./sch
 import { type TeamSessionFileIdentity } from "./types"
 
 export function parseTeamSessionFile(content: string, path: string): TeamSessionFileIdentity {
-  const end = content.trimEnd().length
+  let end = content.length
+  while (end > 0 && content.slice(end - 1, end).trimEnd().length === 0) {
+    end--
+  }
   const firstNewline = content.indexOf(TEAM_PI_MEMBER_NEWLINE)
   const headerEnd = firstNewline < 0 || firstNewline > end ? end : firstNewline
   const header = content.slice(0, headerEnd)
