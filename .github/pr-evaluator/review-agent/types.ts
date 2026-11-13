@@ -1,0 +1,54 @@
+import { type AgentToolResult } from "@earendil-works/pi-agent-core"
+import { type AgentSession, type CreateAgentSessionOptions } from "@earendil-works/pi-coding-agent"
+import { type Static } from "typebox"
+import { type PageRequest } from "#evaluator/output-page"
+import { type InspectionRequest } from "#evaluator/repository-inspection"
+import { type ReviewSubmissionSchema } from "#evaluator/review-result"
+import { type WorkerInputSchema } from "./schemas"
+
+export type WorkerInput = Static<typeof WorkerInputSchema>
+export type ReviewSubmission = Static<typeof ReviewSubmissionSchema>
+export interface ReadySession {
+  kind: "ready"
+  value: AgentSession
+}
+export type SessionState = PendingReview | ReadySession
+export interface PendingReview {
+  kind: "pending"
+}
+export interface SubmittedReview {
+  kind: "submitted"
+  review: ReviewSubmission
+}
+export interface FailedReview {
+  kind: "failed"
+  message: string
+}
+export type ReviewState = PendingReview | SubmittedReview | FailedReview
+
+export interface ReviewToolExecutors {
+  inspect(id: string, request: InspectionRequest): Promise<AgentToolResult<string>>
+  diff(id: string, request: PageRequest): Promise<AgentToolResult<string>>
+  submit(id: string, submission: ReviewSubmission): Promise<AgentToolResult<string>>
+}
+
+export interface ReviewSettings {
+  compaction: EnabledSetting
+  retry: EnabledSetting
+  enableSkillCommands: boolean
+}
+export interface EnabledSetting {
+  enabled: boolean
+}
+export interface CacheHeaders {
+  "Cache-Control": string
+}
+export interface ModelCost {
+  input: number
+  output: number
+  cacheRead: number
+  cacheWrite: number
+}
+export type ModelInput = "text"[]
+
+export type ReviewTools = NonNullable<CreateAgentSessionOptions["customTools"]>

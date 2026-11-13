@@ -1,8 +1,1 @@
-export class HttpFailure extends Error {
-  readonly status: number
-
-  constructor(status: number, message: string) {
-    super(message)
-    this.status = status
-  }
-}
+export class HttpFailure extends Error {}

@@ -30,6 +30,7 @@
 - Trecho de código repetido que pode virar uma função e ser reutilizado em mais de um lugar é duplicação.
 - Texto ou template repetido não é código repetido, mesmo que uma mudança no formato tivesse de ser feita em cada lugar: a função que só o devolveria é desnecessária, conforme [AGENTS.md](../../AGENTS.md). Exemplo: o mesmo `${provider}/${id}` em dois `map` sobre listas diferentes não vira função.
 - Semelhança casual não é duplicação: uma expressão curta e comum, como `lista.length === 0`, não vira função. Só é duplicação o trecho cuja mudança futura teria de ser feita em todos os lugares onde ele aparece.
+- A mesma chamada única repetida em mais de um lugar não é duplicação: ela segue [Responsabilidade](responsabilidade.md) §1 e só vira função quando o nome expressa um conceito que a chamada esconde. Fora isso, a chamada é escrita em cada lugar.
 - Vale mesmo que a extração quebre o código original e deixe uma função menor.
 
 ## 6. Números mágicos
@@ -56,7 +57,7 @@
 - Nunca se valida um dado comparando-o com `undefined` ou `null` (`=== undefined`, `!== undefined`, `== null`, `typeof x === "undefined"`). Isso trata uma única forma de "vazio" e deixa passar `null`, `0`, `""` e qualquer outro tipo de dado.
 - Sempre se valida o dado POSITIVO, isto é, que ele é o dado esperado. Quando o tipo declarado já diz o que o valor é e só falta saber se ele veio, a condição direta (`if (valor)`) é a validação positiva, conforme [Tipagem](tipagem.md). Quando o formato é desconhecido, valida-se com esquema na fronteira, com `typeof`, com `Array.isArray` ou com o discriminante `kind` de uma união.
 - A validação positiva inclui as restrições do dado, e não só o seu tipo. `typeof x === "string"` aceita `""`: um texto vazio pode ser válido como conteúdo, mas não como referência de modelo, que exige o formato `provedor/id`. `typeof x === "object"` aceita `null`: valide as propriedades esperadas ou use um esquema. Uma escolha feita entre opções apresentadas deve ser uma dessas opções.
-- Dado vindo de fora do programa é validado uma vez, na fronteira; os consumidores internos confiam no tipo já validado e não repetem a validação completa.
+- Dado vindo de fora do programa é validado uma vez, na fronteira; os consumidores internos confiam no tipo já validado e não validam de novo nenhuma parte dele. A função que lê o dado recebe o esquema do formato esperado e valida o dado inteiro numa só chamada. Validar na leitura só uma parte (o envelope) e depois, no consumidor, outra parte (o conteúdo) é repetição: o consumidor que chama de novo um parser ou um esquema sobre dado que já passou pela fronteira, inclusive sobre o texto bruto guardado junto do resultado, viola esta regra, e a correção é passar o esquema completo à leitura.
 - Exceção: o `undefined` que a API de uma biblioteca exige como argumento (por exemplo, `setStatus(chave, undefined)` para limpar um status) não é validação.
 - Asserções do Vitest (`toBeUndefined`) verificam o resultado de um teste e não se aplicam a esta regra.
 - Resultado que pode vir sem dado é uma união discriminada por `kind`, não um valor que às vezes é `undefined`.

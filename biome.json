@@ -138,7 +138,15 @@
       "plugins": ["./biome/types-file.grit"]
     },
     {
-      "includes": ["**/*.ts", "!**/*.d.ts", "!**/*.config.ts", "!**/tests/**", "!**/*.test.ts", "!**/constants.ts"],
+      "includes": [
+        "**/*.ts",
+        "!**/*.d.ts",
+        "!**/*.config.ts",
+        "!**/tests/**",
+        "!**/*.test.ts",
+        "!**/constants.ts",
+        "!**/schemas.ts"
+      ],
       "plugins": ["./biome/constants-file.grit"]
     },
     {

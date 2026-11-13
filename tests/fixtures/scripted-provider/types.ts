@@ -1,6 +1,23 @@
 import { type Static } from "typebox"
-import { type PI_PROCESS_SCRIPT_SCHEMA } from "./constants"
+import { type SCRIPTED_PROVIDER_SCRIPT_SCHEMA } from "./schemas"
 
-export type PiProcessScript = Static<typeof PI_PROCESS_SCRIPT_SCHEMA>
+export type ScriptedProviderScript = Static<typeof SCRIPTED_PROVIDER_SCRIPT_SCHEMA>
 
-export type PiProcessStep = PiProcessScript[number]
+export type ScriptedProviderStep = ScriptedProviderScript[number]
+
+export interface ScriptedProviderModelCost {
+  input: number
+  output: number
+  cacheRead: number
+  cacheWrite: number
+}
+
+export interface ScriptedProviderModelDefinition {
+  id: string
+  name: string
+  reasoning: boolean
+  input: "text"[]
+  cost: ScriptedProviderModelCost
+  contextWindow: number
+  maxTokens: number
+}
