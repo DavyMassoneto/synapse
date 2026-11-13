@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+import { TEAM_OPERATION_FAILED } from "../public"
 import { TEAM_TEST_ALICE_REQUEST } from "./constants"
 import { failedAliceAcceptance, failedAliceRecord, failedAliceStart, makeTeamSut, startAlice } from "./team-scenario"
 
@@ -36,7 +37,7 @@ async function failedAcceptance(): Promise<void> {
   const { team, sessions } = makeTeamSut()
   sessions.journal.failAt = 1
   const result = await team.start(TEAM_TEST_ALICE_REQUEST)
-  expect(result.kind).toBe("refused")
+  expect(result.kind).toBe(TEAM_OPERATION_FAILED)
   expect(sessions.session.disposed).toBe(true)
 }
 
@@ -44,7 +45,7 @@ async function failedRecord(): Promise<void> {
   const { team, sessions, lead } = makeTeamSut()
   lead.failRecord = true
   const result = await team.start(TEAM_TEST_ALICE_REQUEST)
-  expect(result.kind).toBe("refused")
+  expect(result.kind).toBe(TEAM_OPERATION_FAILED)
   expect(sessions.session.disposed).toBe(true)
 }
 

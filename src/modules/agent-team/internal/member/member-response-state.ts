@@ -7,7 +7,7 @@ import {
 import { TEAM_MEMBER_HAS_FAILURE, TEAM_MEMBER_NO_FAILURE } from "./constants"
 import { type TeamMemberFailureState } from "./types"
 
-export class TeamMemberPresentation {
+export class TeamMemberResponseState {
   private model: TeamModelReference = { kind: TEAM_MODEL_UNAVAILABLE }
 
   private failureState: TeamMemberFailureState = { kind: TEAM_MEMBER_NO_FAILURE }

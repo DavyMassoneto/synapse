@@ -9,7 +9,7 @@ import { type TeamMemberFailureState, type TeamMemberOutcome } from "./types"
 
 export function teamMemberOutcome(event: MemberExecutionSettled, failure: TeamMemberFailureState): TeamMemberOutcome {
   if (event.aborted) {
-    return { state: TEAM_INTERRUPTED, text: "" }
+    return { state: TEAM_INTERRUPTED }
   }
   if (failure.kind === TEAM_MEMBER_HAS_FAILURE) {
     return { state: TEAM_FAILED, text: failure.message }

@@ -4,10 +4,16 @@ import {
   type TeamModelReference,
 } from "#synapse/modules/agent-team/public/contracts"
 
-export interface TeamMemberOutcome {
-  state: TeamMemberTerminalState
+export interface TeamMemberInterruptedOutcome {
+  state: "interrupted"
+}
+
+export interface TeamMemberCompletedOutcome {
+  state: TeamMemberCompletedState
   text: string
 }
+
+export type TeamMemberOutcome = TeamMemberInterruptedOutcome | TeamMemberCompletedOutcome
 
 export interface TeamMemberObserver {
   memberSettled(name: string, outcome: TeamMemberOutcome): void
@@ -22,7 +28,7 @@ export interface TeamMemberRowInput {
   waiting: boolean
   unconfirmed: number
   tools: TeamActiveTools
-  presentation: TeamMemberPresentationPort
+  responseState: TeamMemberResponseStatePort
 }
 
 export type TeamActiveTools = Map<string, string>
@@ -40,6 +46,8 @@ export interface TeamMemberNoFailure {
   kind: "none"
 }
 
-export interface TeamMemberPresentationPort {
+export interface TeamMemberResponseStatePort {
   readonly effectiveModel: TeamModelReference
 }
+
+export type TeamMemberCompletedState = "finished" | "failed"

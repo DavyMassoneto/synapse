@@ -92,13 +92,13 @@ export interface TeamStarted {
   model: string
 }
 
-export type TeamStartOutcome = TeamStarted | TeamRefused
+export type TeamStartOutcome = TeamStarted | TeamRefused | TeamFailed
 
 export interface TeamDone {
   kind: "done"
 }
 
-export type TeamOutcome = TeamDone | TeamRefused
+export type TeamOutcome = TeamDone | TeamRefused | TeamFailed
 
 export interface TeamRefused {
   kind: "refused"
@@ -109,9 +109,9 @@ export interface TeamInterruptRequested {
   kind: "interrupt_requested"
 }
 
-export type TeamInterruptOutcome = TeamInterruptRequested | TeamRefused
+export type TeamInterruptOutcome = TeamInterruptRequested | TeamRefused | TeamFailed
 
-export type TeamWaitOutcome = TeamWaitResult | TeamRefused
+export type TeamWaitOutcome = TeamWaitResult | TeamRefused | TeamFailed | TeamCancelled
 
 export interface TeamWaitResult {
   kind: "wait_completed"
@@ -134,4 +134,13 @@ export interface AgentTeam {
   listTasks(filter: TaskFilter): TaskView[]
   updateTask(caller: string, input: UpdateTaskInput): TaskOutcome
   suspend(): Promise<void>
+}
+
+export interface TeamFailed {
+  kind: "failed"
+  message: string
+}
+
+export interface TeamCancelled {
+  kind: "cancelled"
 }

@@ -15,3 +15,5 @@ export const TEAM_EVENT_INTERRUPTED = " foi interrompido"
 export const TEAM_EVENT_FAILED = " falhou"
 
 export const TEAM_LEAD_MODEL_UNAVAILABLE = "modelo ainda não selecionado"
+
+export const TEAM_OUTCOME_EVENT_DETAIL = ": "

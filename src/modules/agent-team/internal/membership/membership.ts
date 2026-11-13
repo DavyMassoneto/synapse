@@ -8,7 +8,7 @@ import {
   type TeamStartOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
 import { TeamMember } from "../member"
-import { teamAsyncOperationResult } from "../operation-results"
+import { TeamRuleError, teamAsyncOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { type TeamRoster } from "../roster"
 import { TEAM_EVENT_STARTED, TEAM_MEMBERSHIP_CLOSED, TEAM_SESSION_REPLACED } from "./constants"
@@ -60,7 +60,7 @@ export class TeamMembership {
 
   private reserve(request: StartMemberRequest): string {
     if (this.closed) {
-      throw new Error(TEAM_MEMBERSHIP_CLOSED)
+      throw new TeamRuleError(TEAM_MEMBERSHIP_CLOSED)
     }
     if (request.name) {
       return this.roster.reserve(request.name)
@@ -71,13 +71,13 @@ export class TeamMembership {
   private ensureGeneration(opened: OpenedMember, generation: number): void {
     if (generation !== this.generation) {
       opened.session.dispose()
-      throw new Error(TEAM_SESSION_REPLACED)
+      throw new TeamRuleError(TEAM_SESSION_REPLACED)
     }
   }
 
   private async openReserved(name: string, request: StartMemberRequest, generation: number): Promise<TeamStartOutcome> {
     try {
-      const opened = await this.sessions.open(teamOpenRequest(name, request), this.team.team)
+      const opened = await this.sessions.open(teamOpenRequest(name, request), this.team)
       this.ensureGeneration(opened, generation)
       const member = this.admit(opened, request.task)
       this.events.add(`${name}${TEAM_EVENT_STARTED}${request.description}`)
@@ -92,7 +92,7 @@ export class TeamMembership {
   }
 
   private admit(opened: OpenedMember, task: string): TeamMember {
-    const member = new TeamMember(opened, this.team.observer)
+    const member = new TeamMember(opened, this.team)
     try {
       member.accept(task)
       this.lead.recordMember(opened.record)
@@ -114,16 +114,16 @@ export class TeamMembership {
       }
     }
     if (generation === this.generation) {
-      this.team.team.refresh()
+      this.team.refresh()
     }
   }
 
   private async restoreMember(record: MemberRecord, generation: number): Promise<void> {
     try {
       this.roster.reserve(record.name)
-      const opened = await this.sessions.reopen(record, this.team.team)
+      const opened = await this.sessions.reopen(record, this.team)
       this.ensureGeneration(opened, generation)
-      this.roster.add(new TeamMember(opened, this.team.observer))
+      this.roster.add(new TeamMember(opened, this.team))
     } catch (error) {
       if (!(error instanceof Error)) {
         throw error

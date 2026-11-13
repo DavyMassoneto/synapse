@@ -1,15 +1,15 @@
 import {
+  TEAM_CANCELLED,
   TEAM_DONE,
   TEAM_INTERRUPT_REQUESTED,
   TEAM_LEAD_NAME,
-  TEAM_REFUSED,
   type TeamInterruptOutcome,
   type TeamLead,
   type TeamOutcome,
   type TeamWaitOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
 import { Inbox } from "../inbox"
-import { teamOperationResult } from "../operation-results"
+import { TeamRuleError, teamFailure, teamOperationResult, teamRefusal } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { TEAM_UNKNOWN_AGENT, type TeamRoster } from "../roster"
 import {
@@ -79,23 +79,35 @@ export class TeamMessages {
 
   private interruptMember(target: string): TeamInterruptOutcome {
     if (this.closed) {
-      throw new Error(TEAM_CLOSED)
+      throw new TeamRuleError(TEAM_CLOSED)
     }
     this.roster.find(target).interrupt()
     return { kind: TEAM_INTERRUPT_REQUESTED }
   }
 
   async wait(name: string, timeoutMs: number, signal?: AbortSignal): Promise<TeamWaitOutcome> {
-    signal?.throwIfAborted()
+    if (signal?.aborted) {
+      return { kind: TEAM_CANCELLED }
+    }
     try {
       if (this.closed) {
-        throw new Error(TEAM_CLOSED)
+        throw new TeamRuleError(TEAM_CLOSED)
       }
       const inbox = name === TEAM_LEAD_NAME ? this.inbox : this.roster.find(name).inbox
-      return inbox.wait(timeoutMs, signal)
+      const result = await inbox.wait(timeoutMs, signal)
+      if (signal?.aborted) {
+        return { kind: TEAM_CANCELLED }
+      }
+      return result
     } catch (error) {
+      if (signal?.aborted) {
+        return { kind: TEAM_CANCELLED }
+      }
+      if (error instanceof TeamRuleError) {
+        return teamRefusal(error)
+      }
       if (error instanceof Error) {
-        return { kind: TEAM_REFUSED, message: error.message }
+        return teamFailure(error)
       }
       throw error
     }
@@ -103,13 +115,13 @@ export class TeamMessages {
 
   private ensureCanSend(sender: string, target: string): void {
     if (this.closed) {
-      throw new Error(TEAM_CLOSED)
+      throw new TeamRuleError(TEAM_CLOSED)
     }
     if (sender !== TEAM_LEAD_NAME && !this.roster.has(sender)) {
-      throw new Error(`${TEAM_UNKNOWN_AGENT}${sender}`)
+      throw new TeamRuleError(`${TEAM_UNKNOWN_AGENT}${sender}`)
     }
     if (sender === target) {
-      throw new Error(TEAM_SELF_MESSAGE)
+      throw new TeamRuleError(TEAM_SELF_MESSAGE)
     }
   }
 

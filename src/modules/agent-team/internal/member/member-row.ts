@@ -28,7 +28,7 @@ function memberRowActivity(input: TeamMemberRowInput): string {
 }
 
 export function teamMemberRow(input: TeamMemberRowInput): TeamAgentRow {
-  const { opened, busy, presentation } = input
+  const { opened, busy, responseState } = input
   const row: TeamAgentRow = {
     name: opened.record.name,
     description: opened.record.description,
@@ -37,7 +37,7 @@ export function teamMemberRow(input: TeamMemberRowInput): TeamAgentRow {
     state: memberRowState(input),
     activity: memberRowActivity(input),
   }
-  const model = presentation.effectiveModel
+  const model = responseState.effectiveModel
   if (model.kind === TEAM_MODEL_KNOWN) {
     row.effectiveModel = model.model
   }
