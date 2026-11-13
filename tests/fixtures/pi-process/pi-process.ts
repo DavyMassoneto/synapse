@@ -1,11 +1,13 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process"
 import { once } from "node:events"
 import { setTimeout as delay } from "node:timers/promises"
+import { type PiProcessModelSelection } from "../model-selection"
 import {
   PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_CLOSE_EVENT,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
   PI_PROCESS_DATA_EVENT,
+  PI_PROCESS_DEFAULT_SELECTION,
   PI_PROCESS_DIAGNOSTIC_FAILURE,
   PI_PROCESS_DRAIN_EVENT,
   PI_PROCESS_ENCODING,
@@ -25,6 +27,7 @@ import { PiProcessHome } from "./pi-process-home"
 import { PiProcessRecords } from "./pi-process-records"
 import { piProcessArguments, piProcessEnvironment } from "./process-start"
 import {
+  type PiProcessAvailableModels,
   type PiProcessClosePromise,
   type PiProcessCloseResolver,
   type PiProcessCommand,
@@ -51,10 +54,16 @@ export class PiProcess {
 
   private readonly closePromise = new Promise<void>(this.observeClose.bind(this))
 
+  private selection: PiProcessModelSelection = PI_PROCESS_DEFAULT_SELECTION
+
   private sequence = 0
 
   get stderr(): string {
     return this.diagnostics.text
+  }
+
+  configureSelection(selection: PiProcessModelSelection): void {
+    this.selection = selection
   }
 
   start(entrypoint: string): void {
@@ -62,9 +71,9 @@ export class PiProcess {
       throw new Error(PI_PROCESS_ALREADY_STARTED)
     }
     this.running = true
-    this.child = spawn(process.execPath, piProcessArguments(entrypoint), {
+    this.child = spawn(process.execPath, piProcessArguments(entrypoint, this.selection), {
       cwd: this.homeDirectory.home,
-      env: piProcessEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory),
+      env: piProcessEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory, this.selection),
       stdio: PI_PROCESS_STDIO,
     })
     this.child.stdout.setEncoding(PI_PROCESS_ENCODING)
@@ -87,6 +96,7 @@ export class PiProcess {
     return response
   }
 
+  query(command: "get_available_models"): Promise<PiProcessAvailableModels>
   query(command: "get_commands"): Promise<PiProcessCommands>
   query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
   async query(command: PiProcessQuery): Promise<PiProcessQueryResponse> {

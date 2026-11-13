@@ -1,4 +1,10 @@
+import { type PiProcessModelSelection } from "../model-selection"
 import { type PiProcessSettings } from "../pi-process-settings"
+import {
+  SCRIPTED_PROVIDER_MODEL,
+  SCRIPTED_PROVIDER_MODEL_REFERENCE,
+  SCRIPTED_PROVIDER_PROVIDER,
+} from "../scripted-provider"
 import { type PiProcessMatch, type PiProcessQueryErrors, type PiProcessUiMatches } from "./types"
 
 export const PI_PROCESS_TIMEOUT_MS = 60_000
@@ -143,7 +149,16 @@ export const PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING = "Registro RPC recebido nã
 
 export const PI_PROCESS_GET_COMMANDS_COMMAND = "get_commands"
 
+export const PI_PROCESS_AVAILABLE_MODELS_MISSING = "Registro RPC recebido não corresponde aos modelos disponíveis."
+
 export const PI_PROCESS_QUERY_ERRORS: PiProcessQueryErrors = {
+  get_available_models: PI_PROCESS_AVAILABLE_MODELS_MISSING,
   get_commands: PI_PROCESS_COMMANDS_RESPONSE_MISSING,
   get_last_assistant_text: PI_PROCESS_LAST_ASSISTANT_TEXT_MISSING,
+}
+
+export const PI_PROCESS_DEFAULT_SELECTION: PiProcessModelSelection = {
+  provider: SCRIPTED_PROVIDER_PROVIDER,
+  model: SCRIPTED_PROVIDER_MODEL,
+  startupModel: SCRIPTED_PROVIDER_MODEL_REFERENCE,
 }

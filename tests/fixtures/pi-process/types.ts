@@ -1,6 +1,8 @@
 import { type Static } from "typebox"
+import { type PiProcessModelSelection } from "../model-selection"
 import { type ScriptedProviderScript } from "../scripted-provider"
 import {
+  type PI_PROCESS_AVAILABLE_MODELS_SCHEMA,
   type PI_PROCESS_COMMANDS_SCHEMA,
   type PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA,
   type PI_PROCESS_NOTICE_SCHEMA,
@@ -11,6 +13,8 @@ import {
 export type PiProcessStatus = Static<typeof PI_PROCESS_STATUS_SCHEMA>
 
 export type PiProcessNotice = Static<typeof PI_PROCESS_NOTICE_SCHEMA>
+
+export type PiProcessAvailableModels = Static<typeof PI_PROCESS_AVAILABLE_MODELS_SCHEMA>
 
 export type PiProcessCommands = Static<typeof PI_PROCESS_COMMANDS_SCHEMA>
 
@@ -66,7 +70,9 @@ export interface PiProcessScenarioHandle {
   readonly received: PiProcessScenarioRecords
   readonly stderr: string
   start(entrypoint: string): void
+  configureSelection(selection: PiProcessModelSelection): void
   command(command: PiProcessCommand): Promise<PiProcessRecord>
+  query(command: "get_available_models"): Promise<PiProcessAvailableModels>
   query(command: "get_commands"): Promise<PiProcessCommands>
   query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
 }
@@ -93,11 +99,12 @@ export interface PiProcessUiMatches {
   notify: PiProcessMatch
 }
 
-export type PiProcessQuery = "get_commands" | "get_last_assistant_text"
+export type PiProcessQuery = "get_commands" | "get_last_assistant_text" | "get_available_models"
 
-export type PiProcessQueryResponse = PiProcessCommands | PiProcessLastAssistantText
+export type PiProcessQueryResponse = PiProcessCommands | PiProcessLastAssistantText | PiProcessAvailableModels
 
 export interface PiProcessQueryErrors {
+  get_available_models: string
   get_commands: string
   get_last_assistant_text: string
 }

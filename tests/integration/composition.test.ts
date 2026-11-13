@@ -7,6 +7,8 @@ import {
   DistributionEnvironment,
   failedAssistantMessage,
   REWRITE_PREFIX,
+  ROUTER_TEST_VIRTUAL_ID,
+  ROUTER_TEST_VIRTUAL_PROVIDER,
   responseRulesContextEvent,
   SynapseHostCollector,
   TestContext,
@@ -136,6 +138,12 @@ function ignoresMissingResponseRules(): void {
   expect(result).toBeUndefined()
 }
 
+function registersModelRouter(): void {
+  compose(host)
+  const model = host.router.requireModel()
+  expect([model.provider, model.id]).toStrictEqual([ROUTER_TEST_VIRTUAL_PROVIDER, ROUTER_TEST_VIRTUAL_ID])
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -149,6 +157,7 @@ function registerTests(): void {
   test("configuração inválida recusa a consulta sem chamar o modelo", invalidConfigurationRefusesConsultation)
   test("configuração inválida não sobrescreve o arquivo", invalidConfigurationIsPreserved)
   test("composição registra a repetição por cooldown", registersCooldownRetry)
+  test("composição registra o modelo virtual do roteador", registersModelRouter)
   test("composição registra as regras de resposta", registersResponseRules)
   test("sem arquivo de instruções o pedido segue sem lembrete", ignoresMissingResponseRules)
 }

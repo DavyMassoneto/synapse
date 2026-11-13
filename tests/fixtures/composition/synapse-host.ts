@@ -9,11 +9,14 @@ import {
   type Unsubscribe,
 } from "#synapse/integration"
 import { AdvisorHostCollector } from "../host"
+import { RouterFixtureHost } from "../model-router"
 import { type SynapseEventRegistration } from "./types"
 
 export class SynapseHostCollector extends AdvisorHostCollector implements SynapseHost {
   readonly messageEnds: CooldownMessageEndHandler[] = []
   readonly contexts: ResponseRulesContextHandler[] = []
+  readonly router = new RouterFixtureHost()
+  readonly registerVirtualModel = this.router.registerVirtualModel.bind(this.router)
 
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe

@@ -1,9 +1,11 @@
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
+import { type PiProcessModelSelection } from "../model-selection"
 import { PI_REQUEST_LOG_FILE, PI_REQUEST_LOG_VARIABLE } from "../request-log"
 import {
-  SCRIPTED_PROVIDER_MODEL_REFERENCE,
+  SCRIPTED_PROVIDER_MODEL_VARIABLE,
   SCRIPTED_PROVIDER_PROVIDER_URL,
+  SCRIPTED_PROVIDER_PROVIDER_VARIABLE,
   SCRIPTED_PROVIDER_SCRIPT_FILE,
   SCRIPTED_PROVIDER_SCRIPT_VARIABLE,
 } from "../scripted-provider"
@@ -24,7 +26,7 @@ import {
 } from "./constants"
 import { resolvePiProcessExecutable } from "./process-paths"
 
-export function piProcessArguments(entrypoint: string): string[] {
+export function piProcessArguments(entrypoint: string, selection: PiProcessModelSelection): string[] {
   return [
     resolvePiProcessExecutable(),
     ...PI_PROCESS_FLAGS,
@@ -33,12 +35,18 @@ export function piProcessArguments(entrypoint: string): string[] {
     PI_PROCESS_EXTENSION_FLAG,
     fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL),
     PI_PROCESS_MODEL_FLAG,
-    SCRIPTED_PROVIDER_MODEL_REFERENCE,
+    selection.startupModel,
   ]
 }
 
-export function piProcessEnvironment(home: string, agentDirectory: string): NodeJS.ProcessEnv {
+export function piProcessEnvironment(
+  home: string,
+  agentDirectory: string,
+  selection: PiProcessModelSelection,
+): NodeJS.ProcessEnv {
   return {
+    [SCRIPTED_PROVIDER_PROVIDER_VARIABLE]: selection.provider,
+    [SCRIPTED_PROVIDER_MODEL_VARIABLE]: selection.model,
     [PI_PROCESS_PATH_VARIABLE]: process.env[PI_PROCESS_PATH_VARIABLE],
     [PI_PROCESS_SYSTEM_ROOT_VARIABLE]: process.env[PI_PROCESS_SYSTEM_ROOT_VARIABLE],
     [PI_PROCESS_WINDOWS_VARIABLE]: process.env[PI_PROCESS_WINDOWS_VARIABLE],
