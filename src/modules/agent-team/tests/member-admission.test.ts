@@ -96,7 +96,16 @@ async function journalStartCanContinue(): Promise<void> {
   expect(sessions.session.prompts[0]).toContain("x\n\n")
 }
 
+async function constructorFailureDisposesSession(): Promise<void> {
+  const { team, sessions } = makeTeamSut()
+  sessions.journal.failLoad = true
+  const result = await team.start(TEAM_TEST_ALICE_REQUEST)
+  expect(result.kind).toBe(TEAM_OPERATION_FAILED)
+  expect(sessions.session.disposals).toBe(1)
+}
+
 function register(): void {
+  test("falha no construtor descarta a sessão preparada uma vez", constructorFailureDisposesSession)
   test("inicia membro", starts)
   test("recusa nome inválido", invalid)
   test("recusa lead como nome", reserved)

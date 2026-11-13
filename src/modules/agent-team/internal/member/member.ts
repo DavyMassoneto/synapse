@@ -93,11 +93,11 @@ export class TeamMember {
     this.session.abort().catch(this.onFailure.bind(this))
   }
 
-  dispose(): void {
+  async dispose(): Promise<void> {
     this.closed = true
     this.inbox.close()
     this.unsubscribe()
-    this.session.dispose()
+    await this.session.dispose()
   }
 
   async suspend(): Promise<void> {
@@ -106,7 +106,7 @@ export class TeamMember {
     try {
       await this.checkpointAndStop()
     } finally {
-      this.dispose()
+      await this.dispose()
     }
   }
 

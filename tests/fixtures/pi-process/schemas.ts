@@ -44,7 +44,16 @@ export const PI_PROCESS_AVAILABLE_MODELS_SCHEMA = Type.Object({
   data: Type.Object({ models: Type.Array(Type.Object({ provider: Type.String(), id: Type.String() })) }),
 })
 
+export const PI_PROCESS_WIDGET_SCHEMA = Type.Object({
+  type: Type.Literal("extension_ui_request"),
+  method: Type.Literal("setWidget"),
+  id: Type.String(),
+  widgetKey: Type.String(),
+  widgetLines: Type.Optional(Type.Array(Type.String())),
+})
+
 export const PI_PROCESS_RECORD_SCHEMA = Type.Union([
+  PI_PROCESS_WIDGET_SCHEMA,
   PI_PROCESS_AVAILABLE_MODELS_SCHEMA,
   PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA,
   PI_PROCESS_STATUS_SCHEMA,

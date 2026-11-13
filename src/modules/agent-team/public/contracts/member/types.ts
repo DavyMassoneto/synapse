@@ -51,6 +51,7 @@ export interface MemberAssistantResponse {
 export interface MemberExecutionSettled {
   kind: "execution_settled"
   aborted: boolean
+  failure?: string
   answer?: string
 }
 
@@ -67,7 +68,7 @@ export interface MemberSession {
   prompt(text: string): Promise<void>
   steer(text: string): Promise<void>
   abort(): Promise<void>
-  dispose(): void
+  dispose(): Promise<void>
   subscribe(listener: MemberSessionListener): MemberUnsubscribe
 }
 

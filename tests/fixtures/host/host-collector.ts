@@ -1,4 +1,4 @@
-import { type BeforeAgentStartEvent, type TurnEndEvent } from "@earendil-works/pi-coding-agent"
+import { type TurnEndEvent } from "@earendil-works/pi-coding-agent"
 import {
   type AdvisorBeforeStartHandler,
   type AdvisorCommandDefinition,
@@ -10,14 +10,22 @@ import {
   type AdvisorTurnEndHandler,
   type Unsubscribe,
 } from "#synapse/integration"
+import { HostSessionEvents } from "./session-events"
 import { type AdvisorEventRegistration, type CommandCompletions, type TurnEndResult } from "./types"
 
 export class AdvisorHostCollector implements AdvisorHost {
-  readonly starts: AdvisorSessionStartHandler[] = []
-  readonly shutdowns: AdvisorShutdownHandler[] = []
-  readonly beforeStarts: AdvisorBeforeStartHandler[] = []
-  readonly turns: AdvisorTurnEndHandler[] = []
+  private readonly events = new HostSessionEvents<AdvisorContext>()
+
+  readonly starts = this.events.starts
+
+  readonly shutdowns = this.events.shutdowns
+
+  readonly beforeStarts = this.events.beforeStarts
+
+  readonly turns = this.events.turns
+
   active: string[] = []
+
   private tool?: AdvisorTool
   private command?: AdvisorCommandDefinition
 
@@ -30,50 +38,19 @@ export class AdvisorHostCollector implements AdvisorHost {
   }
 
   protected collect(registration: AdvisorEventRegistration): Unsubscribe {
-    switch (registration[0]) {
-      case "session_start":
-        this.starts.push(registration[1])
-        break
-      case "session_shutdown":
-        this.shutdowns.push(registration[1])
-        break
-      case "before_agent_start":
-        this.beforeStarts.push(registration[1])
-        break
-      case "turn_end":
-        this.turns.push(registration[1])
-        break
-    }
+    this.events.collect(registration)
     return this.unsubscribe
   }
 
   unsubscribe(): void {}
 
-  async emitSessionStart(context: AdvisorContext): Promise<void> {
-    for (const handler of this.starts) {
-      await handler({ type: "session_start", reason: "startup" }, context)
-    }
-  }
+  readonly emitSessionStart = this.events.emitSessionStart.bind(this.events)
 
-  async emitShutdown(context: AdvisorContext): Promise<void> {
-    for (const handler of this.shutdowns) {
-      await handler({ type: "session_shutdown", reason: "quit" }, context)
-    }
-  }
+  readonly emitShutdown = this.events.emitShutdown.bind(this.events)
 
-  async emitBeforeStart(event: BeforeAgentStartEvent, context: AdvisorContext): Promise<void> {
-    for (const handler of this.beforeStarts) {
-      await handler(event, context)
-    }
-  }
+  readonly emitBeforeStart = this.events.emitBeforeStart.bind(this.events)
 
-  async emitTurnEnd(event: TurnEndEvent, context: AdvisorContext): Promise<TurnEndResult[]> {
-    const results: TurnEndResult[] = []
-    for (const handler of this.turns) {
-      results.push(await handler(event, context))
-    }
-    return results
-  }
+  readonly emitTurnEnd = this.events.emitTurnEnd.bind(this.events)
 
   async emitTurnEnds(event: TurnEndEvent, context: AdvisorContext, turns: number): Promise<TurnEndResult[]> {
     const results: TurnEndResult[] = []

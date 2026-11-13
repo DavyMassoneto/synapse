@@ -62,12 +62,12 @@ export class Team implements AgentTeam {
     this.listTasks = this.board.list.bind(this.board)
   }
 
-  restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void> {
+  async restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void> {
     this.closed = false
     this.messages.reopen()
     this.events.clear()
     for (const member of this.roster.clear()) {
-      member.dispose()
+      await member.dispose()
     }
     this.board.restore(tasks)
     return this.admission.restore(records)
