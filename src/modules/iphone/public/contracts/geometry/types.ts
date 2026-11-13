@@ -1,8 +1,7 @@
-import { type IPHONE_ACCEPTED } from "../constants"
 import { type IphoneRefused } from "../result"
 
 export interface IphonePointAccepted {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   point: IphonePoint
 }
 

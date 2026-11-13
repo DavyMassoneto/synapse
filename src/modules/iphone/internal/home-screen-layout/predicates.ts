@@ -1,5 +1,9 @@
 import { IPHONE_EDGE_RIGHT, type IphoneEdge } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { type IphoneElement } from "#synapse/modules/iphone/public/contracts"
+import {
+  type IphoneElement,
+  type IphoneHomeIcon,
+  type IphoneHomeLayout,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_BUTTON,
   IPHONE_HOME_CLEAR_TEXT,
@@ -9,7 +13,6 @@ import {
   IPHONE_HOME_OK_MAX_Y,
   IPHONE_HOME_OK_MIN_X,
 } from "./constants"
-import { type IphoneHomeIcon, type IphoneHomeLayout } from "./types"
 
 export function isIphoneHomeEditButton(element: IphoneElement): boolean {
   return (

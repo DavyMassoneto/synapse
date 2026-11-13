@@ -1,31 +1,14 @@
-import {
-  type TASK_ACCEPTED,
-  type TASK_CLAIM,
-  type TASK_COMPLETE,
-  type TASK_COMPLETED,
-  type TASK_DELETE,
-  type TASK_DELETED,
-  type TASK_EDIT,
-  type TASK_IN_PROGRESS,
-  type TASK_PENDING,
-  type TASK_REASSIGN,
-  type TASK_REFUSED,
-  type TASK_RELEASE,
-  type TASK_REOPEN,
-  type TASK_SET_DEPENDENCIES,
-} from "./constants"
-
-export type TaskStatus = typeof TASK_PENDING | typeof TASK_IN_PROGRESS | typeof TASK_COMPLETED | typeof TASK_DELETED
+export type TaskStatus = "pending" | "in_progress" | "completed" | "deleted"
 
 export type TaskAction =
-  | typeof TASK_CLAIM
-  | typeof TASK_RELEASE
-  | typeof TASK_EDIT
-  | typeof TASK_SET_DEPENDENCIES
-  | typeof TASK_COMPLETE
-  | typeof TASK_REOPEN
-  | typeof TASK_REASSIGN
-  | typeof TASK_DELETE
+  | "claim"
+  | "release"
+  | "edit"
+  | "set_dependencies"
+  | "complete"
+  | "reopen"
+  | "reassign"
+  | "delete"
 
 export interface TaskSnapshot {
   id: string
@@ -69,12 +52,12 @@ export interface TaskFilter {
 }
 
 export interface TaskAccepted {
-  kind: typeof TASK_ACCEPTED
+  kind: "accepted"
   task: TaskView
 }
 
 export interface TaskRefused {
-  kind: typeof TASK_REFUSED
+  kind: "refused"
   message: string
 }
 

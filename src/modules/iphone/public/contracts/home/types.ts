@@ -1,29 +1,9 @@
-import { type IPHONE_ACCEPTED } from "../constants"
 import { type IphonePoint } from "../geometry"
 import { type IphoneAccepted, type IphoneRefused } from "../result"
-import {
-  type IPHONE_HOME_OP_AUDIT,
-  type IPHONE_HOME_OP_COMPACT,
-  type IPHONE_HOME_OP_CREATE,
-  type IPHONE_HOME_OP_EDIT,
-  type IPHONE_HOME_OP_EXIT_EDIT,
-  type IPHONE_HOME_OP_EXTRACT,
-  type IPHONE_HOME_OP_FOLDER,
-  type IPHONE_HOME_OP_GOTO,
-  type IPHONE_HOME_OP_HOP,
-  type IPHONE_HOME_OP_MERGE,
-  type IPHONE_HOME_OP_READ,
-  type IPHONE_HOME_OP_RENAME,
-  type IPHONE_HOME_PAGE_KNOWN,
-  type IPHONE_HOME_PAGE_MISSING,
-} from "./constants"
 
-export type IphoneHomePageKind = typeof IPHONE_HOME_OP_GOTO | typeof IPHONE_HOME_OP_COMPACT
+export type IphoneHomePageKind = "goto" | "compact"
 
-export type IphoneHomeSimpleKind =
-  | typeof IPHONE_HOME_OP_EDIT
-  | typeof IPHONE_HOME_OP_EXIT_EDIT
-  | typeof IPHONE_HOME_OP_AUDIT
+export type IphoneHomeSimpleKind = "edit" | "exit_edit" | "audit"
 
 export type IphoneHomeOperation =
   | IphoneHomeReadOperation
@@ -37,7 +17,7 @@ export type IphoneHomeOperation =
   | IphoneHomeRenameOperation
 
 export interface IphoneHomeReadOperation {
-  kind: typeof IPHONE_HOME_OP_READ
+  kind: "read"
   page?: number
 }
 
@@ -47,13 +27,13 @@ export interface IphoneHomePageOperation {
 }
 
 export interface IphoneHomeFolderOperation {
-  kind: typeof IPHONE_HOME_OP_FOLDER
+  kind: "folder"
   name: string
   page?: number
 }
 
 export interface IphoneHomeHopOperation {
-  kind: typeof IPHONE_HOME_OP_HOP
+  kind: "hop"
   name: string
   folder: boolean
   from: number
@@ -65,7 +45,7 @@ export interface IphoneHomeSimpleOperation {
 }
 
 export interface IphoneHomeMergeOperation {
-  kind: typeof IPHONE_HOME_OP_MERGE
+  kind: "merge"
   source: string
   destination: string
   page?: number
@@ -74,20 +54,20 @@ export interface IphoneHomeMergeOperation {
 }
 
 export interface IphoneHomeCreateOperation {
-  kind: typeof IPHONE_HOME_OP_CREATE
+  kind: "create"
   first: string
   second: string
   name: string
 }
 
 export interface IphoneHomeExtractOperation {
-  kind: typeof IPHONE_HOME_OP_EXTRACT
+  kind: "extract"
   folder: string
   app: string
 }
 
 export interface IphoneHomeRenameOperation {
-  kind: typeof IPHONE_HOME_OP_RENAME
+  kind: "rename"
   name: string
   newName: string
 }
@@ -116,33 +96,33 @@ export interface IphoneHomeLayout {
 }
 
 export interface IphoneHomeLayoutAccepted {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   layout: IphoneHomeLayout
 }
 
 export type IphoneHomeLayoutResult = IphoneHomeLayoutAccepted | IphoneRefused
 
 export interface IphoneHomeFolderCountKnown {
-  kind: typeof IPHONE_HOME_PAGE_KNOWN
+  kind: "known"
   count: number
 }
 
 export type IphoneHomeFolderCount = IphoneHomeFolderCountKnown | IphoneHomePageMissing
 
 export interface IphoneHomePageKnown {
-  kind: typeof IPHONE_HOME_PAGE_KNOWN
+  kind: "known"
   current: number
   total: number
 }
 
 export interface IphoneHomePageMissing {
-  kind: typeof IPHONE_HOME_PAGE_MISSING
+  kind: "missing"
 }
 
 export type IphoneHomePage = IphoneHomePageKnown | IphoneHomePageMissing
 
 export interface IphoneHomeStateAccepted {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   layout: IphoneHomeLayout
   page: IphoneHomePage
   edit: boolean
@@ -166,21 +146,21 @@ export interface IphoneHomeAuditPage {
 }
 
 export interface IphoneHomeAuditPageAccepted {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   page: IphoneHomeAuditPage
 }
 
 export type IphoneHomeAuditPageResult = IphoneHomeAuditPageAccepted | IphoneRefused
 
 export interface IphoneHomeAuditAccepted {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   pages: IphoneHomeAuditPage[]
 }
 
 export type IphoneHomeAuditResult = IphoneHomeAuditAccepted | IphoneRefused
 
 export interface IphoneHomeFolderRead {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   names: string[]
 }
 

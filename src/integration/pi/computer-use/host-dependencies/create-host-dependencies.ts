@@ -1,4 +1,5 @@
 import { join } from "node:path"
+import { setTimeout } from "node:timers/promises"
 import { getAgentDir } from "@earendil-works/pi-coding-agent"
 import {
   COMPUTER_DARWIN,
@@ -16,7 +17,6 @@ import {
   PI_COMPUTER_STATE_DIRECTORY,
   PI_COMPUTER_UNSUPPORTED_PLATFORM,
 } from "./constants"
-import { PiComputerHostWait } from "./host-wait"
 import { computerReadLaunchConfiguration } from "./read-launch-configuration"
 
 export function createComputerUseHostDependencies(): ComputerUseDependencies {
@@ -37,7 +37,7 @@ export function computerUseDependenciesAt(
     platform,
     installationDirectory: join(directory, PI_COMPUTER_INSTALLATION_DIRECTORY),
     captureDirectory: join(directory, PI_COMPUTER_CAPTURE_DIRECTORY),
-    wait: new PiComputerHostWait(),
+    wait: { wait: setTimeout<void> },
     environment,
   }
   const driverPath = environment[PI_COMPUTER_DRIVER_PATH_VARIABLE]

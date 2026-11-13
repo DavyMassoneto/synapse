@@ -1,14 +1,19 @@
 import {
   type IphoneActionArguments,
   type IphoneDeviceActionPort,
-} from "#synapse/modules/iphone/internal/device-actions"
-import { type IphonePointerAction } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { type IphoneMobileInfo, type IphoneRectangle } from "#synapse/modules/iphone/public/contracts"
+  type IphoneMobileInfo,
+  type IphonePointerAction,
+  type IphoneRectangle,
+} from "#synapse/modules/iphone/public/contracts"
 
 export class DeviceActionsPort implements IphoneDeviceActionPort {
   calls: string[] = []
 
   args: IphoneActionArguments[] = []
+
+  pointerActions: IphonePointerAction[] = []
+
+  sourceText = "<root/>"
 
   failure?: Error
 
@@ -16,7 +21,7 @@ export class DeviceActionsPort implements IphoneDeviceActionPort {
 
   async source(): Promise<string> {
     this.calls.push("source")
-    return "<root/>"
+    return this.sourceText
   }
 
   async screenshot(): Promise<string> {
@@ -29,7 +34,8 @@ export class DeviceActionsPort implements IphoneDeviceActionPort {
     return { x: 0, y: 0, width: 400, height: 800 }
   }
 
-  async actions(_actions: IphonePointerAction[]): Promise<void> {
+  async actions(actions: IphonePointerAction[]): Promise<void> {
+    this.pointerActions = actions
     this.calls.push("actions")
   }
 
@@ -76,7 +82,7 @@ export class DeviceActionsPort implements IphoneDeviceActionPort {
     this.calls.push("close")
   }
 
-  async wait(milliseconds: number): Promise<void> {
+  async wait(milliseconds: number, _signal: AbortSignal): Promise<void> {
     this.calls.push(`wait:${milliseconds}`)
   }
 }

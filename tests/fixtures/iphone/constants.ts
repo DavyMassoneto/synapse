@@ -1,4 +1,19 @@
+import { type IphoneImageOutput, type IphoneTextOutput, type IphoneTreeOutput } from "#synapse/modules"
 import { type IphoneFixtureRoutes } from "./types"
+
+export const IPHONE_FIXTURE_UNEXPECTED_CALL = "Operação inesperada no double."
+
+export const IPHONE_FIXTURE_ACTION_RESULT: IphoneTextOutput = { kind: "text", text: "done" }
+
+export const IPHONE_FIXTURE_IMAGE_RESULT: IphoneImageOutput = { kind: "image", data: "base64", mimeType: "image/png" }
+
+export const IPHONE_FIXTURE_TREE_RESULT: IphoneTreeOutput = {
+  kind: "tree",
+  text: "1 Teste",
+  count: 1,
+  viewport: { x: 0, y: 0, width: 440, height: 956 },
+  elements: [],
+}
 export const IPHONE_FIXTURE_BIND = "127.0.0.1"
 
 export const IPHONE_FIXTURE_SERVER_ERROR = "Servidor falso sem endereço."

@@ -6,29 +6,37 @@ import {
   type TranscriptContext,
 } from "@earendil-works/pi-ai"
 import { logRequest, PI_REQUEST_LOG_VARIABLE } from "../request-log"
-import { PI_PROCESS_SCRIPT_FAILURE, PI_PROCESS_START_EVENT } from "./constants"
+import {
+  SCRIPTED_PROVIDER_SCRIPT_FAILURE,
+  SCRIPTED_PROVIDER_START_EVENT,
+  SCRIPTED_PROVIDER_TRACK_MISSING,
+} from "./constants"
 import { requireEnvironment } from "./require-environment"
-import { advanceScriptTrack, selectScriptTrack } from "./script-track"
+import { selectScriptTrack } from "./script-track"
 import { assistantMessage, emitStep } from "./stream-events"
-import { type PiProcessScript, type PiProcessSelectedStep, type PiProcessTracks } from "./types"
+import { advanceScriptTrack } from "./track-offset"
+import { type ScriptedProviderScript, type ScriptedProviderSelectedStep, type ScriptedProviderTracks } from "./types"
 
-export class ScriptedModelProvider {
-  private readonly tracks: PiProcessTracks
+export class ScriptedProvider {
+  private readonly tracks: ScriptedProviderTracks
 
-  constructor(steps: PiProcessScript) {
+  constructor(steps: ScriptedProviderScript) {
     this.tracks = Array.isArray(steps) ? [{ steps }] : steps.tracks
   }
 
-  private nextStep(context: TranscriptContext): PiProcessSelectedStep {
+  private nextStep(context: TranscriptContext): ScriptedProviderSelectedStep {
     const selected = selectScriptTrack(this.tracks, context)
-    const track = this.tracks[selected]
-    if (!track) {
-      throw new Error(PI_PROCESS_SCRIPT_FAILURE)
+    if (selected.kind === SCRIPTED_PROVIDER_TRACK_MISSING) {
+      throw new Error(SCRIPTED_PROVIDER_SCRIPT_FAILURE)
     }
-    const index = advanceScriptTrack(selected)
+    const track = this.tracks[selected.index]
+    if (!track) {
+      throw new Error(SCRIPTED_PROVIDER_SCRIPT_FAILURE)
+    }
+    const index = advanceScriptTrack(selected.index)
     const step = track.steps[index]
     if (!step) {
-      throw new Error(PI_PROCESS_SCRIPT_FAILURE)
+      throw new Error(SCRIPTED_PROVIDER_SCRIPT_FAILURE)
     }
     return { step, id: String(index + 1) }
   }
@@ -38,7 +46,7 @@ export class ScriptedModelProvider {
     const selected = this.nextStep(context)
     const stream = createAssistantMessageEventStream()
     const message = assistantMessage(model)
-    stream.push({ type: PI_PROCESS_START_EVENT, partial: message })
+    stream.push({ type: SCRIPTED_PROVIDER_START_EVENT, partial: message })
     emitStep(stream, message, selected.step, selected.id)
     stream.end()
     return stream

@@ -3,7 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { thinkingBudgetForLevel } from "@earendil-works/pi-ai/api/simple-options"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { AdvisorModel, PI_THINKING_BUDGETS } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE, AdvisorModel, PI_THINKING_BUDGETS } from "#synapse/integration"
 import {
   createAdvisor,
   type ModelRequest,
@@ -11,7 +11,14 @@ import {
   THINKING_LEVELS,
   type ThinkingLevel,
 } from "#synapse/modules"
-import { IDLE_SIGNAL, REASONING_LEVELS, type ReasoningLevel, TestRegistry } from "../fixtures"
+import {
+  IDLE_SIGNAL,
+  MODEL_DIRECTORY_PREFIX,
+  REASONING_LEVELS,
+  RESOLUTION_CONFIG,
+  type ReasoningLevel,
+  TestRegistry,
+} from "../fixtures"
 
 let registry: TestRegistry
 let adapter: AdvisorModel
@@ -20,7 +27,7 @@ let directory = ""
 function prepare(): void {
   registry = new TestRegistry()
   adapter = new AdvisorModel(registry)
-  directory = mkdtempSync(join(tmpdir(), "advisor-model-"))
+  directory = mkdtempSync(join(tmpdir(), MODEL_DIRECTORY_PREFIX))
 }
 
 async function resolved(reference: string, thinking: ThinkingLevel): Promise<ResolvedModel> {
@@ -44,8 +51,8 @@ async function independentResolutions(): Promise<void> {
 }
 
 async function serviceConsultation(): Promise<void> {
-  const file = join(directory, "advisor.json")
-  writeFileSync(file, JSON.stringify({ model: "provider/first", thinking: "high" }))
+  const file = join(directory, ADVISOR_CONFIG_FILE)
+  writeFileSync(file, RESOLUTION_CONFIG)
   const advisor = createAdvisor(file)
   const result = await advisor.consult(
     {

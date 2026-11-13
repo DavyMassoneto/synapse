@@ -5,7 +5,6 @@ export type TeamMemberSessionOperation =
   | "prompt"
   | "steer"
   | "abort"
-  | "dispose"
   | "subscribe"
   | "getLastAssistantText"
 

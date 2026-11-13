@@ -1,23 +1,21 @@
 import { type ClassifierOutcome, type ClassifierRequest, type RouterClassifier } from "#synapse/modules/model-router"
+import { ROUTER_TEST_MISSING_REQUEST, ROUTER_TEST_VALID_CHOICE } from "./constants"
 
-import { ROUTER_DOUBLE_MISSING } from "./constants"
+export class RouterTestClassifier implements RouterClassifier {
+  outcome = ROUTER_TEST_VALID_CHOICE
 
-export class RouterClassifierDouble implements RouterClassifier {
-  readonly requests: ClassifierRequest[] = []
-
-  outcomes: ClassifierOutcome[] = []
-
-  failure?: Error
+  requests: ClassifierRequest[] = []
 
   async classify(request: ClassifierRequest): Promise<ClassifierOutcome> {
     this.requests.push(request)
-    if (this.failure) {
-      throw this.failure
+    return this.outcome
+  }
+
+  requireRequest(): ClassifierRequest {
+    const request = this.requests[0]
+    if (!request) {
+      throw new Error(ROUTER_TEST_MISSING_REQUEST)
     }
-    const outcome = this.outcomes.shift()
-    if (!outcome) {
-      throw new Error(ROUTER_DOUBLE_MISSING)
-    }
-    return outcome
+    return request
   }
 }

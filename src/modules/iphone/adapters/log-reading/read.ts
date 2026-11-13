@@ -6,6 +6,7 @@ import {
   IPHONE_LOG_ENCODING,
   IPHONE_LOG_LINES,
   IPHONE_LOG_MAX_BYTES,
+  IPHONE_LOG_NEWLINE,
   IPHONE_LOG_NOT_FOUND,
   IPHONE_LOG_READ_MODE,
 } from "./constants"
@@ -21,7 +22,11 @@ export function readIphoneServerLog(directory: string): IphoneModuleLog {
       const read = readSync(descriptor, buffer, 0, length, size - length)
       return {
         path,
-        text: buffer.toString(IPHONE_LOG_ENCODING, 0, read).split("\n").slice(-IPHONE_LOG_LINES).join("\n"),
+        text: buffer
+          .toString(IPHONE_LOG_ENCODING, 0, read)
+          .split(IPHONE_LOG_NEWLINE)
+          .slice(-IPHONE_LOG_LINES)
+          .join(IPHONE_LOG_NEWLINE),
       }
     } finally {
       closeSync(descriptor)

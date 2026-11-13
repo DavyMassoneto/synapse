@@ -10,7 +10,9 @@ export async function startIphoneServer(
   signal: AbortSignal,
 ): Promise<void> {
   const diagnosis = new IphoneHttpDiagnosis(config.serverUrl, dependencies)
-  if (!(await diagnosis.serverResponds(signal))) {
+  const running = await diagnosis.serverResponds(signal)
+  signal.throwIfAborted()
+  if (!running) {
     server.start(config.serverUrl, dependencies.stateDirectory, dependencies.path, dependencies.host, config.appiumHome)
     try {
       await waitIphoneServer(diagnosis, signal)

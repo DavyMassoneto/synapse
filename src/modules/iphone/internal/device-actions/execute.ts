@@ -6,12 +6,31 @@ import {
   type IphoneGestureResult,
 } from "#synapse/modules/iphone/internal/pointer-gestures"
 import {
+  IPHONE_ACTION_ACTIVATE,
+  IPHONE_ACTION_CLEAR,
+  IPHONE_ACTION_DOUBLE_TAP,
+  IPHONE_ACTION_DRAG,
+  IPHONE_ACTION_INFO,
+  IPHONE_ACTION_LAUNCH,
+  IPHONE_ACTION_LONG_PRESS,
+  IPHONE_ACTION_PAGE_DRAG,
+  IPHONE_ACTION_SCREENSHOT,
+  IPHONE_ACTION_SCROLL,
+  IPHONE_ACTION_SWIPE,
+  IPHONE_ACTION_TAP,
+  IPHONE_ACTION_TERMINATE,
+  IPHONE_ACTION_TREE,
+  IPHONE_ACTION_TYPE,
+  IPHONE_ACTION_URL,
   IPHONE_IMAGE_PNG,
   IPHONE_REFUSED,
   IPHONE_RESULT_IMAGE,
   IPHONE_RESULT_INFO,
   IPHONE_RESULT_TEXT,
   IPHONE_RESULT_TREE,
+  type IphoneDeviceAction,
+  type IphoneDeviceActionOutput,
+  type IphoneDeviceActionPort,
 } from "#synapse/modules/iphone/public/contracts"
 import { controlIphoneApplication, openIphoneUrl } from "./application"
 import * as constants from "./constants"
@@ -19,14 +38,7 @@ import { executeIphoneDeviceCommand } from "./device-command"
 import { sendIphoneGesture } from "./gesture"
 import { executeIphoneSwipe } from "./swipe"
 import { clearIphoneText, typeIphoneText } from "./text-input"
-import {
-  type IphoneDeviceAction,
-  type IphoneDeviceActionOutput,
-  type IphoneDeviceActionPort,
-  type IphoneDispatchedAction,
-  type IphonePointerDeviceAction,
-  type IphoneRemainingAction,
-} from "./types"
+import { type IphoneDispatchedAction, type IphonePointerDeviceAction, type IphoneRemainingAction } from "./types"
 import { validateIphoneDeviceAction } from "./validation"
 
 export async function executeIphoneDeviceAction(
@@ -36,13 +48,13 @@ export async function executeIphoneDeviceAction(
 ): Promise<IphoneDeviceActionOutput> {
   signal.throwIfAborted()
   validateIphoneDeviceAction(action)
-  if (action.kind === constants.IPHONE_ACTION_TREE) {
+  if (action.kind === IPHONE_ACTION_TREE) {
     return readIphoneTree(port, action.max, signal)
   }
-  if (action.kind === constants.IPHONE_ACTION_SCREENSHOT) {
+  if (action.kind === IPHONE_ACTION_SCREENSHOT) {
     return readIphoneScreenshot(port, signal)
   }
-  if (action.kind === constants.IPHONE_ACTION_INFO) {
+  if (action.kind === IPHONE_ACTION_INFO) {
     return readIphoneInfo(port, signal)
   }
   const text = await dispatchIphoneDeviceAction(port, action, signal)
@@ -97,27 +109,27 @@ async function dispatchIphoneDeviceAction(
   signal: AbortSignal,
 ): Promise<string> {
   switch (action.kind) {
-    case constants.IPHONE_ACTION_TAP:
-    case constants.IPHONE_ACTION_LONG_PRESS:
-    case constants.IPHONE_ACTION_DRAG:
+    case IPHONE_ACTION_TAP:
+    case IPHONE_ACTION_LONG_PRESS:
+    case IPHONE_ACTION_DRAG:
       return executeIphonePointerAction(port, action, signal)
-    case constants.IPHONE_ACTION_PAGE_DRAG: {
+    case IPHONE_ACTION_PAGE_DRAG: {
       const viewport = await port.rect(signal)
       signal.throwIfAborted()
       return (await sendIphoneGesture(port, buildIphonePageDrag({ ...action, viewportWidth: viewport.width }), signal))
         .text
     }
-    case constants.IPHONE_ACTION_DOUBLE_TAP:
+    case IPHONE_ACTION_DOUBLE_TAP:
       await port.mobile(constants.IPHONE_ACTION_DOUBLE_TAP_SCRIPT, action.point, signal)
       break
-    case constants.IPHONE_ACTION_TYPE:
+    case IPHONE_ACTION_TYPE:
       await typeIphoneText(port, action, signal)
       break
-    case constants.IPHONE_ACTION_CLEAR:
+    case IPHONE_ACTION_CLEAR:
       await clearIphoneText(port, action, signal)
       break
-    case constants.IPHONE_ACTION_SWIPE:
-    case constants.IPHONE_ACTION_SCROLL:
+    case IPHONE_ACTION_SWIPE:
+    case IPHONE_ACTION_SCROLL:
       await executeIphoneSwipe(port, action, signal)
       break
     default:
@@ -132,12 +144,12 @@ async function dispatchIphoneApplicationAction(
   signal: AbortSignal,
 ): Promise<string> {
   switch (action.kind) {
-    case constants.IPHONE_ACTION_LAUNCH:
-    case constants.IPHONE_ACTION_TERMINATE:
-    case constants.IPHONE_ACTION_ACTIVATE:
+    case IPHONE_ACTION_LAUNCH:
+    case IPHONE_ACTION_TERMINATE:
+    case IPHONE_ACTION_ACTIVATE:
       await controlIphoneApplication(port, action, signal)
       break
-    case constants.IPHONE_ACTION_URL:
+    case IPHONE_ACTION_URL:
       await openIphoneUrl(port, action, signal)
       break
     default:
@@ -152,11 +164,10 @@ async function executeIphonePointerAction(
   signal: AbortSignal,
 ): Promise<string> {
   let gesture: IphoneGestureResult
-  if (action.kind === constants.IPHONE_ACTION_DRAG) {
+  if (action.kind === IPHONE_ACTION_DRAG) {
     gesture = buildIphoneDrag(action.drag)
   } else {
-    const duration =
-      action.kind === constants.IPHONE_ACTION_TAP ? constants.IPHONE_ACTION_TAP_DURATION_MS : action.durationMs
+    const duration = action.kind === IPHONE_ACTION_TAP ? constants.IPHONE_ACTION_TAP_DURATION_MS : action.durationMs
     gesture = buildIphonePress(action.point, duration)
   }
   return (await sendIphoneGesture(port, gesture, signal)).text

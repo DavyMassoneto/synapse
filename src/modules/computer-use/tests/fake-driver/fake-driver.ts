@@ -20,7 +20,6 @@ import {
   COMPUTER_FAKE_MARKER_VARIABLE,
   COMPUTER_FAKE_NOTIFICATIONS_MESSAGE,
   COMPUTER_FAKE_PROTOCOL,
-  COMPUTER_FAKE_REQUEST_SCHEMA,
   COMPUTER_FAKE_RPC_ERROR,
   COMPUTER_FAKE_SCENARIO_VARIABLE,
   COMPUTER_FAKE_SERVER_NAME,
@@ -31,6 +30,7 @@ import {
   COMPUTER_FAKE_TOOLS_LIST,
   COMPUTER_FAKE_VERSION,
 } from "./constants"
+import { COMPUTER_FAKE_REQUEST_SCHEMA } from "./schemas"
 import { type ComputerFakeRequest, type ComputerFakeTool } from "./types"
 
 function respond(request: ComputerFakeRequest): void {

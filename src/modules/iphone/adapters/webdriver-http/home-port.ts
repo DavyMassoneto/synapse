@@ -1,15 +1,12 @@
 import { parseIphoneElementTree } from "#synapse/modules/iphone/internal/element-tree"
-import {
-  type IphoneHomeScreenPort,
-  type IphoneHomeSwipeDirection,
-} from "#synapse/modules/iphone/internal/home-screen-operations"
-import { buildIphonePress, type IphonePointerAction } from "#synapse/modules/iphone/internal/pointer-gestures"
+import { buildIphonePress } from "#synapse/modules/iphone/internal/pointer-gestures"
 import {
   IPHONE_REFUSED,
   type IphoneElement,
+  type IphoneHomeScreenPort,
+  type IphoneHomeSwipeDirection,
   type IphoneManagedPort,
   type IphonePoint,
-  type IphoneRectangle,
 } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HTTP_HOME_DRAG,
@@ -24,12 +21,17 @@ import {
 export class IphoneHttpHomePort implements IphoneHomeScreenPort {
   private readonly session: IphoneManagedPort
 
+  readonly viewport: IphoneHomeScreenPort["viewport"]
+
+  readonly actions: IphoneHomeScreenPort["actions"]
+
+  readonly wait: IphoneHomeScreenPort["wait"]
+
   constructor(session: IphoneManagedPort) {
     this.session = session
-  }
-
-  async viewport(signal: AbortSignal): Promise<IphoneRectangle> {
-    return this.session.rect(signal)
+    this.viewport = session.rect.bind(session)
+    this.actions = session.actions.bind(session)
+    this.wait = session.wait.bind(session)
   }
 
   async elements(signal: AbortSignal): Promise<IphoneElement[]> {
@@ -38,10 +40,6 @@ export class IphoneHttpHomePort implements IphoneHomeScreenPort {
       throw new Error(tree.message)
     }
     return tree.tree.elements
-  }
-
-  async actions(actions: IphonePointerAction[], signal: AbortSignal): Promise<void> {
-    await this.session.actions(actions, signal)
   }
 
   async tap(point: IphonePoint, signal: AbortSignal): Promise<void> {
@@ -72,9 +70,5 @@ export class IphoneHttpHomePort implements IphoneHomeScreenPort {
       },
       signal,
     )
-  }
-
-  async wait(milliseconds: number, signal: AbortSignal): Promise<void> {
-    await this.session.wait(milliseconds, signal)
   }
 }

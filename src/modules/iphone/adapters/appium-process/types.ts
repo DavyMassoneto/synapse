@@ -1,11 +1,9 @@
-import { type IPHONE_APPIUM_REMOTE, type IPHONE_APPIUM_STARTED } from "./constants"
-
 export interface IphoneAppiumStarted {
-  kind: typeof IPHONE_APPIUM_STARTED
+  kind: "started"
 }
 
 export interface IphoneAppiumRemote {
-  kind: typeof IPHONE_APPIUM_REMOTE
+  kind: "remote"
 }
 
 export type IphoneAppiumStartResult = IphoneAppiumStarted | IphoneAppiumRemote

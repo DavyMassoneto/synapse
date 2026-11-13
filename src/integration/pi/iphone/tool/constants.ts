@@ -11,7 +11,7 @@ export const PI_IPHONE_TOOL_NAME = "iphone"
 export const PI_IPHONE_TOOL_LABEL = "iPhone"
 
 export const PI_IPHONE_TOOL_DESCRIPTION =
-  "Automatiza iPhone ou simulador pelo WebDriver: árvore, captura, gestos, texto, aplicativos e tela inicial. Leia tree antes de agir; confira o resultado depois. Não repita ações de efeito incerto."
+  "Automatiza iPhone ou simulador pelo WebDriver: árvore, captura, gestos, texto, aplicativos e tela inicial. Leia tree antes de agir; confira o resultado depois. A captura opcional precede a árvore: são leituras distintas, não simultâneas. Não repita ações de efeito incerto."
 
 export const PI_IPHONE_IMAGE_UNSUPPORTED = "O modelo atual não aceita imagens."
 
@@ -20,6 +20,8 @@ export const PI_IPHONE_INVALID_ARGUMENTS = "Argumentos inválidos para a operaç
 export const PI_IPHONE_TEXT_CONTENT = "text"
 
 export const PI_IPHONE_IMAGE_CONTENT = "image"
+
+export const PI_IPHONE_TREE_AFTER_FAILED = "A ação foi concluída, mas a leitura posterior falhou. Não repita a ação: "
 
 export const PI_IPHONE_DEFAULT_MAX = 200
 

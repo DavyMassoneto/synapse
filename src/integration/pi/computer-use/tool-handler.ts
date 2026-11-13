@@ -31,13 +31,14 @@ export class PiComputerToolHandler {
     try {
       const argumentsValue = Value.Parse(PI_COMPUTER_PARAMETERS, input)
       const action = translateComputerAction(argumentsValue)
-      const result = await this.computer.execute(action, {
-        sessionId: context.sessionManager.getSessionId(),
-        modelSupportsImages: Boolean(context.model?.input.includes(PI_COMPUTER_IMAGE_CONTENT)),
-      })
-      if (signal?.aborted) {
-        return computerToolError(PI_COMPUTER_CANCELLED_MESSAGE)
-      }
+      const result = await this.computer.execute(
+        action,
+        {
+          sessionId: context.sessionManager.getSessionId(),
+          modelSupportsImages: Boolean(context.model?.input.includes(PI_COMPUTER_IMAGE_CONTENT)),
+        },
+        signal,
+      )
       return computerToolOutput(result)
     } catch (error) {
       if (error instanceof Error) {

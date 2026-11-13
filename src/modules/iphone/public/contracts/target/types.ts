@@ -1,19 +1,18 @@
 import { type IphoneDeviceAction } from "../actions"
-import { type IPHONE_TARGET_ELEMENT, type IPHONE_TARGET_POINT, type IPHONE_TARGET_TEXT } from "../constants"
 import { type IphonePoint } from "../geometry"
 
 export interface IphoneElementTarget {
-  kind: typeof IPHONE_TARGET_ELEMENT
+  kind: "element"
   index: number
 }
 
 export interface IphoneTextTarget {
-  kind: typeof IPHONE_TARGET_TEXT
+  kind: "text"
   text: string
 }
 
 export interface IphonePointTarget {
-  kind: typeof IPHONE_TARGET_POINT
+  kind: "point"
   point: IphonePoint
 }
 

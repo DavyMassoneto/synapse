@@ -1,12 +1,7 @@
 import { type Api, getSupportedThinkingLevels, type Model, type ModelThinkingLevel } from "@earendil-works/pi-ai"
 import { type ModelRoute } from "@earendil-works/pi-coding-agent"
-import {
-  ROUTER_CANCELLED_KIND,
-  ROUTER_KEPT_KIND,
-  ROUTER_UNAVAILABLE_KIND,
-  type RouteOutcome,
-  rejectRouterCancellation,
-} from "#synapse/modules"
+import { ROUTER_CANCELLED_KIND, ROUTER_KEPT_KIND, ROUTER_UNAVAILABLE_KIND, type RouteOutcome } from "#synapse/modules"
+import { rejectRouterCancellation } from "./cancellation"
 import { PI_ROUTER_SELECTED_UNAVAILABLE } from "./constants"
 import { type PiRouterContext, type PiRouterState, type RoutePhysicalSelection } from "./types"
 

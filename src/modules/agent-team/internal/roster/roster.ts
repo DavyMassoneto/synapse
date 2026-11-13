@@ -1,5 +1,6 @@
 import { type MemberRecord, TEAM_LEAD_NAME, type TeamAgentRow } from "#synapse/modules/agent-team/public/contracts"
 import { type TeamMember } from "../member"
+import { TeamRuleError } from "../operation-results"
 import {
   TEAM_DEFAULT_NAME,
   TEAM_INVALID_NAME,
@@ -8,23 +9,23 @@ import {
   TEAM_UNKNOWN_AGENT,
 } from "./constants"
 import { failedMemberRow } from "./failed-member-row"
-import { type TeamFailedMember } from "./types"
+import { type TeamFailedMembers, type TeamMembers } from "./types"
 
 export class TeamRoster {
-  private readonly members = new Map<string, TeamMember>()
+  private readonly members: TeamMembers = new Map()
 
   private readonly reserved = new Set<string>()
 
-  private readonly failedMembers = new Map<string, TeamFailedMember>()
+  private readonly failedMembers: TeamFailedMembers = new Map()
 
   private nextNumber = 1
 
   reserve(name: string): string {
     if (!TEAM_NAME_PATTERN.test(name) || name === TEAM_LEAD_NAME) {
-      throw new Error(`${TEAM_INVALID_NAME}${name}`)
+      throw new TeamRuleError(`${TEAM_INVALID_NAME}${name}`)
     }
     if (this.isTaken(name)) {
-      throw new Error(`${TEAM_NAME_TAKEN}${name}`)
+      throw new TeamRuleError(`${TEAM_NAME_TAKEN}${name}`)
     }
     this.reserved.add(name)
     return name
@@ -59,9 +60,9 @@ export class TeamRoster {
     }
     const failure = this.failedMembers.get(name)
     if (failure) {
-      throw new Error(failure.message)
+      throw new TeamRuleError(failure.message)
     }
-    throw new Error(`${TEAM_UNKNOWN_AGENT}${name}`)
+    throw new TeamRuleError(`${TEAM_UNKNOWN_AGENT}${name}`)
   }
 
   failed(record: MemberRecord, message: string): void {

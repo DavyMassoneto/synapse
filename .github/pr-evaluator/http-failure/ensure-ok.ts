@@ -19,5 +19,5 @@ export async function ensureOk(response: Response, origin: string): Promise<Resp
   if (response.ok) {
     return response
   }
-  throw new HttpFailure(response.status, `${origin} respondeu ${response.status}: ${await readFailureDetail(response)}`)
+  throw new HttpFailure(`${origin} respondeu ${response.status}: ${await readFailureDetail(response)}`)
 }

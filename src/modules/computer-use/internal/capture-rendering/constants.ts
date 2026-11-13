@@ -60,3 +60,29 @@ export const COMPUTER_RENDER_RESPONSE_CAP_TEXT = "Resposta limitada a "
 export const COMPUTER_RENDER_OF_TEXT = " de "
 
 export const COMPUTER_RENDER_ELEMENTS_SUFFIX_TEXT = " elementos."
+
+export const COMPUTER_RENDER_COORDINATE_SEPARATOR = ", "
+
+export const COMPUTER_RENDER_DIMENSION_SEPARATOR = "x"
+
+export const COMPUTER_RENDER_SPACE = " "
+
+export const COMPUTER_RENDER_ELEMENT_PREFIX = "  #"
+
+export const COMPUTER_RENDER_LABEL_OPEN = " '"
+
+export const COMPUTER_RENDER_LABEL_BOUNDS = "' @ "
+
+export const COMPUTER_RENDER_APP_OPEN = " ["
+
+export const COMPUTER_RENDER_APP_CLOSE = "]"
+
+export const COMPUTER_RENDER_EMPTY = ""
+
+export const COMPUTER_RENDER_SCALE_OPEN = " (~"
+
+export const COMPUTER_RENDER_SCALE_FACTOR = "), ~"
+
+export const COMPUTER_RENDER_SCALE_SUFFIX = "x; "
+
+export const COMPUTER_RENDER_REMAINING_PREFIX = "  ... +"

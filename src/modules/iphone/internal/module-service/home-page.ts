@@ -3,11 +3,12 @@ import {
   gotoIphoneHomePage,
   hasIphoneSameFolderContents,
   hopIphoneHomeIcon,
-  IPHONE_HOME_DROP_FAILURE,
-  type IphoneHomeScreenPort,
+  IPHONE_HOME_DIRECT_DROP_PENDING,
+  type IphoneHomeCascadeSnapshot,
   mergeIphoneHomeFolder,
   readIphoneHomeFolder,
   readIphoneHomeScreen,
+  verifyIphoneCascade,
 } from "#synapse/modules/iphone/internal/home-screen-operations"
 import {
   IPHONE_ACCEPTED,
@@ -16,6 +17,7 @@ import {
   type IphoneHomeMergeOperation,
   type IphoneHomeOutput,
   type IphoneHomeReadOperation,
+  type IphoneHomeScreenPort,
 } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_MODULE_DIRECT_DROP,
@@ -85,6 +87,24 @@ export async function verifyIphoneDirectFolderDrop(
   return { kind: IPHONE_MODULE_DIRECT_DROP }
 }
 
+async function confirmIphonePendingDrop(
+  port: IphoneHomeScreenPort,
+  operation: IphoneAcrossPagesRequest,
+  before: string[],
+  cascade: IphoneHomeCascadeSnapshot,
+  signal: AbortSignal,
+): Promise<IphoneAcrossPagesResult> {
+  const verified = await verifyIphoneDirectFolderDrop(port, operation, before, signal)
+  if (verified.kind === IPHONE_REFUSED) {
+    return verified
+  }
+  const result = await verifyIphoneCascade(port, cascade, operation.toPage, signal)
+  if (result.kind === IPHONE_REFUSED) {
+    return result
+  }
+  return verified
+}
+
 async function hopIphoneHomeAcrossPages(
   port: IphoneHomeScreenPort,
   operation: IphoneAcrossPagesRequest,
@@ -96,10 +116,13 @@ async function hopIphoneHomeAcrossPages(
     const next = page + (operation.toPage > page ? 1 : -1)
     const hop = await hopIphoneHomeIcon(port, { name: operation.source, folder: false, from: page, to: next }, signal)
     if (hop.kind === IPHONE_REFUSED) {
-      if (hop.message === IPHONE_HOME_DROP_FAILURE && next === operation.toPage) {
-        return verifyIphoneDirectFolderDrop(port, operation, before, signal)
-      }
       return hop
+    }
+    if (hop.kind === IPHONE_HOME_DIRECT_DROP_PENDING) {
+      if (next !== operation.toPage) {
+        return { kind: IPHONE_REFUSED, message: IPHONE_MODULE_DIRECT_DROP_FAILURE }
+      }
+      return confirmIphonePendingDrop(port, operation, before, hop.cascade, signal)
     }
     page = next
   }

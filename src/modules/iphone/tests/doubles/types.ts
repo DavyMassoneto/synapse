@@ -1,4 +1,4 @@
-import { type IphoneSessionFactory, type IphoneSessionPort } from "#synapse/modules/iphone/internal/session-lifecycle"
+import { type IphoneSessionFactory, type IphoneSessionPort } from "#synapse/modules/iphone/public/contracts"
 
 export interface IphoneSessionDouble extends IphoneSessionPort {
   probes: number

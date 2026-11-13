@@ -31,28 +31,32 @@ export class ComputerCaptureDispatch {
     this.platform = platform
   }
 
-  async capture(action: ComputerCaptureAction): Promise<ComputerCapture> {
-    const selection = await this.select(action)
+  async capture(action: ComputerCaptureAction, signal?: AbortSignal): Promise<ComputerCapture> {
+    const selection = await this.select(action, signal)
     const prepared = computerPrepareCapture(action, selection)
-    const envelope = await this.readState(prepared.tool, prepared.arguments)
+    const envelope = await this.readState(prepared.tool, prepared.arguments, signal)
     return computerCaptureFromEnvelope(prepared, envelope)
   }
 
-  private async readState(tool: string, argumentsValue: ComputerDriverArguments): Promise<ComputerDriverEnvelope> {
-    const response = await this.driver.call(tool, argumentsValue)
+  private async readState(
+    tool: string,
+    argumentsValue: ComputerDriverArguments,
+    signal?: AbortSignal,
+  ): Promise<ComputerDriverEnvelope> {
+    const response = await this.driver.call(tool, argumentsValue, signal)
     return computerRequireEnvelope(response, this.target)
   }
 
-  async select(action: ComputerCaptureAction): Promise<ComputerTargetSelection> {
+  async select(action: ComputerCaptureAction, signal?: AbortSignal): Promise<ComputerTargetSelection> {
     const request = computerCaptureTargetRequest(action)
     if (request.kind === COMPUTER_TARGET_EXACT) {
       return this.target.select([], [], request, this.platform)
     }
-    const response = await this.driver.call(COMPUTER_DISPATCH_LIST_WINDOWS, { on_screen_only: true })
+    const response = await this.driver.call(COMPUTER_DISPATCH_LIST_WINDOWS, { on_screen_only: true }, signal)
     const envelope = computerRequireEnvelope(response, this.target)
     let applications = envelope.applications
     if (request.kind === COMPUTER_TARGET_APP) {
-      const apps = await this.driver.call(COMPUTER_DISPATCH_LIST_APPS, {})
+      const apps = await this.driver.call(COMPUTER_DISPATCH_LIST_APPS, {}, signal)
       if (apps.kind === COMPUTER_DRIVER_RESPONSE && !apps.envelope.isError) {
         applications = apps.envelope.applications
       }

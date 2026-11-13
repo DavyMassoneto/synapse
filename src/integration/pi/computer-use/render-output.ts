@@ -1,9 +1,14 @@
 import { COMPUTER_IMAGE_PRESENT, type ComputerExecuteResult, type ComputerRenderedScreenshot } from "#synapse/modules"
 import { PI_COMPUTER_IMAGE_CONTENT, PI_COMPUTER_TEXT_CONTENT } from "./constants"
+import { isComputerToolError } from "./predicates"
 import { type PiComputerCaptureText, type PiComputerToolOutput } from "./types"
 
 export function computerToolOutput(result: ComputerExecuteResult): PiComputerToolOutput {
-  const output: PiComputerToolOutput = { content: [], details: { result } }
+  const output: PiComputerToolOutput = {
+    content: [],
+    details: { result },
+    isError: isComputerToolError(result),
+  }
   if ("capture" in result && result.capture) {
     const capture = result.capture
     output.content.push({

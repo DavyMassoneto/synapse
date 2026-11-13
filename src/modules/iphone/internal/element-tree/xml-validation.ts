@@ -11,6 +11,7 @@ import {
   IPHONE_XML_TAG_START,
   IPHONE_XML_TOKEN,
 } from "./constants"
+import { hasIphoneDuplicateXmlAttributes, isIphoneXmlNumericEntitiesValid } from "./predicates"
 import { type IphoneXmlState } from "./types"
 
 function consumeIphoneXmlToken(text: string, state: IphoneXmlState): IphoneSupportResult {
@@ -41,13 +42,16 @@ function consumeIphoneXmlToken(text: string, state: IphoneXmlState): IphoneSuppo
 }
 
 export function validateIphoneXml(xml: string): IphoneSupportResult {
-  if (IPHONE_XML_INVALID_ENTITY.test(xml)) {
+  if (IPHONE_XML_INVALID_ENTITY.test(xml) || !isIphoneXmlNumericEntitiesValid(xml)) {
     return { kind: IPHONE_REFUSED, message: IPHONE_XML_ERROR }
   }
   const state: IphoneXmlState = { stack: [], roots: 0 }
   let consumed = 0
   for (const token of xml.matchAll(IPHONE_XML_TOKEN)) {
     consumed += token[0].length
+    if (IPHONE_XML_OPEN.test(token[0]) && hasIphoneDuplicateXmlAttributes(token[0])) {
+      return { kind: IPHONE_REFUSED, message: IPHONE_XML_ERROR }
+    }
     const result = consumeIphoneXmlToken(token[0], state)
     if (result.kind === IPHONE_REFUSED) {
       return result

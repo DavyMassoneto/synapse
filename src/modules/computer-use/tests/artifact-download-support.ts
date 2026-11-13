@@ -6,7 +6,7 @@ import {
   COMPUTER_ARTIFACT_TEST_HTTP_OK,
 } from "./artifact-download-constants"
 
-export type ComputerServerCallback = () => void
+import { type ComputerServerCallback } from "./artifact-download-types"
 
 export class ComputerArtifactTestServer {
   private readonly payload: Buffer

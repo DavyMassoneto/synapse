@@ -3,6 +3,7 @@ import {
   IPHONE_REFUSED,
   type IphoneDragSpec,
   type IphonePoint,
+  type IphonePointerAction,
 } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_INVALID_GESTURE,
@@ -13,7 +14,7 @@ import {
   IPHONE_POINTER_PAUSE,
   IPHONE_POINTER_UP,
 } from "./constants"
-import { type IphoneGestureResult, type IphonePointerAction } from "./types"
+import { type IphoneGestureResult } from "./types"
 
 export function buildIphonePress(point: IphonePoint, duration: number): IphoneGestureResult {
   if (![point.x, point.y, duration].every(Number.isFinite) || point.x < 0 || point.y < 0 || duration < 0) {

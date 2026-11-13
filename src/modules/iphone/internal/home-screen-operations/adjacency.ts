@@ -2,13 +2,18 @@ import {
   buildIphoneHomeDrag,
   IPHONE_HOME_ADJACENT,
   IPHONE_HOME_GRID,
-  IPHONE_HOME_PAGE_KNOWN,
   type IphoneHomeMove,
-  type IphoneHomeStateAccepted,
   iphoneHomeSlotPoint,
   planIphoneHomeAdjacency,
 } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneHomeStateAccepted,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_ADJACENCY_LIMIT,
   IPHONE_HOME_DROP_FAILURE,
@@ -18,7 +23,6 @@ import {
 import { editIphoneHomeScreen } from "./edit"
 import { isIphoneCompactMoveValid } from "./predicates"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function moveIphoneHomeIcon(
   port: IphoneHomeScreenPort,

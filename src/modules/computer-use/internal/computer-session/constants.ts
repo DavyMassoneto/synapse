@@ -7,3 +7,6 @@ export const COMPUTER_OVERLAY_DISABLED = "0"
 export const COMPUTER_SESSION_DISPATCH_IDLE = "dispatch-idle"
 
 export const COMPUTER_SESSION_DISPATCH_ACTIVE = "dispatch-active"
+
+export const COMPUTER_SESSION_STOPPED_MESSAGE =
+  "A sessão foi encerrada antes de executar a ação; faça uma nova solicitação."

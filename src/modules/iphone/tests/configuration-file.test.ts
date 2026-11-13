@@ -4,6 +4,7 @@ import { describe, expect, test } from "vitest"
 import {
   readIphoneConfiguration,
   readIphoneConfigurationView,
+  readIphoneStoredConfiguration,
   writeIphoneConfiguration,
 } from "#synapse/modules/iphone/adapters/configuration-file"
 import { withIphoneConfigDirectory } from "./configuration-support"
@@ -82,7 +83,61 @@ function rejectsUnknownConfiguration(directory: string): void {
   expect(existsSync(path)).toBe(false)
 }
 
+function normalizesNestedConfiguration(directory: string): void {
+  const path = join(directory, "config.json")
+  writeFileSync(
+    path,
+    JSON.stringify({
+      serverUrl: "http://localhost:4723",
+      target: { kind: "device", udid: "abc", deviceName: "iPhone", wdaInstalled: false },
+      capabilities: { noReset: true },
+    }),
+  )
+  expect(readIphoneStoredConfiguration(path)).toEqual({
+    kind: "loaded",
+    config: {
+      serverUrl: "http://localhost:4723",
+      target: "device",
+      udid: "abc",
+      deviceName: "iPhone",
+      wdaInstalled: false,
+      capabilities: { noReset: true },
+    },
+  })
+}
+
+function preservesIncompleteConfigurationForEditing(directory: string): void {
+  const path = join(directory, "config.json")
+  writeFileSync(path, JSON.stringify({ target: "device", wdaInstalled: false }))
+  expect(readIphoneConfigurationView(path)).toMatchObject({
+    target: "device",
+    wdaInstalled: false,
+    missing: expect.arrayContaining(["serverUrl", "udid", "deviceName"]),
+  })
+}
+
+function rejectsInvalidNestedTarget(directory: string): void {
+  const path = join(directory, "config.json")
+  writeFileSync(
+    path,
+    JSON.stringify({
+      serverUrl: "http://localhost:4723",
+      target: { kind: "device", udid: 7, deviceName: "iPhone", wdaInstalled: true },
+    }),
+  )
+  expect(readIphoneStoredConfiguration(path).kind).toBe("invalid")
+}
+
 function suite(): void {
+  test(
+    "normaliza configuração aninhada uma vez na leitura",
+    withIphoneConfigDirectory.bind(null, normalizesNestedConfiguration),
+  )
+  test(
+    "preserva configuração incompleta e false para edição",
+    withIphoneConfigDirectory.bind(null, preservesIncompleteConfigurationForEditing),
+  )
+  test("recusa alvo aninhado com identidade inválida", withIphoneConfigDirectory.bind(null, rejectsInvalidNestedTarget))
   test("lê configuração com BOM UTF-8", withIphoneConfigDirectory.bind(null, readsConfigurationWithBom))
   test("recusa JSON inválido com BOM UTF-8", withIphoneConfigDirectory.bind(null, rejectsInvalidJsonWithBom))
   test("mostra campos faltantes", withIphoneConfigDirectory.bind(null, showsMissingFields))

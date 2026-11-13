@@ -1,17 +1,10 @@
-import { type IphoneHomeIcon } from "#synapse/modules/iphone/public/contracts"
-
-export type {
-  IphoneHomeFolderCount,
-  IphoneHomeIcon,
-  IphoneHomeLayout,
-  IphoneHomeLayoutResult,
-  IphoneHomePage,
-  IphoneHomePageMissing,
-  IphoneHomeStateAccepted,
-  IphoneHomeStateResult,
+import {
+  type IphoneDragSpec,
+  type IphoneElement,
+  type IphoneHomeIcon,
+  type IphonePoint,
+  type IphoneRefused,
 } from "#synapse/modules/iphone/public/contracts"
-
-import { type IphoneElement, type IphonePoint, type IphoneRefused } from "#synapse/modules/iphone/public/contracts"
 
 export interface IphoneHomeInput {
   viewport: IphonePoint
@@ -48,3 +41,5 @@ export interface IphoneHomeIndicators {
   inFolder: boolean
   clearText: boolean
 }
+
+export type IphoneHomeDragCalibration = Omit<IphoneDragSpec, "from" | "destination">

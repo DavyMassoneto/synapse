@@ -1,13 +1,3 @@
-import {
-  type ROUTER_CANCELLED_KIND,
-  type ROUTER_CHOICE_KIND,
-  type ROUTER_FAILED_KIND,
-  type ROUTER_KEPT_KIND,
-  type ROUTER_RESERVE_KIND,
-  type ROUTER_SELECTED_KIND,
-  type ROUTER_UNAVAILABLE_KIND,
-} from "./constants"
-
 export interface RouterCandidate {
   provider: string
   authorized: boolean
@@ -55,21 +45,21 @@ export interface RouteRequest {
 
 export interface RouteSelected {
   provider: string
-  kind: typeof ROUTER_SELECTED_KIND
+  kind: "selected"
   modelId: string
   effort: string
   reason: string
 }
 
 export interface RouteKept {
-  kind: typeof ROUTER_KEPT_KIND
+  kind: "kept"
   provider: string
   modelId: string
   effort: string
 }
 
 export interface RouteReserve {
-  kind: typeof ROUTER_RESERVE_KIND
+  kind: "reserve"
   modelId: string
   provider: string
   effort: string
@@ -77,12 +67,12 @@ export interface RouteReserve {
 }
 
 export interface RouteUnavailable {
-  kind: typeof ROUTER_UNAVAILABLE_KIND
+  kind: "unavailable"
   reason: string
 }
 
 export interface RouteCancelled {
-  kind: typeof ROUTER_CANCELLED_KIND
+  kind: "cancelled"
 }
 
 export type RouteOutcome = RouteSelected | RouteReserve | RouteKept | RouteUnavailable | RouteCancelled
@@ -130,13 +120,13 @@ export interface RouterChoiceProbability {
 }
 
 export interface RouterClassifierChoice {
-  kind: typeof ROUTER_CHOICE_KIND
+  kind: "choice"
   choice: string
   probabilities: RouterChoiceProbability[]
 }
 
 export interface RouterClassifierFailed {
-  kind: typeof ROUTER_FAILED_KIND
+  kind: "failed"
   reason: string
 }
 
@@ -154,4 +144,9 @@ export type ModelRouterFactory = (classifier: RouterClassifier) => ModelRouter
 
 export type RouterReserveOutcome = RouteReserve | RouteUnavailable
 
-export type RouterOptionOutcome = string | RouteCancelled
+export interface RouterOptionChosen {
+  kind: "chosen"
+  id: string
+}
+
+export type RouterOptionOutcome = RouterOptionChosen | RouteCancelled
