@@ -10,6 +10,31 @@ export type ComputerMountRequest = Static<typeof COMPUTER_MOUNT_REQUEST_SCHEMA>
 
 export type ComputerMountEvent = Static<typeof COMPUTER_MOUNT_EVENT_SCHEMA>
 
+export interface ComputerMountHandshakeResult {
+  protocolVersion: string
+  serverInfo: ComputerMountServerInfo
+}
+
+export interface ComputerMountServerInfo {
+  name: string
+  version: string
+}
+
+export interface ComputerMountToolsResult {
+  tools: ComputerMountFakeTool[]
+}
+
+export interface ComputerMountCallResult {
+  content: never[]
+  structuredContent: ComputerMountFakeState
+  isError: boolean
+}
+
+export type ComputerMountResponseResult =
+  | ComputerMountHandshakeResult
+  | ComputerMountToolsResult
+  | ComputerMountCallResult
+
 export interface ComputerMountFakeTool {
   name: string
   inputSchema: ComputerMountFakeInputSchema

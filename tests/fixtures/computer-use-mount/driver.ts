@@ -22,7 +22,7 @@ import {
   COMPUTER_MOUNT_VERSION,
 } from "./constants"
 import { COMPUTER_MOUNT_INPUT_SCHEMA, COMPUTER_MOUNT_REQUEST_SCHEMA } from "./schemas"
-import { type ComputerMountFakeTool, type ComputerMountRequest } from "./types"
+import { type ComputerMountFakeTool, type ComputerMountRequest, type ComputerMountResponseResult } from "./types"
 
 function logPath(): string {
   const path = process.argv[2]
@@ -43,27 +43,17 @@ function fakeTool(name: string): ComputerMountFakeTool {
 function onLine(line: string): void {
   const request = Value.Parse(COMPUTER_MOUNT_REQUEST_SCHEMA, JSON.parse(line))
   switch (request.method) {
-    case COMPUTER_MOUNT_INITIALIZE:
-      process.stdout.write(
-        JSON.stringify({
-          jsonrpc: COMPUTER_MOUNT_JSONRPC,
-          id: request.id,
-          result: {
-            protocolVersion: COMPUTER_MOUNT_PROTOCOL,
-            capabilities: {},
-            serverInfo: { name: COMPUTER_MOUNT_DRIVER_CLOSED, version: COMPUTER_MOUNT_VERSION },
-          },
-        }) + COMPUTER_MOUNT_NEWLINE,
-      )
+    case COMPUTER_MOUNT_INITIALIZE: {
+      const result = {
+        protocolVersion: COMPUTER_MOUNT_PROTOCOL,
+        capabilities: {},
+        serverInfo: { name: COMPUTER_MOUNT_DRIVER_CLOSED, version: COMPUTER_MOUNT_VERSION },
+      }
+      writeResponse(request, result)
       break
+    }
     case COMPUTER_MOUNT_TOOLS_LIST:
-      process.stdout.write(
-        JSON.stringify({
-          jsonrpc: COMPUTER_MOUNT_JSONRPC,
-          id: request.id,
-          result: { tools: COMPUTER_MOUNT_TOOLS.map(fakeTool) },
-        }) + COMPUTER_MOUNT_NEWLINE,
-      )
+      writeResponse(request, { tools: COMPUTER_MOUNT_TOOLS.map(fakeTool) })
       break
     case COMPUTER_MOUNT_TOOLS_CALL:
       respondCall(request)
@@ -77,12 +67,12 @@ function respondCall(request: ComputerMountRequest): void {
   }
   const elements = request.params?.name === COMPUTER_MOUNT_GET_WINDOW ? COMPUTER_MOUNT_ELEMENTS : []
   const structuredContent = { ...COMPUTER_MOUNT_STATE, elements }
+  writeResponse(request, { content: [], structuredContent, isError: false })
+}
+
+function writeResponse(request: ComputerMountRequest, result: ComputerMountResponseResult): void {
   process.stdout.write(
-    JSON.stringify({
-      jsonrpc: COMPUTER_MOUNT_JSONRPC,
-      id: request.id,
-      result: { content: [], structuredContent, isError: false },
-    }) + COMPUTER_MOUNT_NEWLINE,
+    JSON.stringify({ jsonrpc: COMPUTER_MOUNT_JSONRPC, id: request.id, result }) + COMPUTER_MOUNT_NEWLINE,
   )
 }
 
