@@ -3,12 +3,11 @@ import { fileURLToPath } from "node:url"
 import { readJsonFile } from "../validated-json"
 import {
   PI_PROCESS_MANIFEST_FILE,
-  PI_PROCESS_MANIFEST_SCHEMA,
   PI_PROCESS_PACKAGE_URL,
   PI_PROCESS_ROOT_URL,
   PI_PROCESS_SDK_PACKAGE,
-  PI_PROCESS_SDK_SCHEMA,
 } from "./constants"
+import { PI_PROCESS_MANIFEST_SCHEMA, PI_PROCESS_SDK_SCHEMA } from "./schemas"
 
 export function resolvePiProcessEntrypoint(): string {
   const manifest = readJsonFile(fileURLToPath(PI_PROCESS_PACKAGE_URL), PI_PROCESS_MANIFEST_SCHEMA)

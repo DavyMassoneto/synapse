@@ -8,7 +8,9 @@ import {
   type ComputerDriverPort,
   type ComputerDriverTool,
 } from "#synapse/modules/computer-use/public/contracts"
+import { computerCheckCancellation } from "../execution-cancellation"
 import {
+  COMPUTER_SESSION_CONFIG_MESSAGE,
   COMPUTER_SESSION_CONFIG_TOOL,
   COMPUTER_SESSION_CURSOR_DISABLED,
   COMPUTER_SESSION_CURSOR_TOOL,
@@ -26,6 +28,10 @@ export class ComputerDriverSession implements ComputerDriverPort {
 
   private started = false
 
+  private generation = 0
+
+  private stopping?: Promise<void>
+
   private tools: ComputerDriverTool[] = []
 
   private starting?: Promise<ComputerDriverTool[]>
@@ -39,8 +45,11 @@ export class ComputerDriverSession implements ComputerDriverPort {
   }
 
   start(): Promise<ComputerDriverTool[]> {
+    if (this.stopping) {
+      return this.stopping.then(this.start.bind(this))
+    }
     if (!this.starting) {
-      this.starting = this.initialize().finally(this.clearStarting.bind(this))
+      this.starting = this.initialize(this.generation).finally(this.clearStarting.bind(this))
     }
     return this.starting
   }
@@ -49,46 +58,76 @@ export class ComputerDriverSession implements ComputerDriverPort {
     delete this.starting
   }
 
-  private async initialize(): Promise<ComputerDriverTool[]> {
+  private async initialize(generation: number): Promise<ComputerDriverTool[]> {
     if (!this.started) {
       this.tools = await this.driver.start()
+      this.requireGeneration(generation)
       const result = await this.driver.call(COMPUTER_SESSION_START_TOOL, { session: this.sessionId })
       if (result.kind !== COMPUTER_DRIVER_RESPONSE || result.envelope.isError) {
         await this.driver.stop()
         throw new Error(COMPUTER_SESSION_START_MESSAGE)
       }
-      await this.configure()
+      this.requireGeneration(generation)
+      await this.configure(generation)
+      this.requireGeneration(generation)
       this.started = true
     }
     return this.tools
   }
 
-  private async configure(): Promise<void> {
-    await this.driver.call(COMPUTER_SESSION_CONFIG_TOOL, {
+  private async configure(generation: number): Promise<void> {
+    const configuration = await this.driver.call(COMPUTER_SESSION_CONFIG_TOOL, {
       session: this.sessionId,
       max_image_dimension: COMPUTER_SESSION_MAX_IMAGE_DIMENSION,
     })
+    await this.requireConfiguration(configuration)
+    this.requireGeneration(generation)
     if (!this.overlayEnabled) {
-      await this.driver.call(COMPUTER_SESSION_CURSOR_TOOL, {
+      const cursor = await this.driver.call(COMPUTER_SESSION_CURSOR_TOOL, {
         session: this.sessionId,
         cursor_id: this.sessionId,
         enabled: COMPUTER_SESSION_CURSOR_DISABLED,
       })
+      await this.requireConfiguration(cursor)
+      this.requireGeneration(generation)
     }
   }
 
-  async call(name: string, argumentsValue: ComputerDriverArguments): Promise<ComputerDriverCallResult> {
+  private async requireConfiguration(result: ComputerDriverCallResult): Promise<void> {
+    if (result.kind !== COMPUTER_DRIVER_RESPONSE || result.envelope.isError) {
+      await this.invalidate()
+      throw new Error(COMPUTER_SESSION_CONFIG_MESSAGE)
+    }
+  }
+
+  async call(
+    name: string,
+    argumentsValue: ComputerDriverArguments,
+    signal?: AbortSignal,
+  ): Promise<ComputerDriverCallResult> {
+    computerCheckCancellation(signal)
+    const generation = this.generation
     await this.start()
+    this.requireGeneration(generation)
+    computerCheckCancellation(signal)
     const scopedArguments = { ...argumentsValue }
     if (name !== COMPUTER_SESSION_NATIVE_FOCUS_TOOL) {
       scopedArguments.session = this.sessionId
     }
-    const result = await this.driver.call(name, scopedArguments)
+    const result = await this.driver.call(name, scopedArguments, signal)
     if (result.kind === COMPUTER_DRIVER_TIMEOUT || result.kind === COMPUTER_DRIVER_DISCONNECTED) {
+      if (generation !== this.generation) {
+        return result
+      }
       await this.invalidate()
-      if (COMPUTER_DRIVER_READ_TOOLS.includes(name)) {
+      if (generation !== this.generation) {
+        return result
+      }
+      if (COMPUTER_DRIVER_READ_TOOLS.includes(name) && !signal?.aborted) {
         await this.start()
-        const retried = await this.driver.call(name, scopedArguments)
+        this.requireGeneration(generation)
+        computerCheckCancellation(signal)
+        const retried = await this.driver.call(name, scopedArguments, signal)
         if (retried.kind === COMPUTER_DRIVER_TIMEOUT || retried.kind === COMPUTER_DRIVER_DISCONNECTED) {
           await this.invalidate()
         }
@@ -98,11 +137,42 @@ export class ComputerDriverSession implements ComputerDriverPort {
     return result
   }
 
-  async stop(): Promise<void> {
-    if (this.started) {
-      await this.driver.call(COMPUTER_SESSION_END_TOOL, { session: this.sessionId })
+  stop(): Promise<void> {
+    if (!this.stopping) {
+      this.generation += 1
+      this.stopping = this.stopSession().finally(this.clearStopping.bind(this))
     }
-    await this.invalidate()
+    return this.stopping
+  }
+
+  private clearStopping(): void {
+    delete this.stopping
+  }
+
+  private async stopSession(): Promise<void> {
+    try {
+      if (this.started) {
+        await this.driver.call(COMPUTER_SESSION_END_TOOL, { session: this.sessionId })
+      }
+    } finally {
+      await this.invalidate()
+      if (this.starting) {
+        await this.starting.catch(this.ignoreStoppedStart.bind(this))
+      }
+      await this.driver.stop()
+    }
+  }
+
+  private ignoreStoppedStart(error: Error): void {
+    if (error.message !== COMPUTER_SESSION_START_MESSAGE) {
+      throw error
+    }
+  }
+
+  private requireGeneration(generation: number): void {
+    if (generation !== this.generation) {
+      throw new Error(COMPUTER_SESSION_START_MESSAGE)
+    }
   }
 
   private async invalidate(): Promise<void> {

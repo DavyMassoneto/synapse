@@ -3,19 +3,12 @@ import {
   type CreateTaskInput,
   type MemberRecord,
   type MemberSessions,
-  type StartMemberRequest,
   TASK_ACCEPTED,
-  type TaskFilter,
   type TaskOutcome,
   type TaskSnapshot,
-  type TaskView,
   type TeamClock,
-  type TeamInterruptOutcome,
   type TeamLead,
-  type TeamOutcome,
   type TeamOverview,
-  type TeamStartOutcome,
-  type TeamWaitOutcome,
   type UpdateTaskInput,
 } from "#synapse/modules/agent-team/public/contracts"
 import { type TeamMemberOutcome } from "../member"
@@ -43,39 +36,41 @@ export class Team implements AgentTeam {
 
   private closed = false
 
+  readonly start: AgentTeam["start"]
+
+  readonly send: AgentTeam["send"]
+
+  readonly interrupt: AgentTeam["interrupt"]
+
+  readonly wait: AgentTeam["wait"]
+
+  readonly getTask: AgentTeam["getTask"]
+
+  readonly listTasks: AgentTeam["listTasks"]
+
   constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock) {
     this.lead = lead
     this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
     this.messages = new TeamMessages(lead, this.roster, this.events, this)
-    this.admission = new TeamMembership({ team: this, observer: this }, sessions, lead, this.roster, this.events)
+    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events)
+    this.start = this.admission.start.bind(this.admission)
+    this.send = this.messages.send.bind(this.messages)
+    this.interrupt = this.messages.interrupt.bind(this.messages)
+    this.wait = this.messages.wait.bind(this.messages)
+    this.getTask = this.board.get.bind(this.board)
+    this.listTasks = this.board.list.bind(this.board)
   }
 
-  start(request: StartMemberRequest): Promise<TeamStartOutcome> {
-    return this.admission.start(request)
-  }
-
-  restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void> {
+  async restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void> {
     this.closed = false
     this.messages.reopen()
     this.events.clear()
     for (const member of this.roster.clear()) {
-      member.dispose()
+      await member.dispose()
     }
     this.board.restore(tasks)
     return this.admission.restore(records)
-  }
-
-  send(sender: string, target: string, message: string): TeamOutcome {
-    return this.messages.send(sender, target, message)
-  }
-
-  interrupt(target: string): TeamInterruptOutcome {
-    return this.messages.interrupt(target)
-  }
-
-  wait(name: string, timeoutMs: number, signal?: AbortSignal): Promise<TeamWaitOutcome> {
-    return this.messages.wait(name, timeoutMs, signal)
   }
 
   markLeadSeen(): void {
@@ -99,14 +94,6 @@ export class Team implements AgentTeam {
 
   createTask(input: CreateTaskInput): TaskOutcome {
     return this.refreshTaskResult(this.board.create(input))
-  }
-
-  getTask(taskId: string): TaskOutcome {
-    return this.board.get(taskId)
-  }
-
-  listTasks(filter: TaskFilter): TaskView[] {
-    return this.board.list(filter)
   }
 
   updateTask(caller: string, input: UpdateTaskInput): TaskOutcome {

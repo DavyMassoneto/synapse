@@ -1,4 +1,4 @@
-export const TASK_ID_PREFIX = "task-"
+export const TASK_BOARD_ID_PREFIX = "task-"
 
 export const TASK_BOARD_MAX_TASKS = 256
 
@@ -18,7 +18,7 @@ export const TASK_BOARD_OVERLAP_WARNING = "os escopos de escrita se sobrepõem a
 
 export const TASK_BOARD_UNKNOWN_TASK = "Tarefa inexistente: "
 
-export const TASK_LIMIT = "O quadro atingiu o limite de tarefas ativas: "
+export const TASK_BOARD_LIMIT_MESSAGE = "O quadro atingiu o limite de tarefas ativas: "
 
 export const TASK_BOARD_STALE_REVISION = "Revisão desatualizada; a revisão atual da tarefa é "
 
@@ -48,8 +48,6 @@ export const TASK_BOARD_EDIT_WITHOUT_FIELDS = "edit exige subject, description o
 export const TASK_BOARD_DEPENDENCIES_REQUIRED = "set_dependencies exige blocked_by"
 
 export const TASK_BOARD_HAS_DEPENDENTS = "A tarefa ainda bloqueia a tarefa "
-
-export const TASK_BOARD_UNKNOWN_ACTION = "Ação desconhecida: "
 
 export const TASK_BOARD_SELF_BLOCK = "Uma tarefa não pode bloquear a si mesma"
 

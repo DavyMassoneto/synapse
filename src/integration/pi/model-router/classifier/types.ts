@@ -1,7 +1,6 @@
 import { type ClassifierApi, type ClassifierModel } from "@earendil-works/pi-ai"
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent"
 import { type RouterClassifierFailed } from "#synapse/modules"
-import { type PI_ROUTER_CLASSIFIER_FOUND } from "./constants"
 
 export interface PiRouterClassificationContext {
   modelRegistry: PiRouterClassificationRegistry
@@ -21,7 +20,7 @@ export interface PiRouterClassificationLookup {
 export type PiClassifyOptions = NonNullable<Parameters<ExtensionContext["modelRegistry"]["classify"]>[2]>
 
 export interface PiRouterClassifierFound {
-  kind: typeof PI_ROUTER_CLASSIFIER_FOUND
+  kind: "found"
   model: ClassifierModel<ClassifierApi>
 }
 

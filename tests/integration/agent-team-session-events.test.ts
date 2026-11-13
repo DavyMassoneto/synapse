@@ -70,14 +70,24 @@ function translatesFailureWithoutMessage(): void {
 
 function removesListener(): void {
   const session = new TeamSessionDouble()
-  const adapter = new PiTeamSessionAdapter(session)
+  const adapter = new PiTeamSessionAdapter(session, session)
   const unsubscribe = adapter.subscribe(session.collect.bind(session))
   unsubscribe()
   session.emit({ type: "agent_start" })
   expect(session.events).toHaveLength(0)
 }
 
+function extensionFailureOverridesSettledSuccess(): void {
+  const session = subscribedTeamSession()
+  session.extensionFailure = true
+  session.emit({ type: "agent_settled", aborted: false })
+  expect(session.events).toContainEqual(
+    expect.objectContaining({ kind: "execution_settled", failure: "Falha da extensão falsa" }),
+  )
+}
+
 function registerTests(): void {
+  test("erro da extensão não vira conclusão normal", extensionFailureOverridesSettledSuccess)
   test("traduz início da execução", translatesStart)
   test("traduz início do turno", translatesTurn)
   test("traduz conclusão com resposta", translatesSettled)

@@ -15,16 +15,16 @@ import { taskBoardResolveBlockers } from "./blockers"
 import {
   TASK_BOARD_DELETED_MESSAGE,
   TASK_BOARD_FIRST_NUMBER,
+  TASK_BOARD_ID_PREFIX,
   TASK_BOARD_INITIAL_REVISION,
+  TASK_BOARD_LIMIT_MESSAGE,
   TASK_BOARD_MAX_DESCRIPTION_LENGTH,
   TASK_BOARD_MAX_SUBJECT_LENGTH,
   TASK_BOARD_MAX_TASKS,
   TASK_BOARD_STALE_REVISION,
   TASK_BOARD_UNKNOWN_TASK,
-  TASK_ID_PREFIX,
-  TASK_LIMIT,
 } from "./constants"
-import { isTaskBoardActive, isTaskBoardFilterMatch } from "./predicates"
+import { hasTaskBoardLimit, isTaskBoardActive, isTaskBoardFilterMatch } from "./predicates"
 import { taskBoardCopySnapshot } from "./snapshot-copy"
 import { TaskRefusal } from "./task-refusal"
 import { taskBoardRequireText } from "./task-text"
@@ -54,10 +54,10 @@ export class TaskBoard {
     for (const snapshot of snapshots) {
       const slot = positions.get(snapshot.id)
       const copied = taskBoardCopySnapshot(snapshot)
-      if (slot) {
-        this.tasks[slot.index] = copied
+      if (typeof slot === "number") {
+        this.tasks[slot] = copied
       } else {
-        positions.set(snapshot.id, { index: this.tasks.length })
+        positions.set(snapshot.id, this.tasks.length)
         this.tasks.push(copied)
       }
       this.advance(snapshot)
@@ -65,14 +65,14 @@ export class TaskBoard {
   }
 
   create(input: CreateTaskInput): TaskOutcome {
-    return this.execute(this.createSnapshot.bind(this, input))
+    return this.execute(this.createView.bind(this, input))
   }
 
   get(id: string): TaskOutcome {
-    return this.execute(this.getSnapshot.bind(this, id))
+    return this.execute(this.getView.bind(this, id))
   }
 
-  private getSnapshot(id: string): TaskView {
+  private getView(id: string): TaskView {
     return taskBoardToTaskView(taskBoardViewContext(this.tasks), this.find(id))
   }
 
@@ -91,7 +91,7 @@ export class TaskBoard {
   }
 
   update(caller: string, input: UpdateTaskInput): TaskOutcome {
-    return this.execute(this.updateSnapshot.bind(this, caller, input))
+    return this.execute(this.updateView.bind(this, caller, input))
   }
 
   private execute(action: TaskBoardAction): TaskOutcome {
@@ -105,24 +105,11 @@ export class TaskBoard {
     }
   }
 
-  private hasTaskLimit(): boolean {
-    let count = 0
-    for (const task of this.tasks) {
-      if (isTaskBoardActive(task)) {
-        count += 1
-      }
-      if (count >= TASK_BOARD_MAX_TASKS) {
-        return true
-      }
+  private createView(input: CreateTaskInput): TaskView {
+    if (hasTaskBoardLimit(this.tasks)) {
+      throw new TaskRefusal(`${TASK_BOARD_LIMIT_MESSAGE}${TASK_BOARD_MAX_TASKS}`)
     }
-    return false
-  }
-
-  private createSnapshot(input: CreateTaskInput): TaskView {
-    if (this.hasTaskLimit()) {
-      throw new TaskRefusal(`${TASK_LIMIT}${TASK_BOARD_MAX_TASKS}`)
-    }
-    const id = `${TASK_ID_PREFIX}${this.nextNumber}`
+    const id = `${TASK_BOARD_ID_PREFIX}${this.nextNumber}`
     return this.commit({
       id,
       revision: TASK_BOARD_INITIAL_REVISION,
@@ -134,7 +121,7 @@ export class TaskBoard {
     })
   }
 
-  private updateSnapshot(caller: string, input: UpdateTaskInput): TaskView {
+  private updateView(caller: string, input: UpdateTaskInput): TaskView {
     const current = this.find(input.taskId)
     if (current.revision !== input.expectedRevision) {
       throw new TaskRefusal(`${TASK_BOARD_STALE_REVISION}${current.revision}`)
@@ -148,11 +135,12 @@ export class TaskBoard {
 
   private commit(task: TaskSnapshot): TaskView {
     this.journal.recordTask(taskBoardCopySnapshot(task))
-    this.storeAndAdvance(task)
+    this.store(task)
+    this.advance(task)
     return taskBoardToTaskView(taskBoardViewContext(this.tasks), task)
   }
 
-  private storeAndAdvance(task: TaskSnapshot): void {
+  private store(task: TaskSnapshot): void {
     const index = this.tasks.findIndex((candidate) => candidate.id === task.id)
     const snapshot = taskBoardCopySnapshot(task)
     if (index >= 0) {
@@ -160,11 +148,10 @@ export class TaskBoard {
     } else {
       this.tasks.push(snapshot)
     }
-    this.advance(task)
   }
 
   private advance(task: TaskSnapshot): void {
-    const number = Number(task.id.slice(TASK_ID_PREFIX.length))
+    const number = Number(task.id.slice(TASK_BOARD_ID_PREFIX.length))
     if (Number.isSafeInteger(number) && number >= this.nextNumber) {
       this.nextNumber = number + 1
     }

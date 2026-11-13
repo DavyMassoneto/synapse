@@ -1,13 +1,6 @@
 import { type ComputerDeliveryMode, type ComputerInputScope, type ComputerScrollDirection } from "../actions"
 import { type ComputerApplication, type ComputerElement, type ComputerImage, type ComputerWindow } from "../capture"
 import { type ComputerActionCode, type ComputerActionEffect, type ComputerRecommendedAction } from "../results"
-import {
-  type COMPUTER_DRIVER_DISCONNECTED,
-  type COMPUTER_DRIVER_ERROR,
-  type COMPUTER_DRIVER_INVALID,
-  type COMPUTER_DRIVER_RESPONSE,
-  type COMPUTER_DRIVER_TIMEOUT,
-} from "./constants"
 
 export interface ComputerDriverArguments {
   session?: string
@@ -64,7 +57,7 @@ export interface ComputerDriverEnvelope {
 }
 
 export interface ComputerDriverResponse {
-  kind: typeof COMPUTER_DRIVER_RESPONSE
+  kind: "driver-response"
   envelope: ComputerDriverEnvelope
 }
 
@@ -77,7 +70,7 @@ export type ComputerDriverCallResult = ComputerDriverResponse | ComputerDriverFa
 
 export interface ComputerDriverPort {
   start(): Promise<ComputerDriverTool[]>
-  call(name: string, argumentsValue: ComputerDriverArguments): Promise<ComputerDriverCallResult>
+  call(name: string, argumentsValue: ComputerDriverArguments, signal?: AbortSignal): Promise<ComputerDriverCallResult>
   stop(): Promise<void>
 }
 
@@ -93,8 +86,4 @@ export interface ComputerDriverLaunch {
   windowsHide: boolean
 }
 
-export type ComputerDriverFailureKind =
-  | typeof COMPUTER_DRIVER_TIMEOUT
-  | typeof COMPUTER_DRIVER_DISCONNECTED
-  | typeof COMPUTER_DRIVER_INVALID
-  | typeof COMPUTER_DRIVER_ERROR
+export type ComputerDriverFailureKind = "driver-timeout" | "driver-disconnected" | "driver-invalid" | "driver-error"

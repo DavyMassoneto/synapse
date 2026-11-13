@@ -27,3 +27,11 @@ export const COOLDOWN_DISTRIBUTION_REPLY = "ok"
 export const COOLDOWN_DISTRIBUTION_ERROR = "All credentials for model x are cooling down"
 
 export const COOLDOWN_DISTRIBUTION_PERMANENT_ERROR = "Invalid API key: credencial de teste recusada"
+
+export const COOLDOWN_DISTRIBUTION_RETRY_EVENT = "auto_retry_start"
+
+export const COOLDOWN_DISTRIBUTION_MESSAGE_END_EVENT = "message_end"
+
+export const COOLDOWN_DISTRIBUTION_ASSISTANT_ROLE = "assistant"
+
+export const COOLDOWN_DISTRIBUTION_ERROR_STOP_REASON = "error"

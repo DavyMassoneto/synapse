@@ -1,12 +1,10 @@
 import {
-  type COMPUTER_PUBLIC_IMAGE_INCLUDED,
   type ComputerCapture,
   type ComputerCaptureStorageResult,
   type ComputerElement,
   type ComputerPresentImage,
   type ComputerScreenshotScale,
 } from "#synapse/modules/computer-use/public/contracts"
-import { type COMPUTER_RENDER_IMAGE_OMITTED } from "./constants"
 
 export interface ComputerFormatInput {
   capture: ComputerCapture
@@ -29,12 +27,12 @@ export interface ComputerCaptureDedupState {
 }
 
 export interface ComputerRenderIncludedImage {
-  kind: typeof COMPUTER_PUBLIC_IMAGE_INCLUDED
+  kind: "image-included"
   image: ComputerPresentImage
 }
 
 export interface ComputerRenderOmittedImage {
-  kind: typeof COMPUTER_RENDER_IMAGE_OMITTED
+  kind: "image-omitted"
   reason: string
 }
 

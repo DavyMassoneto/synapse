@@ -11,6 +11,8 @@ export class TeamTestSession implements MemberSession {
 
   disposed = false
 
+  disposals = 0
+
   prompts: string[] = []
 
   steers: string[] = []
@@ -38,7 +40,8 @@ export class TeamTestSession implements MemberSession {
     return Promise.resolve()
   }
 
-  dispose(): void {
+  async dispose(): Promise<void> {
+    this.disposals += 1
     this.disposed = true
   }
 

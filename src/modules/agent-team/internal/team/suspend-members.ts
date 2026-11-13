@@ -9,6 +9,10 @@ async function teamSuspendMember(member: TeamMember, lead: TeamLead): Promise<vo
   try {
     await member.suspend()
   } catch (error) {
-    lead.reportFailure(member.name, String(error))
+    if (error instanceof Error) {
+      lead.reportFailure(member.name, error.message)
+    } else {
+      throw error
+    }
   }
 }

@@ -1,14 +1,13 @@
 import { type ComputerElement, type ComputerWindowTitle } from "#synapse/modules/computer-use/public/contracts"
-import { type COMPUTER_TREE_READ, type COMPUTER_TREE_UNSUPPORTED } from "./constants"
 
 export interface ComputerReadTree {
-  kind: typeof COMPUTER_TREE_READ
+  kind: "tree-read"
   elements: ComputerElement[]
   windowTitle: ComputerWindowTitle
 }
 
 export interface ComputerUnsupportedTree {
-  kind: typeof COMPUTER_TREE_UNSUPPORTED
+  kind: "tree-unsupported"
   format: string
 }
 

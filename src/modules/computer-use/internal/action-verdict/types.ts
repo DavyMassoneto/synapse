@@ -4,19 +4,8 @@ import {
   type ComputerActionEffect,
   type ComputerActionResult,
 } from "#synapse/modules/computer-use/public/contracts"
-import {
-  type COMPUTER_NEXT_COORDINATE,
-  type COMPUTER_NEXT_FOREGROUND,
-  type COMPUTER_NEXT_SET_VALUE,
-  type COMPUTER_VERDICT_DONE,
-  type COMPUTER_VERDICT_ESCALATE,
-  type COMPUTER_VERDICT_VERIFY,
-} from "./outcomes"
 
-export type ComputerEscalation =
-  | typeof COMPUTER_NEXT_SET_VALUE
-  | typeof COMPUTER_NEXT_COORDINATE
-  | typeof COMPUTER_NEXT_FOREGROUND
+export type ComputerEscalation = "set_value" | "px" | "foreground"
 
 export interface ComputerActionEvidence {
   action: ComputerAction["action"]
@@ -31,17 +20,17 @@ export interface ComputerActionEvidence {
 }
 
 export interface ComputerDoneVerdict {
-  kind: typeof COMPUTER_VERDICT_DONE
+  kind: "done"
 }
 
 export interface ComputerVerifyVerdict {
-  kind: typeof COMPUTER_VERDICT_VERIFY
+  kind: "verify-fresh-state"
   message: string
   retryAllowed: false
 }
 
 export interface ComputerEscalateVerdict {
-  kind: typeof COMPUTER_VERDICT_ESCALATE
+  kind: "escalate"
   message: string
   recommended?: ComputerEscalation
 }

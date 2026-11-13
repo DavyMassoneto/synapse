@@ -1,5 +1,6 @@
 import {
   COMPUTER_DRIVER_DISCONNECTED,
+  COMPUTER_DRIVER_INVALID,
   COMPUTER_DRIVER_RESPONSE,
   COMPUTER_DRIVER_TIMEOUT,
   COMPUTER_TIMEOUT_UNKNOWN,
@@ -38,7 +39,11 @@ export function computerDriverEvidence(
     computerAssignDeliveryCounts(evidence, envelope)
   } else {
     evidence.message = response.message
-    if (response.kind === COMPUTER_DRIVER_TIMEOUT || response.kind === COMPUTER_DRIVER_DISCONNECTED) {
+    if (
+      response.kind === COMPUTER_DRIVER_TIMEOUT ||
+      response.kind === COMPUTER_DRIVER_DISCONNECTED ||
+      response.kind === COMPUTER_DRIVER_INVALID
+    ) {
       evidence.code = response.kind === COMPUTER_DRIVER_TIMEOUT ? COMPUTER_TIMEOUT_UNKNOWN : COMPUTER_TRANSPORT_UNKNOWN
     }
   }
