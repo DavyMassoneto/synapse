@@ -19,6 +19,8 @@ export const DISTRIBUTION_PI_DIRECTORY = ".pi"
 
 export const DISTRIBUTION_AGENT_DIRECTORY = "agent"
 
+export const DISTRIBUTION_CUSTOM_AGENT_DIRECTORY = "outro-diretorio"
+
 export const VALID_CONFIG = JSON.stringify({ model: SCRIPTED_PROVIDER_MODEL_REFERENCE, thinking: "low" })
 
 export const ADVISOR_PROMPT = "Consulte o advisor"
