@@ -114,3 +114,7 @@ export const TEAM_SESSION_FIXTURE_OTHER_LEAD_TEST = "outro lead recusa antes de 
 export const TEAM_SESSION_FIXTURE_OTHER_CWD_TEST = "outro cwd recusa antes de ler ou alterar sessão legada"
 
 export const TEAM_SESSION_FIXTURE_MEMBERSHIP_SUITE = "pertencimento da sessão restaurada"
+
+export const TEAM_SESSION_FIXTURE_ZERO_WIDTH_END = "\n\u200b"
+
+export const TEAM_SESSION_FIXTURE_ZERO_WIDTH_TEST = "recusa U200B como espaço final"

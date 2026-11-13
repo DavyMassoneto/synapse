@@ -17,6 +17,8 @@ import {
   TEAM_SESSION_FIXTURE_NEWLINE,
   TEAM_SESSION_FIXTURE_OTHER_ID,
   TEAM_SESSION_FIXTURE_VALIDATION_SUITE,
+  TEAM_SESSION_FIXTURE_ZERO_WIDTH_END,
+  TEAM_SESSION_FIXTURE_ZERO_WIDTH_TEST,
   TeamStorageFixture,
   teamStorageRecord,
 } from "../fixtures"
@@ -71,7 +73,18 @@ function rejectsMismatchedIdentity(): void {
   )
 }
 
+function rejectsZeroWidthSuffix(): void {
+  const record = teamStorageRecord(fixture)
+  const header = JSON.stringify({ type: TEAM_SESSION_FIXTURE_HEADER_TYPE, id: record.sessionId, cwd: record.cwd })
+  const content = header + TEAM_SESSION_FIXTURE_ZERO_WIDTH_END
+  writeFileSync(record.sessionFile, content)
+  expect(validateTeamSessionFile.bind(null, record, Buffer.byteLength(content))).toThrow(
+    TEAM_SESSION_FIXTURE_INVALID_PATTERN,
+  )
+}
+
 function registerTests(): void {
+  test(TEAM_SESSION_FIXTURE_ZERO_WIDTH_TEST, rejectsZeroWidthSuffix)
   beforeEach(prepare)
   afterEach(cleanup)
   test(TEAM_SESSION_FIXTURE_INTERIOR_WHITESPACE_TEST, rejectsWhitespaceOnlyInteriorLine)
