@@ -3,6 +3,7 @@ import { registerModelRouter } from "#synapse/integration"
 import { createModelRouter } from "#synapse/modules"
 import {
   fixtureModel,
+  imageModel,
   ROUTER_TEST_ABORT_ERROR,
   ROUTER_TEST_ABORTED_REASON,
   ROUTER_TEST_ASSISTANT,
@@ -13,7 +14,6 @@ import {
   ROUTER_TEST_FAILURE_MESSAGE,
   ROUTER_TEST_FALLBACK_PATTERN,
   ROUTER_TEST_HIGH,
-  ROUTER_TEST_IMAGE,
   ROUTER_TEST_IMAGE_MODEL,
   ROUTER_TEST_INVESTIGATION,
   ROUTER_TEST_LOW,
@@ -22,7 +22,6 @@ import {
   ROUTER_TEST_PREVIOUS,
   ROUTER_TEST_PROVIDER,
   ROUTER_TEST_RETRY,
-  ROUTER_TEST_TEXT,
   ROUTER_TEST_TEXT_ONLY,
   ROUTER_TEST_UNAVAILABLE_FALLBACK,
   ROUTER_TEST_UNAVAILABLE_SELECTION,
@@ -146,10 +145,7 @@ async function rejectIneligibleCandidates(): Promise<void> {
   const sut = makeSut()
   sut.context.modelRegistry.models = [
     fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_TEXT_ONLY, ROUTER_TEST_CONTEXT_WINDOW),
-    {
-      ...fixtureModel(ROUTER_TEST_OTHER_PROVIDER, ROUTER_TEST_IMAGE_MODEL, ROUTER_TEST_CONTEXT_WINDOW),
-      input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
-    },
+    imageModel(ROUTER_TEST_OTHER_PROVIDER, ROUTER_TEST_IMAGE_MODEL),
   ]
   await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toThrow(
     ROUTER_TEST_UNAVAILABLE_FALLBACK,

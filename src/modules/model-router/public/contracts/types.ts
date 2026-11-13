@@ -144,4 +144,9 @@ export type ModelRouterFactory = (classifier: RouterClassifier) => ModelRouter
 
 export type RouterReserveOutcome = RouteReserve | RouteUnavailable
 
-export type RouterOptionOutcome = string | RouteCancelled
+export interface RouterOptionChosen {
+  kind: "chosen"
+  id: string
+}
+
+export type RouterOptionOutcome = RouterOptionChosen | RouteCancelled

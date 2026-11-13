@@ -140,7 +140,7 @@ function ignoresMissingResponseRules(): void {
 
 function registersModelRouter(): void {
   compose(host)
-  const model = host.requireVirtualModel()
+  const model = host.router.requireModel()
   expect([model.provider, model.id]).toStrictEqual([ROUTER_TEST_VIRTUAL_PROVIDER, ROUTER_TEST_VIRTUAL_ID])
 }
 

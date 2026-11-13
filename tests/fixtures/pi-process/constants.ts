@@ -162,5 +162,3 @@ export const PI_PROCESS_DEFAULT_SELECTION: PiProcessModelSelection = {
   model: SCRIPTED_PROVIDER_MODEL,
   startupModel: SCRIPTED_PROVIDER_MODEL_REFERENCE,
 }
-
-export const PI_PROCESS_AVAILABLE_MODELS_COMMAND = "get_available_models"

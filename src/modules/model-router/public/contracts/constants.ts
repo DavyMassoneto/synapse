@@ -16,8 +16,6 @@ export const ROUTER_CONTINUATION = "continuation"
 
 export const ROUTER_UNAVAILABLE_REASON = "Jev indisponível e fallback conservador indisponível."
 
-export const ROUTER_ABORT_NAME = "AbortError"
-
-export const ROUTER_CANCELLED = "Roteamento Jev cancelado."
-
 export const ROUTER_CANCELLED_KIND = "cancelled"
+
+export const ROUTER_OPTION_CHOSEN = "chosen"
