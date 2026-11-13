@@ -91,7 +91,8 @@ A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A 
 | `configuration/` | Ler e validar as variáveis de ambiente |
 | `git-output/` | Executar o git com um limite de saída explícito, sem truncar o que ele devolve |
 | `diff-reading/` | Obter o diff do git |
-| `source-reading/` | Ler os arquivos de código do commit avaliado, com um limite total explícito |
+| `repository-inspection/` | Ferramentas de leitura do commit avaliado pelo git, só de leitura e com limite de itens por resposta |
+| `review-conversation/` | Conduzir as rodadas com o modelo: executar as ferramentas pedidas até a entrega da avaliação |
 | `diff-annotation/` | Numerar as linhas do diff e registrar as que ele mostra, com a posição de cada uma |
 | `review-request/` | Carregar arquitetura, regras e padrões e montar a solicitação ao avaliador |
 | `http-failure/` | Recusar uma resposta HTTP que falhou, com o status e o detalhe dela, para os dois clientes HTTP |
