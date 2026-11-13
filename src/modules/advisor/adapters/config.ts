@@ -2,14 +2,7 @@ import { randomUUID } from "node:crypto"
 import { mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs"
 import { dirname } from "node:path"
 import { type Config, type ConfigLoadResult, type ConfigSaveResult } from "#synapse/modules/advisor/public/contracts"
-import {
-  CONFIG_ENCODING,
-  CONFIG_FILE_END,
-  CONFIG_INDENT,
-  CONFIG_READ_FAILED,
-  CREATE_ONLY,
-  TEMPORARY_EXTENSION,
-} from "./constants"
+import { CONFIG_FILE_END, CONFIG_INDENT, CONFIG_READ_FAILED, CREATE_ONLY, TEMPORARY_EXTENSION } from "./constants"
 import { failureAfterCleanup } from "./failure-after-cleanup"
 import { parseConfig } from "./parse-config"
 import { isMissingFile } from "./predicates"
@@ -23,7 +16,7 @@ export class FileConfig {
 
   load(): ConfigLoadResult {
     try {
-      return parseConfig(readFileSync(this.path, CONFIG_ENCODING))
+      return parseConfig(new TextDecoder().decode(readFileSync(this.path)))
     } catch (error) {
       if (error instanceof Error && isMissingFile(error)) {
         return { kind: "missing" }
