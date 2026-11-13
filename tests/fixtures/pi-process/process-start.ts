@@ -19,35 +19,14 @@ import {
   PI_PROCESS_HOME_VARIABLE,
   PI_PROCESS_LOCAL_APPDATA_VARIABLE,
   PI_PROCESS_MODEL_FLAG,
-  PI_PROCESS_NO_SESSION_FLAG,
   PI_PROCESS_PATH_VARIABLE,
   PI_PROCESS_PROFILE_VARIABLE,
-  PI_PROCESS_SESSION_DIRECTORY_FLAG,
-  PI_PROCESS_SESSION_FLAG,
   PI_PROCESS_SYSTEM_ROOT_VARIABLE,
   PI_PROCESS_WINDOWS_VARIABLE,
 } from "./constants"
 import { resolvePiProcessExecutable } from "./process-paths"
-import { type PiProcessSession } from "./types"
 
-export function piProcessArguments(entrypoint: string, selection: PiProcessModelSelection): string[] {
-  return piProcessPersistenceArguments(entrypoint, selection, [PI_PROCESS_NO_SESSION_FLAG])
-}
-
-export function piProcessSessionArguments(
-  entrypoint: string,
-  selection: PiProcessModelSelection,
-  session: PiProcessSession,
-): string[] {
-  return piProcessPersistenceArguments(entrypoint, selection, [
-    PI_PROCESS_SESSION_FLAG,
-    session.path,
-    PI_PROCESS_SESSION_DIRECTORY_FLAG,
-    session.directory,
-  ])
-}
-
-function piProcessPersistenceArguments(
+export function piProcessArguments(
   entrypoint: string,
   selection: PiProcessModelSelection,
   persistence: string[],

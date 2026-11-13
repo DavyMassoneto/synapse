@@ -1,33 +1,26 @@
-import { existsSync, writeFileSync } from "node:fs"
 import { type TranscriptContext } from "@earendil-works/pi-ai"
-import { readJsonFile } from "../validated-json"
 import {
   SCRIPTED_PROVIDER_PROVIDER_NEWLINE,
-  SCRIPTED_PROVIDER_SCRIPT_VARIABLE,
   SCRIPTED_PROVIDER_SYSTEM_ROLE,
-  SCRIPTED_PROVIDER_TRACK_OFFSET_SUFFIX,
+  SCRIPTED_PROVIDER_TRACK_MISSING,
+  SCRIPTED_PROVIDER_TRACK_SELECTED,
 } from "./constants"
-import { requireEnvironment } from "./require-environment"
-import { SCRIPTED_PROVIDER_TRACK_OFFSET_SCHEMA } from "./schemas"
-import { type ScriptedProviderTracks } from "./types"
+import { type ScriptedProviderTrackSelection, type ScriptedProviderTracks } from "./types"
 
-export function selectScriptTrack(tracks: ScriptedProviderTracks, context: TranscriptContext): number {
+export function selectScriptTrack(
+  tracks: ScriptedProviderTracks,
+  context: TranscriptContext,
+): ScriptedProviderTrackSelection {
   const system = scriptSystemText(context)
   const selected = tracks.findIndex((track) => track.marker && system.includes(track.marker))
   if (selected >= 0) {
-    return selected
+    return { kind: SCRIPTED_PROVIDER_TRACK_SELECTED, index: selected }
   }
-  return tracks.findIndex((track) => !track.marker)
-}
-
-export function advanceScriptTrack(track: number): number {
-  const path = `${requireEnvironment(SCRIPTED_PROVIDER_SCRIPT_VARIABLE)}.${track}${SCRIPTED_PROVIDER_TRACK_OFFSET_SUFFIX}`
-  let index = 0
-  if (existsSync(path)) {
-    index = readJsonFile(path, SCRIPTED_PROVIDER_TRACK_OFFSET_SCHEMA).index
+  const unmarked = tracks.findIndex((track) => !track.marker)
+  if (unmarked >= 0) {
+    return { kind: SCRIPTED_PROVIDER_TRACK_SELECTED, index: unmarked }
   }
-  writeFileSync(path, JSON.stringify({ index: index + 1 }))
-  return index
+  return { kind: SCRIPTED_PROVIDER_TRACK_MISSING }
 }
 
 function scriptSystemText(context: TranscriptContext): string {
