@@ -1,6 +1,12 @@
 import { describe, expect, test } from "vitest"
 import { PiTeamSessionAdapter } from "#synapse/integration"
-import { failedAssistantMessage, subscribedTeamSession, TeamSessionDouble } from "../fixtures"
+import {
+  failedAssistantMessage,
+  subscribedTeamSession,
+  TEAM_EXTENSION_FIXTURE_FAILURE,
+  TEAM_EXTENSION_FIXTURE_NON_ERROR_TEST,
+  TeamSessionDouble,
+} from "../fixtures"
 
 function translatesStart(): void {
   const session = subscribedTeamSession()
@@ -86,7 +92,15 @@ function extensionFailureOverridesSettledSuccess(): void {
   )
 }
 
+function rethrowsNonErrorFailure(): void {
+  const session = subscribedTeamSession()
+  session.nonErrorFailure = true
+  expect(session.emit.bind(session, { type: "agent_settled", aborted: false })).toThrow(TEAM_EXTENSION_FIXTURE_FAILURE)
+  expect(session.events).toHaveLength(0)
+}
+
 function registerTests(): void {
+  test(TEAM_EXTENSION_FIXTURE_NON_ERROR_TEST, rethrowsNonErrorFailure)
   test("erro da extensão não vira conclusão normal", extensionFailureOverridesSettledSuccess)
   test("traduz início da execução", translatesStart)
   test("traduz início do turno", translatesTurn)

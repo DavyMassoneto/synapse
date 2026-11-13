@@ -22,6 +22,8 @@ export class TeamSessionDouble implements TeamMemberSessionPort {
 
   extensionFailure = false
 
+  nonErrorFailure = false
+
   private listener?: AgentSessionEventListener
 
   getLastAssistantText(): string {
@@ -63,6 +65,9 @@ export class TeamSessionDouble implements TeamMemberSessionPort {
   }
 
   ensureHealthy(): void {
+    if (this.nonErrorFailure) {
+      throw TEAM_EXTENSION_FIXTURE_FAILURE
+    }
     if (this.extensionFailure) {
       throw new Error(TEAM_EXTENSION_FIXTURE_FAILURE)
     }

@@ -52,20 +52,9 @@ export class PiTeamEventConnection {
           this.listener(teamMemberAssistantResponse(event.message))
         }
         break
-      case TEAM_PI_MEMBER_SETTLED: {
-        const settled = teamMemberSettledResponse(this.session, event.aborted)
-        try {
-          this.lifetime.ensureHealthy()
-        } catch (error) {
-          if (error instanceof Error) {
-            settled.failure = error.message
-          } else {
-            throw error
-          }
-        }
-        this.listener(settled)
+      case TEAM_PI_MEMBER_SETTLED:
+        this.listener(teamMemberSettledResponse(this.session, event.aborted, this.lifetime))
         break
-      }
     }
   }
 }
