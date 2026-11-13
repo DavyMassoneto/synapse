@@ -1,3 +1,4 @@
+import { type IphoneDeviceAction } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_ACTION_DOWN,
   IPHONE_ACTION_INVALID,
@@ -5,7 +6,6 @@ import {
   IPHONE_ACTION_RIGHT,
   IPHONE_ACTION_UP,
 } from "./constants"
-import { type IphoneDeviceAction } from "./types"
 
 export function validateIphoneDeviceAction(action: IphoneDeviceAction): void {
   if ("point" in action && action.point) {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { createTestTask, makeTaskBoardSut, updateTestTask } from "./board-scenario"
+import { createTaskOutcome, createTestTask, makeTaskBoardSut, updateTestTask } from "./board-scenario"
 
 function creation(): void {
   const { board } = makeTaskBoardSut()
@@ -101,14 +101,12 @@ function selfBlock(): void {
 function duplicate(): void {
   const { board } = makeTaskBoardSut()
   createTestTask(board, [], [])
-  expect(board.create({ subject: "x", description: "x", blockedBy: ["task-1", "task-1"], writeScopes: [] }).kind).toBe(
-    "refused",
-  )
+  expect(createTaskOutcome(board, ["task-1", "task-1"], [])).toBe("refused")
 }
 
 function missingBlock(): void {
   const { board } = makeTaskBoardSut()
-  expect(board.create({ subject: "x", description: "x", blockedBy: ["missing"], writeScopes: [] }).kind).toBe("refused")
+  expect(createTaskOutcome(board, ["missing"], [])).toBe("refused")
 }
 
 function dependent(): void {

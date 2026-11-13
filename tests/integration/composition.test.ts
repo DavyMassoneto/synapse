@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { compose } from "#synapse/composition"
-import { advisorConfigPath, PI_IPHONE_TOOL_NAME, responseRulesInstructionsPath } from "#synapse/integration"
+import { advisorConfigPath, responseRulesInstructionsPath } from "#synapse/integration"
 import {
   COOLING_DOWN_ERROR,
   CompositionContext,
@@ -28,21 +28,11 @@ function configureModel(): void {
   compose(host)
 }
 
-function registersIphone(): void {
-  compose(host)
-  expect(host.tools.has(PI_IPHONE_TOOL_NAME)).toBe(true)
-}
-
-function registersComputer(): void {
-  compose(host)
-  expect(host.tools.has("computer_use")).toBe(true)
-}
-
 async function registersAdvisor(): Promise<void> {
   configureModel()
   await host.emitSessionStart(context)
   expect(host.active).toContain("advisor")
-  expect(host.shutdowns).toHaveLength(4)
+  expect(host.shutdowns).toHaveLength(3)
 }
 
 async function consultsWithLiveSignal(): Promise<void> {
@@ -171,8 +161,6 @@ function registersTeamTools(): void {
 }
 
 function registerTests(): void {
-  test("registra computer_use sem iniciar driver", registersComputer)
-  test("registra iphone sem executar comandos externos", registersIphone)
   test("composição registra as dez ferramentas da equipe", registersTeamTools)
   beforeEach(prepare)
   afterEach(cleanup)

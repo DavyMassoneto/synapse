@@ -1,4 +1,5 @@
 import {
+  COMPUTER_CANCELLED,
   COMPUTER_CAPTURE,
   COMPUTER_CAPTURED,
   COMPUTER_COMPLETED,
@@ -7,10 +8,8 @@ import {
   COMPUTER_LIST_APPS,
   COMPUTER_LIST_WINDOWS,
   COMPUTER_REFUSED,
-  COMPUTER_UNCONFIRMED,
   COMPUTER_WAIT,
   type ComputerAction,
-  type ComputerCaptureAction,
   type ComputerCaptureStoragePort,
   type ComputerDriverPort,
   type ComputerDriverTool,
@@ -18,38 +17,31 @@ import {
   type ComputerExecuteResult,
   type ComputerExecutionContext,
   type ComputerPlatform,
-  type ComputerRenderedScreenshot,
   type ComputerWaitPort,
 } from "#synapse/modules/computer-use/public/contracts"
-import { ComputerCaptureRenderer, computerPublicCapture } from "../capture-rendering"
 import { COMPUTER_SESSION_NATIVE_FOCUS_TOOL } from "../driver-session"
+import { ComputerExecutionCancelled, computerCheckCancellation } from "../execution-cancellation"
 import {
   COMPUTER_EXACT_TARGET_SELECTED,
   COMPUTER_TARGET_REJECTED,
   ComputerStickyWindowTarget,
   computerTargetIdentity,
 } from "../window-targeting"
+import { ComputerActionCaptures } from "./action-captures"
 import { ComputerCaptureDispatch } from "./capture-dispatch"
 import { computerConfirmedExecution } from "./confirmed-envelope"
 import {
   COMPUTER_DISPATCH_BRING_PROPERTY,
   COMPUTER_DISPATCH_FOCUS_MESSAGE,
-  COMPUTER_DISPATCH_TOKEN_PROPERTY,
   COMPUTER_DISPATCH_UNSUPPORTED_FOCUS,
   COMPUTER_FOCUS_UNNEEDED,
-  COMPUTER_PREPARED_TARGET_ELEMENT,
 } from "./constants"
 import { computerDispatchJudgment } from "./convert-result"
 import { computerDispatchFailure } from "./dispatch-executed"
 import { computerPrepareDelivery } from "./prepare-delivery"
 import { computerPrepareTargetedInput } from "./prepare-targeted-input"
 import { computerDispatchList, computerDispatchWait } from "./read-dispatch"
-import {
-  type ComputerDispatchPreparedInput,
-  type ComputerFocusDecision,
-  type ComputerInputAction,
-  type ComputerSnapshotTokens,
-} from "./types"
+import { type ComputerDispatchPreparedInput, type ComputerFocusDecision, type ComputerInputAction } from "./types"
 
 export class ComputerActionDispatch {
   private readonly driver: ComputerDriverPort
@@ -60,13 +52,13 @@ export class ComputerActionDispatch {
 
   private readonly target = new ComputerStickyWindowTarget()
 
-  private readonly renderer: ComputerCaptureRenderer
+  private readonly captures: ComputerActionCaptures
 
   private readonly capture: ComputerCaptureDispatch
 
   private tools: ComputerDriverTool[] = []
 
-  private readonly snapshotTokens: ComputerSnapshotTokens = new Map()
+  private readonly lifecycle = new AbortController()
 
   constructor(
     driver: ComputerDriverPort,
@@ -77,47 +69,67 @@ export class ComputerActionDispatch {
     this.driver = driver
     this.platform = platform
     this.wait = wait
-    this.renderer = new ComputerCaptureRenderer(storage)
     this.capture = new ComputerCaptureDispatch(driver, this.target, platform)
+    this.captures = new ComputerActionCaptures(this.capture, this.target, storage)
   }
 
-  async execute(action: ComputerAction, context: ComputerExecutionContext): Promise<ComputerExecuteResult> {
+  async execute(
+    action: ComputerAction,
+    context: ComputerExecutionContext,
+    signal?: AbortSignal,
+  ): Promise<ComputerExecuteResult> {
+    const operationSignal = signal ? AbortSignal.any([signal, this.lifecycle.signal]) : this.lifecycle.signal
     try {
+      computerCheckCancellation(operationSignal)
       this.tools = await this.driver.start()
-      return await this.dispatch(action, context)
+      computerCheckCancellation(operationSignal)
+      return await this.dispatch(action, context, operationSignal)
     } catch (error) {
       this.target.clear()
+      if (error instanceof ComputerExecutionCancelled) {
+        return computerDispatchFailure(action, error.message, COMPUTER_CANCELLED)
+      }
       throw error
     }
   }
 
   async stop(): Promise<void> {
+    this.lifecycle.abort()
     this.target.clear()
-    this.renderer.reset()
+    this.captures.reset()
     await this.driver.stop()
   }
 
-  private async dispatch(action: ComputerAction, context: ComputerExecutionContext): Promise<ComputerExecuteResult> {
+  private async dispatch(
+    action: ComputerAction,
+    context: ComputerExecutionContext,
+    signal?: AbortSignal,
+  ): Promise<ComputerExecuteResult> {
     switch (action.action) {
       case COMPUTER_CAPTURE:
-        return { kind: COMPUTER_CAPTURED, capture: await this.captureTarget(action, context) }
+        return { kind: COMPUTER_CAPTURED, capture: await this.captures.capture(action, context, signal) }
       case COMPUTER_LIST_APPS:
       case COMPUTER_LIST_WINDOWS:
-        return computerDispatchList(this.driver, action, this.target)
+        return computerDispatchList(this.driver, action, this.target, signal)
       case COMPUTER_WAIT:
-        return computerDispatchWait(this.wait, action)
-      case COMPUTER_FOCUS_APP:
-        await this.capture.select({ action: COMPUTER_CAPTURE, app: action.app })
+        return computerDispatchWait(this.wait, action, signal)
+      case COMPUTER_FOCUS_APP: {
+        const selection = await this.capture.select({ action: COMPUTER_CAPTURE, app: action.app }, signal)
+        if (selection.kind === COMPUTER_TARGET_REJECTED) {
+          return computerDispatchFailure(action, selection.message, COMPUTER_REFUSED)
+        }
+        computerCheckCancellation(signal)
         if (action.raiseWindow) {
-          return this.focus(action)
+          return this.focus(action, signal)
         }
         return computerConfirmedExecution(action, COMPUTER_DISPATCH_FOCUS_MESSAGE)
+      }
       default:
-        return this.input(action, context)
+        return this.input(action, context, signal)
     }
   }
 
-  private async focus(action: ComputerAction): Promise<ComputerExecuteResult> {
+  private async focus(action: ComputerAction, signal?: AbortSignal): Promise<ComputerExecutedAction> {
     const target = computerTargetIdentity(this.target.current())
     if (
       target.kind !== COMPUTER_EXACT_TARGET_SELECTED ||
@@ -127,49 +139,51 @@ export class ComputerActionDispatch {
     }
     return computerDispatchJudgment(
       action,
-      await this.driver.call(COMPUTER_SESSION_NATIVE_FOCUS_TOOL, {
-        pid: target.pid,
-        window_id: target.windowId,
-      }),
+      await this.driver.call(
+        COMPUTER_SESSION_NATIVE_FOCUS_TOOL,
+        { pid: target.pid, window_id: target.windowId },
+        signal,
+      ),
     )
   }
 
-  private async captureTarget(
-    action: ComputerCaptureAction,
+  private async input(
+    action: ComputerInputAction,
     context: ComputerExecutionContext,
-  ): Promise<ComputerRenderedScreenshot> {
-    const capture = await this.capture.capture(action)
-    this.snapshotTokens.clear()
-    for (const element of capture.elements) {
-      if (element.token) {
-        this.snapshotTokens.set(element.index, element.token)
-      }
-    }
-    return computerPublicCapture(this.renderer.render(capture, context))
-  }
-
-  private attachToken(prepared: ComputerDispatchPreparedInput): void {
-    const target = prepared.target
-    if (target.kind === COMPUTER_PREPARED_TARGET_ELEMENT) {
-      const token = this.snapshotTokens.get(target.index)
-      const tool = this.tools.find((tool) => tool.name === prepared.tool)
-      if (token && tool?.inputProperties.includes(COMPUTER_DISPATCH_TOKEN_PROPERTY)) {
-        prepared.arguments.element_token = token
-      }
-    }
-  }
-
-  private async input(action: ComputerInputAction, context: ComputerExecutionContext): Promise<ComputerExecuteResult> {
+    signal?: AbortSignal,
+  ): Promise<ComputerExecuteResult> {
     const prepared = this.prepareTargetedInput(action)
     computerPrepareDelivery(action, prepared, this.tools)
-    const focusFailure = await this.focusRequested(action)
-    if (focusFailure.kind !== COMPUTER_FOCUS_UNNEEDED) {
+    const focusFailure = await this.focusRequested(action, signal)
+    if (focusFailure.kind === COMPUTER_EXECUTED && focusFailure.result.kind !== COMPUTER_COMPLETED) {
+      focusFailure.precedingEffects = [{ ...focusFailure.result, action: COMPUTER_FOCUS_APP }]
       return focusFailure
     }
-    this.attachToken(prepared)
-    const result = computerDispatchJudgment(action, await this.driver.call(prepared.tool, prepared.arguments))
-    await this.captureAfter(action, result, context)
+    const result = await this.deliverInput(action, prepared, context, signal)
+    if (focusFailure.kind === COMPUTER_EXECUTED) {
+      result.precedingEffects = [{ ...focusFailure.result, action: COMPUTER_FOCUS_APP }]
+    }
     return result
+  }
+
+  private async deliverInput(
+    action: ComputerInputAction,
+    prepared: ComputerDispatchPreparedInput,
+    context: ComputerExecutionContext,
+    signal?: AbortSignal,
+  ): Promise<ComputerExecutedAction> {
+    try {
+      this.captures.attachToken(prepared, this.tools)
+      computerCheckCancellation(signal)
+      const result = computerDispatchJudgment(action, await this.driver.call(prepared.tool, prepared.arguments, signal))
+      await this.captures.after(action, result, context, signal)
+      return result
+    } catch (error) {
+      if (error instanceof ComputerExecutionCancelled) {
+        return computerDispatchFailure(action, error.message, COMPUTER_CANCELLED)
+      }
+      throw error
+    }
   }
 
   private prepareTargetedInput(action: ComputerInputAction): ComputerDispatchPreparedInput {
@@ -180,31 +194,11 @@ export class ComputerActionDispatch {
     return computerPrepareTargetedInput(action, this.target.current(), this.platform)
   }
 
-  private async focusRequested(action: ComputerInputAction): Promise<ComputerFocusDecision> {
+  private async focusRequested(action: ComputerInputAction, signal?: AbortSignal): Promise<ComputerFocusDecision> {
     if (COMPUTER_DISPATCH_BRING_PROPERTY in action && action.bringToFront) {
-      const focused = await this.focus(action)
-      if (focused.kind === COMPUTER_EXECUTED && focused.result.kind !== COMPUTER_COMPLETED) {
-        return focused
-      }
+      const focused = await this.focus(action, signal)
+      return focused
     }
     return { kind: COMPUTER_FOCUS_UNNEEDED }
-  }
-
-  private async captureAfter(
-    action: ComputerInputAction,
-    result: ComputerExecutedAction,
-    context: ComputerExecutionContext,
-  ): Promise<void> {
-    const target = computerTargetIdentity(this.target.current())
-    if (
-      action.captureAfter &&
-      (result.result.kind === COMPUTER_COMPLETED || result.result.kind === COMPUTER_UNCONFIRMED) &&
-      target.kind === COMPUTER_EXACT_TARGET_SELECTED
-    ) {
-      result.capture = await this.captureTarget(
-        { action: COMPUTER_CAPTURE, pid: target.pid, windowId: target.windowId },
-        context,
-      )
-    }
   }
 }

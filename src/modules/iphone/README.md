@@ -8,6 +8,8 @@ A borda mantém a virada contínua de páginas. Uma virada observada usou espera
 
 No modo de edição há uma página vazia adicional. Pastas devem ser lidas fora do modo de edição, pois a paginação interna durante a edição não é confiável. A ausência de um ícone não comprova sua entrada na pasta: é preciso conferir o conteúdo. O teclado observado descarta alguns acentos, mas aceita cedilha. Uma pasta com um aplicativo permanece até o último sair.
 
+O cliente limita respostas HTTP a 16 MiB para acomodar capturas PNG codificadas em base64 e árvores de acessibilidade sem aceitar fluxo ilimitado; a configuração é limitada a 1 MiB, suficiente para os campos suportados. Exceder qualquer limite recusa a leitura antes do parse, sem truncar dados. Entidades numéricas XML seguem os caracteres válidos do XML; a quebra de linha numérica é normalizada para espaço, como na extensão original.
+
 O leitor aceita o formato de XML esperado do WebDriverAgent e recusa explicitamente comentário, CDATA, entidade desconhecida e estrutura malformada. O adaptador de arquivo valida a configuração JSON com TypeBox; o núcleo valida as regras de uso. Aparelho físico exige UDID explícito em qualquer host.
 
 O cliente WebDriver usa a URL configurada e serializa operações. O módulo não repete ações de efeito incerto: as alternativas são usadas somente quando o servidor informa comando desconhecido ou operação não suportada.

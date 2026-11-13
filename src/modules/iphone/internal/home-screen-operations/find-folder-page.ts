@@ -1,5 +1,10 @@
-import { IPHONE_HOME_PAGE_KNOWN } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_DROP_FAILURE,
   IPHONE_HOME_FOLDER_NEXT_POINT,
@@ -10,7 +15,6 @@ import {
   IPHONE_HOME_SWIPE_LEFT,
 } from "./constants"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function findIphoneFolderPage(
   port: IphoneHomeScreenPort,

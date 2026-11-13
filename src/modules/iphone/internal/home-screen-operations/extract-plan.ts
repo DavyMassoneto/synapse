@@ -1,10 +1,9 @@
+import { IPHONE_HOME_GRID, readIphoneFolderAppCount } from "#synapse/modules/iphone/internal/home-screen-layout"
 import {
-  IPHONE_HOME_GRID,
   IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
   type IphoneHomeStateAccepted,
-  readIphoneFolderAppCount,
-} from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_REFUSED } from "#synapse/modules/iphone/public/contracts"
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_BOTTOM_ROW,
   IPHONE_HOME_DROP_FAILURE,

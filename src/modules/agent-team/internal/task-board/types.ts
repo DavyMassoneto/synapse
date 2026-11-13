@@ -17,7 +17,7 @@ export type TaskBoardAction = () => TaskView
 
 export type TaskBoardSnapshotIndex = Map<string, TaskSnapshot>
 
-export type TaskBoardRestorePositions = Map<string, TaskBoardRestoreSlot>
+export type TaskBoardRestorePositions = Map<string, number>
 
 export type TaskBoardStatusIndex = Map<string, TaskStatus>
 
@@ -30,8 +30,4 @@ export interface TeamDirectory {
   isLead(name: string): boolean
 
   hasAgent(name: string): boolean
-}
-
-export interface TaskBoardRestoreSlot {
-  index: number
 }

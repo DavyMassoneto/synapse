@@ -1,27 +1,20 @@
 import {
-  type COMPUTER_FAILED,
-  type COMPUTER_REFUSED,
   type ComputerCaptureMode,
   type ComputerClickAction,
   type ComputerDoubleClickAction,
   type ComputerDragAction,
   type ComputerDriverArguments,
-  type ComputerExecuteResult,
+  type ComputerExecutedAction,
   type ComputerKeyAction,
   type ComputerListAppsAction,
   type ComputerListWindowsAction,
   type ComputerMiddleClickAction,
+  type ComputerMouseButton,
   type ComputerRightClickAction,
   type ComputerScrollAction,
   type ComputerSetValueAction,
   type ComputerTypeAction,
 } from "#synapse/modules/computer-use/public/contracts"
-import {
-  type COMPUTER_FOCUS_UNNEEDED,
-  type COMPUTER_PREPARED_TARGET_ABSENT,
-  type COMPUTER_PREPARED_TARGET_COORDINATE,
-  type COMPUTER_PREPARED_TARGET_ELEMENT,
-} from "./constants"
 
 export type ComputerInputAction =
   | ComputerClickAction
@@ -35,18 +28,18 @@ export type ComputerInputAction =
   | ComputerSetValueAction
 
 export interface ComputerElementPreparedTarget {
-  kind: typeof COMPUTER_PREPARED_TARGET_ELEMENT
+  kind: "prepared-target-element"
   index: number
 }
 
 export interface ComputerCoordinatePreparedTarget {
-  kind: typeof COMPUTER_PREPARED_TARGET_COORDINATE
+  kind: "prepared-target-coordinate"
   x: number
   y: number
 }
 
 export interface ComputerAbsentPreparedTarget {
-  kind: typeof COMPUTER_PREPARED_TARGET_ABSENT
+  kind: "prepared-target-absent"
 }
 
 export type ComputerDispatchTarget =
@@ -68,7 +61,7 @@ export type ComputerClickInputAction =
   | ComputerRightClickAction
   | ComputerMiddleClickAction
 
-export type ComputerDispatchFailureKind = typeof COMPUTER_FAILED | typeof COMPUTER_REFUSED
+export type ComputerDispatchFailureKind = "cancelled" | "failed" | "refused"
 
 export interface ComputerPreparedCapture {
   tool: string
@@ -77,10 +70,27 @@ export interface ComputerPreparedCapture {
   app: string
 }
 
-export type ComputerFocusDecision = ComputerExecuteResult | ComputerFocusUnneeded
+export type ComputerFocusDecision = ComputerExecutedAction | ComputerFocusUnneeded
 
 export interface ComputerFocusUnneeded {
-  kind: typeof COMPUTER_FOCUS_UNNEEDED
+  kind: "focus-unneeded"
 }
 
 export type ComputerSnapshotTokens = Map<number, string>
+
+export interface ComputerClickSpecification {
+  kind: ComputerClickButtonPolicy
+  tool: ComputerClickDriverTool
+  button: ComputerMouseButton
+}
+
+export type ComputerClickButtonPolicy = "dynamic-button" | "forced-button"
+
+export type ComputerClickDriverTool = "click" | "double_click"
+
+export interface ComputerClickSpecifications {
+  click: ComputerClickSpecification
+  double_click: ComputerClickSpecification
+  right_click: ComputerClickSpecification
+  middle_click: ComputerClickSpecification
+}

@@ -1,8 +1,11 @@
 import {
+  IPHONE_ACCEPTED,
   IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
   type IphoneHomeStateAccepted,
-} from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_ALERT_FAILURE,
   IPHONE_HOME_FOLDER_FAILURE,
@@ -14,7 +17,6 @@ import {
   IPHONE_HOME_SWIPE_RIGHT,
 } from "./constants"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function gotoIphoneHomePage(
   port: IphoneHomeScreenPort,

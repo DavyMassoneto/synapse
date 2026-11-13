@@ -7,22 +7,35 @@ import {
   type ComputerElement,
 } from "#synapse/modules/computer-use/public/contracts"
 import {
+  COMPUTER_RENDER_APP_CLOSE,
+  COMPUTER_RENDER_APP_OPEN,
   COMPUTER_RENDER_APP_TEXT,
   COMPUTER_RENDER_AX_CAP_TEXT,
+  COMPUTER_RENDER_COORDINATE_SEPARATOR,
   COMPUTER_RENDER_COUNT_TEXT,
+  COMPUTER_RENDER_DIMENSION_SEPARATOR,
+  COMPUTER_RENDER_ELEMENT_PREFIX,
   COMPUTER_RENDER_ELEMENTS_SUFFIX_TEXT,
   COMPUTER_RENDER_ELEMENTS_TEXT,
+  COMPUTER_RENDER_EMPTY,
   COMPUTER_RENDER_HEADER_TEXT,
+  COMPUTER_RENDER_LABEL_BOUNDS,
+  COMPUTER_RENDER_LABEL_OPEN,
   COMPUTER_RENDER_LINE_BREAKS,
   COMPUTER_RENDER_LINE_LABEL_CHARS,
   COMPUTER_RENDER_LINE_SEPARATOR,
   COMPUTER_RENDER_MAX_LINES,
   COMPUTER_RENDER_NARROW_TEXT,
   COMPUTER_RENDER_OF_TEXT,
+  COMPUTER_RENDER_REMAINING_PREFIX,
   COMPUTER_RENDER_RESPONSE_CAP_TEXT,
+  COMPUTER_RENDER_SCALE_FACTOR,
   COMPUTER_RENDER_SCALE_HINT_TEXT,
+  COMPUTER_RENDER_SCALE_OPEN,
+  COMPUTER_RENDER_SCALE_SUFFIX,
   COMPUTER_RENDER_SCALE_TEXT,
   COMPUTER_RENDER_SCREENSHOT_TEXT,
+  COMPUTER_RENDER_SPACE,
   COMPUTER_RENDER_UNKNOWN_BOUNDS,
   COMPUTER_RENDER_WINDOW_TEXT,
 } from "./constants"
@@ -32,9 +45,16 @@ function computerFormatElement(element: ComputerElement): string {
   let bounds = COMPUTER_RENDER_UNKNOWN_BOUNDS
   if (element.bounds.kind === COMPUTER_BOUNDS_KNOWN) {
     const rectangle = element.bounds.rectangle
-    bounds = `${rectangle.x}, ${rectangle.y}, ${rectangle.width}, ${rectangle.height}`
+    bounds = `${rectangle.x}${COMPUTER_RENDER_COORDINATE_SEPARATOR}${rectangle.y}${COMPUTER_RENDER_COORDINATE_SEPARATOR}${rectangle.width}${COMPUTER_RENDER_COORDINATE_SEPARATOR}${rectangle.height}`
   }
-  return `  #${element.index} ${element.role} '${element.label.replace(COMPUTER_RENDER_LINE_BREAKS, " ").slice(0, COMPUTER_RENDER_LINE_LABEL_CHARS)}' @ ${bounds}${element.app ? ` [${element.app}]` : ""}`
+  const label = element.label
+    .replace(COMPUTER_RENDER_LINE_BREAKS, COMPUTER_RENDER_SPACE)
+    .slice(0, COMPUTER_RENDER_LINE_LABEL_CHARS)
+  let app = COMPUTER_RENDER_EMPTY
+  if (element.app) {
+    app = `${COMPUTER_RENDER_APP_OPEN}${element.app}${COMPUTER_RENDER_APP_CLOSE}`
+  }
+  return `${COMPUTER_RENDER_ELEMENT_PREFIX}${element.index}${COMPUTER_RENDER_SPACE}${element.role}${COMPUTER_RENDER_LABEL_OPEN}${label}${COMPUTER_RENDER_LABEL_BOUNDS}${bounds}${app}`
 }
 
 function computerFormatHeader(input: ComputerFormatInput): string[] {
@@ -43,14 +63,14 @@ function computerFormatHeader(input: ComputerFormatInput): string[] {
     `${input.capture.elements.length}${COMPUTER_RENDER_COUNT_TEXT}`,
   ]
   if (input.capture.image.kind === COMPUTER_IMAGE_PRESENT) {
-    lines.push(`${input.capture.image.width}x${input.capture.image.height}`)
+    lines.push(`${input.capture.image.width}${COMPUTER_RENDER_DIMENSION_SEPARATOR}${input.capture.image.height}`)
   }
   if (input.capture.windowTitle.kind === COMPUTER_TITLE_PRESENT) {
     lines.push(`${COMPUTER_RENDER_WINDOW_TEXT}${input.capture.windowTitle.title}`)
   }
   if (input.scale.kind === COMPUTER_PUBLIC_SCALE_PRESENT) {
     lines.push(
-      `${COMPUTER_RENDER_SCALE_TEXT} (~${input.scale.maxX}x${input.scale.maxY}), ~${input.scale.factor}x; ${COMPUTER_RENDER_SCALE_HINT_TEXT}`,
+      `${COMPUTER_RENDER_SCALE_TEXT}${COMPUTER_RENDER_SCALE_OPEN}${input.scale.maxX}${COMPUTER_RENDER_DIMENSION_SEPARATOR}${input.scale.maxY}${COMPUTER_RENDER_SCALE_FACTOR}${input.scale.factor}${COMPUTER_RENDER_SCALE_SUFFIX}${COMPUTER_RENDER_SCALE_HINT_TEXT}`,
     )
   }
   if (input.screenshot.kind === COMPUTER_CAPTURE_STORED) {
@@ -78,7 +98,8 @@ export function computerFormatCapture(input: ComputerFormatInput): string {
     }
   }
   if (input.visible.length > COMPUTER_RENDER_MAX_LINES) {
-    lines.push(`  ... +${input.visible.length - COMPUTER_RENDER_MAX_LINES}${COMPUTER_RENDER_NARROW_TEXT}`)
+    const remaining = input.visible.length - COMPUTER_RENDER_MAX_LINES
+    lines.push(`${COMPUTER_RENDER_REMAINING_PREFIX}${remaining}${COMPUTER_RENDER_NARROW_TEXT}`)
   }
   if (input.capture.elements.length > input.visible.length) {
     lines.push(

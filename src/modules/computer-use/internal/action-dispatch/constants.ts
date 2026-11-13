@@ -1,3 +1,4 @@
+import { type ComputerClickSpecifications } from "./types"
 export const COMPUTER_DISPATCH_LIST_WINDOWS = "list_windows"
 
 export const COMPUTER_DISPATCH_LIST_APPS = "list_apps"
@@ -60,8 +61,6 @@ export const COMPUTER_DISPATCH_FOCUS_MESSAGE = "Alvo selecionado sem alterar o f
 
 export const COMPUTER_DISPATCH_REFUSED_VERDICT = "stop"
 
-export const COMPUTER_DISPATCH_APPS_ACTION = "list_apps"
-
 export const COMPUTER_DISPATCH_SECONDS_PROPERTY = "seconds"
 
 export const COMPUTER_DISPATCH_DELIVERY_PROPERTY = "deliveryMode"
@@ -92,12 +91,6 @@ export const COMPUTER_DISPATCH_DELIVERED_PROPERTY = "deliveredChars"
 
 export const COMPUTER_DISPATCH_REQUESTED_PROPERTY = "requestedChars"
 
-export const COMPUTER_DISPATCH_PIXEL_RUNG = "px"
-
-export const COMPUTER_DISPATCH_FOREGROUND_RUNG = "foreground"
-
-export const COMPUTER_DISPATCH_VALUE_RUNG = "set_value"
-
 export const COMPUTER_DISPATCH_UNKNOWN_FAILURE = "Falha inesperada ao executar a ação no computador."
 
 export const COMPUTER_FOCUS_UNNEEDED = "focus-unneeded"
@@ -107,3 +100,14 @@ export const COMPUTER_PREPARED_TARGET_ELEMENT = "prepared-target-element"
 export const COMPUTER_PREPARED_TARGET_COORDINATE = "prepared-target-coordinate"
 
 export const COMPUTER_PREPARED_TARGET_ABSENT = "prepared-target-absent"
+
+export const COMPUTER_CLICK_DYNAMIC_BUTTON = "dynamic-button"
+
+export const COMPUTER_CLICK_FORCED_BUTTON = "forced-button"
+
+export const COMPUTER_CLICK_SPECIFICATIONS: ComputerClickSpecifications = {
+  click: { kind: COMPUTER_CLICK_DYNAMIC_BUTTON, tool: "click", button: COMPUTER_DISPATCH_LEFT_BUTTON },
+  double_click: { kind: COMPUTER_CLICK_DYNAMIC_BUTTON, tool: "double_click", button: COMPUTER_DISPATCH_LEFT_BUTTON },
+  right_click: { kind: COMPUTER_CLICK_FORCED_BUTTON, tool: "click", button: COMPUTER_DISPATCH_RIGHT_BUTTON },
+  middle_click: { kind: COMPUTER_CLICK_FORCED_BUTTON, tool: "click", button: COMPUTER_DISPATCH_MIDDLE_BUTTON },
+}

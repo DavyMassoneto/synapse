@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./copy-element"
 export * from "./home-dispatch"
 export * from "./home-page"
 export * from "./service"

@@ -1,64 +1,32 @@
-import {
-  type IPHONE_IMAGE_PNG,
-  type IPHONE_RESULT_IMAGE,
-  type IPHONE_RESULT_INFO,
-  type IPHONE_RESULT_TEXT,
-  type IPHONE_RESULT_TREE,
-} from "../constants"
 import { type IphoneDragSpec, type IphoneElement, type IphonePoint, type IphoneRectangle } from "../geometry"
-import {
-  type IPHONE_ACTION_ACTIVATE,
-  type IPHONE_ACTION_ALERT,
-  type IPHONE_ACTION_CLEAR,
-  type IPHONE_ACTION_CLOSE,
-  type IPHONE_ACTION_DOUBLE_TAP,
-  type IPHONE_ACTION_DRAG,
-  type IPHONE_ACTION_HOME,
-  type IPHONE_ACTION_INFO,
-  type IPHONE_ACTION_INSTALL,
-  type IPHONE_ACTION_LAUNCH,
-  type IPHONE_ACTION_LONG_PRESS,
-  type IPHONE_ACTION_ORIENTATION,
-  type IPHONE_ACTION_PAGE_DRAG,
-  type IPHONE_ACTION_PRESS,
-  type IPHONE_ACTION_SCREENSHOT,
-  type IPHONE_ACTION_SCROLL,
-  type IPHONE_ACTION_SWIPE,
-  type IPHONE_ACTION_TAP,
-  type IPHONE_ACTION_TERMINATE,
-  type IPHONE_ACTION_TREE,
-  type IPHONE_ACTION_TYPE,
-  type IPHONE_ACTION_URL,
-  type IPHONE_ACTION_WAIT,
-} from "./constants"
 
 export interface IphoneTreeAction {
-  kind: typeof IPHONE_ACTION_TREE
+  kind: "tree"
   max: number
 }
 
 export interface IphoneScreenshotAction {
-  kind: typeof IPHONE_ACTION_SCREENSHOT
+  kind: "screenshot"
 }
 
 export interface IphoneTapAction {
-  kind: typeof IPHONE_ACTION_TAP
+  kind: "tap"
   point: IphonePoint
 }
 
 export interface IphoneDoubleTapAction {
-  kind: typeof IPHONE_ACTION_DOUBLE_TAP
+  kind: "double_tap"
   point: IphonePoint
 }
 
 export interface IphoneLongPressAction {
-  kind: typeof IPHONE_ACTION_LONG_PRESS
+  kind: "long_press"
   point: IphonePoint
   durationMs: number
 }
 
 export interface IphonePageDragAction {
-  kind: typeof IPHONE_ACTION_PAGE_DRAG
+  kind: "page_drag"
   drag: IphoneDragSpec
   edge: IphonePageDragEdge
   flips: number
@@ -69,19 +37,19 @@ export interface IphonePageDragAction {
 export type IphonePageDragEdge = "left" | "right"
 
 export interface IphoneDragAction {
-  kind: typeof IPHONE_ACTION_DRAG
+  kind: "drag"
   drag: IphoneDragSpec
 }
 
 export interface IphoneTypeAction {
-  kind: typeof IPHONE_ACTION_TYPE
+  kind: "type"
   text: string
   submit: boolean
   point?: IphonePoint
 }
 
 export interface IphoneClearAction {
-  kind: typeof IPHONE_ACTION_CLEAR
+  kind: "clear"
   point: IphonePoint
 }
 
@@ -99,47 +67,47 @@ export interface IphoneApplicationAction {
 }
 
 export interface IphoneInstallAction {
-  kind: typeof IPHONE_ACTION_INSTALL
+  kind: "install"
   path: string
 }
 
 export interface IphoneHomeAction {
-  kind: typeof IPHONE_ACTION_HOME
+  kind: "home"
 }
 
 export interface IphonePressAction {
-  kind: typeof IPHONE_ACTION_PRESS
+  kind: "press"
   button: string
 }
 
 export interface IphoneAlertAction {
-  kind: typeof IPHONE_ACTION_ALERT
+  kind: "alert"
   action: IphoneAlertKind
   buttonLabel?: string
 }
 
 export interface IphoneUrlAction {
-  kind: typeof IPHONE_ACTION_URL
+  kind: "url"
   url: string
   bundleId: string
 }
 
 export interface IphoneInfoAction {
-  kind: typeof IPHONE_ACTION_INFO
+  kind: "info"
 }
 
 export interface IphoneWaitAction {
-  kind: typeof IPHONE_ACTION_WAIT
+  kind: "wait"
   seconds: number
 }
 
 export interface IphoneOrientationAction {
-  kind: typeof IPHONE_ACTION_ORIENTATION
+  kind: "orientation"
   orientation?: IphoneOrientationKind
 }
 
 export interface IphoneCloseAction {
-  kind: typeof IPHONE_ACTION_CLOSE
+  kind: "close"
 }
 
 export type IphoneDeviceAction =
@@ -165,12 +133,12 @@ export type IphoneDeviceAction =
   | IphoneCloseAction
 
 export interface IphoneTextOutput {
-  kind: typeof IPHONE_RESULT_TEXT
+  kind: "text"
   text: string
 }
 
 export interface IphoneTreeOutput {
-  kind: typeof IPHONE_RESULT_TREE
+  kind: "tree"
   text: string
   count: number
   viewport: IphoneRectangle
@@ -178,9 +146,9 @@ export interface IphoneTreeOutput {
 }
 
 export interface IphoneImageOutput {
-  kind: typeof IPHONE_RESULT_IMAGE
+  kind: "image"
   data: string
-  mimeType: typeof IPHONE_IMAGE_PNG
+  mimeType: "image/png"
 }
 
 export interface IphoneMobileInfo {
@@ -191,7 +159,7 @@ export interface IphoneMobileInfo {
 }
 
 export interface IphoneInfoOutput {
-  kind: typeof IPHONE_RESULT_INFO
+  kind: "info"
   device: IphoneMobileInfo
   activeApp: IphoneMobileInfo
   viewport: IphoneRectangle
@@ -199,12 +167,9 @@ export interface IphoneInfoOutput {
 
 export type IphoneDeviceActionOutput = IphoneTextOutput | IphoneTreeOutput | IphoneImageOutput | IphoneInfoOutput
 
-export type IphoneSwipeKind = typeof IPHONE_ACTION_SWIPE | typeof IPHONE_ACTION_SCROLL
+export type IphoneSwipeKind = "swipe" | "scroll"
 
-export type IphoneApplicationKind =
-  | typeof IPHONE_ACTION_LAUNCH
-  | typeof IPHONE_ACTION_TERMINATE
-  | typeof IPHONE_ACTION_ACTIVATE
+export type IphoneApplicationKind = "launch" | "terminate" | "activate"
 
 export type IphoneAlertKind = "accept" | "dismiss"
 

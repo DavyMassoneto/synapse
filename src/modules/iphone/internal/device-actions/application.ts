@@ -1,6 +1,10 @@
+import {
+  type IphoneApplicationAction,
+  type IphoneDeviceActionPort,
+  type IphoneUrlAction,
+} from "#synapse/modules/iphone/public/contracts"
 import { IPHONE_ACTION_LINK_SCRIPT, IPHONE_APPLICATION_SCRIPTS } from "./constants"
 import { executeIphoneFallback } from "./fallback"
-import { type IphoneApplicationAction, type IphoneDeviceActionPort, type IphoneUrlAction } from "./types"
 
 export async function controlIphoneApplication(
   port: IphoneDeviceActionPort,

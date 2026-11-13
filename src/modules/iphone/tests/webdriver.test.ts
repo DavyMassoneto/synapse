@@ -1,6 +1,8 @@
 import { describe, expect, test } from "vitest"
 import {
   createIphoneWebDriverSession,
+  IPHONE_HTTP_MAX_RESPONSE_BYTES,
+  IPHONE_HTTP_RESPONSE_TOO_LARGE,
   IPHONE_HTTP_SESSION_TIMEOUT_MS,
   IPHONE_HTTP_TIMEOUT_MS,
 } from "#synapse/modules/iphone/adapters/webdriver-http"
@@ -162,12 +164,27 @@ async function cancelsFetch(): Promise<void> {
   }
 }
 
+async function rejectsOversizedResponse(): Promise<void> {
+  const server = new TestIphoneHttpServer()
+  server.response = JSON.stringify({ value: { sessionId: "x".repeat(IPHONE_HTTP_MAX_RESPONSE_BYTES) } })
+  const base = await server.start()
+  try {
+    await expect(createIphoneWebDriverSession(base, makeCapabilities(), new AbortController().signal)).rejects.toThrow(
+      IPHONE_HTTP_RESPONSE_TOO_LARGE,
+    )
+    expect(server.requests).toBe(1)
+  } finally {
+    await server.stop()
+  }
+}
+
 function sessionBuildHasLongTimeout(): void {
   expect(IPHONE_HTTP_SESSION_TIMEOUT_MS).toBeGreaterThan(IPHONE_HTTP_TIMEOUT_MS)
   expect(IPHONE_HTTP_SESSION_TIMEOUT_MS).toBe(900000)
 }
 
 function suite(): void {
+  test("recusa resposta maior que o limite sem repetir", rejectsOversizedResponse)
   test("reserva tempo para compilar WDA", sessionBuildHasLongTimeout)
   test("aceita objeto de launch", acceptsObjectMobileResult)
   test("aceita booleano de terminate", acceptsBooleanMobileResult)

@@ -25,7 +25,16 @@ async function checkpointCount(): Promise<void> {
   expect(team.overview().agents[1]?.activity).toContain("2")
 }
 
+async function invalidCheckpointDisposesRestoredSession(): Promise<void> {
+  const { team, sessions } = makeTeamSut()
+  sessions.journal.failLoad = true
+  await team.restore([restoreRecord("alice")], [])
+  expect(sessions.session.disposals).toBe(1)
+  expect(team.overview().agents[1]?.state).toBe("failed")
+}
+
 function register(): void {
+  test("checkpoint inválido descarta sessão restaurada uma vez", invalidCheckpointDisposesRestoredSession)
   test("falha de restauração visível", restoreFailure)
   test("restaura interrupção sem reenviar", restoreInterrupted)
   test("contagem de mensagens não confirmadas", checkpointCount)

@@ -19,39 +19,7 @@ import {
   type IphoneWaitAction,
 } from "#synapse/modules/iphone/public/contracts"
 
-export type {
-  IphoneAlertAction,
-  IphoneAlertKind,
-  IphoneApplicationAction,
-  IphoneApplicationKind,
-  IphoneClearAction,
-  IphoneCloseAction,
-  IphoneDeviceAction,
-  IphoneDeviceActionOutput,
-  IphoneDoubleTapAction,
-  IphoneDragAction,
-  IphoneHomeAction,
-  IphoneInfoAction,
-  IphoneInstallAction,
-  IphoneLongPressAction,
-  IphoneOrientationAction,
-  IphoneOrientationKind,
-  IphonePressAction,
-  IphoneRectangle,
-  IphoneScreenshotAction,
-  IphoneSwipeAction,
-  IphoneSwipeDirection,
-  IphoneSwipeKind,
-  IphoneTapAction,
-  IphoneTreeAction,
-  IphoneTypeAction,
-  IphoneUrlAction,
-  IphoneWaitAction,
-} from "#synapse/modules/iphone/public/contracts"
-
 export type IphoneMaybeElement = IphoneElement | null
-
-export type { IphoneActionArguments, IphoneDeviceActionPort } from "#synapse/modules/iphone/public/contracts"
 
 export interface IphoneSwipeEndpoints {
   fromX: number

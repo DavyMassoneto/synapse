@@ -1,4 +1,4 @@
-import { type IphoneHomeIcon } from "#synapse/modules/iphone/internal/home-screen-layout"
+import { type IphoneHomeIcon } from "#synapse/modules/iphone/public/contracts"
 
 export function hasIphoneSameFolderContents(actual: string[], expected: string[]): boolean {
   if (actual.length !== expected.length) {

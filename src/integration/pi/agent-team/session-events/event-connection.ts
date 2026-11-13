@@ -6,6 +6,7 @@ import {
   MEMBER_TURN_STARTED,
   type MemberSessionListener,
 } from "#synapse/modules"
+import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { teamMemberActivity } from "./activity-text"
 import {
   TEAM_PI_MEMBER_AGENT_START,
@@ -24,9 +25,12 @@ export class PiTeamEventConnection {
 
   private readonly listener: MemberSessionListener
 
-  constructor(session: TeamMemberSessionPort, listener: MemberSessionListener) {
+  private readonly lifetime: TeamMemberExtensionLifetime
+
+  constructor(session: TeamMemberSessionPort, listener: MemberSessionListener, lifetime: TeamMemberExtensionLifetime) {
     this.session = session
     this.listener = listener
+    this.lifetime = lifetime
   }
 
   onEvent(event: AgentSessionEvent): void {
@@ -48,9 +52,20 @@ export class PiTeamEventConnection {
           this.listener(teamMemberAssistantResponse(event.message))
         }
         break
-      case TEAM_PI_MEMBER_SETTLED:
-        this.listener(teamMemberSettledResponse(this.session, event.aborted))
+      case TEAM_PI_MEMBER_SETTLED: {
+        const settled = teamMemberSettledResponse(this.session, event.aborted)
+        try {
+          this.lifetime.ensureHealthy()
+        } catch (error) {
+          if (error instanceof Error) {
+            settled.failure = error.message
+          } else {
+            throw error
+          }
+        }
+        this.listener(settled)
         break
+      }
     }
   }
 }

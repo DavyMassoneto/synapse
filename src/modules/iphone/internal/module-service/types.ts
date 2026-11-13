@@ -1,5 +1,4 @@
 import { type IphoneRefused } from "#synapse/modules/iphone/public/contracts"
-import { type IPHONE_MODULE_DIRECT_DROP, type IPHONE_MODULE_HOPS_DONE } from "./constants"
 
 export interface IphoneAcrossPagesRequest {
   source: string
@@ -9,11 +8,11 @@ export interface IphoneAcrossPagesRequest {
 }
 
 export interface IphoneDirectDropDone {
-  kind: typeof IPHONE_MODULE_DIRECT_DROP
+  kind: "direct-drop"
 }
 
 export interface IphoneHopsDone {
-  kind: typeof IPHONE_MODULE_HOPS_DONE
+  kind: "hops-done"
 }
 
 export type IphoneAcrossPagesResult = IphoneDirectDropDone | IphoneHopsDone | IphoneRefused

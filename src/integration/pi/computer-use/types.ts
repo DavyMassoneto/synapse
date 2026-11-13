@@ -1,6 +1,5 @@
 import { type ExtensionAPI, type ExtensionContext, type ToolDefinition } from "@earendil-works/pi-coding-agent"
 import { type ComputerExecuteResult, type ComputerRenderedScreenshot } from "#synapse/modules"
-import { type PI_COMPUTER_TOOL_NAME } from "./constants"
 import { type PI_COMPUTER_PARAMETERS } from "./tool-schema"
 
 export type PiComputerRegistry = Pick<ExtensionAPI, "registerCommand">
@@ -29,7 +28,7 @@ export type PiComputerToolDefinition = Omit<
   PiComputerToolIdentity
 
 export interface PiComputerToolIdentity {
-  name: typeof PI_COMPUTER_TOOL_NAME
+  name: "computer_use"
 }
 
 export type PiComputerToolSignal = Parameters<PiComputerToolDefinition["execute"]>[2]

@@ -1,11 +1,6 @@
+import { type IphoneSessionFactory, type IphoneSessionPort } from "#synapse/modules/iphone/public/contracts"
 import { IPHONE_SESSION_CLOSE_TIMEOUT_MS, IPHONE_SESSION_CLOSED } from "./constants"
-import {
-  type IphoneMaybeSession,
-  type IphoneSessionFactory,
-  type IphoneSessionLifecycle,
-  type IphoneSessionOperation,
-  type IphoneSessionPort,
-} from "./types"
+import { type IphoneMaybeSession, type IphoneSessionLifecycle, type IphoneSessionOperation } from "./types"
 
 export class IphoneSessionQueue<S extends IphoneSessionPort> implements IphoneSessionLifecycle<S> {
   private session: IphoneMaybeSession<S> = null
@@ -92,9 +87,13 @@ export class IphoneSessionQueue<S extends IphoneSessionPort> implements IphoneSe
     this.session = null
   }
 
-  shutdown(): Promise<void> {
+  cancel(): void {
     this.closed = true
     this.abort.abort()
+  }
+
+  shutdown(): Promise<void> {
+    this.cancel()
     if (!this.shutdownPromise) {
       this.shutdownPromise = this.closeResources()
     }

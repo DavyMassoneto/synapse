@@ -1,5 +1,10 @@
 import { buildIphonePress } from "#synapse/modules/iphone/internal/pointer-gestures"
 import {
+  type IphoneClearAction,
+  type IphoneDeviceActionPort,
+  type IphoneTypeAction,
+} from "#synapse/modules/iphone/public/contracts"
+import {
   IPHONE_ACTION_FOCUS_WAIT_MS,
   IPHONE_ACTION_KEYS,
   IPHONE_ACTION_RETURN,
@@ -7,7 +12,6 @@ import {
 } from "./constants"
 import { executeIphoneFallback } from "./fallback"
 import { sendIphoneGesture } from "./gesture"
-import { type IphoneClearAction, type IphoneDeviceActionPort, type IphoneTypeAction } from "./types"
 
 export async function typeIphoneText(
   port: IphoneDeviceActionPort,

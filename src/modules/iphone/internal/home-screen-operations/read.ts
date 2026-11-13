@@ -1,5 +1,6 @@
 import { readIphoneHomeState } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { type IphoneHomeReadResult, type IphoneHomeScreenPort } from "./types"
+import { type IphoneHomeScreenPort } from "#synapse/modules/iphone/public/contracts"
+import { type IphoneHomeReadResult } from "./types"
 
 export async function readIphoneHomeScreen(
   port: IphoneHomeScreenPort,

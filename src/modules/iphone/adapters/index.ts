@@ -1,5 +1,6 @@
 export * from "./appium-process"
 export * from "./configuration-file"
 export * from "./log-reading"
+export * from "./simctl-device-list-reading"
 export * from "./simulator-discovery"
 export * from "./webdriver-http"

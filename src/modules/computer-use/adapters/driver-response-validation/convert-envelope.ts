@@ -1,6 +1,5 @@
 import { type ComputerDriverEnvelope } from "#synapse/modules/computer-use/public/contracts"
 import {
-  COMPUTER_RAW_STATE_SCHEMA,
   COMPUTER_RESPONSE_DELIVERED_PROPERTY,
   COMPUTER_RESPONSE_JSON_START,
   COMPUTER_RESPONSE_REQUESTED_PROPERTY,
@@ -16,6 +15,7 @@ import {
   computerImageFromDriverState,
 } from "./convert-state"
 import { computerParseDriverJson } from "./parse-driver-json"
+import { COMPUTER_RAW_STATE_SCHEMA } from "./schemas"
 import { type ComputerRawEnvelope, type ComputerRawState } from "./types"
 
 function computerStateEnvelope(state: ComputerRawState): ComputerDriverEnvelope {

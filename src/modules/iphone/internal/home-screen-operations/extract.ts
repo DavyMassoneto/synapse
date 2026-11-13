@@ -1,17 +1,15 @@
 import {
-  IPHONE_HOME_DRAG_HOLD_MS,
-  IPHONE_HOME_DRAG_LIFT_MS,
-  IPHONE_HOME_DRAG_LIFT_POINTS,
-  IPHONE_HOME_DRAG_MOVE_MS,
-  IPHONE_HOME_PAGE_KNOWN,
-  type IphoneHomeStateAccepted,
+  IPHONE_HOME_DRAG_CALIBRATION,
   iphoneHomeSlotPoint,
   readIphoneFolderAppCount,
 } from "#synapse/modules/iphone/internal/home-screen-layout"
 import { buildIphoneDrag, type IphoneGestureResult } from "#synapse/modules/iphone/internal/pointer-gestures"
 import {
   IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
   IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneHomeStateAccepted,
   type IphonePoint,
   type IphoneSupportResult,
 } from "#synapse/modules/iphone/public/contracts"
@@ -27,7 +25,6 @@ import { editIphoneHomeScreen, exitIphoneHomeEdit } from "./edit"
 import { planIphoneHomeExtract } from "./extract-plan"
 import { findIphoneFolderPage } from "./find-folder-page"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function extractIphoneHomeApp(
   port: IphoneHomeScreenPort,
@@ -147,10 +144,7 @@ function buildExtractDrag(point: IphonePoint, destination: IphonePoint): IphoneG
       x: destination.x,
       y: destination.y + IPHONE_HOME_EXTRACT_OFFSET,
     },
-    holdMs: IPHONE_HOME_DRAG_HOLD_MS,
+    ...IPHONE_HOME_DRAG_CALIBRATION,
     hoverMs: IPHONE_HOME_EXTRACT_HOVER_MS,
-    liftMs: IPHONE_HOME_DRAG_LIFT_MS,
-    liftDistance: IPHONE_HOME_DRAG_LIFT_POINTS,
-    moveMs: IPHONE_HOME_DRAG_MOVE_MS,
   })
 }

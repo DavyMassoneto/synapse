@@ -1,10 +1,4 @@
-import { type IPHONE_ACCEPTED, type IphoneElement, type IphoneRefused } from "#synapse/modules/iphone/public/contracts"
-import {
-  type IPHONE_TREE_APP_KNOWN,
-  type IPHONE_TREE_APP_MISSING,
-  type IPHONE_TREE_FOUND,
-  type IPHONE_TREE_MISSING,
-} from "./constants"
+import { type IphoneElement, type IphoneRefused } from "#synapse/modules/iphone/public/contracts"
 
 export type IphoneXmlAttributes = Map<string, string>
 
@@ -14,12 +8,12 @@ export interface IphoneXmlState {
 }
 
 export interface IphoneTreeAppKnown {
-  kind: typeof IPHONE_TREE_APP_KNOWN
+  kind: "known"
   name: string
 }
 
 export interface IphoneTreeAppMissing {
-  kind: typeof IPHONE_TREE_APP_MISSING
+  kind: "missing"
 }
 
 export type IphoneTreeApp = IphoneTreeAppKnown | IphoneTreeAppMissing
@@ -31,19 +25,28 @@ export interface IphoneElementTree {
 }
 
 export interface IphoneTreeAccepted {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   tree: IphoneElementTree
 }
 
 export type IphoneTreeResult = IphoneTreeAccepted | IphoneRefused
 
 export interface IphoneTreeFound {
-  kind: typeof IPHONE_TREE_FOUND
+  kind: "found"
   element: IphoneElement
 }
 
 export interface IphoneTreeMissing {
-  kind: typeof IPHONE_TREE_MISSING
+  kind: "missing"
 }
 
 export type IphoneTreeSearch = IphoneTreeFound | IphoneTreeMissing
+
+export interface IphoneTreeEntityValues {
+  "&quot;": string
+  "&apos;": string
+  "&lt;": string
+  "&gt;": string
+  "&amp;": string
+  "&#10;": string
+}

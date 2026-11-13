@@ -1,5 +1,4 @@
 import {
-  COMPUTER_AX_FORMAT,
   COMPUTER_BOUNDS_ABSENT,
   COMPUTER_TITLE_ABSENT,
   COMPUTER_TITLE_PRESENT,
@@ -11,9 +10,8 @@ import {
   COMPUTER_AX_LABEL_GROUPS,
   COMPUTER_AX_WINDOW_TITLE,
   COMPUTER_TREE_READ,
-  COMPUTER_TREE_UNSUPPORTED,
 } from "./constants"
-import { type ComputerTreeReadResult } from "./types"
+import { type ComputerReadTree } from "./types"
 
 function computerReadAxLabel(match: RegExpExecArray): string {
   for (const group of COMPUTER_AX_LABEL_GROUPS) {
@@ -33,24 +31,14 @@ function computerReadAxTitle(tree: string): ComputerWindowTitle {
   return { kind: COMPUTER_TITLE_ABSENT }
 }
 
-export function computerReadElementTree(text: string, format: string): ComputerTreeReadResult {
+export function computerReadElementTree(text: string): ComputerReadTree {
   const elements: ComputerElement[] = []
-  switch (format) {
-    case COMPUTER_AX_FORMAT:
-      for (const match of text.matchAll(COMPUTER_AX_ELEMENT_LINE)) {
-        const index = Number(match[1])
-        const role = match[2]
-        if (Number.isSafeInteger(index) && index > 0 && role) {
-          elements.push({
-            index,
-            role,
-            label: computerReadAxLabel(match),
-            bounds: { kind: COMPUTER_BOUNDS_ABSENT },
-          })
-        }
-      }
-      return { kind: COMPUTER_TREE_READ, elements, windowTitle: computerReadAxTitle(text) }
-    default:
-      return { kind: COMPUTER_TREE_UNSUPPORTED, format }
+  for (const match of text.matchAll(COMPUTER_AX_ELEMENT_LINE)) {
+    const index = Number(match[1])
+    const role = match[2]
+    if (Number.isSafeInteger(index) && index > 0 && role) {
+      elements.push({ index, role, label: computerReadAxLabel(match), bounds: { kind: COMPUTER_BOUNDS_ABSENT } })
+    }
   }
+  return { kind: COMPUTER_TREE_READ, elements, windowTitle: computerReadAxTitle(text) }
 }

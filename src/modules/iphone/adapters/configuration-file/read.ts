@@ -1,4 +1,3 @@
-import { Value } from "typebox/value"
 import {
   IPHONE_DEVICE,
   IPHONE_SIMULATOR,
@@ -6,7 +5,6 @@ import {
   type IphoneTarget,
 } from "#synapse/modules/iphone/public/contracts"
 import {
-  IPHONE_COMPLETE_STORED_SCHEMA,
   IPHONE_CONFIG_INVALID,
   IPHONE_CONFIG_LOADED,
   IPHONE_CONFIG_MISSING,
@@ -31,13 +29,35 @@ export function readIphoneConfiguration(path: string): IphoneConfigReadResult {
     return loaded
   }
   const stored = loaded.config
-  if (!Value.Check(IPHONE_COMPLETE_STORED_SCHEMA, stored)) {
+  if (
+    !stored.serverUrl ||
+    !stored.deviceName ||
+    !(stored.wdaInstalled === true || stored.wdaInstalled === false) ||
+    !(stored.target === IPHONE_DEVICE || stored.target === IPHONE_SIMULATOR) ||
+    (stored.target === IPHONE_DEVICE && !stored.udid)
+  ) {
     return {
       kind: IPHONE_CONFIG_INVALID,
       message: `${IPHONE_CONFIG_REQUIRED}${missingIphoneConfigurationFields(stored).join(", ")}`,
     }
   }
-  return buildIphoneConfiguration(stored)
+  if (stored.target === IPHONE_DEVICE && stored.udid) {
+    return buildIphoneConfiguration({
+      ...stored,
+      serverUrl: stored.serverUrl,
+      deviceName: stored.deviceName,
+      wdaInstalled: stored.wdaInstalled,
+      target: IPHONE_DEVICE,
+      udid: stored.udid,
+    })
+  }
+  return buildIphoneConfiguration({
+    ...stored,
+    serverUrl: stored.serverUrl,
+    deviceName: stored.deviceName,
+    wdaInstalled: stored.wdaInstalled,
+    target: IPHONE_SIMULATOR,
+  })
 }
 
 function buildIphoneConfiguration(stored: IphoneCompleteStoredConfiguration): IphoneConfigReadResult {

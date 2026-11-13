@@ -8,7 +8,6 @@ import {
   IPHONE_ACTION_SWIPE,
   IPHONE_ACTION_TAP,
   IPHONE_ACTION_TYPE,
-  IPHONE_TARGET_POINT,
   type IphoneDeviceAction,
   type IphoneDragSpec,
   type IphonePoint,
@@ -30,24 +29,24 @@ import {
   PI_IPHONE_VALUE_RIGHT,
   PI_IPHONE_VALUE_UP,
 } from "./constants"
-import { iphoneInputPoint, iphoneMilliseconds, iphoneNumber, iphoneOptionalPoint } from "./input-values"
-import { iphoneDestination } from "./target"
-import { type PiIphoneDestination, type PiIphoneInput } from "./types"
+import { iphoneMilliseconds, iphoneNumber } from "./input-values"
+import { iphoneOptionalTargetPoint, iphoneTargetPoint } from "./target"
+import { type PiIphoneInput, type PiIphoneTargetSource, type PiIphoneTargets } from "./types"
 
-export function translateIphoneGesture(input: PiIphoneInput): IphoneDeviceAction {
+export function translateIphoneGesture(input: PiIphoneInput, targets: PiIphoneTargets): IphoneDeviceAction {
   switch (input.action) {
     case IPHONE_ACTION_TAP:
     case IPHONE_ACTION_DOUBLE_TAP:
     case IPHONE_ACTION_CLEAR:
-      return { kind: input.action, point: iphoneInputPoint(input) }
+      return { kind: input.action, point: iphoneTargetPoint(targets.source) }
     case IPHONE_ACTION_LONG_PRESS:
       return {
         kind: input.action,
-        point: iphoneInputPoint(input),
+        point: iphoneTargetPoint(targets.source),
         durationMs: iphoneMilliseconds(PI_IPHONE_DEFAULT_HOLD_MS, input.seconds),
       }
     case IPHONE_ACTION_TYPE:
-      return translateIphoneText(input)
+      return translateIphoneText(input, targets.source)
     case IPHONE_ACTION_SWIPE:
     case IPHONE_ACTION_SCROLL: {
       if (
@@ -59,20 +58,20 @@ export function translateIphoneGesture(input: PiIphoneInput): IphoneDeviceAction
         throw new Error(PI_IPHONE_INVALID_ARGUMENTS)
       }
       const swipe: IphoneSwipeAction = { kind: input.action, direction: input.direction }
-      Object.assign(swipe, iphoneOptionalPoint(input))
+      Object.assign(swipe, iphoneOptionalTargetPoint(targets.source))
       return swipe
     }
     case IPHONE_ACTION_DRAG:
-      return translateIphoneDrag(input)
+      return translateIphoneDrag(input, targets)
     default:
       throw new Error(PI_IPHONE_INVALID_ARGUMENTS)
   }
 }
 
-function translateIphoneDrag(input: PiIphoneInput): IphoneDeviceAction {
-  const destination = iphoneDestination(input)
-  const point = iphoneDragDestination(input, destination)
-  const drag = iphoneDragSpec(input, point)
+function translateIphoneDrag(input: PiIphoneInput, targets: PiIphoneTargets): IphoneDeviceAction {
+  const destination = targets.destination
+  const point = iphoneDragDestination(input, targets)
+  const drag = iphoneDragSpec(input, point, targets.source)
   if (input.flips) {
     if (input.edge !== PI_IPHONE_VALUE_LEFT && input.edge !== PI_IPHONE_VALUE_RIGHT) {
       throw new Error(PI_IPHONE_INVALID_ARGUMENTS)
@@ -89,31 +88,28 @@ function translateIphoneDrag(input: PiIphoneInput): IphoneDeviceAction {
   return { kind: IPHONE_ACTION_DRAG, drag }
 }
 
-function translateIphoneText(input: PiIphoneInput): IphoneDeviceAction {
+function translateIphoneText(input: PiIphoneInput, source: PiIphoneTargetSource): IphoneDeviceAction {
   if (typeof input.text_input !== "string") {
     throw new Error(PI_IPHONE_INVALID_ARGUMENTS)
   }
   const action: IphoneTypeAction = { kind: IPHONE_ACTION_TYPE, text: input.text_input, submit: input.submit === true }
-  Object.assign(action, iphoneOptionalPoint(input))
+  Object.assign(action, iphoneOptionalTargetPoint(source))
   return action
 }
 
-function iphoneDragDestination(input: PiIphoneInput, destination: PiIphoneDestination): IphonePoint {
-  if (destination.kind === PI_IPHONE_DESTINATION_FOUND) {
-    if (destination.target.kind === IPHONE_TARGET_POINT) {
-      return destination.target.point
-    }
-    return { x: 0, y: 0 }
+function iphoneDragDestination(input: PiIphoneInput, targets: PiIphoneTargets): IphonePoint {
+  if (targets.destination.kind === PI_IPHONE_DESTINATION_FOUND) {
+    return iphoneTargetPoint(targets.destination)
   }
   if (input.flips) {
-    return iphoneInputPoint(input)
+    return iphoneTargetPoint(targets.source)
   }
   throw new Error(PI_IPHONE_INVALID_ARGUMENTS)
 }
 
-function iphoneDragSpec(input: PiIphoneInput, point: IphonePoint): IphoneDragSpec {
+function iphoneDragSpec(input: PiIphoneInput, point: IphonePoint, source: PiIphoneTargetSource): IphoneDragSpec {
   const drag: IphoneDragSpec = {
-    from: iphoneInputPoint(input),
+    from: iphoneTargetPoint(source),
     destination: point,
     holdMs: iphoneMilliseconds(PI_IPHONE_DEFAULT_HOLD_MS, input.seconds),
     liftDistance: iphoneNumber(PI_IPHONE_DEFAULT_LIFT_DISTANCE, input.lift_px),

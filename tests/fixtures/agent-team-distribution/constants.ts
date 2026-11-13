@@ -1,7 +1,10 @@
 import { TEAM_PI_MEMBER_IDENTITY_PREFIX } from "#synapse/integration"
-import { PI_PROCESS_TEXT_KIND, type PiProcessStep } from "../scripted-provider"
+import { SCRIPTED_PROVIDER_TEXT_KIND, type ScriptedProviderStep } from "../scripted-provider"
 
-export const TEAM_DISTRIBUTION_DONE_STEP: PiProcessStep = { kind: PI_PROCESS_TEXT_KIND, text: "concluído" }
+export const TEAM_DISTRIBUTION_DONE_STEP: ScriptedProviderStep = {
+  kind: SCRIPTED_PROVIDER_TEXT_KIND,
+  text: "concluído",
+}
 
 export const TEAM_DISTRIBUTION_MEMBER_MARKER = TEAM_PI_MEMBER_IDENTITY_PREFIX
 

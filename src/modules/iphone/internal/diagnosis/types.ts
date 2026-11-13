@@ -1,20 +1,14 @@
-import {
-  type IPHONE_DIAGNOSIS_FAILED,
-  type IPHONE_DIAGNOSIS_NOT_APPLICABLE,
-  type IPHONE_DIAGNOSIS_OK,
-} from "./constants"
-
 export interface IphoneDiagnosisOk {
-  kind: typeof IPHONE_DIAGNOSIS_OK
+  kind: "ok"
 }
 
 export interface IphoneDiagnosisFailed {
-  kind: typeof IPHONE_DIAGNOSIS_FAILED
+  kind: "failed"
   message: string
 }
 
 export interface IphoneDiagnosisNotApplicable {
-  kind: typeof IPHONE_DIAGNOSIS_NOT_APPLICABLE
+  kind: "not-applicable"
 }
 
 export type IphoneDiagnosisCheck = IphoneDiagnosisOk | IphoneDiagnosisFailed | IphoneDiagnosisNotApplicable

@@ -9,13 +9,13 @@ import {
   IphoneFixtureServer,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
   PI_PROCESS_SETTLED_EVENT,
-  PI_PROCESS_TEXT_KIND,
   PI_PROCESS_TIMEOUT_MS,
-  PI_PROCESS_TOOL_CALL_KIND,
   type PiProcessScenarioHandle,
   readPiProcessRequests,
   resolvePiProcessEntrypoint,
   runWithPiProcess,
+  SCRIPTED_PROVIDER_TEXT_KIND,
+  SCRIPTED_PROVIDER_TOOL_CALL_KIND,
 } from "../fixtures"
 
 async function callsIphone(pi: PiProcessScenarioHandle): Promise<void> {
@@ -37,8 +37,8 @@ async function callsIphone(pi: PiProcessScenarioHandle): Promise<void> {
       IPHONE_FIXTURE_ENCODING,
     )
     pi.homeDirectory.script([
-      { kind: PI_PROCESS_TOOL_CALL_KIND, name: "iphone", argumentsJson: '{"action":"tree"}' },
-      { kind: PI_PROCESS_TEXT_KIND, text: IPHONE_FIXTURE_REPLY },
+      { kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND, name: "iphone", argumentsJson: '{"action":"tree"}' },
+      { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: IPHONE_FIXTURE_REPLY },
     ])
     pi.start(resolvePiProcessEntrypoint())
     await pi.command({ type: "prompt", message: IPHONE_FIXTURE_PROMPT })

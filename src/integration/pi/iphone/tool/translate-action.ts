@@ -27,9 +27,9 @@ import {
 } from "./constants"
 import { iphoneNumber, iphoneRequiredText } from "./input-values"
 import { translateIphoneGesture } from "./translate-gesture"
-import { type PiIphoneInput } from "./types"
+import { type PiIphoneInput, type PiIphoneTargets } from "./types"
 
-export function translateIphoneAction(input: PiIphoneInput): IphoneDeviceAction {
+export function translateIphoneAction(input: PiIphoneInput, targets: PiIphoneTargets): IphoneDeviceAction {
   switch (input.action) {
     case IPHONE_ACTION_TREE:
       return { kind: input.action, max: iphoneNumber(PI_IPHONE_DEFAULT_MAX, input.max) }
@@ -59,7 +59,7 @@ export function translateIphoneAction(input: PiIphoneInput): IphoneDeviceAction 
     case IPHONE_ACTION_ALERT:
       return translateIphoneAlert(input)
     default:
-      return translateIphoneGesture(input)
+      return translateIphoneGesture(input, targets)
   }
 }
 

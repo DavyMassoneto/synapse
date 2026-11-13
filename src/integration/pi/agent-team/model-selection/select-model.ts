@@ -1,5 +1,5 @@
 import { type Api, getSupportedThinkingLevels, type Model, type ModelThinkingLevel } from "@earendil-works/pi-ai"
-import { PI_MODEL_REFERENCE_SEPARATOR, parsePiModelReference } from "#synapse/integration/pi/model-reference"
+import { MODEL_REFERENCE_VALID, parseModelReference, REFERENCE_SEPARATOR } from "#synapse/modules"
 import {
   TEAM_AVAILABLE_MODELS,
   TEAM_MODEL_LIST_SEPARATOR,
@@ -14,7 +14,6 @@ import {
   type AvailableMemberModel,
   type MemberModelContext,
   type MemberModelSelection,
-  type MemberRequestedThinking,
   type SelectedMemberModel,
 } from "./types"
 
@@ -23,7 +22,7 @@ export function availableMemberModels(context: MemberModelContext): AvailableMem
   for (const model of context.modelRegistry.getAvailable()) {
     if (context.modelRegistry.hasConfiguredAuth(model)) {
       options.push({
-        reference: `${model.provider}${PI_MODEL_REFERENCE_SEPARATOR}${model.id}`,
+        reference: `${model.provider}${REFERENCE_SEPARATOR}${model.id}`,
         thinkingLevels: getSupportedThinkingLevels(model),
       })
     }
@@ -33,8 +32,8 @@ export function availableMemberModels(context: MemberModelContext): AvailableMem
 
 function resolveMemberModel(context: MemberModelContext, selection: MemberModelSelection): Model<Api> {
   if (TEAM_SELECTION_MODEL_FIELD in selection) {
-    const reference = parsePiModelReference(selection.model)
-    if (reference.kind === "valid") {
+    const reference = parseModelReference(selection.model)
+    if (reference.kind === MODEL_REFERENCE_VALID) {
       const model = context.modelRegistry.find(reference.provider, reference.id)
       if (model && context.modelRegistry.hasConfiguredAuth(model)) {
         return model
@@ -61,14 +60,22 @@ function resolveMemberThinking(model: Model<Api>, thinking: string): ModelThinki
 
 export function selectMemberModel(context: MemberModelContext, selection: MemberModelSelection): SelectedMemberModel {
   const model = resolveMemberModel(context, selection)
-  let thinking: MemberRequestedThinking = context.thinkingLevel
+  const thinkingLevel = selectedMemberThinking(context, selection, model)
+  return { model, thinkingLevel }
+}
+
+function selectedMemberThinking(
+  context: MemberModelContext,
+  selection: MemberModelSelection,
+  model: Model<Api>,
+): ModelThinkingLevel {
   if (TEAM_SELECTION_THINKING_FIELD in selection) {
-    thinking = selection.thinking
+    return resolveMemberThinking(model, selection.thinking)
   }
-  if (!thinking) {
-    throw new Error(TEAM_NO_LEAD_MODEL)
+  if (context.thinkingLevel) {
+    return resolveMemberThinking(model, context.thinkingLevel)
   }
-  return { model, thinkingLevel: resolveMemberThinking(model, thinking) }
+  throw new Error(TEAM_NO_LEAD_MODEL)
 }
 
 function unavailableMemberModel(context: MemberModelContext, model: string): Error {

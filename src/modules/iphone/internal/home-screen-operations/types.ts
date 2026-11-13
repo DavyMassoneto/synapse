@@ -1,31 +1,28 @@
-export type {
-  IphoneHomeAuditAccepted,
-  IphoneHomeAuditFolder,
-  IphoneHomeAuditPage,
-  IphoneHomeAuditPageAccepted,
-  IphoneHomeAuditPageResult,
-  IphoneHomeAuditResult,
-  IphoneHomeFolderRead,
-  IphoneHomeFolderResult,
+import {
+  type IphoneHomeStateResult,
+  type IphonePoint,
+  type IphoneRefused,
+  type IphoneSupportResult,
 } from "#synapse/modules/iphone/public/contracts"
 
-import { type IphoneHomeStateResult } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { type IPHONE_ACCEPTED, type IphonePoint, type IphoneRefused } from "#synapse/modules/iphone/public/contracts"
-import { type IPHONE_HOME_CASCADE_ABSENT, type IPHONE_HOME_EXTRACT_PLANNED } from "./constants"
-
-export type { IphoneHomeScreenPort, IphoneHomeSwipeDirection } from "#synapse/modules/iphone/public/contracts"
-
 export interface IphoneHomeCascadeKnown {
-  kind: typeof IPHONE_ACCEPTED
+  kind: "accepted"
   page: number
   count: number
 }
 
 export interface IphoneHomeCascadeAbsent {
-  kind: typeof IPHONE_HOME_CASCADE_ABSENT
+  kind: "cascade-absent"
 }
 
 export type IphoneHomeCascadeSnapshot = IphoneHomeCascadeKnown | IphoneHomeCascadeAbsent | IphoneRefused
+
+export interface IphoneHomeDirectDropPending {
+  kind: "direct-drop-pending"
+  cascade: IphoneHomeCascadeSnapshot
+}
+
+export type IphoneHomeHopResult = IphoneSupportResult | IphoneHomeDirectDropPending
 
 export interface IphoneHomeHopRequest {
   name: string
@@ -37,7 +34,7 @@ export interface IphoneHomeHopRequest {
 export type IphoneHomeReadResult = IphoneHomeStateResult
 
 export interface IphoneHomeExtractPlanned {
-  kind: typeof IPHONE_HOME_EXTRACT_PLANNED
+  kind: "extract_planned"
   point: IphonePoint
   slot: number
   count: number

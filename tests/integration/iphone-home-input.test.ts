@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { translateIphoneAction, translateIphoneHome } from "#synapse/integration"
+import { iphoneTargets, type PiIphoneInput, translateIphoneAction, translateIphoneHome } from "#synapse/integration"
 
 function translatesRead(): void {
   expect(translateIphoneHome({ action: "homescreen", op: "read", page: 3 })).toEqual({ kind: "read", page: 3 })
@@ -28,7 +28,8 @@ function translateUnknown(): void {
 }
 
 function translatesEdgeRelease(): void {
-  expect(translateIphoneAction({ action: "drag", x: 10, y: 20, flips: 1, edge: "left" })).toMatchObject({
+  const input: PiIphoneInput = { action: "drag", x: 10, y: 20, flips: 1, edge: "left" }
+  expect(translateIphoneAction(input, iphoneTargets(input))).toMatchObject({
     kind: "page_drag",
     releaseAtEdge: true,
     flips: 1,
