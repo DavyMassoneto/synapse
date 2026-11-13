@@ -1,0 +1,9 @@
+import { type TeamFailed, type TeamRefused } from "#synapse/modules/agent-team/public/contracts"
+
+export type TeamOperation<Result> = () => Result
+
+export type TeamAsyncOperation<Result> = () => Promise<Result>
+
+export type TeamOperationError = TeamRefused | TeamFailed
+
+export type TeamOperationOutcome<Result> = Result | TeamOperationError
