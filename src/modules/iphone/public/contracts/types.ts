@@ -1,11 +1,4 @@
 import { type IphoneDeviceAction, type IphoneDeviceActionOutput } from "./actions"
-import {
-  type IPHONE_DEVICE,
-  type IPHONE_DIAGNOSIS_FAILED,
-  type IPHONE_DIAGNOSIS_NOT_APPLICABLE,
-  type IPHONE_DIAGNOSIS_OK,
-  type IPHONE_SIMULATOR,
-} from "./constants"
 import { type IphoneHomeOperation, type IphoneHomeOutput } from "./home"
 import { type IphoneSupportResult } from "./result"
 import { type IphoneTargetedAction } from "./target"
@@ -18,12 +11,12 @@ export interface IphoneTargetCommon {
 }
 
 export interface IphoneDeviceTarget extends IphoneTargetCommon {
-  kind: typeof IPHONE_DEVICE
+  kind: "device"
   udid: string
 }
 
 export interface IphoneSimulatorTarget extends IphoneTargetCommon {
-  kind: typeof IPHONE_SIMULATOR
+  kind: "simulator"
   udid?: string
 }
 
@@ -115,7 +108,4 @@ export interface IphoneModuleDiagnosisCheck {
   message?: string
 }
 
-export type IphoneModuleDiagnosisKind =
-  | typeof IPHONE_DIAGNOSIS_OK
-  | typeof IPHONE_DIAGNOSIS_FAILED
-  | typeof IPHONE_DIAGNOSIS_NOT_APPLICABLE
+export type IphoneModuleDiagnosisKind = "ok" | "failed" | "not-applicable"

@@ -13,5 +13,3 @@ export const IPHONE_MODULE_CONFIG_BUSY = "Encerre a sessão e pare o servidor an
 export const IPHONE_MODULE_START_BUSY = "O servidor já está iniciando."
 
 export const IPHONE_MODULE_CLOSED = "O módulo iPhone foi encerrado."
-
-export const IPHONE_MODULE_CONFIG_INVALID = "Configuração do iPhone ausente ou inválida."

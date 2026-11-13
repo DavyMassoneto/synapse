@@ -1,4 +1,3 @@
-import { Value } from "typebox/value"
 import {
   IPHONE_DEVICE,
   IPHONE_SIMULATOR,
@@ -13,7 +12,6 @@ import {
   IPHONE_CONFIG_TRAILING_SLASH,
 } from "./constants"
 import { missingIphoneConfigurationFields } from "./missing"
-import { IPHONE_COMPLETE_STORED_SCHEMA } from "./schemas"
 import { readIphoneStoredConfiguration } from "./stored"
 import {
   type IphoneCompleteStoredConfiguration,
@@ -31,13 +29,35 @@ export function readIphoneConfiguration(path: string): IphoneConfigReadResult {
     return loaded
   }
   const stored = loaded.config
-  if (!Value.Check(IPHONE_COMPLETE_STORED_SCHEMA, stored)) {
+  if (
+    !stored.serverUrl ||
+    !stored.deviceName ||
+    !(stored.wdaInstalled === true || stored.wdaInstalled === false) ||
+    !(stored.target === IPHONE_DEVICE || stored.target === IPHONE_SIMULATOR) ||
+    (stored.target === IPHONE_DEVICE && !stored.udid)
+  ) {
     return {
       kind: IPHONE_CONFIG_INVALID,
       message: `${IPHONE_CONFIG_REQUIRED}${missingIphoneConfigurationFields(stored).join(", ")}`,
     }
   }
-  return buildIphoneConfiguration(stored)
+  if (stored.target === IPHONE_DEVICE && stored.udid) {
+    return buildIphoneConfiguration({
+      ...stored,
+      serverUrl: stored.serverUrl,
+      deviceName: stored.deviceName,
+      wdaInstalled: stored.wdaInstalled,
+      target: IPHONE_DEVICE,
+      udid: stored.udid,
+    })
+  }
+  return buildIphoneConfiguration({
+    ...stored,
+    serverUrl: stored.serverUrl,
+    deviceName: stored.deviceName,
+    wdaInstalled: stored.wdaInstalled,
+    target: IPHONE_SIMULATOR,
+  })
 }
 
 function buildIphoneConfiguration(stored: IphoneCompleteStoredConfiguration): IphoneConfigReadResult {

@@ -1,9 +1,10 @@
 import {
   type IphoneActionArguments,
   type IphoneDeviceActionPort,
-} from "#synapse/modules/iphone/internal/device-actions"
-import { type IphonePointerAction } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { type IphoneMobileInfo, type IphoneRectangle } from "#synapse/modules/iphone/public/contracts"
+  type IphoneMobileInfo,
+  type IphonePointerAction,
+  type IphoneRectangle,
+} from "#synapse/modules/iphone/public/contracts"
 
 export class DeviceActionsPort implements IphoneDeviceActionPort {
   calls: string[] = []

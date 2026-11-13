@@ -1,5 +1,5 @@
+import { executeIphoneDeviceAction, resolveIphoneTarget } from "#synapse/modules/iphone/internal/device-actions"
 import {
-  executeIphoneDeviceAction,
   IPHONE_ACTION_CLEAR,
   IPHONE_ACTION_DOUBLE_TAP,
   IPHONE_ACTION_DRAG,
@@ -9,9 +9,6 @@ import {
   IPHONE_ACTION_SWIPE,
   IPHONE_ACTION_TAP,
   IPHONE_ACTION_TYPE,
-  resolveIphoneTarget,
-} from "#synapse/modules/iphone/internal/device-actions"
-import {
   type IphoneDeviceAction,
   type IphoneDeviceActionOutput,
   type IphoneElement,

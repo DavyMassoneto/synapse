@@ -2,8 +2,6 @@ export type IphoneMaybeSession<S> = S | null
 
 import { type IphoneSessionPort } from "#synapse/modules/iphone/public/contracts"
 
-export type { IphoneSessionFactory, IphoneSessionPort } from "#synapse/modules/iphone/public/contracts"
-
 export type IphoneSessionOperation<S, T> = (session: S, signal: AbortSignal) => Promise<T>
 
 export interface IphoneSessionLifecycle<S extends IphoneSessionPort> {

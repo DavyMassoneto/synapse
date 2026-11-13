@@ -18,12 +18,6 @@ export const IPHONE_CONFIG_REQUIRED = "Campos obrigatórios ausentes: "
 
 export const IPHONE_CONFIG_UPDATE_ERROR = "Configuração recusada: "
 
-export const IPHONE_CONFIG_EMPTY_VALUE = "O valor não pode ser vazio."
-
-export const IPHONE_CONFIG_TARGET_DEVICE = "device"
-
-export const IPHONE_CONFIG_TARGET_SIMULATOR = "simulator"
-
 export const IPHONE_CONFIG_TEMP_PREFIX = ".iphone-config-"
 
 export const IPHONE_CONFIG_TEMP_FILE = "configuration.json"

@@ -1,10 +1,8 @@
-import {
-  executeIphoneDeviceAction,
-  IPHONE_ACTION_CLOSE,
-  IPHONE_ACTION_TREE,
-} from "#synapse/modules/iphone/internal/device-actions"
+import { executeIphoneDeviceAction } from "#synapse/modules/iphone/internal/device-actions"
 import { IphoneSessionQueue } from "#synapse/modules/iphone/internal/session-lifecycle"
 import {
+  IPHONE_ACTION_CLOSE,
+  IPHONE_ACTION_TREE,
   IPHONE_REFUSED,
   IPHONE_RESULT_TREE,
   type IphoneConfigurationChange,

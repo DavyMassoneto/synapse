@@ -1,5 +1,11 @@
-import { buildIphoneHomeDrag, type IphoneHomeStateAccepted } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+import { buildIphoneHomeDrag } from "#synapse/modules/iphone/internal/home-screen-layout"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneHomeStateAccepted,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import { positionIphoneHomeAdjacent } from "./adjacency"
 import {
   IPHONE_HOME_DROP_FAILURE,
@@ -13,7 +19,6 @@ import { readIphoneHomeFolder } from "./folder"
 import { hasIphoneSameFolderContents } from "./predicates"
 import { readIphoneHomeScreen } from "./read"
 import { renameIphoneHomeFolder } from "./rename"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function createIphoneHomeFolder(
   port: IphoneHomeScreenPort,

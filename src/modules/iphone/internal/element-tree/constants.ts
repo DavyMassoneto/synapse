@@ -1,4 +1,4 @@
-import { type IphoneTreeEntityValues } from "./entity"
+import { type IphoneTreeEntityValues } from "./types"
 
 export const IPHONE_TREE_TYPES = new Set([
   "Button",
@@ -38,6 +38,24 @@ export const IPHONE_XML_HEX_RADIX = 16
 export const IPHONE_XML_DECIMAL_RADIX = 10
 
 export const IPHONE_XML_HEX_PREFIX_LENGTH = 3
+
+export const IPHONE_XML_DECIMAL_PREFIX_LENGTH = 2
+
+export const IPHONE_XML_ENTITY_QUOTE = "&quot;"
+
+export const IPHONE_XML_ENTITY_APOSTROPHE = "&apos;"
+
+export const IPHONE_XML_ENTITY_LESS = "&lt;"
+
+export const IPHONE_XML_ENTITY_GREATER = "&gt;"
+
+export const IPHONE_XML_ENTITY_AMPERSAND = "&amp;"
+
+export const IPHONE_XML_ENTITY_NEWLINE = "&#10;"
+
+export const IPHONE_XML_HEX_PREFIX = "&#x"
+
+export const IPHONE_XML_ENTITY_SPACE = " "
 
 export const IPHONE_XML_CODEPOINT_MAX = 0x10ffff
 

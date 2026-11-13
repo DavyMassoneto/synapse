@@ -1,13 +1,17 @@
 import {
   buildIphoneHomePageDrag,
-  IPHONE_HOME_PAGE_KNOWN,
-  type IphoneHomeIcon,
-  type IphoneHomeStateAccepted,
   iphoneHomeSlotPoint,
   isIphoneHomePathBlocked,
 } from "#synapse/modules/iphone/internal/home-screen-layout"
 import { IPHONE_EDGE_RIGHT } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
+  type IphoneHomeIcon,
+  type IphoneHomeScreenPort,
+  type IphoneHomeStateAccepted,
+} from "#synapse/modules/iphone/public/contracts"
 import { snapshotIphoneCascade, verifyIphoneCascade } from "./cascade"
 import {
   IPHONE_HOME_DIRECT_DROP_PENDING,
@@ -20,12 +24,7 @@ import {
 import { editIphoneHomeScreen } from "./edit"
 import { gotoIphoneHomePage } from "./goto"
 import { readIphoneHomeScreen } from "./read"
-import {
-  type IphoneHomeCascadeSnapshot,
-  type IphoneHomeHopRequest,
-  type IphoneHomeHopResult,
-  type IphoneHomeScreenPort,
-} from "./types"
+import { type IphoneHomeCascadeSnapshot, type IphoneHomeHopRequest, type IphoneHomeHopResult } from "./types"
 
 export async function hopIphoneHomeIcon(
   port: IphoneHomeScreenPort,

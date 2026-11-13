@@ -5,7 +5,6 @@ import {
   hopIphoneHomeIcon,
   IPHONE_HOME_DIRECT_DROP_PENDING,
   type IphoneHomeCascadeSnapshot,
-  type IphoneHomeScreenPort,
   mergeIphoneHomeFolder,
   readIphoneHomeFolder,
   readIphoneHomeScreen,
@@ -18,6 +17,7 @@ import {
   type IphoneHomeMergeOperation,
   type IphoneHomeOutput,
   type IphoneHomeReadOperation,
+  type IphoneHomeScreenPort,
 } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_MODULE_DIRECT_DROP,

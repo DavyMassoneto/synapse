@@ -48,7 +48,7 @@ export class IphoneAppiumProcess {
     appiumHome?: string,
   ): IphoneAppiumStartResult {
     const url = new URL(serverUrl)
-    if (!this.isLocal(url)) {
+    if (!IPHONE_APPIUM_LOCAL_NAMES.includes(url.hostname)) {
       return { kind: IPHONE_APPIUM_REMOTE }
     }
     if (!this.child) {
@@ -64,10 +64,6 @@ export class IphoneAppiumProcess {
       delete this.child
       await new Promise<void>(this.terminate.bind(this, child))
     }
-  }
-
-  private isLocal(url: URL): boolean {
-    return IPHONE_APPIUM_LOCAL_NAMES.includes(url.hostname)
   }
 
   private launch(url: URL, stateDirectory: string, path: string, host: IphoneHost, appiumHome?: string): void {

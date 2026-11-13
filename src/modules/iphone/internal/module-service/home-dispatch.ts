@@ -8,7 +8,6 @@ import {
   gotoIphoneHomePage,
   hopIphoneHomeIcon,
   IPHONE_HOME_DIRECT_DROP_PENDING,
-  type IphoneHomeScreenPort,
   renameIphoneHomeFolder,
 } from "#synapse/modules/iphone/internal/home-screen-operations"
 import {
@@ -27,6 +26,7 @@ import {
   IPHONE_REFUSED,
   type IphoneHomeOperation,
   type IphoneHomeOutput,
+  type IphoneHomeScreenPort,
 } from "#synapse/modules/iphone/public/contracts"
 
 import { IPHONE_MODULE_DIRECT_DROP_FAILURE } from "./constants"

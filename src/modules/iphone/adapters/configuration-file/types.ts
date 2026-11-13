@@ -1,9 +1,21 @@
-import { type Static } from "typebox"
 import { type IphoneConfiguration, type IphoneExtraCapabilities } from "#synapse/modules/iphone/public/contracts"
-import { type IPHONE_CONFIG_INVALID, type IPHONE_CONFIG_LOADED, type IPHONE_CONFIG_MISSING } from "./constants"
-import { type IPHONE_COMPLETE_STORED_SCHEMA } from "./schemas"
 
-export type IphoneCompleteStoredConfiguration = Static<typeof IPHONE_COMPLETE_STORED_SCHEMA>
+export interface IphoneCompleteStoredDevice extends IphoneStoredConfiguration {
+  serverUrl: string
+  target: "device"
+  udid: string
+  deviceName: string
+  wdaInstalled: boolean
+}
+
+export interface IphoneCompleteStoredSimulator extends IphoneStoredConfiguration {
+  serverUrl: string
+  target: "simulator"
+  deviceName: string
+  wdaInstalled: boolean
+}
+
+export type IphoneCompleteStoredConfiguration = IphoneCompleteStoredDevice | IphoneCompleteStoredSimulator
 
 export interface IphoneSimulatorIdentifier {
   udid?: string
@@ -27,23 +39,23 @@ export interface IphoneStoredConfiguration {
 }
 
 export interface IphoneStoredConfigLoaded {
-  kind: typeof IPHONE_CONFIG_LOADED
+  kind: "loaded"
   config: IphoneStoredConfiguration
 }
 
 export type IphoneStoredConfigResult = IphoneStoredConfigLoaded | IphoneConfigMissing | IphoneConfigInvalid
 
 export interface IphoneConfigMissing {
-  kind: typeof IPHONE_CONFIG_MISSING
+  kind: "missing"
 }
 
 export interface IphoneConfigLoaded {
-  kind: typeof IPHONE_CONFIG_LOADED
+  kind: "loaded"
   config: IphoneConfiguration
 }
 
 export interface IphoneConfigInvalid {
-  kind: typeof IPHONE_CONFIG_INVALID
+  kind: "invalid"
   message: string
 }
 

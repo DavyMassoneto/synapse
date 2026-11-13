@@ -1,16 +1,17 @@
-import { IPHONE_HOME_PAGE_KNOWN } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED } from "#synapse/modules/iphone/public/contracts"
-import { IPHONE_HOME_PAGE_FAILURE } from "./constants"
-import { readIphoneHomeFolder } from "./folder"
-import { gotoIphoneHomePage } from "./goto"
-import { readIphoneHomeScreen } from "./read"
 import {
+  IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
   type IphoneHomeAuditFolder,
   type IphoneHomeAuditPage,
   type IphoneHomeAuditPageResult,
   type IphoneHomeAuditResult,
   type IphoneHomeScreenPort,
-} from "./types"
+} from "#synapse/modules/iphone/public/contracts"
+import { IPHONE_HOME_PAGE_FAILURE } from "./constants"
+import { readIphoneHomeFolder } from "./folder"
+import { gotoIphoneHomePage } from "./goto"
+import { readIphoneHomeScreen } from "./read"
 
 export async function auditIphoneHomeScreen(
   port: IphoneHomeScreenPort,

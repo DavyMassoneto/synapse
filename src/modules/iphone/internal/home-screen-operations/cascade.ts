@@ -1,9 +1,14 @@
-import { IPHONE_HOME_PAGE_KNOWN } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import { IPHONE_HOME_CASCADE_ABSENT, IPHONE_HOME_CASCADE_FAILURE } from "./constants"
 import { gotoIphoneHomePage } from "./goto"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeCascadeSnapshot, type IphoneHomeHopRequest, type IphoneHomeScreenPort } from "./types"
+import { type IphoneHomeCascadeSnapshot, type IphoneHomeHopRequest } from "./types"
 
 export async function snapshotIphoneCascade(
   port: IphoneHomeScreenPort,

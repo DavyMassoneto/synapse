@@ -1,14 +1,13 @@
-import { type IphoneSimulatorCommandOutput } from "#synapse/modules/iphone/adapters/simulator-discovery"
-import { type IphoneSimulatorCall, type IphoneSimulatorCommandResult } from "./types"
-
-export const IPHONE_SIMULATOR_TEST_EXHAUSTED = "O dublê de comandos não tem resposta para esta chamada."
+import { type IphoneSimulatorCommandOutput } from "#synapse/modules/iphone/public/contracts"
+import { IPHONE_SIMULATOR_TEST_EXHAUSTED } from "./constants"
+import { type IphoneSimulatorTestCall, type IphoneSimulatorTestCommandResult } from "./types"
 
 export class IphoneSimulatorCommandDouble {
-  readonly calls: IphoneSimulatorCall[] = []
+  readonly calls: IphoneSimulatorTestCall[] = []
 
-  private readonly results: IphoneSimulatorCommandResult[]
+  private readonly results: IphoneSimulatorTestCommandResult[]
 
-  constructor(results: IphoneSimulatorCommandResult[]) {
+  constructor(results: IphoneSimulatorTestCommandResult[]) {
     this.results = results
   }
 

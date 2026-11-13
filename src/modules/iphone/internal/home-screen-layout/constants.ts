@@ -1,4 +1,4 @@
-import { type IphoneHomeGrid } from "./types"
+import { type IphoneHomeDragCalibration, type IphoneHomeGrid } from "./types"
 
 export const IPHONE_HOME_ROW_START_POINTS = 126
 
@@ -54,8 +54,6 @@ export const IPHONE_HOME_SLOT_OCCUPIED = "A posição está ocupada."
 
 export const IPHONE_HOME_SLOT_INVALID = "A posição não pertence à grade."
 
-export { IPHONE_HOME_PAGE_KNOWN, IPHONE_HOME_PAGE_MISSING } from "#synapse/modules/iphone/public/contracts"
-
 export const IPHONE_HOME_BUTTON = "Button"
 
 export const IPHONE_HOME_OK = "OK"
@@ -72,3 +70,11 @@ export const IPHONE_HOME_OK_MIN_X = 300
 
 export const IPHONE_HOME_OK_MAX_Y = 60
 export const IPHONE_HOME_ICON_TYPE = "Icon"
+
+export const IPHONE_HOME_DRAG_CALIBRATION: IphoneHomeDragCalibration = {
+  holdMs: IPHONE_HOME_DRAG_HOLD_MS,
+  hoverMs: IPHONE_HOME_DRAG_HOVER_MS,
+  liftMs: IPHONE_HOME_DRAG_LIFT_MS,
+  liftDistance: IPHONE_HOME_DRAG_LIFT_POINTS,
+  moveMs: IPHONE_HOME_DRAG_MOVE_MS,
+}

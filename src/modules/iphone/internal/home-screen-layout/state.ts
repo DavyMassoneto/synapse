@@ -1,24 +1,25 @@
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneElement } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_HOME_PAGE_KNOWN,
+  IPHONE_HOME_PAGE_MISSING,
+  IPHONE_REFUSED,
+  type IphoneElement,
+  type IphoneHomeFolderCount,
+  type IphoneHomePage,
+  type IphoneHomeStateResult,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_ALERT,
   IPHONE_HOME_APP_COUNT_PATTERN,
   IPHONE_HOME_BUTTON,
   IPHONE_HOME_FOLDER_NAME,
   IPHONE_HOME_PAGE_INDICATOR,
-  IPHONE_HOME_PAGE_KNOWN,
-  IPHONE_HOME_PAGE_MISSING,
   IPHONE_HOME_PAGE_PATTERN,
   IPHONE_HOME_TEXT_FIELD,
 } from "./constants"
 import { readIphoneHomeLayout } from "./layout"
 import { isIphoneHomeClearButton, isIphoneHomeEditButton } from "./predicates"
-import {
-  type IphoneHomeFolderCount,
-  type IphoneHomeIndicators,
-  type IphoneHomeInput,
-  type IphoneHomePage,
-  type IphoneHomeStateResult,
-} from "./types"
+import { type IphoneHomeIndicators, type IphoneHomeInput } from "./types"
 
 function readIphonePage(elements: IphoneElement[]): IphoneHomePage {
   for (const element of elements) {

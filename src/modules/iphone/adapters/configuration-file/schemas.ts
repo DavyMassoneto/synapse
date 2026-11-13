@@ -37,28 +37,6 @@ export const IPHONE_STORED_CONFIGURATION_SCHEMA = Type.Object(
   { additionalProperties: false },
 )
 
-export const IPHONE_COMPLETE_STORED_SCHEMA = Type.Union([
-  Type.Intersect([
-    IPHONE_STORED_CONFIGURATION_SCHEMA,
-    Type.Object({
-      serverUrl: Type.String({ minLength: 1 }),
-      target: Type.Literal(IPHONE_DEVICE),
-      deviceName: Type.String({ minLength: 1 }),
-      wdaInstalled: Type.Boolean(),
-      udid: Type.String({ minLength: 1 }),
-    }),
-  ]),
-  Type.Intersect([
-    IPHONE_STORED_CONFIGURATION_SCHEMA,
-    Type.Object({
-      serverUrl: Type.String({ minLength: 1 }),
-      target: Type.Literal(IPHONE_SIMULATOR),
-      deviceName: Type.String({ minLength: 1 }),
-      wdaInstalled: Type.Boolean(),
-    }),
-  ]),
-])
-
 export const IPHONE_CONFIGURATION_SCHEMA = Type.Object({
   serverUrl: Type.String({ minLength: 1 }),
   target: Type.Union([

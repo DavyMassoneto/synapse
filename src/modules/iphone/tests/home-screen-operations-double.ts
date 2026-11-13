@@ -1,9 +1,11 @@
 import {
+  type IphoneElement,
   type IphoneHomeScreenPort,
   type IphoneHomeSwipeDirection,
-} from "#synapse/modules/iphone/internal/home-screen-operations"
-import { type IphonePointerAction } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { type IphoneElement, type IphonePoint, type IphoneRectangle } from "#synapse/modules/iphone/public/contracts"
+  type IphonePoint,
+  type IphonePointerAction,
+  type IphoneRectangle,
+} from "#synapse/modules/iphone/public/contracts"
 
 export class IphoneHomeOperationsDouble implements IphoneHomeScreenPort {
   edit = false

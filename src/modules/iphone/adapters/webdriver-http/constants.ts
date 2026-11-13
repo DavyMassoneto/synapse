@@ -1,3 +1,5 @@
+export const IPHONE_HTTP_EMPTY_OBJECT_BODY = "{}"
+
 export const IPHONE_HTTP_HOME_MAX_ELEMENTS = 400
 
 export const IPHONE_HTTP_HOME_SWIPE_RATIO = 0.3

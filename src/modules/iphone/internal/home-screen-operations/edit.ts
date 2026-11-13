@@ -1,5 +1,10 @@
 import { buildIphonePress } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_ALERT_FAILURE,
   IPHONE_HOME_DONE_POINT,
@@ -11,7 +16,6 @@ import {
   IPHONE_HOME_SETTLE_MS,
 } from "./constants"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function editIphoneHomeScreen(
   port: IphoneHomeScreenPort,

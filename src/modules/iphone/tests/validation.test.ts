@@ -2,7 +2,6 @@ import { describe, expect, test } from "vitest"
 import {
   buildIphoneHomeDrag,
   buildIphoneHomePageDrag,
-  buildIphonePageDrag,
   findIphoneElement,
   formatIphoneElementTree,
   isIphoneHomePathBlocked,
@@ -15,6 +14,7 @@ import {
   validateIphoneConfiguration,
 } from "#synapse/modules/iphone/internal"
 import { type IphoneConfiguration, type IphoneElement } from "#synapse/modules/iphone/public/contracts"
+import { buildIphonePageDrag } from "../internal"
 
 function makeSut(): IphoneConfiguration {
   return {

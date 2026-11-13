@@ -1,3 +1,4 @@
+import { iphoneElementCenter } from "#synapse/modules/iphone/internal/element-tree"
 import {
   IPHONE_HOME_FOLDER_NAME,
   IPHONE_HOME_TEXT_FIELD,
@@ -6,8 +7,7 @@ import {
 import {
   IPHONE_ACCEPTED,
   IPHONE_REFUSED,
-  type IphoneElement,
-  type IphonePoint,
+  type IphoneHomeScreenPort,
   type IphoneSupportResult,
 } from "#synapse/modules/iphone/public/contracts"
 import {
@@ -20,14 +20,6 @@ import {
 } from "./constants"
 import { editIphoneHomeScreen } from "./edit"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
-
-function elementCenter(element: IphoneElement): IphonePoint {
-  return {
-    x: Math.round(element.rect.x + element.rect.width / 2),
-    y: Math.round(element.rect.y + element.rect.height / 2),
-  }
-}
 
 export async function renameIphoneHomeFolder(
   port: IphoneHomeScreenPort,
@@ -73,7 +65,7 @@ async function renameOpenedIphoneFolder(
   if (!clear) {
     return { kind: IPHONE_REFUSED, message: IPHONE_HOME_RENAME_FAILURE }
   }
-  await port.tap(elementCenter(clear), signal)
+  await port.tap(iphoneElementCenter(clear.rect), signal)
   await port.type(newName, signal)
   await port.wait(IPHONE_HOME_SETTLE_MS, signal)
   const after = await port.elements(signal)

@@ -11,19 +11,16 @@ import {
   IPHONE_CONFIG_READ_MODE,
   IPHONE_CONFIG_TOO_LARGE,
 } from "./constants"
-import {
-  IPHONE_ANY_CONFIGURATION_SCHEMA,
-  IPHONE_CONFIG_ERROR_CAUSE_SCHEMA,
-  IPHONE_CONFIGURATION_SCHEMA,
-} from "./schemas"
+import { IPHONE_ANY_CONFIGURATION_SCHEMA, IPHONE_CONFIG_ERROR_CAUSE_SCHEMA } from "./schemas"
 import { type IphoneStoredConfigResult, type IphoneStoredConfiguration } from "./types"
 
 function migrateIphoneConfiguration(parsed: IphoneConfiguration): IphoneStoredConfiguration {
+  const { target, ...options } = parsed
   const config: IphoneStoredConfiguration = {
-    ...parsed,
-    target: parsed.target.kind,
-    deviceName: parsed.target.deviceName,
-    wdaInstalled: parsed.target.wdaInstalled,
+    ...options,
+    target: target.kind,
+    deviceName: target.deviceName,
+    wdaInstalled: target.wdaInstalled,
   }
   if (parsed.target.udid) {
     config.udid = parsed.target.udid
@@ -39,8 +36,11 @@ function migrateIphoneConfiguration(parsed: IphoneConfiguration): IphoneStoredCo
 
 function parseIphoneStoredConfiguration(content: string): IphoneStoredConfigResult {
   const parsed = Value.Parse(IPHONE_ANY_CONFIGURATION_SCHEMA, JSON.parse(content))
-  if (Value.Check(IPHONE_CONFIGURATION_SCHEMA, parsed)) {
-    return { kind: IPHONE_CONFIG_LOADED, config: migrateIphoneConfiguration(parsed) }
+  if (parsed.target && typeof parsed.target === "object") {
+    return {
+      kind: IPHONE_CONFIG_LOADED,
+      config: migrateIphoneConfiguration({ ...parsed, target: parsed.target }),
+    }
   }
   return { kind: IPHONE_CONFIG_LOADED, config: parsed }
 }

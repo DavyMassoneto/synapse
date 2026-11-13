@@ -2,7 +2,9 @@ import { Value } from "typebox/value"
 import { isIphoneHttpUrl } from "#synapse/modules/iphone/internal/configuration"
 import {
   IPHONE_ACCEPTED,
+  IPHONE_DEVICE,
   IPHONE_REFUSED,
+  IPHONE_SIMULATOR,
   type IphoneConfigurationChange,
   type IphoneSupportResult,
 } from "#synapse/modules/iphone/public/contracts"
@@ -69,7 +71,7 @@ function dispatchIphoneConfigurationChange(
 }
 
 function applyIphoneTarget(config: IphoneStoredConfiguration, value: string): IphoneSupportResult {
-  if (value !== constants.IPHONE_CONFIG_TARGET_DEVICE && value !== constants.IPHONE_CONFIG_TARGET_SIMULATOR) {
+  if (value !== IPHONE_DEVICE && value !== IPHONE_SIMULATOR) {
     return {
       kind: IPHONE_REFUSED,
       message: `${constants.IPHONE_CONFIG_UPDATE_ERROR}${constants.IPHONE_CONFIG_KEY_TARGET}`,
