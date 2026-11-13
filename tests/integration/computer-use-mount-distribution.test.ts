@@ -7,14 +7,20 @@ import {
   COMPUTER_MOUNT_CAPTURE_RESULT,
   COMPUTER_MOUNT_CLICK_ARGUMENTS,
   COMPUTER_MOUNT_COMPLETED,
-  COMPUTER_MOUNT_DRIVER_CLOSED,
+  COMPUTER_MOUNT_DRIVER_STARTED,
   COMPUTER_MOUNT_GET_WINDOW,
   COMPUTER_MOUNT_INVALID_ARGUMENTS,
   COMPUTER_MOUNT_INVALID_DESCRIPTION,
+  COMPUTER_MOUNT_LIVE_NEGATIVE_DESCRIPTION,
   COMPUTER_MOUNT_LOG_FILE,
   COMPUTER_MOUNT_LOG_LIMIT_DESCRIPTION,
   COMPUTER_MOUNT_LOG_MAX_BYTES,
   COMPUTER_MOUNT_LOG_TOO_LARGE,
+  COMPUTER_MOUNT_PID_ABSENT_DESCRIPTION,
+  COMPUTER_MOUNT_PID_DUPLICATE_DESCRIPTION,
+  COMPUTER_MOUNT_PID_INVALID_DESCRIPTION,
+  COMPUTER_MOUNT_PID_MISSING,
+  COMPUTER_MOUNT_PROCESS_STILL_ALIVE,
   COMPUTER_MOUNT_PROMPT,
   COMPUTER_MOUNT_REPLY,
   COMPUTER_MOUNT_REQUIRED_TEXT,
@@ -29,12 +35,14 @@ import {
   COMPUTER_MOUNT_VERDICT,
   COMPUTER_MOUNT_VERDICT_DESCRIPTION,
   type ComputerMountEvent,
+  computerMountDriverPid,
   computerMountToolResultText,
   configureComputerMountDriver,
   isComputerMountSessionEnd,
   type PiProcessScenarioHandle,
   readComputerMountEvents,
   readPiProcessRequests,
+  requireComputerMountProcessExited,
   requirePiProcessRequest,
   runPiProcessPrompt,
   runWithPiProcess,
@@ -88,10 +96,24 @@ async function releasesMountedDriver(pi: PiProcessScenarioHandle): Promise<void>
     { kind: COMPUTER_MOUNT_TEXT, text: COMPUTER_MOUNT_REPLY },
   ])
   await runPiProcessPrompt(pi, COMPUTER_MOUNT_PROMPT)
+  const pid = computerMountDriverPid(readComputerMountEvents(log))
+  expect(process.kill(pid, 0)).toBe(true)
   await pi.close()
   const events = readComputerMountEvents(log).map(eventName)
   expect(events.filter(isComputerMountSessionEnd)).toHaveLength(1)
-  expect(events).toContain(COMPUTER_MOUNT_DRIVER_CLOSED)
+  requireComputerMountProcessExited(pid)
+}
+
+async function refusesLiveProcessProof(pi: PiProcessScenarioHandle): Promise<void> {
+  const log = configureComputerMountDriver(pi)
+  pi.homeDirectory.script([
+    { kind: COMPUTER_MOUNT_TOOL_CALL, name: COMPUTER_MOUNT_TOOL, argumentsJson: COMPUTER_MOUNT_CAPTURE_ARGUMENTS },
+    { kind: COMPUTER_MOUNT_TEXT, text: COMPUTER_MOUNT_REPLY },
+  ])
+  await runPiProcessPrompt(pi, COMPUTER_MOUNT_PROMPT)
+  const pid = computerMountDriverPid(readComputerMountEvents(log))
+  expect(process.kill(pid, 0)).toBe(true)
+  expect(requireComputerMountProcessExited.bind(null, pid)).toThrow(COMPUTER_MOUNT_PROCESS_STILL_ALIVE)
 }
 
 async function refusesOversizedLog(pi: PiProcessScenarioHandle): Promise<void> {
@@ -100,11 +122,37 @@ async function refusesOversizedLog(pi: PiProcessScenarioHandle): Promise<void> {
   expect(readComputerMountEvents.bind(null, log)).toThrow(COMPUTER_MOUNT_LOG_TOO_LARGE)
 }
 
+function refusesMissingPidEvent(): void {
+  expect(computerMountDriverPid.bind(null, [])).toThrow(COMPUTER_MOUNT_PID_MISSING)
+}
+
+function refusesDuplicatePidEvents(): void {
+  const events = [
+    { name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 1 },
+    { name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 2 },
+  ]
+  expect(computerMountDriverPid.bind(null, events)).toThrow(COMPUTER_MOUNT_PID_MISSING)
+}
+
+function refusesInvalidPid(): void {
+  expect(computerMountDriverPid.bind(null, [{ name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 0 }])).toThrow(
+    COMPUTER_MOUNT_PID_MISSING,
+  )
+}
+
 function eventName(event: ComputerMountEvent): string {
   return event.name
 }
 
 function suite(): void {
+  test(COMPUTER_MOUNT_PID_ABSENT_DESCRIPTION, refusesMissingPidEvent)
+  test(COMPUTER_MOUNT_PID_DUPLICATE_DESCRIPTION, refusesDuplicatePidEvents)
+  test(COMPUTER_MOUNT_PID_INVALID_DESCRIPTION, refusesInvalidPid)
+  test(
+    COMPUTER_MOUNT_LIVE_NEGATIVE_DESCRIPTION,
+    runWithPiProcess.bind(null, refusesLiveProcessProof),
+    COMPUTER_MOUNT_TIMEOUT_MS,
+  )
   test(COMPUTER_MOUNT_LOG_LIMIT_DESCRIPTION, runWithPiProcess.bind(null, refusesOversizedLog))
   test(
     COMPUTER_MOUNT_CAPTURE_DESCRIPTION,

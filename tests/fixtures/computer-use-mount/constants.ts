@@ -41,12 +41,6 @@ export const COMPUTER_MOUNT_TOOLS_CALL = "tools/call"
 
 export const COMPUTER_MOUNT_LINE_EVENT = "line"
 
-export const COMPUTER_MOUNT_TERMINATE_SIGNAL = "SIGTERM"
-
-export const COMPUTER_MOUNT_EOF_EVENT = "close"
-
-export const COMPUTER_MOUNT_DRIVER_CLOSED = "driver-closed"
-
 export const COMPUTER_MOUNT_TEXT = "text"
 
 export const COMPUTER_MOUNT_TOOL_CALL = "toolCall"
@@ -123,3 +117,23 @@ export const COMPUTER_MOUNT_TOOL_RESULT_ROLE = "toolResult"
 export const COMPUTER_MOUNT_RESULT_MISSING = "O provedor falso não recebeu o resultado da ferramenta."
 
 export const COMPUTER_MOUNT_STORED = "capture-stored"
+
+export const COMPUTER_MOUNT_DRIVER_STARTED = "driver-started"
+
+export const COMPUTER_MOUNT_PROCESS_ABSENT_CODE = "ESRCH"
+
+export const COMPUTER_MOUNT_PROCESS_ERROR_CODE = "code"
+
+export const COMPUTER_MOUNT_PID_ABSENT_DESCRIPTION = "prova PID recusa evento de início ausente"
+
+export const COMPUTER_MOUNT_PID_DUPLICATE_DESCRIPTION = "prova PID recusa mais de um processo iniciado"
+
+export const COMPUTER_MOUNT_PID_INVALID_DESCRIPTION = "prova PID recusa identificador inválido"
+
+export const COMPUTER_MOUNT_PID_MISSING = "PID do driver falso não registrado."
+
+export const COMPUTER_MOUNT_PROCESS_STILL_ALIVE = "O processo do driver falso permanece vivo."
+
+export const COMPUTER_MOUNT_LIVE_NEGATIVE_DESCRIPTION = "prova de término recusa processo que permanece vivo"
+
+export const COMPUTER_MOUNT_FAKE_SERVER_NAME = "computer-mount-fake"

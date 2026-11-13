@@ -2,9 +2,9 @@ import { appendFileSync } from "node:fs"
 import { createInterface } from "node:readline"
 import { Value } from "typebox/value"
 import {
-  COMPUTER_MOUNT_DRIVER_CLOSED,
+  COMPUTER_MOUNT_DRIVER_STARTED,
   COMPUTER_MOUNT_ELEMENTS,
-  COMPUTER_MOUNT_EOF_EVENT,
+  COMPUTER_MOUNT_FAKE_SERVER_NAME,
   COMPUTER_MOUNT_GET_WINDOW,
   COMPUTER_MOUNT_INITIALIZE,
   COMPUTER_MOUNT_JSONRPC,
@@ -14,7 +14,6 @@ import {
   COMPUTER_MOUNT_NEWLINE,
   COMPUTER_MOUNT_PROTOCOL,
   COMPUTER_MOUNT_STATE,
-  COMPUTER_MOUNT_TERMINATE_SIGNAL,
   COMPUTER_MOUNT_TOOLS,
   COMPUTER_MOUNT_TOOLS_CALL,
   COMPUTER_MOUNT_TOOLS_LIST,
@@ -47,7 +46,7 @@ function onLine(line: string): void {
       const result = {
         protocolVersion: COMPUTER_MOUNT_PROTOCOL,
         capabilities: {},
-        serverInfo: { name: COMPUTER_MOUNT_DRIVER_CLOSED, version: COMPUTER_MOUNT_VERSION },
+        serverInfo: { name: COMPUTER_MOUNT_FAKE_SERVER_NAME, version: COMPUTER_MOUNT_VERSION },
       }
       writeResponse(request, result)
       break
@@ -76,11 +75,6 @@ function writeResponse(request: ComputerMountRequest, result: ComputerMountRespo
   )
 }
 
-function closeDriver(): void {
-  logEvent(COMPUTER_MOUNT_DRIVER_CLOSED)
-  process.exit(0)
-}
-
 function main(): void {
   if (process.argv.includes(COMPUTER_MOUNT_MANIFEST)) {
     logEvent(COMPUTER_MOUNT_MANIFEST)
@@ -91,10 +85,12 @@ function main(): void {
       }),
     )
   } else {
-    process.on(COMPUTER_MOUNT_TERMINATE_SIGNAL, closeDriver)
-    createInterface({ input: process.stdin })
-      .on(COMPUTER_MOUNT_LINE_EVENT, onLine)
-      .on(COMPUTER_MOUNT_EOF_EVENT, closeDriver)
+    appendFileSync(
+      logPath(),
+      JSON.stringify({ name: COMPUTER_MOUNT_DRIVER_STARTED, pid: process.pid }) + COMPUTER_MOUNT_NEWLINE,
+      COMPUTER_MOUNT_UTF8,
+    )
+    createInterface({ input: process.stdin }).on(COMPUTER_MOUNT_LINE_EVENT, onLine)
   }
 }
 

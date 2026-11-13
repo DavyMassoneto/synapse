@@ -13,4 +13,7 @@ export const COMPUTER_MOUNT_REQUEST_SCHEMA = Type.Object({
   params: Type.Optional(Type.Object({ name: Type.Optional(Type.String()) })),
 })
 
-export const COMPUTER_MOUNT_EVENT_SCHEMA = Type.Object({ name: Type.String() })
+export const COMPUTER_MOUNT_EVENT_SCHEMA = Type.Object({
+  name: Type.String(),
+  pid: Type.Optional(Type.Integer({ minimum: 1 })),
+})
