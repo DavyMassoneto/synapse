@@ -6,7 +6,6 @@ import {
   type IphoneTarget,
 } from "#synapse/modules/iphone/public/contracts"
 import {
-  IPHONE_COMPLETE_STORED_SCHEMA,
   IPHONE_CONFIG_INVALID,
   IPHONE_CONFIG_LOADED,
   IPHONE_CONFIG_MISSING,
@@ -14,6 +13,7 @@ import {
   IPHONE_CONFIG_TRAILING_SLASH,
 } from "./constants"
 import { missingIphoneConfigurationFields } from "./missing"
+import { IPHONE_COMPLETE_STORED_SCHEMA } from "./schemas"
 import { readIphoneStoredConfiguration } from "./stored"
 import {
   type IphoneCompleteStoredConfiguration,

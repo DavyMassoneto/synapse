@@ -10,13 +10,17 @@ export class DeviceActionsPort implements IphoneDeviceActionPort {
 
   args: IphoneActionArguments[] = []
 
+  pointerActions: IphonePointerAction[] = []
+
+  sourceText = "<root/>"
+
   failure?: Error
 
   failureScript?: string
 
   async source(): Promise<string> {
     this.calls.push("source")
-    return "<root/>"
+    return this.sourceText
   }
 
   async screenshot(): Promise<string> {
@@ -29,7 +33,8 @@ export class DeviceActionsPort implements IphoneDeviceActionPort {
     return { x: 0, y: 0, width: 400, height: 800 }
   }
 
-  async actions(_actions: IphonePointerAction[]): Promise<void> {
+  async actions(actions: IphonePointerAction[]): Promise<void> {
+    this.pointerActions = actions
     this.calls.push("actions")
   }
 
@@ -76,7 +81,7 @@ export class DeviceActionsPort implements IphoneDeviceActionPort {
     this.calls.push("close")
   }
 
-  async wait(milliseconds: number): Promise<void> {
+  async wait(milliseconds: number, _signal: AbortSignal): Promise<void> {
     this.calls.push(`wait:${milliseconds}`)
   }
 }

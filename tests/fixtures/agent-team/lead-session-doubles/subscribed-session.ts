@@ -3,7 +3,7 @@ import { TeamSessionDouble } from "./session-double"
 
 export function subscribedTeamSession(): TeamSessionDouble {
   const session = new TeamSessionDouble()
-  const adapter = new PiTeamSessionAdapter(session)
+  const adapter = new PiTeamSessionAdapter(session, session)
   adapter.subscribe(session.collect.bind(session))
   return session
 }

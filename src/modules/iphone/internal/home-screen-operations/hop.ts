@@ -7,9 +7,10 @@ import {
   isIphoneHomePathBlocked,
 } from "#synapse/modules/iphone/internal/home-screen-layout"
 import { IPHONE_EDGE_RIGHT } from "#synapse/modules/iphone/internal/pointer-gestures"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+import { IPHONE_ACCEPTED, IPHONE_REFUSED } from "#synapse/modules/iphone/public/contracts"
 import { snapshotIphoneCascade, verifyIphoneCascade } from "./cascade"
 import {
+  IPHONE_HOME_DIRECT_DROP_PENDING,
   IPHONE_HOME_DROP_FAILURE,
   IPHONE_HOME_ICON_MISSING,
   IPHONE_HOME_LAYOUT_CHANGED,
@@ -19,13 +20,18 @@ import {
 import { editIphoneHomeScreen } from "./edit"
 import { gotoIphoneHomePage } from "./goto"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeHopRequest, type IphoneHomeScreenPort } from "./types"
+import {
+  type IphoneHomeCascadeSnapshot,
+  type IphoneHomeHopRequest,
+  type IphoneHomeHopResult,
+  type IphoneHomeScreenPort,
+} from "./types"
 
 export async function hopIphoneHomeIcon(
   port: IphoneHomeScreenPort,
   request: IphoneHomeHopRequest,
   signal: AbortSignal,
-): Promise<IphoneSupportResult> {
+): Promise<IphoneHomeHopResult> {
   const { from, to } = request
   if (Math.abs(from - to) !== 1) {
     return { kind: IPHONE_REFUSED, message: IPHONE_HOME_DROP_FAILURE }
@@ -53,7 +59,10 @@ export async function hopIphoneHomeIcon(
   if (cascade.kind === IPHONE_REFUSED) {
     return cascade
   }
-  const hop = await performIphoneHomeHop(port, request, before, slot, signal)
+  const hop = await performIphoneHomeHop(port, request, before, slot, cascade, signal)
+  if (hop.kind !== IPHONE_ACCEPTED) {
+    return hop
+  }
   const verified = await verifyIphoneCascade(port, cascade, request.to, signal)
   if (verified.kind === IPHONE_REFUSED) {
     return verified
@@ -66,8 +75,9 @@ async function performIphoneHomeHop(
   request: IphoneHomeHopRequest,
   before: IphoneHomeStateAccepted,
   slot: number,
+  cascade: IphoneHomeCascadeSnapshot,
   signal: AbortSignal,
-): Promise<IphoneSupportResult> {
+): Promise<IphoneHomeHopResult> {
   const { name, folder, from } = request
   const source = await gotoIphoneHomePage(port, from, signal)
   if (source.kind === IPHONE_REFUSED) {
@@ -86,7 +96,7 @@ async function performIphoneHomeHop(
   if (matches.length !== 1 || !icon) {
     return { kind: IPHONE_REFUSED, message: IPHONE_HOME_ICON_MISSING }
   }
-  return dragIphoneHomeHop(port, request, before, state, icon, slot, signal)
+  return dragIphoneHomeHop(port, request, before, state, icon, slot, cascade, signal)
 }
 
 async function dragIphoneHomeHop(
@@ -96,8 +106,9 @@ async function dragIphoneHomeHop(
   state: IphoneHomeStateAccepted,
   icon: IphoneHomeIcon,
   slot: number,
+  cascade: IphoneHomeCascadeSnapshot,
   signal: AbortSignal,
-): Promise<IphoneSupportResult> {
+): Promise<IphoneHomeHopResult> {
   const { from, to } = request
   const edge = to > from ? IPHONE_EDGE_RIGHT : IPHONE_HOME_SWIPE_LEFT
   if (isIphoneHomePathBlocked(state.layout, icon, edge)) {
@@ -113,24 +124,32 @@ async function dragIphoneHomeHop(
   }
   await port.actions(drag.actions, signal)
   await port.wait(IPHONE_HOME_SETTLE_MS, signal)
-  return verifyIphoneHomeHop(port, request, before, signal)
+  return verifyIphoneHomeHop(port, request, before, cascade, signal)
 }
 
 async function verifyIphoneHomeHop(
   port: IphoneHomeScreenPort,
   request: IphoneHomeHopRequest,
   before: IphoneHomeStateAccepted,
+  cascade: IphoneHomeCascadeSnapshot,
   signal: AbortSignal,
-): Promise<IphoneSupportResult> {
+): Promise<IphoneHomeHopResult> {
   const { name, folder, to } = request
   const after = await readIphoneHomeScreen(port, signal)
   if (after.kind === IPHONE_REFUSED) {
     return after
   }
+  if (after.alert || after.page.kind !== IPHONE_HOME_PAGE_KNOWN || after.page.current !== to) {
+    return { kind: IPHONE_REFUSED, message: IPHONE_HOME_DROP_FAILURE }
+  }
   if (
-    after.alert ||
-    after.page.kind !== IPHONE_HOME_PAGE_KNOWN ||
-    after.page.current !== to ||
+    !folder &&
+    after.layout.icons.length === before.layout.icons.length &&
+    !after.layout.icons.some((candidate) => candidate.name === name && !candidate.folder)
+  ) {
+    return { kind: IPHONE_HOME_DIRECT_DROP_PENDING, cascade }
+  }
+  if (
     after.layout.icons.length !== before.layout.icons.length + 1 ||
     before.layout.icons.some(
       (original) =>

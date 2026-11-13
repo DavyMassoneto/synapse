@@ -16,6 +16,8 @@ import {
 } from "#synapse/modules/computer-use/public/contracts"
 import { COMPUTER_KEY_PARSED, computerParseKeyCombo } from "../key-combo-parsing"
 import {
+  COMPUTER_CLICK_DYNAMIC_BUTTON,
+  COMPUTER_CLICK_SPECIFICATIONS,
   COMPUTER_DISPATCH_AMOUNT_PROPERTY,
   COMPUTER_DISPATCH_BAD_KEY,
   COMPUTER_DISPATCH_BAD_POINTER,
@@ -23,10 +25,7 @@ import {
   COMPUTER_DISPATCH_DOWN_DIRECTION,
   COMPUTER_DISPATCH_FROM_PROPERTY,
   COMPUTER_DISPATCH_HOTKEY,
-  COMPUTER_DISPATCH_LEFT_BUTTON,
-  COMPUTER_DISPATCH_MIDDLE_BUTTON,
   COMPUTER_DISPATCH_PRESS_KEY,
-  COMPUTER_DISPATCH_RIGHT_BUTTON,
   COMPUTER_DISPATCH_SCROLL_AMOUNT,
   COMPUTER_DISPATCH_SCROLL_MAX,
   COMPUTER_DISPATCH_SCROLL_MIN,
@@ -95,7 +94,7 @@ function computerPreparePointer(
     argumentsValue.y = action.coordinate.y
     return { kind: COMPUTER_PREPARED_TARGET_COORDINATE, x: action.coordinate.x, y: action.coordinate.y }
   }
-  throw new Error(COMPUTER_DISPATCH_BAD_POINTER)
+  return { kind: COMPUTER_PREPARED_TARGET_ABSENT }
 }
 
 function computerPrepareDrag(
@@ -132,15 +131,7 @@ function computerPrepareScroll(
     amount = action.amount
   }
   argumentsValue.amount = Math.max(COMPUTER_DISPATCH_SCROLL_MIN, Math.min(COMPUTER_DISPATCH_SCROLL_MAX, amount))
-  let target: ComputerDispatchTarget = { kind: COMPUTER_PREPARED_TARGET_ABSENT }
-  if (typeof action.element === "number") {
-    argumentsValue.element_index = action.element
-    target = { kind: COMPUTER_PREPARED_TARGET_ELEMENT, index: action.element }
-  } else if (action.coordinate) {
-    argumentsValue.x = action.coordinate.x
-    argumentsValue.y = action.coordinate.y
-    target = { kind: COMPUTER_PREPARED_TARGET_COORDINATE, x: action.coordinate.x, y: action.coordinate.y }
-  }
+  const target = computerPreparePointer(action, argumentsValue)
   return { tool: COMPUTER_SCROLL, arguments: argumentsValue, target }
 }
 
@@ -174,21 +165,19 @@ function computerPrepareClick(
   argumentsValue: ComputerDriverArguments,
 ): ComputerDispatchPreparedInput {
   const target = computerPreparePointer(action, argumentsValue)
-  argumentsValue.button = COMPUTER_DISPATCH_LEFT_BUTTON
-  if (action.button) {
+  if (target.kind === COMPUTER_PREPARED_TARGET_ABSENT) {
+    throw new Error(COMPUTER_DISPATCH_BAD_POINTER)
+  }
+  const specification = COMPUTER_CLICK_SPECIFICATIONS[action.action]
+  argumentsValue.button = specification.button
+  if (specification.kind === COMPUTER_CLICK_DYNAMIC_BUTTON && action.button) {
     argumentsValue.button = action.button
-  }
-  if (action.action === COMPUTER_RIGHT_CLICK) {
-    argumentsValue.button = COMPUTER_DISPATCH_RIGHT_BUTTON
-  }
-  if (action.action === COMPUTER_MIDDLE_CLICK) {
-    argumentsValue.button = COMPUTER_DISPATCH_MIDDLE_BUTTON
   }
   if (action.modifiers) {
     argumentsValue.modifier = action.modifiers
   }
   return {
-    tool: action.action === COMPUTER_DOUBLE_CLICK ? COMPUTER_DOUBLE_CLICK : COMPUTER_CLICK,
+    tool: specification.tool,
     arguments: argumentsValue,
     target,
   }

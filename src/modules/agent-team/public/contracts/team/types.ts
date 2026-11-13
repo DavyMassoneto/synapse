@@ -8,23 +8,6 @@ import {
   type TaskView,
   type UpdateTaskInput,
 } from "../task"
-import {
-  type TEAM_DONE,
-  type TEAM_FAILED,
-  type TEAM_FINISHED,
-  type TEAM_IDLE,
-  type TEAM_INACTIVE,
-  type TEAM_INTERRUPT_REQUESTED,
-  type TEAM_INTERRUPTED,
-  type TEAM_MODEL_KNOWN,
-  type TEAM_MODEL_UNAVAILABLE,
-  type TEAM_REFUSED,
-  type TEAM_RUNNING,
-  type TEAM_STARTED,
-  type TEAM_WAIT_COMPLETED,
-  type TEAM_WAITING,
-  type TEAM_WORKING,
-} from "./constants"
 
 export interface StartMemberRequest {
   name?: string
@@ -45,25 +28,19 @@ export interface TeamModelUse {
 }
 
 export interface TeamKnownModelReference {
-  kind: typeof TEAM_MODEL_KNOWN
+  kind: "known"
   model: string
 }
 
 export interface TeamUnavailableModelReference {
-  kind: typeof TEAM_MODEL_UNAVAILABLE
+  kind: "unavailable"
 }
 
 export type TeamModelReference = TeamKnownModelReference | TeamUnavailableModelReference
 
-export type TeamAgentStatus = typeof TEAM_RUNNING | typeof TEAM_INACTIVE
+export type TeamAgentStatus = "running" | "inactive"
 
-export type TeamAgentState =
-  | typeof TEAM_WORKING
-  | typeof TEAM_WAITING
-  | typeof TEAM_IDLE
-  | typeof TEAM_FINISHED
-  | typeof TEAM_INTERRUPTED
-  | typeof TEAM_FAILED
+export type TeamAgentState = "working" | "waiting" | "idle" | "finished" | "interrupted" | "failed"
 
 export interface TeamAgentRow {
   name: string
@@ -110,34 +87,34 @@ export type TeamLead = TeamLeadMessages &
   TaskJournal
 
 export interface TeamStarted {
-  kind: typeof TEAM_STARTED
+  kind: "started"
   name: string
   model: string
 }
 
-export type TeamStartOutcome = TeamStarted | TeamRefused
+export type TeamStartOutcome = TeamStarted | TeamRefused | TeamFailed
 
 export interface TeamDone {
-  kind: typeof TEAM_DONE
+  kind: "done"
 }
 
-export type TeamOutcome = TeamDone | TeamRefused
+export type TeamOutcome = TeamDone | TeamRefused | TeamFailed
 
 export interface TeamRefused {
-  kind: typeof TEAM_REFUSED
+  kind: "refused"
   message: string
 }
 
 export interface TeamInterruptRequested {
-  kind: typeof TEAM_INTERRUPT_REQUESTED
+  kind: "interrupt_requested"
 }
 
-export type TeamInterruptOutcome = TeamInterruptRequested | TeamRefused
+export type TeamInterruptOutcome = TeamInterruptRequested | TeamRefused | TeamFailed
 
-export type TeamWaitOutcome = TeamWaitResult | TeamRefused
+export type TeamWaitOutcome = TeamWaitResult | TeamRefused | TeamFailed | TeamCancelled
 
 export interface TeamWaitResult {
-  kind: typeof TEAM_WAIT_COMPLETED
+  kind: "wait_completed"
   timedOut: boolean
 }
 
@@ -157,4 +134,13 @@ export interface AgentTeam {
   listTasks(filter: TaskFilter): TaskView[]
   updateTask(caller: string, input: UpdateTaskInput): TaskOutcome
   suspend(): Promise<void>
+}
+
+export interface TeamFailed {
+  kind: "failed"
+  message: string
+}
+
+export interface TeamCancelled {
+  kind: "cancelled"
 }

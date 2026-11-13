@@ -10,8 +10,17 @@ export type {
 } from "#synapse/modules/iphone/public/contracts"
 
 import { type IphoneHomeStateResult } from "#synapse/modules/iphone/internal/home-screen-layout"
-import { type IPHONE_ACCEPTED, type IphonePoint, type IphoneRefused } from "#synapse/modules/iphone/public/contracts"
-import { type IPHONE_HOME_CASCADE_ABSENT, type IPHONE_HOME_EXTRACT_PLANNED } from "./constants"
+import {
+  type IPHONE_ACCEPTED,
+  type IphonePoint,
+  type IphoneRefused,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
+import {
+  type IPHONE_HOME_CASCADE_ABSENT,
+  type IPHONE_HOME_DIRECT_DROP_PENDING,
+  type IPHONE_HOME_EXTRACT_PLANNED,
+} from "./constants"
 
 export type { IphoneHomeScreenPort, IphoneHomeSwipeDirection } from "#synapse/modules/iphone/public/contracts"
 
@@ -26,6 +35,13 @@ export interface IphoneHomeCascadeAbsent {
 }
 
 export type IphoneHomeCascadeSnapshot = IphoneHomeCascadeKnown | IphoneHomeCascadeAbsent | IphoneRefused
+
+export interface IphoneHomeDirectDropPending {
+  kind: typeof IPHONE_HOME_DIRECT_DROP_PENDING
+  cascade: IphoneHomeCascadeSnapshot
+}
+
+export type IphoneHomeHopResult = IphoneSupportResult | IphoneHomeDirectDropPending
 
 export interface IphoneHomeHopRequest {
   name: string

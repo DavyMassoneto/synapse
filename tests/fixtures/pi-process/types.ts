@@ -1,12 +1,24 @@
 import { type Static } from "typebox"
 import { type PiProcessModelSelection } from "../model-selection"
-import { type PiProcessMatch } from "../pi-process-matching"
-import { type PiProcessScript } from "../scripted-provider"
+import { type ScriptedProviderScript } from "../scripted-provider"
 import {
+  type PI_PROCESS_AVAILABLE_MODELS_SCHEMA,
+  type PI_PROCESS_COMMANDS_SCHEMA,
+  type PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA,
+  type PI_PROCESS_NOTICE_SCHEMA,
   type PI_PROCESS_RECORD_SCHEMA,
-  type PI_PROCESS_SEARCH_FOUND,
-  type PI_PROCESS_SEARCH_PENDING,
-} from "./constants"
+  type PI_PROCESS_STATUS_SCHEMA,
+} from "./schemas"
+
+export type PiProcessStatus = Static<typeof PI_PROCESS_STATUS_SCHEMA>
+
+export type PiProcessNotice = Static<typeof PI_PROCESS_NOTICE_SCHEMA>
+
+export type PiProcessAvailableModels = Static<typeof PI_PROCESS_AVAILABLE_MODELS_SCHEMA>
+
+export type PiProcessCommands = Static<typeof PI_PROCESS_COMMANDS_SCHEMA>
+
+export type PiProcessLastAssistantText = Static<typeof PI_PROCESS_LAST_ASSISTANT_TEXT_SCHEMA>
 
 export type PiProcessRecord = Static<typeof PI_PROCESS_RECORD_SCHEMA>
 
@@ -22,18 +34,13 @@ export interface PiProcessSession {
   directory: string
 }
 
-export interface PiProcessResponse {
-  record: PiProcessRecord
-  line: string
-}
-
 export interface PiProcessSearchFound {
-  kind: typeof PI_PROCESS_SEARCH_FOUND
-  response: PiProcessResponse
+  kind: "found"
+  response: PiProcessRecord
 }
 
 export interface PiProcessSearchPending {
-  kind: typeof PI_PROCESS_SEARCH_PENDING
+  kind: "pending"
   offset: number
 }
 
@@ -53,13 +60,15 @@ export type PiProcessDiagnostic = PiProcessDiagnosticAccepted | PiProcessDiagnos
 export interface PiProcessScenarioHome {
   readonly home: string
   readonly agentDirectory: string
-  script(steps: PiProcessScript): void
+  script(steps: ScriptedProviderScript): void
   remove(): void
 }
 
 export interface PiProcessScenarioRecords {
-  waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessResponse>
   records(): PiProcessRecord[]
+  waitForUi(method: "setStatus", timeoutMs: number): Promise<PiProcessStatus>
+  waitForUi(method: "notify", timeoutMs: number): Promise<PiProcessNotice>
+  waitFor(match: PiProcessMatch, timeoutMs: number): Promise<PiProcessRecord>
 }
 
 export interface PiProcessScenarioHandle {
@@ -70,7 +79,40 @@ export interface PiProcessScenarioHandle {
   configureSelection(selection: PiProcessModelSelection): void
   configureSession(session: PiProcessSession): void
   close(): Promise<void>
-  command(command: PiProcessCommand): Promise<PiProcessResponse>
+  command(command: PiProcessCommand): Promise<PiProcessRecord>
+  query(command: "get_available_models"): Promise<PiProcessAvailableModels>
+  query(command: "get_commands"): Promise<PiProcessCommands>
+  query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
 }
 
 export type PiProcessScenario = (piProcess: PiProcessScenarioHandle) => Promise<void>
+
+export type PiProcessClosePromise = Promise<void>
+
+export type PiProcessCloseResolver = () => void
+
+export interface PiProcessMatch {
+  type: string
+  id?: string
+  method?: string
+  statusKey?: string
+}
+
+export type PiProcessUiMethod = "setStatus" | "notify"
+
+export type PiProcessUiEvent = PiProcessStatus | PiProcessNotice
+
+export interface PiProcessUiMatches {
+  setStatus: PiProcessMatch
+  notify: PiProcessMatch
+}
+
+export type PiProcessQuery = "get_commands" | "get_last_assistant_text" | "get_available_models"
+
+export type PiProcessQueryResponse = PiProcessCommands | PiProcessLastAssistantText | PiProcessAvailableModels
+
+export interface PiProcessQueryErrors {
+  get_available_models: string
+  get_commands: string
+  get_last_assistant_text: string
+}

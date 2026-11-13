@@ -4,10 +4,10 @@ import { requestIphoneWebDriver } from "./client"
 import {
   IPHONE_HTTP_POST,
   IPHONE_HTTP_SESSION,
-  IPHONE_HTTP_SESSION_SCHEMA,
   IPHONE_HTTP_SESSION_TIMEOUT_MS,
   IPHONE_HTTP_TIMEOUT_MS,
 } from "./constants"
+import { IPHONE_HTTP_SESSION_SCHEMA } from "./schemas"
 import { IphoneWebDriverSession } from "./session"
 
 export async function createIphoneWebDriverSession(

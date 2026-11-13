@@ -1,11 +1,7 @@
 import { type Static } from "typebox"
 import { type IphoneConfiguration, type IphoneExtraCapabilities } from "#synapse/modules/iphone/public/contracts"
-import {
-  type IPHONE_COMPLETE_STORED_SCHEMA,
-  type IPHONE_CONFIG_INVALID,
-  type IPHONE_CONFIG_LOADED,
-  type IPHONE_CONFIG_MISSING,
-} from "./constants"
+import { type IPHONE_CONFIG_INVALID, type IPHONE_CONFIG_LOADED, type IPHONE_CONFIG_MISSING } from "./constants"
+import { type IPHONE_COMPLETE_STORED_SCHEMA } from "./schemas"
 
 export type IphoneCompleteStoredConfiguration = Static<typeof IPHONE_COMPLETE_STORED_SCHEMA>
 

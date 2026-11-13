@@ -6,6 +6,8 @@ export const COMPUTER_SESSION_END_TOOL = "end_session"
 
 export const COMPUTER_SESSION_START_MESSAGE = "Não foi possível iniciar a sessão do driver."
 
+export const COMPUTER_SESSION_CONFIG_MESSAGE = "Não foi possível configurar a sessão do driver."
+
 export const COMPUTER_SESSION_CONFIG_TOOL = "set_config"
 
 export const COMPUTER_SESSION_CURSOR_TOOL = "set_agent_cursor_enabled"

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { createTestTask, makeTaskBoardSut, updateTestTask } from "./board-scenario"
+import { createTaskOutcome, createTestTask, makeTaskBoardSut, updateTestTask } from "./board-scenario"
 
 function restoration(): void {
   const { board, journal } = makeTaskBoardSut()
@@ -13,7 +13,7 @@ function restoration(): void {
 function journalFailure(): void {
   const { board, journal } = makeTaskBoardSut()
   journal.fail = true
-  expect(() => board.create({ subject: "x", description: "x", blockedBy: [], writeScopes: [] })).toThrow()
+  expect(createTaskOutcome.bind(null, board, [], [])).toThrow()
   expect(board.list({})).toHaveLength(0)
 }
 

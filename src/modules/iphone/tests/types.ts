@@ -10,6 +10,8 @@ import { type IphoneSessionQueue } from "#synapse/modules/iphone/internal/sessio
 import { type IphoneHost } from "#synapse/modules/iphone/public/contracts"
 import { type IphoneSessionDouble, type TestIphoneFactory } from "./doubles"
 
+export type IphoneLifecycleResolve = () => void
+
 export type IphoneConfigurationTestScenario = (directory: string) => void
 
 export interface IphoneSessionTestSut {

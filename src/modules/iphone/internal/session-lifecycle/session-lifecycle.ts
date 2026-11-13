@@ -92,9 +92,13 @@ export class IphoneSessionQueue<S extends IphoneSessionPort> implements IphoneSe
     this.session = null
   }
 
-  shutdown(): Promise<void> {
+  cancel(): void {
     this.closed = true
     this.abort.abort()
+  }
+
+  shutdown(): Promise<void> {
+    this.cancel()
     if (!this.shutdownPromise) {
       this.shutdownPromise = this.closeResources()
     }

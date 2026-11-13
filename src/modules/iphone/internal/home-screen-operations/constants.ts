@@ -1,3 +1,5 @@
+export const IPHONE_HOME_DIRECT_DROP_PENDING = "direct-drop-pending"
+
 export const IPHONE_HOME_CASCADE_ABSENT = "cascade-absent"
 
 export const IPHONE_HOME_CASCADE_FAILURE = "A página seguinte mudou durante o movimento; audite as páginas."

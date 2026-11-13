@@ -105,11 +105,11 @@ export class ComputerCaptureRenderer {
     image: ComputerPresentImage,
     options: ComputerCaptureRenderOptions,
   ): ComputerRenderedImage {
-    if (this.dedup.isRepeated(options.sessionId, capture, image)) {
-      return { kind: COMPUTER_RENDER_IMAGE_OMITTED, reason: COMPUTER_RENDER_UNCHANGED }
-    }
     if (!options.modelSupportsImages) {
       return { kind: COMPUTER_RENDER_IMAGE_OMITTED, reason: COMPUTER_RENDER_VISION_UNAVAILABLE }
+    }
+    if (this.dedup.isRepeated(options.sessionId, capture, image)) {
+      return { kind: COMPUTER_RENDER_IMAGE_OMITTED, reason: COMPUTER_RENDER_UNCHANGED }
     }
     return { kind: COMPUTER_PUBLIC_IMAGE_INCLUDED, image: { ...image } }
   }

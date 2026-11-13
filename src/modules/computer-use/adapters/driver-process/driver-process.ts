@@ -1,4 +1,5 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process"
+import { computerCheckCancellation } from "#synapse/modules/computer-use/internal/execution-cancellation"
 import {
   COMPUTER_DRIVER_DISCONNECTED,
   COMPUTER_DRIVER_PROTOCOL_VERSION,
@@ -24,6 +25,7 @@ import {
   COMPUTER_PROCESS_CLIENT_NAME,
   COMPUTER_PROCESS_CLIENT_VERSION,
   COMPUTER_PROCESS_DATA_EVENT,
+  COMPUTER_PROCESS_DESTROYED_STREAM_CODE,
   COMPUTER_PROCESS_DISCONNECTED_MESSAGE,
   COMPUTER_PROCESS_ENCODING,
   COMPUTER_PROCESS_ERROR_EVENT,
@@ -39,12 +41,17 @@ import { computerConvertCallResponse } from "./convert-call-response"
 import { ComputerProcessLineReader } from "./line-reader"
 import { ComputerProcessPendingCalls } from "./pending-calls"
 import { computerRpcRequest } from "./request"
+import { ComputerProcessTermination } from "./stop-process"
 import { type ComputerProcessResolver, type ComputerProcessRpcResult, type ComputerRpcRequestParameters } from "./types"
 
 export class ComputerDriverProcess implements ComputerDriverPort {
   private readonly launch: ComputerDriverLaunch
 
   private process?: ChildProcessWithoutNullStreams
+
+  private termination?: ComputerProcessTermination
+
+  private stopping?: Promise<void>
 
   private readonly lines = new ComputerProcessLineReader(this.receiveLine.bind(this))
 
@@ -57,6 +64,7 @@ export class ComputerDriverProcess implements ComputerDriverPort {
   }
 
   async start(): Promise<ComputerDriverTool[]> {
+    await this.stop()
     this.spawn()
     await this.negotiate()
     const tools = await this.rpc(COMPUTER_RPC_TOOLS_LIST)
@@ -91,30 +99,52 @@ export class ComputerDriverProcess implements ComputerDriverPort {
     )
   }
 
-  async call(name: string, argumentsValue: ComputerDriverArguments): Promise<ComputerDriverCallResult> {
+  async call(
+    name: string,
+    argumentsValue: ComputerDriverArguments,
+    signal?: AbortSignal,
+  ): Promise<ComputerDriverCallResult> {
+    computerCheckCancellation(signal)
     const response = await this.rpc(COMPUTER_RPC_TOOLS_CALL, { name, arguments: argumentsValue })
     return computerConvertCallResponse(response)
   }
 
-  async stop(): Promise<void> {
+  stop(): Promise<void> {
+    if (!this.stopping) {
+      this.stopping = this.stopCurrent().finally(this.clearStopping.bind(this))
+    }
+    return this.stopping
+  }
+
+  private clearStopping(): void {
+    delete this.stopping
+  }
+
+  private async stopCurrent(): Promise<void> {
     const child = this.process
+    const termination = this.termination
     this.exited()
     if (child) {
       child.stdout.removeAllListeners(COMPUTER_PROCESS_DATA_EVENT)
       child.stdin.removeAllListeners(COMPUTER_PROCESS_ERROR_EVENT)
       child.removeAllListeners(COMPUTER_PROCESS_ERROR_EVENT)
       child.removeAllListeners(COMPUTER_PROCESS_EXIT_EVENT)
-      child.on(COMPUTER_PROCESS_ERROR_EVENT, this.ignoreStoppedError)
-      child.stdin.on(COMPUTER_PROCESS_ERROR_EVENT, this.ignoreStoppedError)
-      if (!child.killed) {
-        child.kill()
-      }
+      child.on(COMPUTER_PROCESS_ERROR_EVENT, this.ignoreStoppedError.bind(this))
+      child.stdin.on(COMPUTER_PROCESS_ERROR_EVENT, this.ignoreStoppedError.bind(this))
     }
+    if (termination) {
+      await termination.stop()
+    }
+    delete this.process
+    delete this.termination
   }
 
   private ignoreStoppedError(error: Error): void {
-    if (!isErrorWithCode(error, COMPUTER_ERROR_CODE_BROKEN_PIPE)) {
-      this.exited()
+    if (
+      !isErrorWithCode(error, COMPUTER_ERROR_CODE_BROKEN_PIPE) &&
+      !isErrorWithCode(error, COMPUTER_PROCESS_DESTROYED_STREAM_CODE)
+    ) {
+      throw error
     }
   }
 
@@ -125,6 +155,7 @@ export class ComputerDriverProcess implements ComputerDriverPort {
       windowsHide: this.launch.windowsHide,
     })
     this.process = child
+    this.termination = new ComputerProcessTermination(child)
     this.lines.reset()
     child.stdout.setEncoding(COMPUTER_PROCESS_ENCODING)
     child.stdout.on(COMPUTER_PROCESS_DATA_EVENT, this.receive.bind(this))
@@ -151,7 +182,6 @@ export class ComputerDriverProcess implements ComputerDriverPort {
   }
 
   private exited(): void {
-    delete this.process
     this.lines.reset()
     this.disconnect()
   }

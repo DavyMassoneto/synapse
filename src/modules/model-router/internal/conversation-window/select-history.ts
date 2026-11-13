@@ -1,4 +1,5 @@
 import { type RouterHistoryEntry, type RouterMessage } from "#synapse/modules/model-router/public/contracts"
+import { boundRouterText } from "./bound-text"
 import {
   ROUTER_CONTEXT_BYTES,
   ROUTER_HISTORY_INCLUDED,
@@ -8,7 +9,7 @@ import {
   ROUTER_NO_USER_MESSAGE,
   ROUTER_USER_ROLE,
 } from "./constants"
-import { boundRouterText, renderRouterMessage } from "./render-message"
+import { renderRouterMessage } from "./render-message"
 import { type RouterCurrentRequest, type RouterHistoryFit, type RouterSelectedHistory } from "./types"
 
 export function currentRouterRequest(messages: readonly RouterMessage[]): RouterCurrentRequest {

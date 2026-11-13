@@ -33,3 +33,7 @@ export const PI_ROUTER_BLOCK_BREAK = "\n"
 export const PI_ROUTER_EMPTY_TEXT = ""
 
 export const PI_ROUTER_IMAGE_BLOCK = "image"
+
+export const ROUTER_CANCELLED = "Roteamento Jev cancelado."
+
+export const ROUTER_ABORT_NAME = "AbortError"

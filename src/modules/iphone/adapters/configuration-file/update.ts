@@ -7,6 +7,7 @@ import {
   type IphoneSupportResult,
 } from "#synapse/modules/iphone/public/contracts"
 import * as constants from "./constants"
+import { IPHONE_CONFIG_CAPABILITIES_SCHEMA } from "./schemas"
 import { type IphoneStoredConfiguration } from "./types"
 
 export function updateIphoneConfiguration(
@@ -125,7 +126,7 @@ function applyIphoneWdaInstalled(config: IphoneStoredConfiguration, value: strin
 
 function applyIphoneCapabilities(config: IphoneStoredConfiguration, value: string): IphoneSupportResult {
   try {
-    config.capabilities = Value.Parse(constants.IPHONE_CONFIG_CAPABILITIES_SCHEMA, JSON.parse(value))
+    config.capabilities = Value.Parse(IPHONE_CONFIG_CAPABILITIES_SCHEMA, JSON.parse(value))
     return { kind: IPHONE_ACCEPTED }
   } catch {
     return {

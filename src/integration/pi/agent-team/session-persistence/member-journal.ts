@@ -4,12 +4,12 @@ import { Value } from "typebox/value"
 import { type MemberCheckpoint, type MemberJournal } from "#synapse/modules"
 import {
   TEAM_PI_MEMBER_CHECKPOINT,
-  TEAM_PI_MEMBER_CHECKPOINT_SCHEMA,
   TEAM_PI_MEMBER_CUSTOM_ENTRY,
   TEAM_PI_MEMBER_MISSING_SESSION,
   TEAM_PI_MEMBER_UNSET_SESSION,
 } from "./constants"
 import { isTeamMemberCheckpoint } from "./predicates"
+import { TEAM_PI_MEMBER_CHECKPOINT_SCHEMA } from "./schemas"
 
 export class PiTeamMemberJournal implements MemberJournal {
   private readonly storage: SessionManager

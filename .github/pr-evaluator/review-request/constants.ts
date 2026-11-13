@@ -1,4 +1,4 @@
-import { MAX_OUTPUT_TOKENS } from "#evaluator/provider-client"
+import { MAX_OUTPUT_TOKENS, MODEL_CONTEXT_TOKENS } from "#evaluator/review-configuration"
 
 export const TEMPLATE_FILE = "docs/pr-evaluator.md"
 
@@ -20,16 +20,12 @@ export const PLACEHOLDER_RULES = "{{REGRAS}}"
 
 export const PLACEHOLDER_STANDARDS = "{{PADROES}}"
 
-export const PLACEHOLDER_DIFF = "{{DIFF}}"
-
-export const PLACEHOLDER_SOURCE = "{{CODIGO}}"
-
-export const PLACEHOLDER_PATTERN = /\{\{[A-Z]+\}\}/g
-
-export const MODEL_CONTEXT_TOKENS = 1_000_000
+export const PROMPT_TOO_LARGE = "As regras e os documentos excedem o limite do prompt; nenhuma review foi publicada."
 
 export const MIN_BYTES_PER_TOKEN = 1
 
 export const MAX_PROMPT_BYTES = (MODEL_CONTEXT_TOKENS - MAX_OUTPUT_TOKENS) * MIN_BYTES_PER_TOKEN
 
 export const PROMPT_ENCODING = "utf8"
+
+export const PLACEHOLDER_PATTERN = /\{\{(?:ARQUITETURA|REGRAS|PADROES)\}\}/g

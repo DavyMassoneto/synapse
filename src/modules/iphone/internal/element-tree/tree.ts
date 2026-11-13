@@ -9,9 +9,13 @@ import {
   IPHONE_TREE_TYPES,
   IPHONE_TREE_UNLABELED_ATTRIBUTE,
   IPHONE_XML_APPLICATION,
+  IPHONE_XML_CHARACTER_NEWLINE,
+  IPHONE_XML_DECIMAL_RADIX,
   IPHONE_XML_ENABLED,
   IPHONE_XML_FALSE,
   IPHONE_XML_HEIGHT,
+  IPHONE_XML_HEX_PREFIX_LENGTH,
+  IPHONE_XML_HEX_RADIX,
   IPHONE_XML_LABEL,
   IPHONE_XML_NAME,
   IPHONE_XML_RECT_REQUIRED,
@@ -34,16 +38,26 @@ function decodeIphoneEntity(entity: string): string {
     case "&amp;":
     case "&#10;":
       return IPHONE_TREE_ENTITY_VALUES[entity]
-    default:
-      return entity
+    default: {
+      const hexadecimal = entity.startsWith("&#x")
+      const digits = entity.slice(hexadecimal ? IPHONE_XML_HEX_PREFIX_LENGTH : 2, -1)
+      const point = Number.parseInt(digits, hexadecimal ? IPHONE_XML_HEX_RADIX : IPHONE_XML_DECIMAL_RADIX)
+      if (point === IPHONE_XML_CHARACTER_NEWLINE) {
+        return " "
+      }
+      return String.fromCodePoint(point)
+    }
   }
 }
 
 function readAttributes(source: string): IphoneXmlAttributes {
   const attributes: IphoneXmlAttributes = new Map<string, string>()
   for (const match of source.matchAll(IPHONE_TREE_ATTRIBUTE_PATTERN)) {
-    if (match[1] && typeof match[2] === "string") {
-      attributes.set(match[1], match[2].replace(IPHONE_TREE_ENTITY, decodeIphoneEntity))
+    if (match[1]) {
+      const value = typeof match[2] === "string" ? match[2] : match[3]
+      if (typeof value === "string") {
+        attributes.set(match[1], value.replace(IPHONE_TREE_ENTITY, decodeIphoneEntity))
+      }
     }
   }
   return attributes

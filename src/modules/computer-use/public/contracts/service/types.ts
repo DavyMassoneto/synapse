@@ -8,20 +8,6 @@ import {
 } from "../capture"
 import { type ComputerDriverLaunch, type ComputerWaitPort } from "../driver"
 import { type ComputerActionResult, type ComputerRecommendedAction, type ComputerVerdictDecision } from "../results"
-import {
-  type COMPUTER_APPS_LISTED,
-  type COMPUTER_CAPTURED,
-  type COMPUTER_DIAGNOSTIC_READY,
-  type COMPUTER_DIAGNOSTIC_UNAVAILABLE,
-  type COMPUTER_EXECUTED,
-  type COMPUTER_INSTALL_FAILED,
-  type COMPUTER_INSTALL_SUCCEEDED,
-  type COMPUTER_PUBLIC_IMAGE_INCLUDED,
-  type COMPUTER_PUBLIC_IMAGE_OMITTED,
-  type COMPUTER_PUBLIC_SCALE_ABSENT,
-  type COMPUTER_PUBLIC_SCALE_PRESENT,
-  type COMPUTER_WINDOWS_LISTED,
-} from "./constants"
 
 export interface ComputerExecutionContext {
   sessionId: string
@@ -36,10 +22,12 @@ export interface ComputerExecutionVerdict {
 }
 
 export interface ComputerExecutedAction {
-  kind: typeof COMPUTER_EXECUTED
+  kind: "computer-executed"
   result: ComputerActionResult
   verdict: ComputerExecutionVerdict
   capture?: ComputerRenderedScreenshot
+  captureFailure?: string
+  precedingEffects?: ComputerActionResult[]
 }
 
 export interface ComputerRenderedScreenshot {
@@ -55,17 +43,17 @@ export interface ComputerRenderedScreenshot {
 }
 
 export interface ComputerCapturedResponse {
-  kind: typeof COMPUTER_CAPTURED
+  kind: "computer-captured"
   capture: ComputerRenderedScreenshot
 }
 
 export interface ComputerAppsListed {
-  kind: typeof COMPUTER_APPS_LISTED
+  kind: "computer-apps-listed"
   applications: ComputerApplication[]
 }
 
 export interface ComputerWindowsListed {
-  kind: typeof COMPUTER_WINDOWS_LISTED
+  kind: "computer-windows-listed"
   windows: ComputerWindow[]
 }
 
@@ -76,32 +64,36 @@ export type ComputerExecuteResult =
   | ComputerWindowsListed
 
 export interface ComputerReadyDiagnostic {
-  kind: typeof COMPUTER_DIAGNOSTIC_READY
+  kind: "computer-ready"
   binary: string
   version: string
 }
 
 export interface ComputerUnavailableDiagnostic {
-  kind: typeof COMPUTER_DIAGNOSTIC_UNAVAILABLE
+  kind: "computer-unavailable"
   message: string
 }
 
 export type ComputerDiagnostic = ComputerReadyDiagnostic | ComputerUnavailableDiagnostic
 
 export interface ComputerInstalled {
-  kind: typeof COMPUTER_INSTALL_SUCCEEDED
+  kind: "computer-installed"
   binary: string
 }
 
 export interface ComputerInstallFailed {
-  kind: typeof COMPUTER_INSTALL_FAILED
+  kind: "computer-install-failed"
   message: string
 }
 
 export type ComputerInstallResult = ComputerInstalled | ComputerInstallFailed
 
 export interface ComputerUse {
-  execute(action: ComputerAction, context: ComputerExecutionContext): Promise<ComputerExecuteResult>
+  execute(
+    action: ComputerAction,
+    context: ComputerExecutionContext,
+    signal?: AbortSignal,
+  ): Promise<ComputerExecuteResult>
   diagnose(): Promise<ComputerDiagnostic>
   install(): Promise<ComputerInstallResult>
   stop(): Promise<void>
@@ -118,25 +110,25 @@ export interface ComputerUseDependencies {
 }
 
 export interface ComputerImageIncluded {
-  kind: typeof COMPUTER_PUBLIC_IMAGE_INCLUDED
+  kind: "image-included"
 }
 
 export interface ComputerImageOmitted {
-  kind: typeof COMPUTER_PUBLIC_IMAGE_OMITTED
+  kind: "image-omitted"
   reason: string
 }
 
 export type ComputerImageOmission = ComputerImageIncluded | ComputerImageOmitted
 
 export interface ComputerScreenshotScaled {
-  kind: typeof COMPUTER_PUBLIC_SCALE_PRESENT
+  kind: "scale-present"
   factor: number
   maxX: number
   maxY: number
 }
 
 export interface ComputerScreenshotUnscaled {
-  kind: typeof COMPUTER_PUBLIC_SCALE_ABSENT
+  kind: "scale-absent"
 }
 
 export type ComputerScreenshotScale = ComputerScreenshotScaled | ComputerScreenshotUnscaled

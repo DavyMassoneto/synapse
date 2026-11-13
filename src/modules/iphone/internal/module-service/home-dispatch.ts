@@ -7,6 +7,7 @@ import {
   extractIphoneHomeApp,
   gotoIphoneHomePage,
   hopIphoneHomeIcon,
+  IPHONE_HOME_DIRECT_DROP_PENDING,
   type IphoneHomeScreenPort,
   renameIphoneHomeFolder,
 } from "#synapse/modules/iphone/internal/home-screen-operations"
@@ -23,10 +24,12 @@ import {
   IPHONE_HOME_OP_MERGE,
   IPHONE_HOME_OP_READ,
   IPHONE_HOME_OP_RENAME,
+  IPHONE_REFUSED,
   type IphoneHomeOperation,
   type IphoneHomeOutput,
 } from "#synapse/modules/iphone/public/contracts"
 
+import { IPHONE_MODULE_DIRECT_DROP_FAILURE } from "./constants"
 import { mergeIphoneFolderAcrossPages, readIphoneFolderAtPage, readIphoneHomeAtPage } from "./home-page"
 
 export async function executeIphoneHome(
@@ -45,8 +48,13 @@ export async function executeIphoneHome(
       return await gotoIphoneHomePage(port, operation.page, signal)
     case IPHONE_HOME_OP_FOLDER:
       return await readIphoneFolderAtPage(port, operation, signal)
-    case IPHONE_HOME_OP_HOP:
-      return await hopIphoneHomeIcon(port, operation, signal)
+    case IPHONE_HOME_OP_HOP: {
+      const result = await hopIphoneHomeIcon(port, operation, signal)
+      if (result.kind === IPHONE_HOME_DIRECT_DROP_PENDING) {
+        return { kind: IPHONE_REFUSED, message: IPHONE_MODULE_DIRECT_DROP_FAILURE }
+      }
+      return result
+    }
     case IPHONE_HOME_OP_COMPACT:
       return await compactIphoneHomePage(port, operation.page, signal)
     case IPHONE_HOME_OP_AUDIT:

@@ -26,10 +26,36 @@ export const IPHONE_TREE_TYPES = new Set([
   "Checkbox",
   "RadioButton",
 ])
-export const IPHONE_TREE_TAG = /<XCUIElementType(\w+)\s([^>]*?)\/?\s*>/g
-export const IPHONE_TREE_ATTRIBUTE_PATTERN = /(?:^|\s)([\w:-]+)="([^"]*)"/g
+export const IPHONE_TREE_TAG = /<XCUIElementType(\w+)\s((?:"[^"]*"|'[^']*'|[^>"'])*?)\/?\s*>/g
+export const IPHONE_TREE_ATTRIBUTE_PATTERN = /(?:^|\s)([A-Za-z_][\w:.-]*)\s*=\s*(?:"([^"]*)"|'([^']*)')/g
 
-export const IPHONE_TREE_ENTITY = /&(?:quot|apos|lt|gt|amp|#10);/g
+export const IPHONE_TREE_ENTITY = /&(?:quot|apos|lt|gt|amp|#\d+|#x[\da-fA-F]+);/g
+
+export const IPHONE_TREE_NUMERIC_ENTITY = /&#(?:x([\da-fA-F]+)|(\d+));/g
+
+export const IPHONE_XML_HEX_RADIX = 16
+
+export const IPHONE_XML_DECIMAL_RADIX = 10
+
+export const IPHONE_XML_HEX_PREFIX_LENGTH = 3
+
+export const IPHONE_XML_CODEPOINT_MAX = 0x10ffff
+
+export const IPHONE_XML_NONCHAR_START = 0xfffe
+
+export const IPHONE_XML_NONCHAR_END = 0xffff
+
+export const IPHONE_XML_SURROGATE_START = 0xd800
+
+export const IPHONE_XML_SURROGATE_END = 0xdfff
+
+export const IPHONE_XML_CHARACTER_MIN = 0x20
+
+export const IPHONE_XML_CHARACTER_TAB = 9
+
+export const IPHONE_XML_CHARACTER_NEWLINE = 10
+
+export const IPHONE_XML_CHARACTER_RETURN = 13
 export const IPHONE_TREE_ENTITY_VALUES: IphoneTreeEntityValues = {
   "&quot;": '"',
   "&apos;": "'",
@@ -38,7 +64,7 @@ export const IPHONE_TREE_ENTITY_VALUES: IphoneTreeEntityValues = {
   "&amp;": "&",
   "&#10;": " ",
 }
-export const IPHONE_XML_TOKEN = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<[^<>]*>|[^<>]+/g
+export const IPHONE_XML_TOKEN = /<!--[\s\S]*?-->|<!\[CDATA\[[\s\S]*?\]\]>|<(?:"[^"]*"|'[^']*'|[^<>"'])*>|[^<>]+/g
 
 export const IPHONE_XML_COMMENT = /^<!--[\s\S]*?-->$/
 

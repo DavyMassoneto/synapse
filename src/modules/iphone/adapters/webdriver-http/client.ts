@@ -1,12 +1,8 @@
 import { Value } from "typebox/value"
-import {
-  IPHONE_HTTP_CONTENT_TYPE,
-  IPHONE_HTTP_ERROR_SCHEMA,
-  IPHONE_HTTP_INVALID_RESPONSE,
-  IPHONE_HTTP_JSON,
-  IPHONE_HTTP_RESPONSE_SCHEMA,
-} from "./constants"
+import { readIphoneHttpBody } from "./body"
+import { IPHONE_HTTP_CONTENT_TYPE, IPHONE_HTTP_INVALID_RESPONSE, IPHONE_HTTP_JSON } from "./constants"
 import { IphoneWebDriverError } from "./error"
+import { IPHONE_HTTP_ERROR_SCHEMA, IPHONE_HTTP_RESPONSE_SCHEMA } from "./schemas"
 
 function classifyIphoneWebDriverResponse(text: string, status: number, ok: boolean): void {
   const parsed = Value.Parse(IPHONE_HTTP_RESPONSE_SCHEMA, JSON.parse(text))
@@ -34,7 +30,7 @@ export async function requestIphoneWebDriver(
     options.body = body
   }
   const response = await fetch(url, options)
-  const text = await response.text()
+  const text = await readIphoneHttpBody(response)
   signal.throwIfAborted()
   classifyIphoneWebDriverResponse(text, response.status, response.ok)
   return text

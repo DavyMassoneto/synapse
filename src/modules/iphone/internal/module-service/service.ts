@@ -22,7 +22,8 @@ import {
   type IphoneSupportResult,
   type IphoneTargetedAction,
 } from "#synapse/modules/iphone/public/contracts"
-import { IPHONE_MODULE_CLOSED } from "./constants"
+import { IPHONE_MODULE_CLOSED, IPHONE_MODULE_CONFIG_BUSY, IPHONE_MODULE_START_BUSY } from "./constants"
+import { copyIphoneElement } from "./copy-element"
 import { executeIphoneHome } from "./home-dispatch"
 import { executeIphoneTargeted } from "./targeted"
 
@@ -38,6 +39,12 @@ export class IphoneModuleService implements IphoneModule {
   private stopping = false
 
   private shutdownPromise?: Promise<void>
+
+  private startPromise?: Promise<void>
+
+  private serverStarted = false
+
+  private readonly lifecycleAbort = new AbortController()
 
   constructor(dependencies: IphoneModuleDependencies, infrastructure: IphoneInfrastructure) {
     this.dependencies = dependencies
@@ -76,7 +83,7 @@ export class IphoneModuleService implements IphoneModule {
       session.elements = []
       const result = await executeIphoneDeviceAction(session, action, signal)
       if (result.kind === IPHONE_RESULT_TREE) {
-        session.elements = result.elements
+        session.elements = result.elements.map(copyIphoneElement)
       }
       return result
     }
@@ -113,9 +120,26 @@ export class IphoneModuleService implements IphoneModule {
 
   async startServer(signal: AbortSignal): Promise<void> {
     this.ensureOpen()
+    if (this.startPromise) {
+      return Promise.reject(new Error(IPHONE_MODULE_START_BUSY))
+    }
+    signal.throwIfAborted()
+    const combined = AbortSignal.any([signal, this.lifecycleAbort.signal])
+    this.serverStarted = true
+    const start = this.startConfiguredServer(combined)
+    this.startPromise = start
+    return start.finally(this.clearStart.bind(this))
+  }
+
+  private async startConfiguredServer(signal: AbortSignal): Promise<void> {
     const config = this.infrastructure.configuration(this.dependencies.configPath, this.dependencies.host)
     signal.throwIfAborted()
     await this.infrastructure.start(config, this.dependencies, signal)
+    signal.throwIfAborted()
+  }
+
+  private clearStart(): void {
+    delete this.startPromise
   }
 
   configuration(): IphoneConfigurationView {
@@ -125,6 +149,9 @@ export class IphoneModuleService implements IphoneModule {
   configure(changes: IphoneConfigurationChange[]): IphoneSupportResult {
     if (this.closed || this.stopping) {
       return { kind: IPHONE_REFUSED, message: IPHONE_MODULE_CLOSED }
+    }
+    if (this.queue || this.startPromise || this.serverStarted) {
+      return { kind: IPHONE_REFUSED, message: IPHONE_MODULE_CONFIG_BUSY }
     }
     return this.infrastructure.configure(this.dependencies.configPath, changes)
   }
@@ -142,9 +169,17 @@ export class IphoneModuleService implements IphoneModule {
   }
 
   async stopServer(): Promise<void> {
+    this.ensureOpen()
     const queue = this.queue
     this.stopping = true
     try {
+      if (this.startPromise) {
+        try {
+          await this.startPromise
+        } catch {
+          this.serverStarted = false
+        }
+      }
       if (queue) {
         await queue.shutdown()
         delete this.queue
@@ -152,15 +187,37 @@ export class IphoneModuleService implements IphoneModule {
         await this.infrastructure.stop()
       }
     } finally {
+      this.serverStarted = false
       this.stopping = false
     }
   }
 
   shutdown(): Promise<void> {
     this.closed = true
+    this.lifecycleAbort.abort()
+    this.queue?.cancel()
     if (!this.shutdownPromise) {
-      this.shutdownPromise = this.queue ? this.queue.shutdown() : this.infrastructure.stop()
+      this.shutdownPromise = this.closeResources()
     }
     return this.shutdownPromise
+  }
+
+  private async closeResources(): Promise<void> {
+    if (this.startPromise) {
+      try {
+        await this.startPromise
+      } catch {
+        this.lifecycleAbort.abort()
+      }
+    }
+    await this.stopResources()
+  }
+
+  private async stopResources(): Promise<void> {
+    if (this.queue) {
+      await this.queue.shutdown()
+    } else {
+      await this.infrastructure.stop()
+    }
   }
 }

@@ -4,8 +4,7 @@ import {
   ROUTER_FAILED_KIND,
   type RouterClassifier,
 } from "#synapse/modules"
-import { buildPiRouterClassifierContext } from "./classifier-context"
-import { piRouterClassifierOptions } from "./classifier-options"
+import { buildPiRouterClassifierContext, piRouterClassifierOptions } from "./classifier-context"
 import { convertPiRouterClassifierResult } from "./classifier-response"
 import { resolvePiRouterClassifier } from "./resolve-classifier"
 import { type PiRouterClassificationContext } from "./types"

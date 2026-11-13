@@ -1,3 +1,5 @@
+export const COMPUTER_CANCELLED = "cancelled"
+
 export const COMPUTER_COMPLETED = "completed"
 
 export const COMPUTER_UNCONFIRMED = "unconfirmed"

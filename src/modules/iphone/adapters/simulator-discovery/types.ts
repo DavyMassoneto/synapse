@@ -7,10 +7,10 @@ import {
 import {
   type IPHONE_SIMULATOR_COMMAND_ERROR,
   type IPHONE_SIMULATOR_COMMAND_SUCCEEDED,
-  type IPHONE_SIMULATOR_DEVICE_SCHEMA,
   type IPHONE_SIMULATOR_OUTPUT_INVALID,
   type IPHONE_SIMULATOR_OUTPUT_VALID,
 } from "./constants"
+import { type IPHONE_SIMULATOR_DEVICE_SCHEMA } from "./schemas"
 
 export type { IphoneSimulatorCommandOutput } from "#synapse/modules/iphone/public/contracts"
 
