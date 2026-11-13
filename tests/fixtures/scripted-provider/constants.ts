@@ -30,6 +30,16 @@ export const SCRIPTED_PROVIDER_API = "synapse-scripted-api"
 
 export const SCRIPTED_PROVIDER_SCRIPT_FILE = "script.json"
 
+export const SCRIPTED_PROVIDER_TRACK_OFFSET_SUFFIX = ".offset.json"
+
+export const SCRIPTED_PROVIDER_TRACK_SELECTED = "selected"
+
+export const SCRIPTED_PROVIDER_TRACK_MISSING = "missing"
+
+export const SCRIPTED_PROVIDER_SYSTEM_ROLE = "system"
+
+export const SCRIPTED_PROVIDER_PROVIDER_NEWLINE = "\n"
+
 export const SCRIPTED_PROVIDER_PROVIDER_URL = new URL("./scripted-provider.ts", import.meta.url)
 
 export const SCRIPTED_PROVIDER_SCRIPT_FAILURE = "Roteiro do provedor esgotado."

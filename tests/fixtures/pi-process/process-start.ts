@@ -26,10 +26,15 @@ import {
 } from "./constants"
 import { resolvePiProcessExecutable } from "./process-paths"
 
-export function piProcessArguments(entrypoint: string, selection: PiProcessModelSelection): string[] {
+export function piProcessArguments(
+  entrypoint: string,
+  selection: PiProcessModelSelection,
+  persistence: string[],
+): string[] {
   return [
     resolvePiProcessExecutable(),
     ...PI_PROCESS_FLAGS,
+    ...persistence,
     PI_PROCESS_EXTENSION_FLAG,
     entrypoint,
     PI_PROCESS_EXTENSION_FLAG,

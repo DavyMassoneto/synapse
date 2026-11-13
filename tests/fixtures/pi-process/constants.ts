@@ -94,7 +94,13 @@ export const PI_PROCESS_CONFIG_VARIABLE = "XDG_CONFIG_HOME"
 
 export const PI_PROCESS_CACHE_VARIABLE = "XDG_CACHE_HOME"
 
-export const PI_PROCESS_FLAGS = ["--mode", "rpc", "--no-session", "--no-extensions", "--offline"]
+export const PI_PROCESS_FLAGS = ["--mode", "rpc", "--no-extensions", "--offline"]
+
+export const PI_PROCESS_NO_SESSION_FLAG = "--no-session"
+
+export const PI_PROCESS_SESSION_FLAG = "--session"
+
+export const PI_PROCESS_SESSION_DIRECTORY_FLAG = "--session-dir"
 
 export const PI_PROCESS_EXTENSION_FLAG = "-e"
 

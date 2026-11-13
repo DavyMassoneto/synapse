@@ -15,15 +15,18 @@ import {
   PI_PROCESS_EXIT_FAILURE,
   PI_PROCESS_KILL_SIGNAL,
   PI_PROCESS_NEWLINE,
+  PI_PROCESS_NO_SESSION_FLAG,
   PI_PROCESS_NOT_STARTED,
   PI_PROCESS_QUERY_ERRORS,
   PI_PROCESS_RESPONSE_TYPE,
+  PI_PROCESS_SESSION_DIRECTORY_FLAG,
+  PI_PROCESS_SESSION_FLAG,
   PI_PROCESS_SHUTDOWN_TIMEOUT,
   PI_PROCESS_SHUTDOWN_TIMEOUT_MS,
   PI_PROCESS_STDIO,
 } from "./constants"
 import { PiProcessDiagnostics } from "./diagnostics"
-import { PiProcessHome } from "./pi-process-home"
+import { type PiProcessHome } from "./pi-process-home"
 import { PiProcessRecords } from "./pi-process-records"
 import { piProcessArguments, piProcessEnvironment } from "./process-start"
 import {
@@ -37,10 +40,13 @@ import {
   type PiProcessQuery,
   type PiProcessQueryResponse,
   type PiProcessRecord,
+  type PiProcessSession,
 } from "./types"
 
 export class PiProcess {
-  readonly homeDirectory = new PiProcessHome()
+  readonly homeDirectory: PiProcessHome
+
+  private session?: PiProcessSession
 
   readonly received = new PiProcessRecords()
 
@@ -58,6 +64,10 @@ export class PiProcess {
 
   private sequence = 0
 
+  constructor(homeDirectory: PiProcessHome) {
+    this.homeDirectory = homeDirectory
+  }
+
   get stderr(): string {
     return this.diagnostics.text
   }
@@ -66,12 +76,27 @@ export class PiProcess {
     this.selection = selection
   }
 
+  configureSession(session: PiProcessSession): void {
+    this.session = session
+  }
+
   start(entrypoint: string): void {
     if (this.child) {
       throw new Error(PI_PROCESS_ALREADY_STARTED)
     }
     this.running = true
-    this.child = spawn(process.execPath, piProcessArguments(entrypoint, this.selection), {
+    let persistence: string[]
+    if (this.session) {
+      persistence = [
+        PI_PROCESS_SESSION_FLAG,
+        this.session.path,
+        PI_PROCESS_SESSION_DIRECTORY_FLAG,
+        this.session.directory,
+      ]
+    } else {
+      persistence = [PI_PROCESS_NO_SESSION_FLAG]
+    }
+    this.child = spawn(process.execPath, piProcessArguments(entrypoint, this.selection, persistence), {
       cwd: this.homeDirectory.home,
       env: piProcessEnvironment(this.homeDirectory.home, this.homeDirectory.agentDirectory, this.selection),
       stdio: PI_PROCESS_STDIO,
@@ -109,13 +134,13 @@ export class PiProcess {
 
   async dispose(): Promise<void> {
     try {
-      await this.closeChild()
+      await this.close()
     } finally {
       this.homeDirectory.remove()
     }
   }
 
-  private async closeChild(): Promise<void> {
+  async close(): Promise<void> {
     const child = this.child
     if (child && this.running) {
       const closed = this.closePromise
