@@ -9,6 +9,7 @@ import {
   type ComputerListAppsAction,
   type ComputerListWindowsAction,
   type ComputerMiddleClickAction,
+  type ComputerMouseButton,
   type ComputerRightClickAction,
   type ComputerScrollAction,
   type ComputerSetValueAction,
@@ -76,3 +77,20 @@ export interface ComputerFocusUnneeded {
 }
 
 export type ComputerSnapshotTokens = Map<number, string>
+
+export interface ComputerClickSpecification {
+  kind: ComputerClickButtonPolicy
+  tool: ComputerClickDriverTool
+  button: ComputerMouseButton
+}
+
+export type ComputerClickButtonPolicy = "dynamic-button" | "forced-button"
+
+export type ComputerClickDriverTool = "click" | "double_click"
+
+export interface ComputerClickSpecifications {
+  click: ComputerClickSpecification
+  double_click: ComputerClickSpecification
+  right_click: ComputerClickSpecification
+  middle_click: ComputerClickSpecification
+}

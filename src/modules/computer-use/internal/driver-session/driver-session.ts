@@ -1,14 +1,13 @@
 import {
-  COMPUTER_DRIVER_DISCONNECTED,
   COMPUTER_DRIVER_READ_TOOLS,
   COMPUTER_DRIVER_RESPONSE,
-  COMPUTER_DRIVER_TIMEOUT,
   type ComputerDriverArguments,
   type ComputerDriverCallResult,
   type ComputerDriverPort,
   type ComputerDriverTool,
 } from "#synapse/modules/computer-use/public/contracts"
 import { computerCheckCancellation } from "../execution-cancellation"
+import { computerSessionCallArguments } from "./call-arguments"
 import {
   COMPUTER_SESSION_CONFIG_MESSAGE,
   COMPUTER_SESSION_CONFIG_TOOL,
@@ -16,10 +15,10 @@ import {
   COMPUTER_SESSION_CURSOR_TOOL,
   COMPUTER_SESSION_END_TOOL,
   COMPUTER_SESSION_MAX_IMAGE_DIMENSION,
-  COMPUTER_SESSION_NATIVE_FOCUS_TOOL,
   COMPUTER_SESSION_START_MESSAGE,
   COMPUTER_SESSION_START_TOOL,
 } from "./constants"
+import { hasComputerTransportFailure } from "./predicates"
 
 export class ComputerDriverSession implements ComputerDriverPort {
   private readonly driver: ComputerDriverPort
@@ -110,29 +109,46 @@ export class ComputerDriverSession implements ComputerDriverPort {
     await this.start()
     this.requireGeneration(generation)
     computerCheckCancellation(signal)
-    const scopedArguments = { ...argumentsValue }
-    if (name !== COMPUTER_SESSION_NATIVE_FOCUS_TOOL) {
-      scopedArguments.session = this.sessionId
-    }
+    const scopedArguments = computerSessionCallArguments(name, argumentsValue, this.sessionId)
     const result = await this.driver.call(name, scopedArguments, signal)
-    if (result.kind === COMPUTER_DRIVER_TIMEOUT || result.kind === COMPUTER_DRIVER_DISCONNECTED) {
-      if (generation !== this.generation) {
-        return result
-      }
+    if (hasComputerTransportFailure(result)) {
+      return this.recoverCall(name, scopedArguments, result, generation, signal)
+    }
+    return result
+  }
+
+  private async recoverCall(
+    name: string,
+    argumentsValue: ComputerDriverArguments,
+    result: ComputerDriverCallResult,
+    generation: number,
+    signal?: AbortSignal,
+  ): Promise<ComputerDriverCallResult> {
+    if (generation !== this.generation) {
+      return result
+    }
+    await this.invalidate()
+    if (generation !== this.generation) {
+      return result
+    }
+    if (COMPUTER_DRIVER_READ_TOOLS.includes(name) && !signal?.aborted) {
+      return this.retryRead(name, argumentsValue, generation, signal)
+    }
+    return result
+  }
+
+  private async retryRead(
+    name: string,
+    argumentsValue: ComputerDriverArguments,
+    generation: number,
+    signal?: AbortSignal,
+  ): Promise<ComputerDriverCallResult> {
+    await this.start()
+    this.requireGeneration(generation)
+    computerCheckCancellation(signal)
+    const result = await this.driver.call(name, argumentsValue, signal)
+    if (hasComputerTransportFailure(result)) {
       await this.invalidate()
-      if (generation !== this.generation) {
-        return result
-      }
-      if (COMPUTER_DRIVER_READ_TOOLS.includes(name) && !signal?.aborted) {
-        await this.start()
-        this.requireGeneration(generation)
-        computerCheckCancellation(signal)
-        const retried = await this.driver.call(name, scopedArguments, signal)
-        if (retried.kind === COMPUTER_DRIVER_TIMEOUT || retried.kind === COMPUTER_DRIVER_DISCONNECTED) {
-          await this.invalidate()
-        }
-        return retried
-      }
     }
     return result
   }

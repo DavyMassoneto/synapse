@@ -1,5 +1,6 @@
 import {
   COMPUTER_APPS_LISTED,
+  COMPUTER_LIST_APPS,
   COMPUTER_WINDOWS_LISTED,
   type ComputerDriverPort,
   type ComputerExecuteResult,
@@ -10,7 +11,6 @@ import { computerCheckCancellation } from "../execution-cancellation"
 import { type ComputerStickyWindowTarget } from "../window-targeting"
 import { computerConfirmedExecution } from "./confirmed-envelope"
 import {
-  COMPUTER_DISPATCH_APPS_ACTION,
   COMPUTER_DISPATCH_MILLISECONDS_PER_SECOND,
   COMPUTER_DISPATCH_SECONDS_PROPERTY,
   COMPUTER_DISPATCH_WAIT_MAX_SECONDS,
@@ -28,7 +28,7 @@ export async function computerDispatchList(
 ): Promise<ComputerExecuteResult> {
   const response = await driver.call(action.action, {}, signal)
   const envelope = computerRequireEnvelope(response, target)
-  if (action.action === COMPUTER_DISPATCH_APPS_ACTION) {
+  if (action.action === COMPUTER_LIST_APPS) {
     return { kind: COMPUTER_APPS_LISTED, applications: envelope.applications }
   }
   return { kind: COMPUTER_WINDOWS_LISTED, windows: envelope.windows }

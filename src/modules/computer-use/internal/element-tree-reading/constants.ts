@@ -19,5 +19,3 @@ export const COMPUTER_AX_LABEL_GROUPS = [
 ]
 
 export const COMPUTER_TREE_READ = "tree-read"
-
-export const COMPUTER_TREE_UNSUPPORTED = "tree-unsupported"

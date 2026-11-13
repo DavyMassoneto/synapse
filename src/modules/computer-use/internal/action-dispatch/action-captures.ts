@@ -13,6 +13,7 @@ import { ComputerCaptureRenderer, computerPublicCapture } from "../capture-rende
 import { COMPUTER_CANCELLED_MESSAGE } from "../execution-cancellation"
 import {
   COMPUTER_EXACT_TARGET_SELECTED,
+  type ComputerSelectedExactTarget,
   type ComputerStickyWindowTarget,
   computerTargetIdentity,
 } from "../window-targeting"
@@ -77,30 +78,38 @@ export class ComputerActionCaptures {
     context: ComputerExecutionContext,
     signal?: AbortSignal,
   ): Promise<void> {
-    const target = computerTargetIdentity(this.target.current())
     if (
       action.captureAfter &&
-      signal?.aborted &&
       (result.result.kind === COMPUTER_COMPLETED || result.result.kind === COMPUTER_UNCONFIRMED)
     ) {
-      result.captureFailure = COMPUTER_CANCELLED_MESSAGE
-    } else if (
-      action.captureAfter &&
-      (result.result.kind === COMPUTER_COMPLETED || result.result.kind === COMPUTER_UNCONFIRMED) &&
-      target.kind === COMPUTER_EXACT_TARGET_SELECTED
-    ) {
-      try {
-        result.capture = await this.capture(
-          { action: COMPUTER_CAPTURE, pid: target.pid, windowId: target.windowId },
-          context,
-          signal,
-        )
-      } catch (error) {
-        if (error instanceof Error) {
-          result.captureFailure = error.message
-        } else {
-          result.captureFailure = COMPUTER_DISPATCH_UNKNOWN_FAILURE
+      if (signal?.aborted) {
+        result.captureFailure = COMPUTER_CANCELLED_MESSAGE
+      } else {
+        const target = computerTargetIdentity(this.target.current())
+        if (target.kind === COMPUTER_EXACT_TARGET_SELECTED) {
+          await this.captureFollowingResult(target, result, context, signal)
         }
+      }
+    }
+  }
+
+  private async captureFollowingResult(
+    target: ComputerSelectedExactTarget,
+    result: ComputerExecutedAction,
+    context: ComputerExecutionContext,
+    signal?: AbortSignal,
+  ): Promise<void> {
+    try {
+      result.capture = await this.capture(
+        { action: COMPUTER_CAPTURE, pid: target.pid, windowId: target.windowId },
+        context,
+        signal,
+      )
+    } catch (error) {
+      if (error instanceof Error) {
+        result.captureFailure = error.message
+      } else {
+        result.captureFailure = COMPUTER_DISPATCH_UNKNOWN_FAILURE
       }
     }
   }

@@ -5,10 +5,3 @@ export interface ComputerReadTree {
   elements: ComputerElement[]
   windowTitle: ComputerWindowTitle
 }
-
-export interface ComputerUnsupportedTree {
-  kind: "tree-unsupported"
-  format: string
-}
-
-export type ComputerTreeReadResult = ComputerReadTree | ComputerUnsupportedTree

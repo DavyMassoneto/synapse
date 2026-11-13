@@ -4,14 +4,14 @@ import {
   type ComputerDriverCallResult,
 } from "#synapse/modules/computer-use/public/contracts"
 import { LifecycleInfrastructure } from "./doubles"
-import { type LifecycleCallResolver } from "./types"
+import { type LifecycleCallResolver, type LifecycleReadStartedResolver } from "./types"
 
 export class LifecyclePendingReadDriver extends LifecycleInfrastructure {
-  private resolveRequested?: import("./types").LifecycleReadStartedResolver
+  private resolveRequested?: LifecycleReadStartedResolver
 
   readonly requested = new Promise<void>(this.holdRequested.bind(this))
 
-  private holdRequested(resolve: import("./types").LifecycleReadStartedResolver): void {
+  private holdRequested(resolve: LifecycleReadStartedResolver): void {
     this.resolveRequested = resolve
   }
 

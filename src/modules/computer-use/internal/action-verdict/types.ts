@@ -3,9 +3,8 @@ import {
   type ComputerActionCode,
   type ComputerActionEffect,
   type ComputerActionResult,
+  type ComputerRecommendedAction,
 } from "#synapse/modules/computer-use/public/contracts"
-
-export type ComputerEscalation = "set_value" | "px" | "foreground"
 
 export interface ComputerActionEvidence {
   action: ComputerAction["action"]
@@ -14,7 +13,7 @@ export interface ComputerActionEvidence {
   verified?: boolean
   effect?: ComputerActionEffect
   code?: ComputerActionCode
-  recommended?: ComputerEscalation
+  recommended?: ComputerRecommendedAction
   deliveredChars?: number
   requestedChars?: number
 }
@@ -32,7 +31,7 @@ export interface ComputerVerifyVerdict {
 export interface ComputerEscalateVerdict {
   kind: "escalate"
   message: string
-  recommended?: ComputerEscalation
+  recommended?: ComputerRecommendedAction
 }
 
 export type ComputerActionVerdict = ComputerDoneVerdict | ComputerVerifyVerdict | ComputerEscalateVerdict
