@@ -1,9 +1,9 @@
-import { Value } from "typebox/value"
 import {
   IPHONE_ACTION_SCREENSHOT,
   IPHONE_ACTION_TREE,
   IPHONE_REFUSED,
   IPHONE_RESULT_IMAGE,
+  IPHONE_TARGET_POINT,
   type IphoneDeviceActionOutput,
   type IphoneModule,
 } from "#synapse/modules"
@@ -13,17 +13,15 @@ import {
   PI_IPHONE_DESTINATION_FOUND,
   PI_IPHONE_IMAGE_CONTENT,
   PI_IPHONE_IMAGE_UNSUPPORTED,
-  PI_IPHONE_INVALID_ARGUMENTS,
   PI_IPHONE_OPTIONAL_SCREENSHOT_FAILED,
-  PI_IPHONE_SIGNAL_REQUIRED,
   PI_IPHONE_TEXT_CONTENT,
   PI_IPHONE_TREE_AFTER_FAILED,
   PI_IPHONE_VALUE_HOMESCREEN,
 } from "./constants"
 import { iphoneNumber } from "./input-values"
-import { PI_IPHONE_PARAMETERS } from "./parameters"
+import { preflightIphoneTool } from "./preflight"
 import { iphoneResultText } from "./present-result"
-import { iphoneDestination, iphoneTargetedRequest } from "./target"
+import { iphoneTargetedRequest, iphoneTargets } from "./target"
 import { translateIphoneAction } from "./translate-action"
 import { translateIphoneHome } from "./translate-home"
 import {
@@ -49,45 +47,65 @@ export class PiIphoneTool {
     _update: PiIphoneUpdate,
     context: PiIphoneContext,
   ): Promise<PiIphoneOutput> {
-    if (!signal) {
-      throw new Error(PI_IPHONE_SIGNAL_REQUIRED)
-    }
-    signal.throwIfAborted()
-    if (!Value.Check(PI_IPHONE_PARAMETERS, input)) {
-      throw new Error(PI_IPHONE_INVALID_ARGUMENTS)
-    }
+    const cancellation = preflightIphoneTool(input, signal)
     const supportsImages = context.model?.input.includes(PI_IPHONE_IMAGE_CONTENT) === true
-    if (input.action === IPHONE_ACTION_SCREENSHOT && !supportsImages) {
+    return this.route(input, cancellation, supportsImages)
+  }
+
+  private async route(input: PiIphoneInput, signal: AbortSignal, supportsImages: boolean): Promise<PiIphoneOutput> {
+    if (input.action === IPHONE_ACTION_SCREENSHOT) {
+      return this.screenshot(input, supportsImages, signal)
+    }
+    if (input.action === PI_IPHONE_VALUE_HOMESCREEN) {
+      return this.home(input, signal)
+    }
+    if (input.tree_after) {
+      return this.executeWithTreeAfter(input, supportsImages, signal)
+    }
+    if (input.action === IPHONE_ACTION_TREE) {
+      return this.tree(input, supportsImages, signal)
+    }
+    return this.present(input, await this.dispatch(input, signal))
+  }
+
+  private async screenshot(
+    input: PiIphoneInput,
+    supportsImages: boolean,
+    signal: AbortSignal,
+  ): Promise<PiIphoneOutput> {
+    if (!supportsImages) {
       return {
         content: [{ type: PI_IPHONE_TEXT_CONTENT, text: PI_IPHONE_IMAGE_UNSUPPORTED }],
         details: { operation: input.action },
         isError: true,
       }
     }
-    if (input.action === PI_IPHONE_VALUE_HOMESCREEN) {
-      return this.home(input, signal)
-    }
     if (input.tree_after) {
-      const action = { ...input }
-      delete action.tree_after
-      const result = await this.dispatch(action, signal)
-      try {
-        return await this.tree(input, supportsImages, signal)
-      } catch (error) {
-        if (!(error instanceof Error)) {
-          throw error
-        }
-        return {
-          content: [{ type: PI_IPHONE_TEXT_CONTENT, text: PI_IPHONE_TREE_AFTER_FAILED + error.message }],
-          details: { operation: input.action, completed: result },
-          isError: true,
-        }
-      }
-    }
-    if (input.action === IPHONE_ACTION_TREE) {
-      return this.tree(input, supportsImages, signal)
+      return this.executeWithTreeAfter(input, supportsImages, signal)
     }
     return this.present(input, await this.dispatch(input, signal))
+  }
+
+  private async executeWithTreeAfter(
+    input: PiIphoneInput,
+    supportsImages: boolean,
+    signal: AbortSignal,
+  ): Promise<PiIphoneOutput> {
+    const action = { ...input }
+    delete action.tree_after
+    const completed = await this.dispatch(action, signal)
+    try {
+      return await this.tree(input, supportsImages, signal)
+    } catch (error) {
+      if (!(error instanceof Error)) {
+        throw error
+      }
+      return {
+        content: [{ type: PI_IPHONE_TEXT_CONTENT, text: PI_IPHONE_TREE_AFTER_FAILED + error.message }],
+        details: { operation: input.action, completed },
+        isError: true,
+      }
+    }
   }
 
   private async home(input: PiIphoneInput, signal: AbortSignal): Promise<PiIphoneOutput> {
@@ -148,13 +166,16 @@ export class PiIphoneTool {
   }
 
   private async dispatch(input: PiIphoneInput, signal: AbortSignal): Promise<IphoneDeviceActionOutput> {
-    if (
-      typeof input.element === "number" ||
-      input.text ||
-      iphoneDestination(input).kind === PI_IPHONE_DESTINATION_FOUND
-    ) {
-      return this.iphone.executeTargeted(iphoneTargetedRequest(input, translateIphoneAction(input)), signal)
+    const targets = iphoneTargets(input)
+    const action = translateIphoneAction(input, targets)
+    if (targets.source.kind === PI_IPHONE_DESTINATION_FOUND) {
+      if (
+        targets.source.target.kind !== IPHONE_TARGET_POINT ||
+        targets.destination.kind === PI_IPHONE_DESTINATION_FOUND
+      ) {
+        return this.iphone.executeTargeted(iphoneTargetedRequest(targets, action), signal)
+      }
     }
-    return this.iphone.execute(translateIphoneAction(input), signal)
+    return this.iphone.execute(action, signal)
   }
 }

@@ -48,16 +48,21 @@ export type PiIphoneSignal = Parameters<ToolDefinition<typeof PI_IPHONE_PARAMETE
 
 export type PiIphoneTextResult = IphoneInfoOutput | IphoneTreeOutput | IphoneTextOutput
 
-export interface PiIphoneDestinationFound {
+export interface PiIphoneTargetFound {
   kind: "found"
   target: IphoneActionTarget
 }
 
-export interface PiIphoneDestinationMissing {
+export interface PiIphoneTargetMissing {
   kind: "missing"
 }
 
-export type PiIphoneDestination = PiIphoneDestinationFound | PiIphoneDestinationMissing
+export type PiIphoneTargetSource = PiIphoneTargetFound | PiIphoneTargetMissing
+
+export interface PiIphoneTargets {
+  source: PiIphoneTargetSource
+  destination: PiIphoneTargetSource
+}
 
 export interface PiIphonePointOption {
   point?: IphonePoint

@@ -1,3 +1,5 @@
+import { type IphonePoint } from "#synapse/modules"
+
 export const PI_IPHONE_SCREEN_LABEL = "\nscreen: "
 
 export const PI_IPHONE_SCREEN_DIMENSION_SEPARATOR = "x"
@@ -64,6 +66,8 @@ export const PI_IPHONE_DEFAULT_FLIP_MS = 1400
 export const PI_IPHONE_SIGNAL_REQUIRED = "A operação do iPhone exige sinal de cancelamento."
 
 export const PI_IPHONE_OPTIONAL_SCREENSHOT_FAILED = "\nCaptura opcional indisponível: "
+
+export const PI_IPHONE_TARGET_REPLACED_POINT: IphonePoint = { x: 0, y: 0 }
 
 export const PI_IPHONE_DESTINATION_FOUND = "found"
 

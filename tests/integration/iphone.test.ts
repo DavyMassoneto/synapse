@@ -114,6 +114,44 @@ async function tapsElement(): Promise<void> {
   expect(sut.server.paths).toContain("/session/fake/actions")
 }
 
+async function tapsText(): Promise<void> {
+  const tool = new PiIphoneTool(sut.iphone)
+  await tool.execute("id", { action: "tree" }, new AbortController().signal, undefined, { model: undefined })
+  await tool.execute("id", { action: "tap", text: "Teste" }, new AbortController().signal, undefined, {
+    model: undefined,
+  })
+  expect(sut.server.paths).toContain("/session/fake/actions")
+}
+
+async function tapsZeroCoordinates(): Promise<void> {
+  await new PiIphoneTool(sut.iphone).execute(
+    "id",
+    { action: "tap", x: 0, y: 0 },
+    new AbortController().signal,
+    undefined,
+    { model: undefined },
+  )
+  expect(sut.server.paths).toContain("/session/fake/actions")
+}
+
+async function refusesMissingElement(): Promise<void> {
+  const tool = new PiIphoneTool(sut.iphone)
+  await tool.execute("id", { action: "tree" }, new AbortController().signal, undefined, { model: undefined })
+  await expect(
+    tool.execute("id", { action: "tap", element: 999 }, new AbortController().signal, undefined, { model: undefined }),
+  ).rejects.toThrow()
+  expect(sut.server.paths).not.toContain("/session/fake/actions")
+}
+
+async function dragsFromPointToElement(): Promise<void> {
+  const tool = new PiIphoneTool(sut.iphone)
+  await tool.execute("id", { action: "tree" }, new AbortController().signal, undefined, { model: undefined })
+  await tool.execute("id", { action: "drag", x: 0, y: 0, to_element: 1 }, new AbortController().signal, undefined, {
+    model: undefined,
+  })
+  expect(sut.server.paths).toContain("/session/fake/actions")
+}
+
 async function registersHost(): Promise<void> {
   const host = new IphoneFixtureHost()
   registerIphone(host, sut.iphone)
@@ -133,6 +171,10 @@ function suite(): void {
   afterEach(cleanup)
   test("árvore inclui captura quando modelo aceita imagem", treeIncludesImage)
   test("resolve índice da última árvore no núcleo", tapsElement)
+  test("resolve texto da última árvore no núcleo", tapsText)
+  test("coordenadas zero são alvo válido", tapsZeroCoordinates)
+  test("índice inexistente recusa sem ação", refusesMissingElement)
+  test("arrasta de coordenadas para índice", dragsFromPointToElement)
   test("registra ferramenta, comando e shutdown", registersHost)
   test("árvore retorna texto pelo WebDriver falso", readsTree)
   test("modelo sem imagem recusa captura sem acesso ao servidor", refusesImage)
