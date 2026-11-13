@@ -1,3 +1,4 @@
+export * from "./bound-text"
 export * from "./constants"
 export * from "./render-message"
 export * from "./select-history"

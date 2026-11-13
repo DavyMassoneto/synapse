@@ -30,7 +30,6 @@ import {
   TASK_BOARD_NOT_READY,
   TASK_BOARD_NOT_REASSIGNABLE,
   TASK_BOARD_UNAUTHORIZED,
-  TASK_BOARD_UNKNOWN_ACTION,
   TASK_BOARD_UNKNOWN_OWNER,
 } from "./constants"
 import { isTaskBoardActive, isTaskBoardTaskReady } from "./predicates"
@@ -40,13 +39,13 @@ import { taskBoardRequireText } from "./task-text"
 import { type TaskTransition } from "./types"
 import { taskBoardNormalizeScopes } from "./write-scope"
 
-function withoutOwner(task: TaskSnapshot, status: TaskStatus): TaskSnapshot {
+function resetPendingUnowned(task: TaskSnapshot): TaskSnapshot {
   return {
     id: task.id,
     revision: task.revision,
     subject: task.subject,
     description: task.description,
-    status,
+    status: TASK_PENDING,
     blockedBy: task.blockedBy,
     writeScopes: task.writeScopes,
   }
@@ -78,7 +77,7 @@ function claim(transition: TaskTransition): TaskSnapshot {
 function release(transition: TaskTransition): TaskSnapshot {
   ensureOwnerOrLead(transition)
   ensureStatus(transition.current, TASK_IN_PROGRESS, TASK_BOARD_NOT_IN_PROGRESS)
-  return withoutOwner(transition.current, TASK_PENDING)
+  return resetPendingUnowned(transition.current)
 }
 
 function edit(transition: TaskTransition): TaskSnapshot {
@@ -123,7 +122,7 @@ function complete(transition: TaskTransition): TaskSnapshot {
 function reopen(transition: TaskTransition): TaskSnapshot {
   ensureOwnerOrLead(transition)
   ensureStatus(transition.current, TASK_COMPLETED, TASK_BOARD_NOT_COMPLETED)
-  return withoutOwner(transition.current, TASK_PENDING)
+  return resetPendingUnowned(transition.current)
 }
 
 function assignTo(transition: TaskTransition, owner: string): TaskSnapshot {
@@ -148,7 +147,7 @@ function reassign(transition: TaskTransition): TaskSnapshot {
   if (input.owner) {
     return assignTo(transition, input.owner)
   }
-  return withoutOwner(current, TASK_PENDING)
+  return resetPendingUnowned(current)
 }
 
 function remove(transition: TaskTransition): TaskSnapshot {
@@ -179,7 +178,5 @@ export function taskBoardApplyAction(transition: TaskTransition): TaskSnapshot {
       return reassign(transition)
     case TASK_DELETE:
       return remove(transition)
-    default:
-      throw new TaskRefusal(`${TASK_BOARD_UNKNOWN_ACTION}${transition.input.action}`)
   }
 }

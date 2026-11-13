@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./extension-session"
 export * from "./lead-context"
 export * from "./lead-host"
 export * from "./lifecycle-team"

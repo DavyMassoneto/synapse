@@ -13,11 +13,11 @@ import {
 } from "#synapse/integration"
 import { PiProcess, type PiProcessScenarioHandle, runPiProcessPrompt } from "../pi-process"
 import {
-  PI_PROCESS_MODEL_REFERENCE,
-  PI_PROCESS_PROVIDER_URL,
-  PI_PROCESS_TEXT_KIND,
-  PI_PROCESS_TOOL_CALL_KIND,
-  type PiProcessStep,
+  SCRIPTED_PROVIDER_MODEL_REFERENCE,
+  SCRIPTED_PROVIDER_PROVIDER_URL,
+  SCRIPTED_PROVIDER_TEXT_KIND,
+  SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+  type ScriptedProviderStep,
 } from "../scripted-provider"
 import {
   TEAM_DISTRIBUTION_BOARD_PROMPT,
@@ -60,11 +60,11 @@ export async function smokeScenario(piProcess: PiProcessScenarioHandle): Promise
 export async function rejectsUnknownRecipientScenario(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.homeDirectory.script([
     {
-      kind: PI_PROCESS_TOOL_CALL_KIND,
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
       name: TEAM_TOOL_SEND_MESSAGE,
       argumentsJson: JSON.stringify({ agent: TEAM_DISTRIBUTION_UNKNOWN_RECIPIENT, message: TEAM_DISTRIBUTION_MESSAGE }),
     },
-    { kind: PI_PROCESS_TEXT_KIND, text: TEAM_DISTRIBUTION_REFUSED_REPLY },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: TEAM_DISTRIBUTION_REFUSED_REPLY },
   ])
 
   await runPiProcessPrompt(piProcess, TEAM_DISTRIBUTION_SEND_PROMPT)
@@ -74,7 +74,7 @@ export async function rejectsUnknownRecipientScenario(piProcess: PiProcessScenar
 export async function createsBoardTaskScenario(piProcess: PiProcessScenarioHandle): Promise<void> {
   piProcess.homeDirectory.script([
     {
-      kind: PI_PROCESS_TOOL_CALL_KIND,
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
       name: TEAM_TOOL_TASK_CREATE,
       argumentsJson: JSON.stringify({
         subject: TEAM_DISTRIBUTION_TASK_SUBJECT,
@@ -83,8 +83,12 @@ export async function createsBoardTaskScenario(piProcess: PiProcessScenarioHandl
         write_scopes: [],
       }),
     },
-    { kind: PI_PROCESS_TOOL_CALL_KIND, name: TEAM_TOOL_TASK_LIST, argumentsJson: TEAM_DISTRIBUTION_EMPTY_ARGUMENTS },
-    { kind: PI_PROCESS_TEXT_KIND, text: TEAM_DISTRIBUTION_BOARD_REPLY },
+    {
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+      name: TEAM_TOOL_TASK_LIST,
+      argumentsJson: TEAM_DISTRIBUTION_EMPTY_ARGUMENTS,
+    },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: TEAM_DISTRIBUTION_BOARD_REPLY },
   ])
 
   await runPiProcessPrompt(piProcess, TEAM_DISTRIBUTION_BOARD_PROMPT)
@@ -96,11 +100,11 @@ export async function restoresMemberScenario(piProcess: PiProcessScenarioHandle)
   configureMemberScenario(piProcess, [
     TEAM_DISTRIBUTION_DONE_STEP,
     {
-      kind: PI_PROCESS_TOOL_CALL_KIND,
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
       name: TEAM_TOOL_LIST_AGENTS,
       argumentsJson: TEAM_DISTRIBUTION_EMPTY_ARGUMENTS,
     },
-    { kind: PI_PROCESS_TEXT_KIND, text: TEAM_DISTRIBUTION_RESTORED_REPLY },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: TEAM_DISTRIBUTION_RESTORED_REPLY },
   ])
   const session = {
     path: join(piProcess.homeDirectory.home, TEAM_DISTRIBUTION_SESSION_FILE),
@@ -119,28 +123,28 @@ export async function restoresMemberScenario(piProcess: PiProcessScenarioHandle)
     const recordsText = JSON.stringify(reopened.received.records())
     expect(recordsText).toContain(TEAM_DISTRIBUTION_MEMBER_NAME)
     expect(recordsText).toContain(TEAM_DISTRIBUTION_INACTIVE_STATUS)
-    expect(recordsText).toContain(PI_PROCESS_MODEL_REFERENCE)
+    expect(recordsText).toContain(SCRIPTED_PROVIDER_MODEL_REFERENCE)
     expectTeamDistributionToolEnd(reopened, TEAM_TOOL_LIST_AGENTS, false)
   } finally {
     await reopened.close()
   }
 }
 
-function configureMemberScenario(piProcess: PiProcessScenarioHandle, finalSteps: PiProcessStep[]): void {
+function configureMemberScenario(piProcess: PiProcessScenarioHandle, finalSteps: ScriptedProviderStep[]): void {
   writeFileSync(
     join(piProcess.homeDirectory.agentDirectory, TEAM_EXTENSIONS_CONFIG_FILE),
-    JSON.stringify({ memberExtensions: [fileURLToPath(PI_PROCESS_PROVIDER_URL)] }),
+    JSON.stringify({ memberExtensions: [fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL)] }),
   )
   piProcess.homeDirectory.script({
     tracks: [
       {
         marker: TEAM_DISTRIBUTION_MEMBER_MARKER,
-        steps: [{ kind: PI_PROCESS_TEXT_KIND, text: TEAM_DISTRIBUTION_MEMBER_REPLY }],
+        steps: [{ kind: SCRIPTED_PROVIDER_TEXT_KIND, text: TEAM_DISTRIBUTION_MEMBER_REPLY }],
       },
       {
         steps: [
           {
-            kind: PI_PROCESS_TOOL_CALL_KIND,
+            kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
             name: TEAM_TOOL_SUBAGENT,
             argumentsJson: JSON.stringify({
               name: TEAM_DISTRIBUTION_MEMBER_NAME,
@@ -149,7 +153,7 @@ function configureMemberScenario(piProcess: PiProcessScenarioHandle, finalSteps:
             }),
           },
           {
-            kind: PI_PROCESS_TOOL_CALL_KIND,
+            kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
             name: TEAM_TOOL_WAIT_AGENT,
             argumentsJson: JSON.stringify({ timeout_ms: TEAM_DISTRIBUTION_WAIT_MILLISECONDS }),
           },

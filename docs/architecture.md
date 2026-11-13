@@ -122,12 +122,15 @@ Caminhos são montados com as funções de caminho da plataforma, e nenhum módu
 | `configuration/` | Ler e validar as variáveis de ambiente |
 | `git-output/` | Executar o git com um limite de saída explícito, sem truncar o que ele devolve |
 | `diff-reading/` | Obter o diff do git |
-| `source-reading/` | Ler os arquivos de código do commit avaliado, com um limite total explícito |
+| `repository-inspection/` | Investigar arquivos e histórico do commit avaliado por operações somente leitura do git |
+| `output-page/` | Formatar páginas de saída com limites explícitos de linhas e bytes |
 | `diff-annotation/` | Numerar as linhas do diff e registrar as que ele mostra, com a posição de cada uma |
 | `review-request/` | Carregar arquitetura, regras e padrões e montar a solicitação ao avaliador |
-| `http-failure/` | Recusar uma resposta HTTP que falhou, com o status e o detalhe dela, para os dois clientes HTTP |
-| `provider-client/` | Chamar o modelo no provedor, ler a resposta em streaming e repetir a chamada em falhas de servidor |
-| `review-result/` | Validar a resposta: veredito e apontamentos |
+| `http-failure/` | Recusar uma resposta HTTP que falhou, com o status e o detalhe dela, para o cliente do GitHub |
+| `agent-launch/` | Executar o processo do agente com ambiente mínimo e revalidar sua entrega antes da publicação |
+| `review-agent/` | Conduzir a investigação pelo SDK do pi, controlar a entrega e a cobertura do diff |
+| `review-configuration/` | Definir os limites do modelo e da execução e o ambiente do processo agente |
+| `review-result/` | Validar resumo e apontamentos e derivar o veredito dos apontamentos |
 | `github-rest-client/` | Chamar a API REST do GitHub e esperar o limite de taxa |
 | `finding-placement/` | Posicionar cada apontamento na linha do diff e agrupar os da mesma linha |
 | `review-text/` | Escrever o texto da review: o comentário de cada apontamento, o resumo, o marcador do commit e a seção dos apontamentos sem linha |

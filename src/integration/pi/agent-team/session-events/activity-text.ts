@@ -1,10 +1,7 @@
 import { type ToolExecutionStartEvent } from "@earendil-works/pi-coding-agent"
 import { Value } from "typebox/value"
-import {
-  TEAM_PI_MEMBER_ACTIVITY_SEPARATOR,
-  TEAM_PI_MEMBER_DETAIL_SEPARATOR,
-  TEAM_PI_MEMBER_TOOL_INPUT_SCHEMA,
-} from "./constants"
+import { TEAM_PI_MEMBER_ACTIVITY_SEPARATOR, TEAM_PI_MEMBER_DETAIL_SEPARATOR } from "./constants"
+import { TEAM_PI_MEMBER_TOOL_INPUT_SCHEMA } from "./schemas"
 
 export function teamMemberActivity(event: ToolExecutionStartEvent): string {
   if (!Value.Check(TEAM_PI_MEMBER_TOOL_INPUT_SCHEMA, event.args)) {

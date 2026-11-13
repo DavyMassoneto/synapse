@@ -1,5 +1,4 @@
 import { type ClassifierModel } from "@earendil-works/pi-ai"
-import { Type } from "typebox"
 
 export const ROUTER_FIXTURE_CLASSIFIER: ClassifierModel<"typesafe"> = {
   type: "classifier",
@@ -71,14 +70,24 @@ export const ROUTER_TEST_AVAILABLE_MODELS_COMMAND = "get_available_models"
 
 export const ROUTER_TEST_LAST_TEXT_COMMAND = "get_last_assistant_text"
 
-export const ROUTER_TEST_MODELS_RESPONSE = Type.Object({
-  data: Type.Object({ models: Type.Array(Type.Object({ provider: Type.String(), id: Type.String() })) }),
-})
-
-export const ROUTER_TEST_TEXT_RESPONSE = Type.Object({ data: Type.Object({ text: Type.String() }) })
-
 export const ROUTER_TEST_ABORTED_REASON = "aborted"
 
 export const ROUTER_TEST_PROMPT = "Olá\u2028mundo\u2029!"
 
 export const ROUTER_TEST_REPLY = "ok"
+
+export const ROUTER_TEST_INVESTIGATION = "Investigue"
+
+export const ROUTER_TEST_CONTEXT_WINDOW = 100000
+
+export const ROUTER_TEST_FAILURE_MESSAGE = "erro"
+
+export const ROUTER_TEST_FALLBACK_PATTERN = /^Fallback técnico:/
+
+export const ROUTER_TEST_UNAVAILABLE_FALLBACK = "fallback conservador indisponível"
+
+export const ROUTER_TEST_UNAVAILABLE_SELECTION = "Modelo ou nível escolhido indisponível"
+
+export const ROUTER_TEST_ABORT_ERROR = "AbortError"
+
+export const ROUTER_TEST_MESSAGE_END = "message_end"

@@ -1,4 +1,4 @@
-import { PI_PROCESS_MODEL_REFERENCE } from "../scripted-provider"
+import { SCRIPTED_PROVIDER_MODEL_REFERENCE } from "../scripted-provider"
 import { type InvalidConfigCase } from "./types"
 
 export const INVALID_CASES: InvalidConfigCase[] = [
@@ -19,6 +19,36 @@ export const DISTRIBUTION_PI_DIRECTORY = ".pi"
 
 export const DISTRIBUTION_AGENT_DIRECTORY = "agent"
 
-export const VALID_CONFIG = JSON.stringify({ model: PI_PROCESS_MODEL_REFERENCE, thinking: "low" })
+export const DISTRIBUTION_CUSTOM_AGENT_DIRECTORY = "outro-diretorio"
+
+export const VALID_CONFIG = JSON.stringify({ model: SCRIPTED_PROVIDER_MODEL_REFERENCE, thinking: "low" })
 
 export const ADVISOR_PROMPT = "Consulte o advisor"
+
+export const DISTRIBUTION_COMMANDS_COMMAND = "get_commands"
+
+export const DISTRIBUTION_ADVISOR_NAME = "advisor"
+
+export const DISTRIBUTION_EXTENSION_SOURCE = "extension"
+
+export const DISTRIBUTION_ADVISOR_STATUS = `advisor: ${SCRIPTED_PROVIDER_MODEL_REFERENCE}`
+
+export const DISTRIBUTION_ERROR_NOTICE = "error"
+
+export const DISTRIBUTION_INVALID_CONFIGURATION_PATTERN = /inválida/
+
+export const DISTRIBUTION_MISSING_EXTENSION_PATTERN = /extensão|extension/i
+
+export const DISTRIBUTION_ADVISOR_ARGUMENTS_JSON = "{}"
+
+export const DISTRIBUTION_ADVISOR_REPLY = "conselho"
+
+export const DISTRIBUTION_COMPLETION_REPLY = "concluído"
+
+export const DISTRIBUTION_DISABLED_ADVISOR_ERROR = "Tool advisor not found"
+
+export const DISTRIBUTION_INVALID_ARGUMENTS_JSON = "[]"
+
+export const DISTRIBUTION_INVALID_ARGUMENTS_ERROR = "Tool arguments must be a JSON object"
+
+export const DISTRIBUTION_FINISHED_REPLY = "ok"

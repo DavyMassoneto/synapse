@@ -60,7 +60,22 @@ async function currentGenerationStarts(): Promise<void> {
   expect((await current).kind).toBe("started")
 }
 
+async function suspendedBetweenOpenAndAdmission(): Promise<void> {
+  const { team, sessions } = makeTeamSut()
+  sessions.held = true
+  const starting = team.start(TEAM_TEST_ALICE_REQUEST)
+  sessions.releaseFirst()
+  await Promise.resolve()
+  const stopping = team.suspend()
+  sessions.session.finishPrompt()
+  await stopping
+  await starting
+  expect(sessions.session.disposals).toBe(1)
+  expect(team.overview().agents).toHaveLength(1)
+}
+
 function register(): void {
+  test("suspensão não deixa sessão entre geração e admissão", suspendedBetweenOpenAndAdmission)
   test("criação tardia após suspensão", lateOpen)
   test("suspensão espera preparação", suspendPrompt)
   test("suspensão impede aviso antigo", lateCallback)
