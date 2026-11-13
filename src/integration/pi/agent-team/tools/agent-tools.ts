@@ -1,4 +1,5 @@
 import { type AgentTeam } from "#synapse/modules"
+import { TeamAgentHandlers } from "./agent-handlers"
 import {
   TEAM_TOOL_LIST_AGENTS,
   TEAM_TOOL_LIST_AGENTS_DESCRIPTION,
@@ -9,7 +10,6 @@ import {
 } from "./constants"
 import { registeredTeamTool } from "./register-tool"
 import { TEAM_TOOL_NO_PARAMETERS, TEAM_TOOL_SEND_MESSAGE_PARAMETERS, TEAM_TOOL_WAIT_AGENT_PARAMETERS } from "./schemas"
-import { TeamAgentHandlers } from "./team-handlers"
 import { type TeamRegisteredTool } from "./types"
 
 export function teamAgentTools(team: AgentTeam, caller: string): TeamRegisteredTool[] {

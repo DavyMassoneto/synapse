@@ -1,4 +1,5 @@
 import { type TeamOverview } from "#synapse/modules"
+import { teamPanelLines } from "../team-panel"
 import {
   TEAM_PI_CONTEXT_ATTACHED,
   TEAM_PI_CONTEXT_DETACHED,
@@ -6,7 +7,7 @@ import {
   TEAM_PI_NO_SESSION,
   TEAM_PI_WIDGET_KEY,
 } from "./constants"
-import { buildTeamLeadWidget } from "./lead-widget"
+import { teamLeadWidgetRepresentation } from "./lead-widget"
 import { type AgentTeamContext, type TeamLeadContextState } from "./types"
 
 export class PiTeamLeadContext {
@@ -37,7 +38,7 @@ export class PiTeamLeadContext {
   show(overview: TeamOverview): void {
     const context = this.attachedContext
     if (context?.hasUI) {
-      const content = buildTeamLeadWidget(overview, context.mode)
+      const content = teamLeadWidgetRepresentation(teamPanelLines(overview), context.mode)
       context.ui.setWidget(TEAM_PI_WIDGET_KEY, content)
     }
   }

@@ -7,8 +7,8 @@ import {
 } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam } from "#synapse/modules"
 import { TEAM_PI_LEAD_INSTRUCTIONS, TEAM_PI_PROMPT_SECTION } from "./constants"
+import { type AgentTeamContext, type PiTeamLeadSession } from "./lead-session"
 import { readTeamHistory } from "./session-history"
-import { type AgentTeamContext, type PiTeamLeadSession } from "./types"
 
 export class PiTeamLifecycle {
   private readonly lead: PiTeamLeadSession

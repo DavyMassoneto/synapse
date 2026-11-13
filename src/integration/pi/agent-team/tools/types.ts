@@ -13,6 +13,10 @@ import {
   type TEAM_TOOL_WAIT_AGENT_PARAMETERS,
 } from "./schemas"
 
+export type TeamModelToolSignal = Parameters<
+  ToolDefinition<typeof TEAM_TOOL_NO_PARAMETERS, TeamToolDetails>["execute"]
+>[2]
+
 export type TeamModelToolUpdate = Parameters<
   ToolDefinition<typeof TEAM_TOOL_NO_PARAMETERS, TeamToolDetails>["execute"]
 >[3]
@@ -78,8 +82,6 @@ export type TeamRegisteredTool = Omit<
 export interface TeamToolIdentity {
   name: TeamToolName
 }
-
-export type TeamWaitSignal = Parameters<AgentTeam["wait"]>[2]
 
 export interface TeamToolRegistration<T extends TSchema> {
   name: TeamToolName

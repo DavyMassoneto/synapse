@@ -1,9 +1,9 @@
 import { type MemberRecord, type TaskSnapshot } from "#synapse/modules"
+import { TEAM_HISTORY_MEMBER_ENTRY, TEAM_HISTORY_TASK_ENTRY } from "../session-history"
 import { TEAM_PI_NOTICE_TYPE, TEAM_PI_STEER } from "./constants"
-import { TEAM_HISTORY_MEMBER_ENTRY, TEAM_HISTORY_TASK_ENTRY } from "./session-history"
 import { type AgentTeamLeadHost } from "./types"
 
-export class PiTeamLeadHistory {
+export class PiTeamLeadOutput {
   private readonly pi: AgentTeamLeadHost
 
   constructor(pi: AgentTeamLeadHost) {

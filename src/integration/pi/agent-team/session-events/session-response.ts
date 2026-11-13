@@ -1,10 +1,10 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
-import { PI_MODEL_REFERENCE_SEPARATOR } from "#synapse/integration/pi/model-reference"
 import {
   MEMBER_ASSISTANT_RESPONSE,
   MEMBER_EXECUTION_SETTLED,
   type MemberAssistantResponse,
   type MemberExecutionSettled,
+  REFERENCE_SEPARATOR,
 } from "#synapse/modules"
 import { TEAM_PI_MEMBER_ERROR_REASON, TEAM_PI_MEMBER_RESPONSE_FAILURE } from "./constants"
 import { type TeamMemberSessionPort } from "./types"
@@ -12,7 +12,7 @@ import { type TeamMemberSessionPort } from "./types"
 export function teamMemberAssistantResponse(message: AssistantMessage): MemberAssistantResponse {
   const response: MemberAssistantResponse = {
     kind: MEMBER_ASSISTANT_RESPONSE,
-    model: `${message.provider}${PI_MODEL_REFERENCE_SEPARATOR}${message.model}`,
+    model: `${message.provider}${REFERENCE_SEPARATOR}${message.model}`,
   }
   if (message.errorMessage) {
     response.failure = message.errorMessage

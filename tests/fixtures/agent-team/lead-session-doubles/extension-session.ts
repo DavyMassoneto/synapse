@@ -1,5 +1,5 @@
 import { type AgentSession, type ExtensionError } from "@earendil-works/pi-coding-agent"
-import { type TeamMemberExtensionSession } from "#synapse/integration/pi/agent-team/extension-lifecycle"
+import { type TeamMemberExtensionSession } from "#synapse/integration"
 import {
   TEAM_EXTENSION_FIXTURE_DISPOSE,
   TEAM_EXTENSION_FIXTURE_EVENT,
@@ -21,6 +21,8 @@ export class TeamExtensionSessionDouble implements TeamMemberExtensionSession {
 
   held = false
 
+  bindFailure = false
+
   startupFailure = false
 
   shutdownFailure = false
@@ -30,6 +32,9 @@ export class TeamExtensionSessionDouble implements TeamMemberExtensionSession {
   async bindExtensions(bindings: Parameters<AgentSession["bindExtensions"]>[0]): Promise<void> {
     this.operations.push(TEAM_EXTENSION_FIXTURE_START)
     this.errorListener = bindings.onError
+    if (this.bindFailure) {
+      throw new Error(TEAM_EXTENSION_FIXTURE_FAILURE)
+    }
     if (this.startupFailure) {
       this.reportFailure()
     }

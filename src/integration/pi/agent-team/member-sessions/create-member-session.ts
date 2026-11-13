@@ -13,20 +13,8 @@ export async function createPiTeamMemberSession(request: TeamMemberSessionReques
     customTools: request.tools,
   })
   const lifecycle = new TeamMemberExtensionLifecycle(session)
-  try {
-    if (modelFallbackMessage) {
-      throw new Error(modelFallbackMessage)
-    }
-    await lifecycle.start()
-    return { session, lifecycle }
-  } catch (error) {
-    try {
-      await lifecycle.close()
-    } catch (cleanupError) {
-      throw new AggregateError([error, cleanupError], TEAM_PI_MEMBER_EXTENSION_FAILURE)
-    }
-    throw error
-  }
+  await lifecycle.start(modelFallbackMessage)
+  return { session, lifecycle }
 }
 
 async function createTeamResourceLoader(request: TeamMemberSessionRequest): Promise<DefaultResourceLoader> {

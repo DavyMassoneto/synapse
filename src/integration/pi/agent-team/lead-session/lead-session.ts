@@ -1,12 +1,12 @@
 import { PiTeamLeadContext } from "./lead-context"
-import { PiTeamLeadHistory } from "./lead-history"
 import { PiTeamLeadModel } from "./lead-model"
+import { PiTeamLeadOutput } from "./lead-output"
 import { type AgentTeamLeadHost, type PiTeamLeadSession } from "./types"
 
 export function createPiTeamLeadSession(pi: AgentTeamLeadHost): PiTeamLeadSession {
   const context = new PiTeamLeadContext()
   const model = new PiTeamLeadModel(context)
-  const history = new PiTeamLeadHistory(pi)
+  const output = new PiTeamLeadOutput(pi)
   return {
     attach: context.attach.bind(context),
     detach: model.detach.bind(model),
@@ -16,8 +16,8 @@ export function createPiTeamLeadSession(pi: AgentTeamLeadHost): PiTeamLeadSessio
     reportFailure: context.reportFailure.bind(context),
     modelUse: model.modelUse.bind(model),
     recordMessage: model.recordMessage.bind(model),
-    deliver: history.deliver.bind(history),
-    recordTask: history.recordTask.bind(history),
-    recordMember: history.recordMember.bind(history),
+    deliver: output.deliver.bind(output),
+    recordTask: output.recordTask.bind(output),
+    recordMember: output.recordMember.bind(output),
   }
 }

@@ -1,12 +1,13 @@
 import { getAgentDir } from "@earendil-works/pi-coding-agent"
-import { PI_MODEL_REFERENCE_SEPARATOR } from "#synapse/integration/pi/model-reference"
 import {
   type AgentTeam,
   type MemberRecord,
   type MemberSessions,
   type OpenedMember,
   type OpenMemberRequest,
+  REFERENCE_SEPARATOR,
 } from "#synapse/modules"
+import { type AgentTeamContext } from "../lead-session"
 import { readMemberExtensions } from "../member-extensions"
 import { selectMemberModel } from "../model-selection"
 import { PiTeamSessionAdapter } from "../session-events"
@@ -65,9 +66,7 @@ export class PiTeamMemberSessions implements MemberSessions {
 
   async reopen(record: MemberRecord, team: AgentTeam): Promise<OpenedMember> {
     const context = this.dependencies.context()
-    if (record.leadId !== context.sessionManager.getSessionId() || record.cwd !== context.cwd) {
-      throw new Error(TEAM_PI_MEMBER_WRONG_LEAD + record.name)
-    }
+    this.ensureRecordBelongsToContext(record, context)
     const selection = selectMemberModel(context, { model: record.model, thinking: record.thinking })
     const storage = openTeamMemberStorage(record)
     const session = await this.create({ cwd: record.cwd, storage, selection, name: record.name, team })
@@ -75,6 +74,12 @@ export class PiTeamMemberSessions implements MemberSessions {
       session: new PiTeamSessionAdapter(session.session, session.lifecycle),
       journal: new PiTeamMemberJournal(storage),
       record,
+    }
+  }
+
+  private ensureRecordBelongsToContext(record: MemberRecord, context: AgentTeamContext): void {
+    if (record.leadId !== context.sessionManager.getSessionId() || record.cwd !== context.cwd) {
+      throw new Error(TEAM_PI_MEMBER_WRONG_LEAD + record.name)
     }
   }
 
@@ -97,7 +102,7 @@ export class PiTeamMemberSessions implements MemberSessions {
       leadId,
       name: request.name,
       description: request.description,
-      model: `${selection.model.provider}${PI_MODEL_REFERENCE_SEPARATOR}${selection.model.id}`,
+      model: `${selection.model.provider}${REFERENCE_SEPARATOR}${selection.model.id}`,
       thinking: selection.thinkingLevel,
       cwd,
       sessionId: storage.getSessionId(),

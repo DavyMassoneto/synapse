@@ -1,6 +1,17 @@
 import { describe, expect, test } from "vitest"
-import { TeamMemberExtensionLifecycle } from "#synapse/integration/pi/agent-team/extension-lifecycle"
-import { TeamExtensionSessionDouble } from "../fixtures"
+import { TeamMemberExtensionLifecycle } from "#synapse/integration"
+import {
+  TEAM_EXTENSION_FIXTURE_AGGREGATE_TEST,
+  TEAM_EXTENSION_FIXTURE_BIND_FAILURE_TEST,
+  TEAM_EXTENSION_FIXTURE_DISPOSE,
+  TEAM_EXTENSION_FIXTURE_FAILURE,
+  TEAM_EXTENSION_FIXTURE_FALLBACK_TEST,
+  TEAM_EXTENSION_FIXTURE_SHUTDOWN,
+  TEAM_EXTENSION_FIXTURE_START,
+  TEAM_EXTENSION_FIXTURE_START_EXPECTED_FAILURE,
+  TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL,
+  TeamExtensionSessionDouble,
+} from "../fixtures"
 
 async function closesOnce(): Promise<void> {
   const session = new TeamExtensionSessionDouble()
@@ -61,7 +72,55 @@ async function failedAttemptDoesNotDisposeSibling(): Promise<void> {
   await activeLifecycle.close()
 }
 
+async function refusesModelFallback(): Promise<void> {
+  const session = new TeamExtensionSessionDouble()
+  const lifecycle = new TeamMemberExtensionLifecycle(session)
+  await expect(lifecycle.start(TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL)).rejects.toThrow(
+    TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL,
+  )
+  expect(session.operations).toEqual([TEAM_EXTENSION_FIXTURE_SHUTDOWN, TEAM_EXTENSION_FIXTURE_DISPOSE])
+}
+
+async function disposesAfterBindFailure(): Promise<void> {
+  const session = new TeamExtensionSessionDouble()
+  session.bindFailure = true
+  const lifecycle = new TeamMemberExtensionLifecycle(session)
+  await expect(lifecycle.start()).rejects.toThrow(TEAM_EXTENSION_FIXTURE_FAILURE)
+  expect(session.operations).toEqual([
+    TEAM_EXTENSION_FIXTURE_START,
+    TEAM_EXTENSION_FIXTURE_SHUTDOWN,
+    TEAM_EXTENSION_FIXTURE_DISPOSE,
+  ])
+}
+
+async function preservesStartupAndCleanupErrors(): Promise<void> {
+  const session = new TeamExtensionSessionDouble()
+  session.startupFailure = true
+  session.shutdownFailure = true
+  const lifecycle = new TeamMemberExtensionLifecycle(session)
+  try {
+    await lifecycle.start()
+    expect.fail(TEAM_EXTENSION_FIXTURE_START_EXPECTED_FAILURE)
+  } catch (error) {
+    expect(error).toBeInstanceOf(AggregateError)
+    if (error instanceof AggregateError) {
+      expect(error.errors).toHaveLength(2)
+      expect(error.errors[0]).toBeInstanceOf(Error)
+      expect(error.errors[0]).not.toBeInstanceOf(AggregateError)
+      expect(error.errors[1]).not.toBeInstanceOf(AggregateError)
+    }
+  }
+  expect(session.operations).toEqual([
+    TEAM_EXTENSION_FIXTURE_START,
+    TEAM_EXTENSION_FIXTURE_SHUTDOWN,
+    TEAM_EXTENSION_FIXTURE_DISPOSE,
+  ])
+}
+
 function registerTests(): void {
+  test(TEAM_EXTENSION_FIXTURE_FALLBACK_TEST, refusesModelFallback)
+  test(TEAM_EXTENSION_FIXTURE_BIND_FAILURE_TEST, disposesAfterBindFailure)
+  test(TEAM_EXTENSION_FIXTURE_AGGREGATE_TEST, preservesStartupAndCleanupErrors)
   test("falha de startup descarta somente a tentativa", failedAttemptDoesNotDisposeSibling)
   test("shutdown ocorre uma vez antes de dispose", closesOnce)
   test("dispose aguarda shutdown assíncrono", waitsForShutdown)

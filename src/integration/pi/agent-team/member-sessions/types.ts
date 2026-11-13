@@ -1,9 +1,10 @@
 import { type AgentSession, type SessionManager } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
+import { type AgentTeamContext } from "../lead-session"
 import { type SelectedMemberModel } from "../model-selection"
 import { type TeamRegisteredTool } from "../tools"
-import { type AgentTeamContext, type AgentTeamMemberExtension } from "../types"
+import { type AgentTeamMemberExtension } from "../types"
 
 export interface TeamMemberSessionDependencies {
   context(): AgentTeamContext
