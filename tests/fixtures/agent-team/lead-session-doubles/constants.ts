@@ -30,3 +30,23 @@ export const TEAM_SESSION_FIXTURE_REPLY_TEXT = "resposta"
 export const TEAM_SESSION_FIXTURE_QUEUED = "queued"
 
 export const TEAM_SESSION_FIXTURE_STORAGE_MISSING = "Arquivo da sessão de teste ausente."
+
+export const TEAM_EXTENSION_FIXTURE_START = "start"
+
+export const TEAM_EXTENSION_FIXTURE_SHUTDOWN = "shutdown"
+
+export const TEAM_EXTENSION_FIXTURE_DISPOSE = "dispose"
+
+export const TEAM_EXTENSION_FIXTURE_PATH = "fake-extension"
+
+export const TEAM_EXTENSION_FIXTURE_EVENT = "session_start"
+
+export const TEAM_EXTENSION_FIXTURE_FAILURE = "Falha da extensão falsa"
+
+export const TEAM_SESSION_FIXTURE_HEADER_TYPE = "session"
+
+export const TEAM_SESSION_FIXTURE_LEGACY_VERSION = 1
+
+export const TEAM_SESSION_FIXTURE_TIMESTAMP = "2026-01-01T00:00:00.000Z"
+
+export const TEAM_SESSION_FIXTURE_WRONG_ID = "wrong-session"

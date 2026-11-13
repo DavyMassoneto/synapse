@@ -1,4 +1,5 @@
 import { describe, expect, test } from "vitest"
+import { TEAM_OPERATION_FAILED } from "../public"
 import { makeTeamSut, startAlice } from "./team-scenario"
 
 function self(): void {
@@ -48,7 +49,7 @@ async function pending(): Promise<void> {
 async function journalAccept(): Promise<void> {
   const { team, sessions } = await startAlice()
   sessions.journal.failAt = 3
-  expect(team.send("lead", "alice", "oi").kind).toBe("refused")
+  expect(team.send("lead", "alice", "oi").kind).toBe(TEAM_OPERATION_FAILED)
   expect(sessions.journal.checkpoint.pending).toEqual(["x"])
 }
 
@@ -72,7 +73,7 @@ function register(): void {
   test("mensagem durante streaming", steer)
   test("enfileira durante preparação", preparing)
   test("reinicia quando há pendências", pending)
-  test("recusa falha ao aceitar mensagem", journalAccept)
+  test("informa falha técnica ao aceitar mensagem", journalAccept)
 }
 
 describe("message-delivery", register)

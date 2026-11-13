@@ -1,17 +1,19 @@
 import {
   type OpenedMember,
-  type TEAM_FAILED,
-  type TEAM_FINISHED,
-  type TEAM_INTERRUPTED,
   type TeamAgentState,
   type TeamModelReference,
 } from "#synapse/modules/agent-team/public/contracts"
-import { type TEAM_MEMBER_HAS_FAILURE, type TEAM_MEMBER_NO_FAILURE } from "./constants"
 
-export interface TeamMemberOutcome {
-  state: TeamMemberTerminalState
+export interface TeamMemberInterruptedOutcome {
+  state: "interrupted"
+}
+
+export interface TeamMemberCompletedOutcome {
+  state: TeamMemberCompletedState
   text: string
 }
+
+export type TeamMemberOutcome = TeamMemberInterruptedOutcome | TeamMemberCompletedOutcome
 
 export interface TeamMemberObserver {
   memberSettled(name: string, outcome: TeamMemberOutcome): void
@@ -26,24 +28,20 @@ export interface TeamMemberRowInput {
   waiting: boolean
   unconfirmed: number
   tools: TeamActiveTools
-  presentation: TeamMemberPresentationPort
+  effectiveModel: TeamModelReference
 }
 
 export type TeamActiveTools = Map<string, string>
 
-export type TeamMemberTerminalState = typeof TEAM_FINISHED | typeof TEAM_FAILED | typeof TEAM_INTERRUPTED
-
 export type TeamMemberFailureState = TeamMemberFailure | TeamMemberNoFailure
 
 export interface TeamMemberFailure {
-  kind: typeof TEAM_MEMBER_HAS_FAILURE
+  kind: "failed"
   message: string
 }
 
 export interface TeamMemberNoFailure {
-  kind: typeof TEAM_MEMBER_NO_FAILURE
+  kind: "none"
 }
 
-export interface TeamMemberPresentationPort {
-  readonly effectiveModel: TeamModelReference
-}
+export type TeamMemberCompletedState = "finished" | "failed"

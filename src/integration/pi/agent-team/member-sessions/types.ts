@@ -1,12 +1,14 @@
-import { type AgentSession, type SessionManager, type ToolDefinition } from "@earendil-works/pi-coding-agent"
+import { type AgentSession, type SessionManager } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules"
+import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { type SelectedMemberModel } from "../model-selection"
+import { type TeamRegisteredTool } from "../tools"
 import { type AgentTeamContext, type AgentTeamMemberExtension } from "../types"
 
 export interface TeamMemberSessionDependencies {
   context(): AgentTeamContext
   extension: AgentTeamMemberExtension
-  tools(team: AgentTeam, caller: string): ToolDefinition[]
+  tools(team: AgentTeam, caller: string): TeamRegisteredTool[]
 }
 
 export interface TeamMemberSessionRequest {
@@ -14,13 +16,18 @@ export interface TeamMemberSessionRequest {
   storage: SessionManager
   selection: SelectedMemberModel
   instructions: string
-  tools: ToolDefinition[]
+  tools: TeamRegisteredTool[]
   extension: AgentTeamMemberExtension
   extensionPaths: string[]
 }
 
-export interface TeamOpenedSession {
+export interface TeamCreatedMemberSession {
   session: AgentSession
+  lifecycle: TeamMemberExtensionLifetime
+}
+
+export interface TeamOpenedSession {
+  session: TeamCreatedMemberSession
   path: string
 }
 

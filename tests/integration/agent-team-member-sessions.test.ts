@@ -1,4 +1,4 @@
-import { rmSync, writeFileSync } from "node:fs"
+import { readFileSync, rmSync, writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import {
   openTeamMemberStorage,
@@ -7,8 +7,12 @@ import {
   TEAM_PI_MEMBER_USER_ROLE,
 } from "#synapse/integration"
 import {
+  TEAM_SESSION_FIXTURE_HEADER_TYPE,
+  TEAM_SESSION_FIXTURE_LEGACY_VERSION,
   TEAM_SESSION_FIXTURE_TEST_CHECKPOINT,
   TEAM_SESSION_FIXTURE_TEST_RECORD,
+  TEAM_SESSION_FIXTURE_TIMESTAMP,
+  TEAM_SESSION_FIXTURE_WRONG_ID,
   TeamStorageFixture,
   teamStorageRecord,
 } from "../fixtures"
@@ -75,9 +79,41 @@ function refusesDifferentIdentity(): void {
   expect(openTeamMemberStorage.bind(null, record)).toThrow(/divergente/)
 }
 
+function refusesWrongIdentityWithoutMutation(): void {
+  const record = teamStorageRecord(fixture)
+  const content = JSON.stringify({
+    type: TEAM_SESSION_FIXTURE_HEADER_TYPE,
+    version: TEAM_SESSION_FIXTURE_LEGACY_VERSION,
+    id: TEAM_SESSION_FIXTURE_WRONG_ID,
+    cwd: record.cwd,
+    timestamp: TEAM_SESSION_FIXTURE_TIMESTAMP,
+  })
+  writeFileSync(record.sessionFile, content)
+  const before = readFileSync(record.sessionFile)
+  expect(openTeamMemberStorage.bind(null, record)).toThrow(/divergente/)
+  expect(readFileSync(record.sessionFile)).toEqual(before)
+}
+
+function refusesWrongCwdWithoutMutation(): void {
+  const record = teamStorageRecord(fixture)
+  const content = JSON.stringify({
+    type: TEAM_SESSION_FIXTURE_HEADER_TYPE,
+    version: TEAM_SESSION_FIXTURE_LEGACY_VERSION,
+    id: record.sessionId,
+    cwd: fixture.directory,
+    timestamp: TEAM_SESSION_FIXTURE_TIMESTAMP,
+  })
+  writeFileSync(record.sessionFile, content)
+  const before = readFileSync(record.sessionFile)
+  expect(openTeamMemberStorage.bind(null, record)).toThrow(/divergente/)
+  expect(readFileSync(record.sessionFile)).toEqual(before)
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
+  test("id divergente em sessão antiga sem newline não altera bytes", refusesWrongIdentityWithoutMutation)
+  test("cwd divergente em sessão antiga sem newline não altera bytes", refusesWrongCwdWithoutMutation)
   test("checkpoint preserva mensagens ainda não confirmadas", persistsCheckpoint)
   test("arquivo removido recusa gravação de checkpoint", refusesMissingJournal)
   test("reabre a sessão pelo caminho exato e preserva identidade", reopensExactStorage)

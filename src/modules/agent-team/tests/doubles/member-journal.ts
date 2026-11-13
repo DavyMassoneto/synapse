@@ -7,7 +7,12 @@ export class TeamTestMemberJournal implements MemberJournal {
 
   failAt = 0
 
+  failLoad = false
+
   load(): MemberCheckpoint {
+    if (this.failLoad) {
+      throw new Error("checkpoint-invalid")
+    }
     return { ...this.checkpoint, pending: [...this.checkpoint.pending] }
   }
 

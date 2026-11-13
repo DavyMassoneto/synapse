@@ -2,15 +2,13 @@ import { type AgentTeam } from "#synapse/modules"
 import {
   TEAM_TOOL_LIST_AGENTS,
   TEAM_TOOL_LIST_AGENTS_DESCRIPTION,
-  TEAM_TOOL_NO_PARAMETERS,
   TEAM_TOOL_SEND_MESSAGE,
   TEAM_TOOL_SEND_MESSAGE_DESCRIPTION,
-  TEAM_TOOL_SEND_MESSAGE_PARAMETERS,
   TEAM_TOOL_WAIT_AGENT,
   TEAM_TOOL_WAIT_AGENT_DESCRIPTION,
-  TEAM_TOOL_WAIT_AGENT_PARAMETERS,
 } from "./constants"
 import { registeredTeamTool } from "./register-tool"
+import { TEAM_TOOL_NO_PARAMETERS, TEAM_TOOL_SEND_MESSAGE_PARAMETERS, TEAM_TOOL_WAIT_AGENT_PARAMETERS } from "./schemas"
 import { TeamAgentHandlers } from "./team-handlers"
 import { type TeamRegisteredTool } from "./types"
 

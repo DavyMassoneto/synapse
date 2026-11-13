@@ -2,17 +2,15 @@ import { type AgentTeam, TEAM_LEAD_NAME } from "#synapse/modules"
 import {
   TEAM_TOOL_INTERRUPT_AGENT,
   TEAM_TOOL_INTERRUPT_AGENT_DESCRIPTION,
-  TEAM_TOOL_INTERRUPT_AGENT_PARAMETERS,
   TEAM_TOOL_LIST_MODELS,
   TEAM_TOOL_LIST_MODELS_DESCRIPTION,
-  TEAM_TOOL_NO_PARAMETERS,
   TEAM_TOOL_SUBAGENT,
   TEAM_TOOL_SUBAGENT_DESCRIPTION,
-  TEAM_TOOL_SUBAGENT_PARAMETERS,
 } from "./constants"
 import { listTeamModels } from "./list-models"
 import { memberTools } from "./member-tools"
 import { registeredTeamTool } from "./register-tool"
+import { TEAM_TOOL_INTERRUPT_AGENT_PARAMETERS, TEAM_TOOL_NO_PARAMETERS, TEAM_TOOL_SUBAGENT_PARAMETERS } from "./schemas"
 import { TeamAgentHandlers } from "./team-handlers"
 import { type TeamRegisteredTool } from "./types"
 

@@ -1,5 +1,6 @@
 import { describe, expect, test } from "vitest"
-import { TEAM_TEST_ALICE_REQUEST } from "./constants"
+import { TEAM_CANCELLED } from "../public"
+import { TEAM_TEST_ALICE_REQUEST, TEAM_TEST_WAIT_CANCELLED_DESCRIPTION } from "./constants"
 import { makeTeamSut, startAlice } from "./team-scenario"
 
 async function waitUnread(): Promise<void> {
@@ -26,7 +27,7 @@ async function waitCancel(): Promise<void> {
   const controller = new AbortController()
   const waiting = team.wait("lead", 1000, controller.signal)
   controller.abort()
-  await expect(waiting).rejects.toThrow()
+  await expect(waiting).resolves.toEqual({ kind: TEAM_CANCELLED })
 }
 
 async function waitClose(): Promise<void> {
@@ -70,7 +71,7 @@ function register(): void {
   test("espera retorno imediato", waitUnread)
   test("espera acorda na chegada", waitArrival)
   test("espera expira", waitTimeout)
-  test("cancelamento rejeita", waitCancel)
+  test(TEAM_TEST_WAIT_CANCELLED_DESCRIPTION, waitCancel)
   test("suspensão encerra espera", waitClose)
   test("visão do lead esperando", leadWaiting)
 }

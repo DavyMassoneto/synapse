@@ -1,4 +1,4 @@
-import { type AgentSession, getAgentDir } from "@earendil-works/pi-coding-agent"
+import { getAgentDir } from "@earendil-works/pi-coding-agent"
 import { PI_MODEL_REFERENCE_SEPARATOR } from "#synapse/integration/pi/model-reference"
 import {
   type AgentTeam,
@@ -15,6 +15,7 @@ import { TEAM_PI_MEMBER_IDENTITY_END, TEAM_PI_MEMBER_IDENTITY_START, TEAM_PI_MEM
 import { createPiTeamMemberSession } from "./create-member-session"
 import { removeFailedMemberFile, requireCreatedMemberFile } from "./session-file"
 import {
+  type TeamCreatedMemberSession,
   type TeamMemberSessionDependencies,
   type TeamOpenedSession,
   type TeamRecordSource,
@@ -35,7 +36,7 @@ export class PiTeamMemberSessions implements MemberSessions {
     const storage = createTeamMemberStorage(context.cwd, leadId)
     const opened = await this.openStored({ cwd: context.cwd, storage, selection, name: request.name, team })
     return {
-      session: new PiTeamSessionAdapter(opened.session),
+      session: new PiTeamSessionAdapter(opened.session.session, opened.session.lifecycle),
       journal: new PiTeamMemberJournal(storage),
       record: this.record({ request, selection, storage, path: opened.path, leadId, cwd: context.cwd }),
     }
@@ -57,7 +58,7 @@ export class PiTeamMemberSessions implements MemberSessions {
     try {
       return { session, path: requireCreatedMemberFile(storage) }
     } catch (error) {
-      session.dispose()
+      await session.lifecycle.close()
       throw error
     }
   }
@@ -70,10 +71,14 @@ export class PiTeamMemberSessions implements MemberSessions {
     const selection = selectMemberModel(context, { model: record.model, thinking: record.thinking })
     const storage = openTeamMemberStorage(record)
     const session = await this.create({ cwd: record.cwd, storage, selection, name: record.name, team })
-    return { session: new PiTeamSessionAdapter(session), journal: new PiTeamMemberJournal(storage), record }
+    return {
+      session: new PiTeamSessionAdapter(session.session, session.lifecycle),
+      journal: new PiTeamMemberJournal(storage),
+      record,
+    }
   }
 
-  private create(input: TeamSessionCreation): Promise<AgentSession> {
+  private create(input: TeamSessionCreation): Promise<TeamCreatedMemberSession> {
     const { cwd, storage, selection, name, team } = input
     return createPiTeamMemberSession({
       cwd,

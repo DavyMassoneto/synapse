@@ -10,3 +10,5 @@ export type TeamWidgetOptions = Parameters<ExtensionContext["ui"]["setWidget"]>[
 export type TeamRecordedNotice = Parameters<AgentTeamLeadHost["sendMessage"]>
 
 export type TeamRecordedEntry = Parameters<AgentTeamLeadHost["appendEntry"]>
+
+export type TeamExtensionShutdownRelease = () => void

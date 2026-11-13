@@ -16,10 +16,11 @@ import {
   type TeamAgentState,
 } from "#synapse/modules/agent-team/public/contracts"
 import { Inbox } from "../inbox"
+import { TeamRuleError } from "../operation-results"
 import { TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
 import { teamMemberOutcome } from "./member-outcome"
-import { TeamMemberPresentation } from "./member-presentation"
 import { TeamMemberQueue } from "./member-queue"
+import { TeamMemberResponseState } from "./member-response-state"
 import { teamMemberRow } from "./member-row"
 import { type TeamActiveTools, type TeamMemberObserver, type TeamMemberOutcome } from "./types"
 
@@ -46,7 +47,7 @@ export class TeamMember {
 
   private lastState: TeamAgentState = TEAM_IDLE
 
-  private readonly presentation: TeamMemberPresentation
+  private readonly responseState: TeamMemberResponseState
 
   private run = Promise.resolve()
 
@@ -59,7 +60,7 @@ export class TeamMember {
     if (this.queue.interrupted) {
       this.lastState = TEAM_INTERRUPTED
     }
-    this.presentation = new TeamMemberPresentation(opened.lastModel)
+    this.responseState = new TeamMemberResponseState(opened.lastModel)
     this.unsubscribe = opened.session.subscribe(this.onEvent.bind(this))
   }
 
@@ -71,7 +72,7 @@ export class TeamMember {
       waiting: this.inbox.hasWaiter,
       unconfirmed: this.queue.unconfirmedCount,
       tools: this.tools,
-      presentation: this.presentation,
+      effectiveModel: this.responseState.effectiveModel,
     })
   }
 
@@ -82,7 +83,7 @@ export class TeamMember {
 
   accept(text: string): void {
     if (this.closed) {
-      throw new Error(TEAM_MEMBER_CLOSED)
+      throw new TeamRuleError(TEAM_MEMBER_CLOSED)
     }
     this.queue.accept(text, this.busy)
     this.inbox.arrive()
@@ -92,11 +93,11 @@ export class TeamMember {
     this.session.abort().catch(this.onFailure.bind(this))
   }
 
-  dispose(): void {
+  async dispose(): Promise<void> {
     this.closed = true
     this.inbox.close()
     this.unsubscribe()
-    this.session.dispose()
+    await this.session.dispose()
   }
 
   async suspend(): Promise<void> {
@@ -105,7 +106,7 @@ export class TeamMember {
     try {
       await this.checkpointAndStop()
     } finally {
-      this.dispose()
+      await this.dispose()
     }
   }
 
@@ -155,7 +156,7 @@ export class TeamMember {
 
   private start(): void {
     this.queue.checkpoint(true)
-    this.presentation.clearFailure()
+    this.responseState.clearFailure()
     this.busy = true
     const text = this.queue.takePending().join(TEAM_MESSAGE_BREAK)
     this.run = this.session.prompt(text).catch(this.onFailure.bind(this))
@@ -193,10 +194,10 @@ export class TeamMember {
         this.observer.refresh()
         break
       case MEMBER_ASSISTANT_RESPONSE:
-        this.presentation.record(event)
+        this.responseState.record(event)
         break
       case MEMBER_EXECUTION_SETTLED:
-        this.settle(teamMemberOutcome(event, this.presentation.failure))
+        this.settle(teamMemberOutcome(event, this.responseState.failure))
         break
     }
   }

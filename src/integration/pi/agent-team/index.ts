@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./extension-lifecycle"
 export * from "./lead-context"
 export * from "./lead-history"
 export * from "./lead-model"

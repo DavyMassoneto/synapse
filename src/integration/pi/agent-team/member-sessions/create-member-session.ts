@@ -1,13 +1,8 @@
-import {
-  type AgentSession,
-  createAgentSession,
-  DefaultResourceLoader,
-  getAgentDir,
-} from "@earendil-works/pi-coding-agent"
-import { TEAM_PI_MEMBER_EXTENSION_FAILURE } from "./constants"
-import { type TeamMemberSessionRequest } from "./types"
+import { createAgentSession, DefaultResourceLoader, getAgentDir } from "@earendil-works/pi-coding-agent"
+import { TEAM_PI_MEMBER_EXTENSION_FAILURE, TeamMemberExtensionLifecycle } from "../extension-lifecycle"
+import { type TeamCreatedMemberSession, type TeamMemberSessionRequest } from "./types"
 
-export async function createPiTeamMemberSession(request: TeamMemberSessionRequest): Promise<AgentSession> {
+export async function createPiTeamMemberSession(request: TeamMemberSessionRequest): Promise<TeamCreatedMemberSession> {
   const loader = await createTeamResourceLoader(request)
   const { session, modelFallbackMessage } = await createAgentSession({
     cwd: request.cwd,
@@ -17,14 +12,19 @@ export async function createPiTeamMemberSession(request: TeamMemberSessionReques
     thinkingLevel: request.selection.thinkingLevel,
     customTools: request.tools,
   })
+  const lifecycle = new TeamMemberExtensionLifecycle(session)
   try {
     if (modelFallbackMessage) {
       throw new Error(modelFallbackMessage)
     }
-    await session.bindExtensions({})
-    return session
+    await lifecycle.start()
+    return { session, lifecycle }
   } catch (error) {
-    session.dispose()
+    try {
+      await lifecycle.close()
+    } catch (cleanupError) {
+      throw new AggregateError([error, cleanupError], TEAM_PI_MEMBER_EXTENSION_FAILURE)
+    }
     throw error
   }
 }

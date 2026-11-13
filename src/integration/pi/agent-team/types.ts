@@ -9,27 +9,17 @@ import {
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type MemberSessions, type TeamClock, type TeamLead } from "#synapse/modules"
-import {
-  type TEAM_PI_AGENT_SETTLED,
-  type TEAM_PI_BEFORE_AGENT_START,
-  type TEAM_PI_CONTEXT_ATTACHED,
-  type TEAM_PI_CONTEXT_DETACHED,
-  type TEAM_PI_MESSAGE_END,
-  type TEAM_PI_SESSION_SHUTDOWN,
-  type TEAM_PI_SESSION_START,
-  type TEAM_PI_TURN_START,
-} from "./constants"
 import { type TeamRegisteredTool } from "./tools"
 
 export type AgentTeamHost = AgentTeamEventsHost & Pick<ExtensionAPI, "sendMessage" | "appendEntry"> & AgentTeamToolHost
 
 export interface AgentTeamEventsHost {
-  on(event: typeof TEAM_PI_SESSION_START, handler: AgentTeamStartHandler): AgentTeamUnsubscribe
-  on(event: typeof TEAM_PI_SESSION_SHUTDOWN, handler: AgentTeamShutdownHandler): AgentTeamUnsubscribe
-  on(event: typeof TEAM_PI_BEFORE_AGENT_START, handler: AgentTeamBeforeStartHandler): AgentTeamUnsubscribe
-  on(event: typeof TEAM_PI_TURN_START, handler: AgentTeamTurnHandler): AgentTeamUnsubscribe
-  on(event: typeof TEAM_PI_MESSAGE_END, handler: AgentTeamMessageHandler): AgentTeamUnsubscribe
-  on(event: typeof TEAM_PI_AGENT_SETTLED, handler: AgentTeamSettledHandler): AgentTeamUnsubscribe
+  on(event: "session_start", handler: AgentTeamStartHandler): AgentTeamUnsubscribe
+  on(event: "session_shutdown", handler: AgentTeamShutdownHandler): AgentTeamUnsubscribe
+  on(event: "before_agent_start", handler: AgentTeamBeforeStartHandler): AgentTeamUnsubscribe
+  on(event: "turn_start", handler: AgentTeamTurnHandler): AgentTeamUnsubscribe
+  on(event: "message_end", handler: AgentTeamMessageHandler): AgentTeamUnsubscribe
+  on(event: "agent_settled", handler: AgentTeamSettledHandler): AgentTeamUnsubscribe
 }
 
 export type AgentTeamUnsubscribe = () => void
@@ -81,12 +71,12 @@ export interface AgentTeamToolHost {
 export type AgentTeamToolDefinition = Omit<TeamRegisteredTool, "renderCall" | "renderResult">
 
 export interface TeamLeadContextAttached {
-  kind: typeof TEAM_PI_CONTEXT_ATTACHED
+  kind: "context-attached"
   context: AgentTeamContext
 }
 
 export interface TeamLeadContextDetached {
-  kind: typeof TEAM_PI_CONTEXT_DETACHED
+  kind: "context-detached"
 }
 
 export type TeamLeadContextState = TeamLeadContextAttached | TeamLeadContextDetached
