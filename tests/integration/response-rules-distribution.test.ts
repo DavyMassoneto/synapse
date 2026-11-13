@@ -1,23 +1,25 @@
 import { describe, expect, test } from "vitest"
 import {
-  PI_PROCESS_RULES,
   PI_PROCESS_TIMEOUT_MS,
-  PI_PROCESS_UNRELATED_RULES,
   type PiProcessScenarioHandle,
   piProcessResponseRulesMessage,
   RESPONSE_INTEGRATION_REMINDER,
+  RESPONSE_RULES_DISTRIBUTION_RULES,
+  RESPONSE_RULES_DISTRIBUTION_UNRELATED_RULES,
   RESPONSE_RULES_TEST_PROMPT,
   runWithPiProcess,
 } from "../fixtures"
 
 async function appendsResponseRules(piProcess: PiProcessScenarioHandle): Promise<void> {
-  expect(await piProcessResponseRulesMessage(piProcess, PI_PROCESS_RULES)).toBe(
+  expect(await piProcessResponseRulesMessage(piProcess, RESPONSE_RULES_DISTRIBUTION_RULES)).toBe(
     `${RESPONSE_RULES_TEST_PROMPT}${RESPONSE_INTEGRATION_REMINDER}`,
   )
 }
 
 async function ignoresOtherSections(piProcess: PiProcessScenarioHandle): Promise<void> {
-  expect(await piProcessResponseRulesMessage(piProcess, PI_PROCESS_UNRELATED_RULES)).toBe(RESPONSE_RULES_TEST_PROMPT)
+  expect(await piProcessResponseRulesMessage(piProcess, RESPONSE_RULES_DISTRIBUTION_UNRELATED_RULES)).toBe(
+    RESPONSE_RULES_TEST_PROMPT,
+  )
 }
 
 function registerTests(): void {

@@ -1,12 +1,3 @@
-import {
-  type MEMBER_ASSISTANT_RESPONSE,
-  type MEMBER_EXECUTION_SETTLED,
-  type MEMBER_EXECUTION_STARTED,
-  type MEMBER_TOOL_ENDED,
-  type MEMBER_TOOL_STARTED,
-  type MEMBER_TURN_STARTED,
-} from "./constants"
-
 export interface MemberCheckpoint {
   interrupted: boolean
   pending: string[]
@@ -33,32 +24,32 @@ export type MemberUnsubscribe = () => void
 export type MemberSessionListener = (event: MemberSessionEvent) => void
 
 export interface MemberExecutionStarted {
-  kind: typeof MEMBER_EXECUTION_STARTED
+  kind: "execution_started"
 }
 
 export interface MemberTurnStarted {
-  kind: typeof MEMBER_TURN_STARTED
+  kind: "turn_started"
 }
 
 export interface MemberToolStarted {
-  kind: typeof MEMBER_TOOL_STARTED
+  kind: "tool_started"
   callId: string
   label: string
 }
 
 export interface MemberToolEnded {
-  kind: typeof MEMBER_TOOL_ENDED
+  kind: "tool_ended"
   callId: string
 }
 
 export interface MemberAssistantResponse {
-  kind: typeof MEMBER_ASSISTANT_RESPONSE
+  kind: "assistant_response"
   model: string
   failure?: string
 }
 
 export interface MemberExecutionSettled {
-  kind: typeof MEMBER_EXECUTION_SETTLED
+  kind: "execution_settled"
   aborted: boolean
   answer?: string
 }

@@ -17,3 +17,5 @@ export const ROUTER_RESERVE_PREFIX = "Fallback técnico: "
 export const ROUTER_LEGACY_EFFORT_UNAVAILABLE = "O par físico anterior não oferece nível de raciocínio suportado."
 
 export const ROUTER_LEGACY_EFFORT_PREFERENCE = ["high", "xhigh", "max", "medium", "low", "minimal", "off"]
+
+export const ROUTER_ABORT_NAME = "AbortError"

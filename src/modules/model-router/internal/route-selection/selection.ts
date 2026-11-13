@@ -1,6 +1,7 @@
 import {
   ROUTER_CANCELLED_KIND,
   ROUTER_FAILED_KIND,
+  ROUTER_OPTION_CHOSEN,
   type RouterChoiceQuestion,
   type RouterClassifier,
   type RouterClassifierState,
@@ -20,7 +21,7 @@ export async function chooseRouterOption(
     throw new Error(ROUTER_MISSING_OPTION)
   }
   if (question.options.length === 1) {
-    return first.id
+    return { kind: ROUTER_OPTION_CHOSEN, id: first.id }
   }
   const result = await classifier.classify({ state, question }, signal)
   if (signal?.aborted || result.kind === ROUTER_CANCELLED_KIND) {
@@ -30,8 +31,11 @@ export async function chooseRouterOption(
   if (result.kind === ROUTER_FAILED_KIND) {
     throw new Error(result.reason)
   }
-  return selectValidatedRouterChoice(
-    result,
-    question.options.map((option) => option.id),
-  )
+  return {
+    kind: ROUTER_OPTION_CHOSEN,
+    id: selectValidatedRouterChoice(
+      result,
+      question.options.map((option) => option.id),
+    ),
+  }
 }

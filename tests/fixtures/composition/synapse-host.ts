@@ -5,17 +5,18 @@ import {
   type AdvisorShutdownHandler,
   type AdvisorTurnEndHandler,
   type CooldownMessageEndHandler,
-  type PiRouterVirtualModel,
   type ResponseRulesContextHandler,
   type Unsubscribe,
 } from "#synapse/integration"
 import { AdvisorHostCollector } from "../host"
+import { RouterFixtureHost } from "../model-router"
 import { type SynapseEventRegistration } from "./types"
 
 export class SynapseHostCollector extends AdvisorHostCollector implements SynapseHost {
   readonly messageEnds: CooldownMessageEndHandler[] = []
   readonly contexts: ResponseRulesContextHandler[] = []
-  private virtualModel?: PiRouterVirtualModel
+  readonly router = new RouterFixtureHost()
+  readonly registerVirtualModel = this.router.registerVirtualModel.bind(this.router)
 
   on(event: "session_start", handler: AdvisorSessionStartHandler): Unsubscribe
   on(event: "session_shutdown", handler: AdvisorShutdownHandler): Unsubscribe
@@ -42,16 +43,5 @@ export class SynapseHostCollector extends AdvisorHostCollector implements Synaps
       return handler
     }
     throw new Error("handler de contexto ausente")
-  }
-
-  registerVirtualModel(model: PiRouterVirtualModel): void {
-    this.virtualModel = model
-  }
-
-  requireVirtualModel(): PiRouterVirtualModel {
-    if (this.virtualModel) {
-      return this.virtualModel
-    }
-    throw new Error("modelo virtual ausente")
   }
 }

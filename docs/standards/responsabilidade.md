@@ -9,6 +9,7 @@ SRP é lei, não preferência. Cada função, arquivo e pasta tem uma única res
 - Uma função ou coordena, chamando outras funções em sequência, ou executa o seu passo. Uma função que coordena não contém a lógica dos passos.
 - Não se divide uma função apenas para ter funções menores: uma função que só esconde uma linha de outra não é uma responsabilidade.
 - Uma função cujo corpo é uma única chamada a outra função ou a uma API, sem decisão, formato ou efeito próprio, não é uma responsabilidade: o chamador faz a chamada. Dar nome a uma linha só se justifica quando o nome expressa um conceito que a linha esconde. A regra inclui a função que só chama `console.log`, só espera, só repassa os argumentos ou só testa um padrão que uma constante já nomeia.
+- O número de chamadores não muda essa regra: a função de uma única chamada usada em mais de um lugar só fica quando o nome expressa um conceito que a chamada esconde, e fora isso a chamada é escrita em cada lugar, conforme [Legibilidade](legibilidade.md) §5.
 
 ## 2. Sinais de que uma função tem mais de um motivo para mudar
 
