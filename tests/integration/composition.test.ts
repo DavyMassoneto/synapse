@@ -7,6 +7,8 @@ import {
   DistributionEnvironment,
   failedAssistantMessage,
   REWRITE_PREFIX,
+  ROUTER_TEST_VIRTUAL_ID,
+  ROUTER_TEST_VIRTUAL_PROVIDER,
   responseRulesContextEvent,
   SynapseHostCollector,
   TestContext,
@@ -139,7 +141,7 @@ function ignoresMissingResponseRules(): void {
 function registersModelRouter(): void {
   compose(host)
   const model = host.requireVirtualModel()
-  expect([model.provider, model.id]).toStrictEqual(["jev", "auto"])
+  expect([model.provider, model.id]).toStrictEqual([ROUTER_TEST_VIRTUAL_PROVIDER, ROUTER_TEST_VIRTUAL_ID])
 }
 
 function registerTests(): void {

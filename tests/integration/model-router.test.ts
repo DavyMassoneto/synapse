@@ -3,14 +3,19 @@ import { registerModelRouter } from "#synapse/integration"
 import { createModelRouter } from "#synapse/modules"
 import {
   fixtureModel,
+  ROUTER_TEST_ABORT_ERROR,
   ROUTER_TEST_ABORTED_REASON,
   ROUTER_TEST_ASSISTANT,
+  ROUTER_TEST_CONTEXT_WINDOW,
   ROUTER_TEST_CONTINUATION,
   ROUTER_TEST_ERROR,
   ROUTER_TEST_FAILED,
+  ROUTER_TEST_FAILURE_MESSAGE,
+  ROUTER_TEST_FALLBACK_PATTERN,
   ROUTER_TEST_HIGH,
   ROUTER_TEST_IMAGE,
   ROUTER_TEST_IMAGE_MODEL,
+  ROUTER_TEST_INVESTIGATION,
   ROUTER_TEST_LOW,
   ROUTER_TEST_MEDIUM,
   ROUTER_TEST_OTHER_PROVIDER,
@@ -19,6 +24,8 @@ import {
   ROUTER_TEST_RETRY,
   ROUTER_TEST_TEXT,
   ROUTER_TEST_TEXT_ONLY,
+  ROUTER_TEST_UNAVAILABLE_FALLBACK,
+  ROUTER_TEST_UNAVAILABLE_SELECTION,
   ROUTER_TEST_USER,
   ROUTER_TEST_VIRTUAL_ID,
   ROUTER_TEST_VIRTUAL_PROVIDER,
@@ -36,10 +43,10 @@ function makeSut(): RouterIntegrationSut {
     host,
     context: { modelRegistry: new RouterFixtureRegistry(), hasUI: false, ui: new TestUI() },
     request: {
-      model: fixtureModel(ROUTER_TEST_VIRTUAL_PROVIDER, ROUTER_TEST_VIRTUAL_ID, 100000),
+      model: fixtureModel(ROUTER_TEST_VIRTUAL_PROVIDER, ROUTER_TEST_VIRTUAL_ID, ROUTER_TEST_CONTEXT_WINDOW),
       thinkingLevel: ROUTER_TEST_HIGH,
       reason: ROUTER_TEST_USER,
-      messages: [{ role: ROUTER_TEST_USER, content: "Investigue", timestamp: 0 }],
+      messages: [{ role: ROUTER_TEST_USER, content: ROUTER_TEST_INVESTIGATION, timestamp: 0 }],
     },
   }
 }
@@ -54,7 +61,7 @@ async function appliedSelection(): Promise<void> {
 
 async function retryPair(): Promise<void> {
   const sut = makeSut()
-  const model = fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FAILED, 100000)
+  const model = fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FAILED, ROUTER_TEST_CONTEXT_WINDOW)
   sut.context.modelRegistry.models.push(model)
   sut.request.reason = ROUTER_TEST_RETRY
   sut.request.failed = {
@@ -67,7 +74,7 @@ async function retryPair(): Promise<void> {
       provider: model.provider,
       model: model.id,
       stopReason: ROUTER_TEST_ERROR,
-      errorMessage: "erro",
+      errorMessage: ROUTER_TEST_FAILURE_MESSAGE,
       timestamp: 0,
       usage: TEST_USAGE,
     },
@@ -80,7 +87,7 @@ async function retryPair(): Promise<void> {
 
 async function continuationPair(): Promise<void> {
   const sut = makeSut()
-  const model = fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_PREVIOUS, 100000)
+  const model = fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_PREVIOUS, ROUTER_TEST_CONTEXT_WINDOW)
   sut.context.modelRegistry.models.push(model)
   sut.request.reason = ROUTER_TEST_CONTINUATION
   sut.request.previous = { model, thinkingLevel: ROUTER_TEST_MEDIUM }
@@ -96,7 +103,7 @@ async function classificationFallback(): Promise<void> {
   const result = await sut.host.requireModel().route(sut.request, sut.context)
   expect(result.model.id).toBe("cx/gpt-6.1-sol")
   expect(result.thinkingLevel).toBe("high")
-  expect(result.state?.reason).toMatch(/^Fallback técnico:/)
+  expect(result.state?.reason).toMatch(ROUTER_TEST_FALLBACK_PATTERN)
 }
 
 async function missingFallback(): Promise<void> {
@@ -104,7 +111,7 @@ async function missingFallback(): Promise<void> {
   sut.context.modelRegistry.classifierFails = true
   sut.context.modelRegistry.models = sut.context.modelRegistry.models.slice(0, 2)
   await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toThrow(
-    "fallback conservador indisponível",
+    ROUTER_TEST_UNAVAILABLE_FALLBACK,
   )
 }
 
@@ -112,7 +119,7 @@ async function missingCandidates(): Promise<void> {
   const sut = makeSut()
   sut.context.modelRegistry.models = []
   await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toThrow(
-    "fallback conservador indisponível",
+    ROUTER_TEST_UNAVAILABLE_FALLBACK,
   )
   expect(sut.context.modelRegistry.calls).toBe(0)
 }
@@ -122,28 +129,30 @@ async function revokedCredentials(): Promise<void> {
   sut.context.modelRegistry.revokeOnClassify = true
   sut.context.modelRegistry.models = sut.context.modelRegistry.models.slice(0, 2)
   await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toThrow(
-    "Modelo ou nível escolhido indisponível",
+    ROUTER_TEST_UNAVAILABLE_SELECTION,
   )
 }
 
 async function cancelledRoute(): Promise<void> {
   const sut = makeSut()
   sut.request.signal = AbortSignal.abort()
-  await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toMatchObject({ name: "AbortError" })
+  await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toMatchObject({
+    name: ROUTER_TEST_ABORT_ERROR,
+  })
   expect(sut.context.modelRegistry.calls).toBe(0)
 }
 
 async function rejectIneligibleCandidates(): Promise<void> {
   const sut = makeSut()
   sut.context.modelRegistry.models = [
-    fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_TEXT_ONLY, 100000),
+    fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_TEXT_ONLY, ROUTER_TEST_CONTEXT_WINDOW),
     {
-      ...fixtureModel(ROUTER_TEST_OTHER_PROVIDER, ROUTER_TEST_IMAGE_MODEL, 100000),
+      ...fixtureModel(ROUTER_TEST_OTHER_PROVIDER, ROUTER_TEST_IMAGE_MODEL, ROUTER_TEST_CONTEXT_WINDOW),
       input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
     },
   ]
   await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toThrow(
-    "fallback conservador indisponível",
+    ROUTER_TEST_UNAVAILABLE_FALLBACK,
   )
   expect(sut.context.modelRegistry.calls).toBe(0)
 }
@@ -154,7 +163,7 @@ async function rejectUnauthenticatedCandidates(): Promise<void> {
     sut.context.modelRegistry.unauthorized.add(model.id)
   }
   await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toThrow(
-    "fallback conservador indisponível",
+    ROUTER_TEST_UNAVAILABLE_FALLBACK,
   )
   expect(sut.context.modelRegistry.calls).toBe(0)
 }
@@ -162,7 +171,9 @@ async function rejectUnauthenticatedCandidates(): Promise<void> {
 async function cancelledClassifierResponse(): Promise<void> {
   const sut = makeSut()
   sut.context.modelRegistry.stopReason = ROUTER_TEST_ABORTED_REASON
-  await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toMatchObject({ name: "AbortError" })
+  await expect(sut.host.requireModel().route(sut.request, sut.context)).rejects.toMatchObject({
+    name: ROUTER_TEST_ABORT_ERROR,
+  })
   expect(sut.context.modelRegistry.calls).toBe(1)
 }
 

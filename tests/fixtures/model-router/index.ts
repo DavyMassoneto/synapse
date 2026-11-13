@@ -1,5 +1,6 @@
 export * from "./constants"
 export * from "./distribution-scenario"
 export * from "./host"
+export * from "./predicates"
 export * from "./registry"
 export * from "./types"

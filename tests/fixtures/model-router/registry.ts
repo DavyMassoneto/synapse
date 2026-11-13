@@ -14,6 +14,7 @@ import {
   ROUTER_TEST_CHOICE,
   ROUTER_TEST_CLASSIFIER_MODEL,
   ROUTER_TEST_CLASSIFIER_PROVIDER,
+  ROUTER_TEST_CONTEXT_WINDOW,
   ROUTER_TEST_ERROR,
   ROUTER_TEST_FALLBACK,
   ROUTER_TEST_FIRST,
@@ -25,19 +26,20 @@ import {
   ROUTER_TEST_STOP,
   ROUTER_TEST_TEXT,
 } from "./constants"
+import { isRouterFixtureModel } from "./predicates"
 
 export class RouterFixtureRegistry implements PiRouterRegistry {
   models: Model<Api>[] = [
     {
-      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FIRST, 100000),
+      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FIRST, ROUTER_TEST_CONTEXT_WINDOW),
       input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
     },
     {
-      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_SECOND, 100000),
+      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_SECOND, ROUTER_TEST_CONTEXT_WINDOW),
       input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
     },
     {
-      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FALLBACK, 100000),
+      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FALLBACK, ROUTER_TEST_CONTEXT_WINDOW),
       input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
     },
   ]
@@ -58,7 +60,7 @@ export class RouterFixtureRegistry implements PiRouterRegistry {
   }
 
   find(provider: string, id: string): ReturnType<PiRouterRegistry["find"]> {
-    return this.models.find((model) => model.provider === provider && model.id === id)
+    return this.models.find(isRouterFixtureModel.bind(undefined, provider, id))
   }
 
   findOfType(_type: "classifier", _provider: string, _id: string): PiRouterClassifierModel {

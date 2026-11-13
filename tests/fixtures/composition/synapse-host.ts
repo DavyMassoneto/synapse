@@ -10,6 +10,7 @@ import {
   type Unsubscribe,
 } from "#synapse/integration"
 import { AdvisorHostCollector } from "../host"
+import { ROUTER_FIXTURE_HOST_MISSING } from "../model-router"
 import { type SynapseEventRegistration } from "./types"
 
 export class SynapseHostCollector extends AdvisorHostCollector implements SynapseHost {
@@ -36,14 +37,6 @@ export class SynapseHostCollector extends AdvisorHostCollector implements Synaps
     }
   }
 
-  requireContextHandler(): ResponseRulesContextHandler {
-    const [handler] = this.contexts
-    if (handler) {
-      return handler
-    }
-    throw new Error("handler de contexto ausente")
-  }
-
   registerVirtualModel(model: PiRouterVirtualModel): void {
     this.virtualModel = model
   }
@@ -52,6 +45,14 @@ export class SynapseHostCollector extends AdvisorHostCollector implements Synaps
     if (this.virtualModel) {
       return this.virtualModel
     }
-    throw new Error("modelo virtual ausente")
+    throw new Error(ROUTER_FIXTURE_HOST_MISSING)
+  }
+
+  requireContextHandler(): ResponseRulesContextHandler {
+    const [handler] = this.contexts
+    if (handler) {
+      return handler
+    }
+    throw new Error("handler de contexto ausente")
   }
 }
