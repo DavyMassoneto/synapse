@@ -32,7 +32,7 @@ async function registersAdvisor(): Promise<void> {
   configureModel()
   await host.emitSessionStart(context)
   expect(host.active).toContain("advisor")
-  expect(host.shutdowns).toHaveLength(2)
+  expect(host.shutdowns).toHaveLength(3)
 }
 
 async function consultsWithLiveSignal(): Promise<void> {
