@@ -5,7 +5,7 @@ import {
   type ComputerDriverManifest,
   type ComputerDriverPort,
   type ComputerUseDependencies,
-} from "#synapse/modules/computer-use/public"
+} from "#synapse/modules/computer-use/public/contracts"
 import { ComputerCaptureFiles } from "../capture-files"
 import { ComputerDriverCli } from "../driver-cli"
 import { computerInstallDriver } from "../driver-installation"

@@ -1,5 +1,5 @@
 import { type Static } from "typebox"
-import { type COMPUTER_FAKE_REQUEST_SCHEMA } from "./constants"
+import { type COMPUTER_FAKE_REQUEST_SCHEMA } from "./schemas"
 
 export type ComputerFakeRequest = Static<typeof COMPUTER_FAKE_REQUEST_SCHEMA>
 

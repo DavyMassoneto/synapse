@@ -1,11 +1,8 @@
 import { isAbsolute, resolve } from "node:path"
 import { Value } from "typebox/value"
-import {
-  TEAM_EXTENSIONS_DIRECTORY,
-  TEAM_EXTENSIONS_OUTSIDE_DIRECTORY,
-  TEAM_MEMBER_EXTENSIONS_SCHEMA,
-} from "./constants"
+import { TEAM_EXTENSIONS_DIRECTORY, TEAM_EXTENSIONS_OUTSIDE_DIRECTORY } from "./constants"
 import { isTeamExtensionOutsideDirectory } from "./predicates"
+import { TEAM_MEMBER_EXTENSIONS_SCHEMA } from "./schemas"
 
 export function parseTeamMemberExtensions(agentDirectory: string, content: string): string[] {
   const config = Value.Parse(TEAM_MEMBER_EXTENSIONS_SCHEMA, JSON.parse(content))

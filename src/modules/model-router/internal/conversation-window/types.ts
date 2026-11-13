@@ -1,14 +1,13 @@
 import { type RouterHistoryEntry } from "#synapse/modules/model-router/public/contracts"
-import { type ROUTER_HISTORY_INCLUDED, type ROUTER_HISTORY_OMITTED } from "./constants"
 
 export interface RouterHistoryIncluded {
-  kind: typeof ROUTER_HISTORY_INCLUDED
+  kind: "included"
   entry: RouterHistoryEntry
   bytes: number
 }
 
 export interface RouterHistoryOmitted {
-  kind: typeof ROUTER_HISTORY_OMITTED
+  kind: "omitted"
 }
 
 export type RouterHistoryFit = RouterHistoryIncluded | RouterHistoryOmitted

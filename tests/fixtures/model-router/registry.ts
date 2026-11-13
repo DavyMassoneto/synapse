@@ -8,7 +8,6 @@ import {
   type Model,
 } from "@earendil-works/pi-ai"
 import { type PiRouterClassifierModel, type PiRouterRegistry } from "#synapse/integration"
-import { fixtureModel } from "../context"
 import {
   ROUTER_FIXTURE_CLASSIFIER,
   ROUTER_TEST_CHOICE,
@@ -18,28 +17,19 @@ import {
   ROUTER_TEST_FALLBACK,
   ROUTER_TEST_FIRST,
   ROUTER_TEST_HIGH,
-  ROUTER_TEST_IMAGE,
   ROUTER_TEST_MODEL_QUESTION,
   ROUTER_TEST_PROVIDER,
   ROUTER_TEST_SECOND,
   ROUTER_TEST_STOP,
-  ROUTER_TEST_TEXT,
 } from "./constants"
+import { imageModel } from "./image-model"
+import { isRouterFixtureModel } from "./predicates"
 
 export class RouterFixtureRegistry implements PiRouterRegistry {
   models: Model<Api>[] = [
-    {
-      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FIRST, 100000),
-      input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
-    },
-    {
-      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_SECOND, 100000),
-      input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
-    },
-    {
-      ...fixtureModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FALLBACK, 100000),
-      input: [ROUTER_TEST_TEXT, ROUTER_TEST_IMAGE],
-    },
+    imageModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FIRST),
+    imageModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_SECOND),
+    imageModel(ROUTER_TEST_PROVIDER, ROUTER_TEST_FALLBACK),
   ]
   calls = 0
 
@@ -58,10 +48,10 @@ export class RouterFixtureRegistry implements PiRouterRegistry {
   }
 
   find(provider: string, id: string): ReturnType<PiRouterRegistry["find"]> {
-    return this.models.find((model) => model.provider === provider && model.id === id)
+    return this.models.find(isRouterFixtureModel.bind(undefined, provider, id))
   }
 
-  findOfType(_type: "classifier", _provider: string, _id: string): PiRouterClassifierModel {
+  findOfType(): PiRouterClassifierModel {
     return ROUTER_FIXTURE_CLASSIFIER
   }
 

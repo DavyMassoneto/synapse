@@ -1,4 +1,4 @@
-import { type AnnotatedDiff, isMultiLine } from "#evaluator/diff-annotation"
+import { type AnnotatedDiff } from "#evaluator/diff-annotation"
 import { type Group, placeFindings } from "#evaluator/finding-placement"
 import { type ReviewComment } from "#evaluator/pull-request-review"
 import { type ReviewResult } from "#evaluator/review-result"
@@ -13,7 +13,7 @@ function toComment(group: Group): ReviewComment {
     side: anchor.side,
     body: commentBody(group.findings),
   }
-  if (isMultiLine(anchor.startLine, anchor.line)) {
+  if (anchor.startLine < anchor.line) {
     comment.start_line = anchor.startLine
     comment.start_side = anchor.side
   }

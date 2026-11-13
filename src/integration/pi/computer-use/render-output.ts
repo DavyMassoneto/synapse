@@ -1,9 +1,25 @@
-import { COMPUTER_IMAGE_PRESENT, type ComputerExecuteResult, type ComputerRenderedScreenshot } from "#synapse/modules"
+import {
+  COMPUTER_CANCELLED,
+  COMPUTER_EXECUTED,
+  COMPUTER_FAILED,
+  COMPUTER_IMAGE_PRESENT,
+  COMPUTER_REFUSED,
+  type ComputerExecuteResult,
+  type ComputerRenderedScreenshot,
+} from "#synapse/modules"
 import { PI_COMPUTER_IMAGE_CONTENT, PI_COMPUTER_TEXT_CONTENT } from "./constants"
 import { type PiComputerCaptureText, type PiComputerToolOutput } from "./types"
 
 export function computerToolOutput(result: ComputerExecuteResult): PiComputerToolOutput {
-  const output: PiComputerToolOutput = { content: [], details: { result } }
+  const output: PiComputerToolOutput = {
+    content: [],
+    details: { result },
+    isError:
+      result.kind === COMPUTER_EXECUTED &&
+      (result.result.kind === COMPUTER_REFUSED ||
+        result.result.kind === COMPUTER_FAILED ||
+        result.result.kind === COMPUTER_CANCELLED),
+  }
   if ("capture" in result && result.capture) {
     const capture = result.capture
     output.content.push({

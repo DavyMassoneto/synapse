@@ -5,15 +5,18 @@ import {
   type ComputerAction,
   type ComputerPlatform,
 } from "#synapse/modules/computer-use/public/contracts"
-import { COMPUTER_KEY_SEPARATOR, computerNormalizeKey } from "../key-combo-parsing"
+import {
+  COMPUTER_ALT_KEY,
+  COMPUTER_KEY_SEPARATOR,
+  COMPUTER_OPTION_KEY,
+  computerNormalizeKey,
+} from "../key-combo-parsing"
 import {
   COMPUTER_BLOCKED_COMBOS,
   COMPUTER_BLOCKED_TEXT_PATTERNS,
   COMPUTER_BRING_TO_FRONT_PROPERTY,
   COMPUTER_INVALID_FOREGROUND_MESSAGE,
   COMPUTER_SAFETY_ALLOWED,
-  COMPUTER_SAFETY_ALT_KEY,
-  COMPUTER_SAFETY_OPTION_KEY,
   COMPUTER_SAFETY_REFUSED,
   COMPUTER_SAFETY_WIN_ALIASES,
   COMPUTER_SAFETY_WIN_KEY,
@@ -46,8 +49,8 @@ function computerCheckSystemShortcut(action: ComputerAction, platform: ComputerP
     const keys = new Set<string>()
     for (const part of action.keys.split(COMPUTER_KEY_SEPARATOR)) {
       let key = computerNormalizeKey(part.trim().toLowerCase(), platform)
-      if (key === COMPUTER_SAFETY_ALT_KEY) {
-        key = COMPUTER_SAFETY_OPTION_KEY
+      if (key === COMPUTER_ALT_KEY) {
+        key = COMPUTER_OPTION_KEY
       }
       keys.add(COMPUTER_SAFETY_WIN_ALIASES.includes(key) ? COMPUTER_SAFETY_WIN_KEY : key)
     }

@@ -1,3 +1,9 @@
+export const GET_METHOD = "GET"
+export const POST_METHOD = "POST"
+export const TRANSPORT_RETRY_DELAY_MS = 1000
+export const TRANSPORT_FAILURE_PREFIX = "Falha de transporte do GitHub: "
+export const TRANSPORT_RETRY_LABEL = "Repetindo consulta após falha de transporte: "
+
 export const API_URL = "https://api.github.com"
 
 export const API_VERSION = "2022-11-28"

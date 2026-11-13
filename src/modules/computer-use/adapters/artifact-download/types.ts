@@ -1,9 +1,3 @@
-import {
-  type COMPUTER_DRIVER_ARTIFACT_BODY_READ,
-  type COMPUTER_DRIVER_ARTIFACT_CHECKSUM_VALID,
-  type COMPUTER_DRIVER_ARTIFACT_DOWNLOADED,
-  type COMPUTER_DRIVER_ARTIFACT_REFUSED,
-} from "./constants"
 import { type ComputerPinnedArtifact } from "./targets"
 
 export interface ComputerArtifactRequest {
@@ -14,26 +8,26 @@ export interface ComputerArtifactRequest {
 }
 
 export interface ComputerArtifactDownloaded {
-  kind: typeof COMPUTER_DRIVER_ARTIFACT_DOWNLOADED
+  kind: "artifact-downloaded"
   archive: string
 }
 
 export interface ComputerArtifactRefused {
-  kind: typeof COMPUTER_DRIVER_ARTIFACT_REFUSED
+  kind: "artifact-refused"
   message: string
 }
 
 export type ComputerArtifactDownloadResult = ComputerArtifactDownloaded | ComputerArtifactRefused
 
 export interface ComputerArtifactBodyRead {
-  kind: typeof COMPUTER_DRIVER_ARTIFACT_BODY_READ
+  kind: "artifact-body-read"
   bytes: Uint8Array
 }
 
 export type ComputerArtifactBodyResult = ComputerArtifactBodyRead | ComputerArtifactRefused
 
 export interface ComputerArtifactChecksumValid {
-  kind: typeof COMPUTER_DRIVER_ARTIFACT_CHECKSUM_VALID
+  kind: "checksum-valid"
 }
 
 export type ComputerArtifactChecksumResult = ComputerArtifactChecksumValid | ComputerArtifactRefused

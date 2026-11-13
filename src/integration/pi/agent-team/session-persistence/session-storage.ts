@@ -4,7 +4,6 @@ import { getAgentDir, SessionManager } from "@earendil-works/pi-coding-agent"
 import { type MemberRecord } from "#synapse/modules"
 import {
   TEAM_PI_MEMBER_DIRECTORY,
-  TEAM_PI_MEMBER_INVALID_SESSION,
   TEAM_PI_MEMBER_MISSING_SESSION,
   TEAM_PI_MEMBER_SEED,
   TEAM_PI_MEMBER_USER_ROLE,
@@ -25,10 +24,6 @@ export function openTeamMemberStorage(record: MemberRecord): SessionManager {
   if (bytes === 0) {
     throw new Error(TEAM_PI_MEMBER_MISSING_SESSION + record.sessionFile)
   }
-  validateTeamSessionFile(record.sessionFile, bytes)
-  const storage = SessionManager.open(record.sessionFile)
-  if (storage.getSessionId() !== record.sessionId || storage.getCwd() !== record.cwd) {
-    throw new Error(TEAM_PI_MEMBER_INVALID_SESSION + record.name)
-  }
-  return storage
+  validateTeamSessionFile(record, bytes)
+  return SessionManager.open(record.sessionFile)
 }

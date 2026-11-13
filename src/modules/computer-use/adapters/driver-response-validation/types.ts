@@ -1,6 +1,5 @@
 import { type Static } from "typebox"
 import {
-  type COMPUTER_INVALID_RPC,
   type COMPUTER_RAW_APP_SCHEMA,
   type COMPUTER_RAW_ELEMENT_SCHEMA,
   type COMPUTER_RAW_ENVELOPE_SCHEMA,
@@ -9,9 +8,7 @@ import {
   type COMPUTER_RAW_STATE_SCHEMA,
   type COMPUTER_RAW_TOOLS_SCHEMA,
   type COMPUTER_RAW_WINDOW_SCHEMA,
-  type COMPUTER_RPC_NOTIFICATION,
-  type COMPUTER_VALID_RPC,
-} from "./constants"
+} from "./schemas"
 
 export type ComputerRawRpc = Static<typeof COMPUTER_RAW_RPC_SCHEMA>
 
@@ -30,17 +27,17 @@ export type ComputerRawElement = Static<typeof COMPUTER_RAW_ELEMENT_SCHEMA>
 export type ComputerRawManifest = Static<typeof COMPUTER_RAW_MANIFEST_SCHEMA>
 
 export interface ComputerValidRpc {
-  kind: typeof COMPUTER_VALID_RPC
+  kind: "valid-rpc"
   response: ComputerRawRpc
 }
 
 export interface ComputerInvalidRpc {
-  kind: typeof COMPUTER_INVALID_RPC
+  kind: "invalid-rpc"
   message: string
 }
 
 export interface ComputerRpcNotification {
-  kind: typeof COMPUTER_RPC_NOTIFICATION
+  kind: "rpc-notification"
 }
 
 export type ComputerParsedRpc = ComputerValidRpc | ComputerInvalidRpc | ComputerRpcNotification

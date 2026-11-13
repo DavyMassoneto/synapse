@@ -8,14 +8,12 @@ import {
   type AgentTeamToolDefinition,
   type AgentTeamTurnHandler,
   type CooldownMessageEndHandler,
-  type PiComputerShutdown,
-  type PiComputerToolDefinition,
   type ResponseRulesContextHandler,
 } from "#synapse/integration"
 import { type TeamWidgetContent, type TeamWidgetOptions } from "../agent-team"
 import { type AdvisorEventRegistration } from "../host"
 
-export type SynapseCollectedTool = AdvisorTool | AgentTeamToolDefinition | PiComputerToolDefinition
+export type SynapseCollectedTool = AdvisorTool | AgentTeamToolDefinition
 
 export type SynapseEventRegistration =
   | AdvisorEventRegistration
@@ -25,7 +23,6 @@ export type SynapseEventRegistration =
 export type SynapseTeamEventRegistration =
   | ["session_start", AgentTeamStartHandler]
   | ["session_shutdown", AgentTeamShutdownHandler]
-  | ["session_shutdown", PiComputerShutdown]
   | ["before_agent_start", AgentTeamBeforeStartHandler]
   | ["turn_start", AgentTeamTurnHandler]
   | ["message_end", AgentTeamMessageHandler]

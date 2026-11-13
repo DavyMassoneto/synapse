@@ -1,28 +1,28 @@
 import { type ExtensionAPI } from "@earendil-works/pi-coding-agent"
-import { PI_PROCESS_MODEL_DEFINITION } from "../scripted-model"
 import { readJsonFile } from "../validated-json"
 import {
-  PI_PROCESS_API,
-  PI_PROCESS_API_KEY,
-  PI_PROCESS_BASE_URL,
-  PI_PROCESS_MODEL_VARIABLE,
-  PI_PROCESS_PROVIDER_VARIABLE,
-  PI_PROCESS_SCRIPT_SCHEMA,
-  PI_PROCESS_SCRIPT_VARIABLE,
+  SCRIPTED_PROVIDER_API,
+  SCRIPTED_PROVIDER_API_KEY,
+  SCRIPTED_PROVIDER_BASE_URL,
+  SCRIPTED_PROVIDER_MODEL_DEFINITION,
+  SCRIPTED_PROVIDER_MODEL_VARIABLE,
+  SCRIPTED_PROVIDER_PROVIDER_VARIABLE,
+  SCRIPTED_PROVIDER_SCRIPT_VARIABLE,
 } from "./constants"
 import { requireEnvironment } from "./require-environment"
-import { ScriptedModelProvider } from "./scripted-model-provider"
+import { SCRIPTED_PROVIDER_SCRIPT_SCHEMA } from "./schemas"
+import { ScriptedProvider } from "./scripted-model-provider"
 
-export default function registerPiProcessProvider(pi: ExtensionAPI): void {
-  const steps = readJsonFile(requireEnvironment(PI_PROCESS_SCRIPT_VARIABLE), PI_PROCESS_SCRIPT_SCHEMA)
-  const scripted = new ScriptedModelProvider(steps)
-  const provider = requireEnvironment(PI_PROCESS_PROVIDER_VARIABLE)
-  const model = requireEnvironment(PI_PROCESS_MODEL_VARIABLE)
+export default function registerScriptedProvider(pi: ExtensionAPI): void {
+  const steps = readJsonFile(requireEnvironment(SCRIPTED_PROVIDER_SCRIPT_VARIABLE), SCRIPTED_PROVIDER_SCRIPT_SCHEMA)
+  const scripted = new ScriptedProvider(steps)
+  const provider = requireEnvironment(SCRIPTED_PROVIDER_PROVIDER_VARIABLE)
+  const model = requireEnvironment(SCRIPTED_PROVIDER_MODEL_VARIABLE)
   pi.registerProvider(provider, {
-    api: PI_PROCESS_API,
-    apiKey: PI_PROCESS_API_KEY,
-    baseUrl: PI_PROCESS_BASE_URL,
-    models: [{ ...PI_PROCESS_MODEL_DEFINITION, id: model, name: model }],
+    api: SCRIPTED_PROVIDER_API,
+    apiKey: SCRIPTED_PROVIDER_API_KEY,
+    baseUrl: SCRIPTED_PROVIDER_BASE_URL,
+    models: [{ ...SCRIPTED_PROVIDER_MODEL_DEFINITION, id: model, name: model }],
     streamSimple: scripted.stream.bind(scripted),
   })
 }

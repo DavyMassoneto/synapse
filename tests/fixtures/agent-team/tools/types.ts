@@ -1,10 +1,14 @@
-import { type ToolDefinition } from "@earendil-works/pi-coding-agent"
-import { type MemberModelContext, type TeamAgentHandlers, type TeamTaskHandlers } from "#synapse/integration"
+import {
+  type MemberModelContext,
+  type TeamAgentHandlers,
+  type TeamRegisteredTool,
+  type TeamTaskHandlers,
+} from "#synapse/integration"
 import { type ToolsTeamDouble } from "./team-double"
 
 export interface TeamToolsSut {
   team: ToolsTeamDouble
-  tools: ToolDefinition[]
+  tools: TeamRegisteredTool[]
   handlers: TeamAgentHandlers
   tasks: TeamTaskHandlers
 }

@@ -1,6 +1,7 @@
 import { type ClassifierChoiceQuestion, type ClassifierContext } from "@earendil-works/pi-ai"
 import { type ClassifierRequest } from "#synapse/modules"
 import { PI_ROUTER_CHOICE_TYPE } from "./constants"
+import { type PiClassifyOptions } from "./types"
 
 export function buildPiRouterClassifierContext(request: ClassifierRequest): ClassifierContext {
   return { state: classifierState(request), questions: { [request.question.name]: classifierQuestion(request) } }
@@ -22,11 +23,7 @@ function classifierState(request: ClassifierRequest): ClassifierContext["state"]
   const conversation = request.state.conversation
   const state: ClassifierContext["state"] = {
     current_request: conversation.currentRequest,
-    history: conversation.history.map((entry) => ({
-      index: entry.index,
-      role: entry.role,
-      content: entry.content,
-    })),
+    history: conversation.history.map(({ index, role, content }) => ({ index, role, content })),
     omitted_messages: conversation.omittedMessages,
     image_notice: conversation.imageNotice,
     pilot: request.state.pilot,
@@ -44,4 +41,12 @@ function classifierState(request: ClassifierRequest): ClassifierContext["state"]
     state.selected_model = request.state.selectedModel
   }
   return state
+}
+
+export function piRouterClassifierOptions(signal?: AbortSignal): PiClassifyOptions {
+  const options: PiClassifyOptions = {}
+  if (signal) {
+    options.signal = signal
+  }
+  return options
 }

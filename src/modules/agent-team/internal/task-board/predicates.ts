@@ -6,11 +6,38 @@ import {
   type TaskSnapshot,
   type TaskView,
 } from "#synapse/modules/agent-team/public/contracts"
-import { TASK_BOARD_SCOPE_SEPARATOR } from "./constants"
+import {
+  TASK_BOARD_DRIVE_PREFIX,
+  TASK_BOARD_MAX_TASKS,
+  TASK_BOARD_PARENT_SEGMENT,
+  TASK_BOARD_SCOPE_SEPARATOR,
+} from "./constants"
 import { type TaskBoardStatusIndex } from "./types"
 
 export function isTaskBoardActive(task: TaskSnapshot): boolean {
   return task.status !== TASK_DELETED
+}
+
+export function hasTaskBoardLimit(tasks: TaskSnapshot[]): boolean {
+  let count = 0
+  for (const task of tasks) {
+    if (isTaskBoardActive(task)) {
+      count += 1
+    }
+    if (count >= TASK_BOARD_MAX_TASKS) {
+      return true
+    }
+  }
+  return false
+}
+
+export function isInvalidTaskScope(scope: string): boolean {
+  return (
+    !scope ||
+    TASK_BOARD_DRIVE_PREFIX.test(scope) ||
+    scope.startsWith(TASK_BOARD_SCOPE_SEPARATOR) ||
+    scope.split(TASK_BOARD_SCOPE_SEPARATOR).includes(TASK_BOARD_PARENT_SEGMENT)
+  )
 }
 
 export function isTaskBoardTaskReady(statuses: TaskBoardStatusIndex, task: TaskSnapshot): boolean {

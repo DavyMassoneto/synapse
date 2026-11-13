@@ -1,11 +1,5 @@
 import { type ComputerPlatform } from "#synapse/modules/computer-use/public/contracts"
 import { type ComputerCommandRunner } from "../command-execution"
-import {
-  type COMPUTER_APP_REGISTERED,
-  type COMPUTER_APP_REGISTRATION_REFUSED,
-  type COMPUTER_APP_SIGNATURE_ABSENT,
-  type COMPUTER_APP_SIGNATURE_FOUND,
-} from "./constants"
 
 export interface ComputerAppCommandOutcome {
   succeeded: boolean
@@ -19,23 +13,23 @@ export interface ComputerAppRegistrationRequest {
 }
 
 export interface ComputerAppRegistered {
-  kind: typeof COMPUTER_APP_REGISTERED
+  kind: "app-registered"
 }
 
 export interface ComputerAppRegistrationRefused {
-  kind: typeof COMPUTER_APP_REGISTRATION_REFUSED
+  kind: "app-registration-refused"
   message: string
 }
 
 export type ComputerAppRegistrationResult = ComputerAppRegistered | ComputerAppRegistrationRefused
 
 export interface ComputerSignatureFieldFound {
-  kind: typeof COMPUTER_APP_SIGNATURE_FOUND
+  kind: "signature-field-found"
   value: string
 }
 
 export interface ComputerSignatureFieldAbsent {
-  kind: typeof COMPUTER_APP_SIGNATURE_ABSENT
+  kind: "signature-field-absent"
 }
 
 export type ComputerSignatureField = ComputerSignatureFieldFound | ComputerSignatureFieldAbsent

@@ -1,16 +1,14 @@
-import { type COMPUTER_ARCHIVE_EXTRACTED, type COMPUTER_ARCHIVE_REFUSED } from "./constants"
-
 export interface ComputerArchiveRequest {
   archive: string
   directory: string
 }
 
 export interface ComputerArchiveExtracted {
-  kind: typeof COMPUTER_ARCHIVE_EXTRACTED
+  kind: "archive-extracted"
 }
 
 export interface ComputerArchiveRefused {
-  kind: typeof COMPUTER_ARCHIVE_REFUSED
+  kind: "archive-refused"
   message: string
 }
 

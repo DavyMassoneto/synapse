@@ -1,8 +1,5 @@
 import { type AgentTeam } from "#synapse/modules"
 import {
-  TEAM_TOOL_CREATE_TASK_PARAMETERS,
-  TEAM_TOOL_GET_TASK_PARAMETERS,
-  TEAM_TOOL_LIST_TASKS_PARAMETERS,
   TEAM_TOOL_TASK_CREATE,
   TEAM_TOOL_TASK_CREATE_DESCRIPTION,
   TEAM_TOOL_TASK_GET,
@@ -11,9 +8,14 @@ import {
   TEAM_TOOL_TASK_LIST_DESCRIPTION,
   TEAM_TOOL_TASK_UPDATE,
   TEAM_TOOL_TASK_UPDATE_DESCRIPTION,
-  TEAM_TOOL_UPDATE_TASK_PARAMETERS,
 } from "./constants"
 import { registeredTeamTool } from "./register-tool"
+import {
+  TEAM_TOOL_CREATE_TASK_PARAMETERS,
+  TEAM_TOOL_GET_TASK_PARAMETERS,
+  TEAM_TOOL_LIST_TASKS_PARAMETERS,
+  TEAM_TOOL_UPDATE_TASK_PARAMETERS,
+} from "./schemas"
 import { TeamTaskHandlers } from "./task-handlers"
 import { type TeamRegisteredTool } from "./types"
 
