@@ -6,25 +6,25 @@ import {
   type TranscriptContext,
 } from "@earendil-works/pi-ai"
 import { logRequest, PI_REQUEST_LOG_VARIABLE } from "../request-log"
-import { PI_PROCESS_SCRIPT_FAILURE, PI_PROCESS_START_EVENT } from "./constants"
+import { SCRIPTED_PROVIDER_SCRIPT_FAILURE, SCRIPTED_PROVIDER_START_EVENT } from "./constants"
 import { requireEnvironment } from "./require-environment"
 import { assistantMessage, emitStep } from "./stream-events"
-import { type PiProcessScript, type PiProcessStep } from "./types"
+import { type ScriptedProviderScript, type ScriptedProviderStep } from "./types"
 
-export class ScriptedModelProvider {
-  private readonly steps: PiProcessScript
+export class ScriptedProvider {
+  private readonly steps: ScriptedProviderScript
 
   private index = 0
 
-  constructor(steps: PiProcessScript) {
+  constructor(steps: ScriptedProviderScript) {
     this.steps = steps
   }
 
-  private nextStep(): PiProcessStep {
+  private nextStep(): ScriptedProviderStep {
     const step = this.steps[this.index]
     this.index += 1
     if (!step) {
-      throw new Error(PI_PROCESS_SCRIPT_FAILURE)
+      throw new Error(SCRIPTED_PROVIDER_SCRIPT_FAILURE)
     }
     return step
   }
@@ -34,7 +34,7 @@ export class ScriptedModelProvider {
     const step = this.nextStep()
     const stream = createAssistantMessageEventStream()
     const message = assistantMessage(model)
-    stream.push({ type: PI_PROCESS_START_EVENT, partial: message })
+    stream.push({ type: SCRIPTED_PROVIDER_START_EVENT, partial: message })
     emitStep(stream, message, step, String(this.index))
     stream.end()
     return stream

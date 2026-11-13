@@ -10,5 +10,5 @@ JsVariableDeclarator(id=$name, initializer=JsInitializerClause(expression=$value
     JsArrowFunctionExpression(),
     JsFunctionExpression()
   },
-  register_diagnostic(span=$name, message="Top-level values belong in the module constants.ts.")
+  register_diagnostic(span=$name, message="Top-level values belong in the module constants.ts, and validation schemas in the module schemas.ts.")
 }

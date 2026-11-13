@@ -2,10 +2,10 @@ import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { PI_REQUEST_LOG_FILE, PI_REQUEST_LOG_VARIABLE } from "../request-log"
 import {
-  PI_PROCESS_MODEL_REFERENCE,
-  PI_PROCESS_PROVIDER_URL,
-  PI_PROCESS_SCRIPT_FILE,
-  PI_PROCESS_SCRIPT_VARIABLE,
+  SCRIPTED_PROVIDER_MODEL_REFERENCE,
+  SCRIPTED_PROVIDER_PROVIDER_URL,
+  SCRIPTED_PROVIDER_SCRIPT_FILE,
+  SCRIPTED_PROVIDER_SCRIPT_VARIABLE,
 } from "../scripted-provider"
 import {
   PI_PROCESS_AGENT_VARIABLE,
@@ -31,9 +31,9 @@ export function piProcessArguments(entrypoint: string): string[] {
     PI_PROCESS_EXTENSION_FLAG,
     entrypoint,
     PI_PROCESS_EXTENSION_FLAG,
-    fileURLToPath(PI_PROCESS_PROVIDER_URL),
+    fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL),
     PI_PROCESS_MODEL_FLAG,
-    PI_PROCESS_MODEL_REFERENCE,
+    SCRIPTED_PROVIDER_MODEL_REFERENCE,
   ]
 }
 
@@ -49,7 +49,7 @@ export function piProcessEnvironment(home: string, agentDirectory: string): Node
     [PI_PROCESS_LOCAL_APPDATA_VARIABLE]: home,
     [PI_PROCESS_CONFIG_VARIABLE]: home,
     [PI_PROCESS_CACHE_VARIABLE]: home,
-    [PI_PROCESS_SCRIPT_VARIABLE]: join(home, PI_PROCESS_SCRIPT_FILE),
+    [SCRIPTED_PROVIDER_SCRIPT_VARIABLE]: join(home, SCRIPTED_PROVIDER_SCRIPT_FILE),
     [PI_REQUEST_LOG_VARIABLE]: join(home, PI_REQUEST_LOG_FILE),
   }
 }

@@ -21,7 +21,7 @@ function followsConfiguredAgentDirectory(): void {
 
 function usesHomeAgentDirectoryByDefault(): void {
   delete process.env[AGENT_DIRECTORY_VARIABLE]
-  expect(advisorConfigPath()).toBe(join(environment.agentDirectory, ADVISOR_CONFIG_FILE))
+  expect(advisorConfigPath()).toBe(join(environment.home, ".pi", "agent", ADVISOR_CONFIG_FILE))
 }
 
 function registerTests(): void {
