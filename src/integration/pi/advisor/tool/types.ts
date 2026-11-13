@@ -2,7 +2,7 @@ import { type ExtensionContext, type ToolDefinition } from "@earendil-works/pi-c
 import { type Static } from "typebox"
 import { type AdvisorModelRegistry } from "../model-consultation"
 import { type TranscriptSource } from "../transcript"
-import { type advisorParameters } from "./constants"
+import { type advisorParameters } from "./schemas"
 
 export type AdvisorToolInput = Static<typeof advisorParameters>
 

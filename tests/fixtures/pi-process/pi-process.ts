@@ -1,10 +1,12 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process"
 import { once } from "node:events"
+import { setTimeout as delay } from "node:timers/promises"
 import {
   PI_PROCESS_ALREADY_STARTED,
   PI_PROCESS_CLOSE_EVENT,
   PI_PROCESS_COMMAND_TIMEOUT_MS,
   PI_PROCESS_DATA_EVENT,
+  PI_PROCESS_DIAGNOSTIC_FAILURE,
   PI_PROCESS_DRAIN_EVENT,
   PI_PROCESS_ENCODING,
   PI_PROCESS_ERROR_EVENT,
@@ -12,15 +14,27 @@ import {
   PI_PROCESS_KILL_SIGNAL,
   PI_PROCESS_NEWLINE,
   PI_PROCESS_NOT_STARTED,
+  PI_PROCESS_QUERY_ERRORS,
   PI_PROCESS_RESPONSE_TYPE,
+  PI_PROCESS_SHUTDOWN_TIMEOUT,
+  PI_PROCESS_SHUTDOWN_TIMEOUT_MS,
   PI_PROCESS_STDIO,
 } from "./constants"
 import { PiProcessDiagnostics } from "./diagnostics"
 import { PiProcessHome } from "./pi-process-home"
 import { PiProcessRecords } from "./pi-process-records"
 import { piProcessArguments, piProcessEnvironment } from "./process-start"
-import { type PiProcessCommand, type PiProcessExitCode, type PiProcessResponse } from "./types"
-import { waitForPiProcessClose } from "./wait-for-close"
+import {
+  type PiProcessClosePromise,
+  type PiProcessCloseResolver,
+  type PiProcessCommand,
+  type PiProcessCommands,
+  type PiProcessExitCode,
+  type PiProcessLastAssistantText,
+  type PiProcessQuery,
+  type PiProcessQueryResponse,
+  type PiProcessRecord,
+} from "./types"
 
 export class PiProcess {
   readonly homeDirectory = new PiProcessHome()
@@ -32,6 +46,10 @@ export class PiProcess {
   private child?: ChildProcessWithoutNullStreams
 
   private readonly diagnostics = new PiProcessDiagnostics()
+
+  private resolveClose?: PiProcessCloseResolver
+
+  private readonly closePromise = new Promise<void>(this.observeClose.bind(this))
 
   private sequence = 0
 
@@ -57,7 +75,7 @@ export class PiProcess {
     this.child.on(PI_PROCESS_CLOSE_EVENT, this.closed.bind(this))
   }
 
-  async command(command: PiProcessCommand): Promise<PiProcessResponse> {
+  async command(command: PiProcessCommand): Promise<PiProcessRecord> {
     const child = this.requireChild()
     this.sequence += 1
     const id = String(this.sequence)
@@ -69,20 +87,56 @@ export class PiProcess {
     return response
   }
 
+  query(command: "get_commands"): Promise<PiProcessCommands>
+  query(command: "get_last_assistant_text"): Promise<PiProcessLastAssistantText>
+  async query(command: PiProcessQuery): Promise<PiProcessQueryResponse> {
+    const record = await this.command({ type: command })
+    if (record.type === PI_PROCESS_RESPONSE_TYPE && record.command === command && record.success) {
+      return record
+    }
+    throw new Error(PI_PROCESS_QUERY_ERRORS[command])
+  }
+
   async dispose(): Promise<void> {
+    try {
+      await this.closeChild()
+    } finally {
+      this.homeDirectory.remove()
+    }
+  }
+
+  private async closeChild(): Promise<void> {
     const child = this.child
     if (child && this.running) {
-      const closed = waitForPiProcessClose(child)
+      const closed = this.closePromise
       child.stdin.end()
       try {
-        await closed
+        await this.waitForClose(closed)
       } catch {
-        const killed = waitForPiProcessClose(child)
         child.kill(PI_PROCESS_KILL_SIGNAL)
-        await killed
+        await this.waitForClose(closed)
       }
     }
-    this.homeDirectory.remove()
+  }
+
+  private async waitForClose(closed: PiProcessClosePromise): Promise<void> {
+    const timer = new AbortController()
+    try {
+      await Promise.race([
+        closed,
+        delay(PI_PROCESS_SHUTDOWN_TIMEOUT_MS, false, { signal: timer.signal }).then(this.shutdownTimeout),
+      ])
+    } finally {
+      timer.abort()
+    }
+  }
+
+  private observeClose(resolve: PiProcessCloseResolver): void {
+    this.resolveClose = resolve
+  }
+
+  private shutdownTimeout(): never {
+    throw new Error(PI_PROCESS_SHUTDOWN_TIMEOUT)
   }
 
   private requireChild(): ChildProcessWithoutNullStreams {
@@ -94,13 +148,14 @@ export class PiProcess {
 
   private diagnostic(chunk: string): void {
     const result = this.diagnostics.receive(chunk)
-    if (result.kind === "failure") {
+    if (result.kind === PI_PROCESS_DIAGNOSTIC_FAILURE) {
       this.received.fail(result.error)
     }
   }
 
   private closed(code: PiProcessExitCode): void {
     this.running = false
+    this.resolveClose?.()
     this.received.fail(new Error(`${PI_PROCESS_EXIT_FAILURE}${code}${PI_PROCESS_NEWLINE}${this.diagnostics.text}`))
   }
 }
