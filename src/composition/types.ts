@@ -1,3 +1,3 @@
-import { type AdvisorHost, type CooldownRetryHost } from "#synapse/integration"
+import { type AdvisorHost, type CooldownRetryHost, type ResponseRulesHost } from "#synapse/integration"
 
-export type SynapseHost = AdvisorHost & CooldownRetryHost
+export type SynapseHost = AdvisorHost & CooldownRetryHost & ResponseRulesHost

@@ -1,12 +1,13 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
 import { compose } from "#synapse/composition"
-import { advisorConfigPath } from "#synapse/integration"
+import { advisorConfigPath, responseRulesInstructionsPath } from "#synapse/integration"
 import {
   COOLING_DOWN_ERROR,
   DistributionEnvironment,
   failedAssistantMessage,
   REWRITE_PREFIX,
+  responseRulesContextEvent,
   SynapseHostCollector,
   TestContext,
   toolText,
@@ -111,6 +112,30 @@ function registersCooldownRetry(): void {
   expect(results).toStrictEqual([{ message: { ...message, errorMessage: `${REWRITE_PREFIX}${COOLING_DOWN_ERROR}` } }])
 }
 
+function registersResponseRules(): void {
+  writeFileSync(responseRulesInstructionsPath(), "## Respostas\nSeja direto.\n")
+  compose(host)
+  const result = host.requireContextHandler()(responseRulesContextEvent())
+  expect(result).toStrictEqual({
+    messages: [
+      {
+        role: "user",
+        content: [
+          { type: "text", text: "Olá" },
+          { type: "text", text: "\n\n<system-reminder>\nSeja direto.\n</system-reminder>" },
+        ],
+        timestamp: 0,
+      },
+    ],
+  })
+}
+
+function ignoresMissingResponseRules(): void {
+  compose(host)
+  const result = host.requireContextHandler()(responseRulesContextEvent())
+  expect(result).toBeUndefined()
+}
+
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
@@ -124,6 +149,8 @@ function registerTests(): void {
   test("configuração inválida recusa a consulta sem chamar o modelo", invalidConfigurationRefusesConsultation)
   test("configuração inválida não sobrescreve o arquivo", invalidConfigurationIsPreserved)
   test("composição registra a repetição por cooldown", registersCooldownRetry)
+  test("composição registra as regras de resposta", registersResponseRules)
+  test("sem arquivo de instruções o pedido segue sem lembrete", ignoresMissingResponseRules)
 }
 
 describe("composition", registerTests)
