@@ -9,7 +9,7 @@ import {
   type TeamWaitOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
 import { Inbox } from "../inbox"
-import { TeamRuleError, teamFailure, teamOperationResult, teamRefusal } from "../operation-results"
+import { TeamRuleError, teamClassifyError, teamOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { TEAM_UNKNOWN_AGENT, type TeamRoster } from "../roster"
 import {
@@ -90,10 +90,7 @@ export class TeamMessages {
       return { kind: TEAM_CANCELLED }
     }
     try {
-      if (this.closed) {
-        throw new TeamRuleError(TEAM_CLOSED)
-      }
-      const inbox = name === TEAM_LEAD_NAME ? this.inbox : this.roster.find(name).inbox
+      const inbox = this.inboxFor(name)
       const result = await inbox.wait(timeoutMs, signal)
       if (signal?.aborted) {
         return { kind: TEAM_CANCELLED }
@@ -103,14 +100,21 @@ export class TeamMessages {
       if (signal?.aborted) {
         return { kind: TEAM_CANCELLED }
       }
-      if (error instanceof TeamRuleError) {
-        return teamRefusal(error)
-      }
       if (error instanceof Error) {
-        return teamFailure(error)
+        return teamClassifyError(error)
       }
       throw error
     }
+  }
+
+  private inboxFor(name: string): Inbox {
+    if (this.closed) {
+      throw new TeamRuleError(TEAM_CLOSED)
+    }
+    if (name === TEAM_LEAD_NAME) {
+      return this.inbox
+    }
+    return this.roster.find(name).inbox
   }
 
   private ensureCanSend(sender: string, target: string): void {

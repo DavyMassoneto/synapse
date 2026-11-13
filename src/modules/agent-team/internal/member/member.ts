@@ -72,7 +72,7 @@ export class TeamMember {
       waiting: this.inbox.hasWaiter,
       unconfirmed: this.queue.unconfirmedCount,
       tools: this.tools,
-      responseState: this.responseState,
+      effectiveModel: this.responseState.effectiveModel,
     })
   }
 

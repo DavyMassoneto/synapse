@@ -28,12 +28,10 @@ export interface TeamMemberRowInput {
   waiting: boolean
   unconfirmed: number
   tools: TeamActiveTools
-  responseState: TeamMemberResponseStatePort
+  effectiveModel: TeamModelReference
 }
 
 export type TeamActiveTools = Map<string, string>
-
-export type TeamMemberTerminalState = "finished" | "failed" | "interrupted"
 
 export type TeamMemberFailureState = TeamMemberFailure | TeamMemberNoFailure
 
@@ -44,10 +42,6 @@ export interface TeamMemberFailure {
 
 export interface TeamMemberNoFailure {
   kind: "none"
-}
-
-export interface TeamMemberResponseStatePort {
-  readonly effectiveModel: TeamModelReference
 }
 
 export type TeamMemberCompletedState = "finished" | "failed"
