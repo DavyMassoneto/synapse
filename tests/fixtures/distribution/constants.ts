@@ -36,3 +36,11 @@ export const DISTRIBUTION_ADVISOR_ARGUMENTS_JSON = "{}"
 export const DISTRIBUTION_ADVISOR_REPLY = "conselho"
 
 export const DISTRIBUTION_COMPLETION_REPLY = "concluído"
+
+export const DISTRIBUTION_DISABLED_ADVISOR_ERROR = "Tool advisor not found"
+
+export const DISTRIBUTION_INVALID_ARGUMENTS_JSON = "[]"
+
+export const DISTRIBUTION_INVALID_ARGUMENTS_ERROR = "Tool arguments must be a JSON object"
+
+export const DISTRIBUTION_FINISHED_REPLY = "ok"

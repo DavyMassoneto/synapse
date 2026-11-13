@@ -9,8 +9,12 @@ import {
   DISTRIBUTION_ADVISOR_STATUS,
   DISTRIBUTION_COMMANDS_COMMAND,
   DISTRIBUTION_COMPLETION_REPLY,
+  DISTRIBUTION_DISABLED_ADVISOR_ERROR,
   DISTRIBUTION_ERROR_NOTICE,
   DISTRIBUTION_EXTENSION_SOURCE,
+  DISTRIBUTION_FINISHED_REPLY,
+  DISTRIBUTION_INVALID_ARGUMENTS_ERROR,
+  DISTRIBUTION_INVALID_ARGUMENTS_JSON,
   DISTRIBUTION_INVALID_CONFIGURATION_PATTERN,
   DISTRIBUTION_MISSING_EXTENSION_PATTERN,
   INVALID_CASES,
@@ -81,6 +85,34 @@ async function refusesMissingEntrypoint(piProcess: PiProcessScenarioHandle): Pro
   expect(piProcess.stderr).toContain(PI_PROCESS_MISSING_ENTRY)
 }
 
+async function callsDisabledAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
+  piProcess.homeDirectory.script([
+    {
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+      name: DISTRIBUTION_ADVISOR_NAME,
+      argumentsJson: DISTRIBUTION_ADVISOR_ARGUMENTS_JSON,
+    },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: DISTRIBUTION_FINISHED_REPLY },
+  ])
+  const requests = await runPiProcessPrompt(piProcess, ADVISOR_PROMPT)
+  expect(requests).toHaveLength(2)
+  expect(JSON.stringify(requirePiProcessRequest(requests, 1))).toContain(DISTRIBUTION_DISABLED_ADVISOR_ERROR)
+}
+
+async function reportsInvalidArguments(piProcess: PiProcessScenarioHandle): Promise<void> {
+  writePackageAdvisorConfig(piProcess, VALID_CONFIG)
+  piProcess.homeDirectory.script([
+    {
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+      name: DISTRIBUTION_ADVISOR_NAME,
+      argumentsJson: DISTRIBUTION_INVALID_ARGUMENTS_JSON,
+    },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: DISTRIBUTION_FINISHED_REPLY },
+  ])
+  const requests = await runPiProcessPrompt(piProcess, ADVISOR_PROMPT)
+  expect(JSON.stringify(requirePiProcessRequest(requests, 1))).toContain(DISTRIBUTION_INVALID_ARGUMENTS_ERROR)
+}
+
 async function consultsConfiguredAdvisor(piProcess: PiProcessScenarioHandle): Promise<void> {
   writePackageAdvisorConfig(piProcess, VALID_CONFIG)
   piProcess.homeDirectory.script([
@@ -107,6 +139,16 @@ async function refusesSecondStart(piProcess: PiProcessScenarioHandle): Promise<v
 }
 
 function registerTests(): void {
+  test(
+    "o modelo chama advisor sem configuração",
+    runWithPiProcess.bind(undefined, callsDisabledAdvisor),
+    PI_PROCESS_TIMEOUT_MS,
+  )
+  test(
+    "argumentos que não são um objeto voltam ao modelo como erro da ferramenta",
+    runWithPiProcess.bind(undefined, reportsInvalidArguments),
+    PI_PROCESS_TIMEOUT_MS,
+  )
   test(
     "recusa iniciar o mesmo processo duas vezes",
     runWithPiProcess.bind(undefined, refusesSecondStart),
