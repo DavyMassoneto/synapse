@@ -1,3 +1,5 @@
+export const IPHONE_LOG_NEWLINE = "\n"
+
 export const IPHONE_LOG_ENCODING = "utf8"
 
 export const IPHONE_LOG_NOT_FOUND = "ENOENT"

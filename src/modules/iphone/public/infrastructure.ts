@@ -14,15 +14,10 @@ import {
 import { diagnoseIphone } from "#synapse/modules/iphone/internal/diagnosis"
 import {
   type IphoneConfiguration,
-  type IphoneConfigurationChange,
-  type IphoneConfigurationView,
-  type IphoneHost,
   type IphoneInfrastructure,
   type IphoneManagedPort,
   type IphoneModuleDependencies,
   type IphoneModuleDiagnosis,
-  type IphoneModuleLog,
-  type IphoneSupportResult,
 } from "./contracts"
 
 export class IphoneSystemInfrastructure implements IphoneInfrastructure {
@@ -34,21 +29,13 @@ export class IphoneSystemInfrastructure implements IphoneInfrastructure {
     this.sessionFactory = new IphoneConcreteSessionFactory(dependencies, this.server)
   }
 
-  configuration(path: string, host: IphoneHost): IphoneConfiguration {
-    return loadIphoneCompleteConfiguration(path, host)
-  }
+  readonly configuration = loadIphoneCompleteConfiguration
 
-  configurationView(path: string): IphoneConfigurationView {
-    return readIphoneConfigurationView(path)
-  }
+  readonly configurationView = readIphoneConfigurationView
 
-  configure(path: string, changes: IphoneConfigurationChange[]): IphoneSupportResult {
-    return writeIphoneConfiguration(path, changes)
-  }
+  readonly configure = writeIphoneConfiguration
 
-  log(directory: string): IphoneModuleLog {
-    return readIphoneServerLog(directory)
-  }
+  readonly log = readIphoneServerLog
 
   diagnose(
     config: IphoneConfiguration,
@@ -62,9 +49,7 @@ export class IphoneSystemInfrastructure implements IphoneInfrastructure {
     return startIphoneServer(config, dependencies, this.server, signal)
   }
 
-  stop(): Promise<void> {
-    return this.server.stop()
-  }
+  readonly stop = this.server.stop.bind(this.server)
 
   homePort(session: IphoneManagedPort): IphoneHttpHomePort {
     return new IphoneHttpHomePort(session)

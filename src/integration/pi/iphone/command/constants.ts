@@ -1,8 +1,11 @@
-export const PI_IPHONE_COMMAND_ASSIGNMENT = "="
+export const PI_IPHONE_COMMAND_SETTING = /\s+([A-Za-z][A-Za-z0-9]*)=("(?:[^"\\]|\\.)*"|[^\s"\\]+)(?=\s|$)/y
+
+export const PI_IPHONE_COMMAND_QUOTE = '"'
 
 export const PI_IPHONE_COMMAND_WORDS = /\s+/
 
-export const PI_IPHONE_COMMAND_INVALID_CHANGE = "Use config chave=valor."
+export const PI_IPHONE_COMMAND_INVALID_CHANGE =
+  'Use config chave=valor; para espaços, use chave="valor com espaços" com escapes JSON.'
 
 export const PI_IPHONE_COMMAND_UPDATED = "Configuração atualizada."
 
@@ -10,7 +13,8 @@ export const PI_IPHONE_COMMAND_EMPTY = ""
 
 export const PI_IPHONE_COMMAND_NAME = "iphone"
 
-export const PI_IPHONE_COMMAND_DESCRIPTION = "iPhone: status | doctor | config | log | start | stop | reset"
+export const PI_IPHONE_COMMAND_DESCRIPTION =
+  'iPhone: status | doctor | config chave=valor (espaços: chave="valor com espaços", escapes JSON) | log | start | stop | reset'
 
 export const PI_IPHONE_COMMAND_STATUS = "status"
 

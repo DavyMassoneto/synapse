@@ -1,5 +1,5 @@
 import { type AssistantMessage, createAssistantMessageEventStream } from "@earendil-works/pi-ai"
-import { TEST_USAGE } from "./constants"
+import { FIXTURE_MODEL_API, TEST_USAGE } from "./constants"
 import { type TestStopReason } from "./types"
 
 export function assistantStream(model: string, text: string, stopReason: TestStopReason) {
@@ -7,7 +7,7 @@ export function assistantStream(model: string, text: string, stopReason: TestSto
   const message: AssistantMessage = {
     role: "assistant",
     content: [{ type: "text", text }],
-    api: "anthropic-messages",
+    api: FIXTURE_MODEL_API,
     provider: "provider",
     model,
     stopReason,

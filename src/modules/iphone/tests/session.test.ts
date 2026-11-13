@@ -1,6 +1,7 @@
 import { setTimeout as wait } from "node:timers/promises"
 import { describe, expect, test } from "vitest"
-import { type IphoneSessionPort, IphoneSessionQueue } from "#synapse/modules/iphone/internal/session-lifecycle"
+import { IphoneSessionQueue } from "#synapse/modules/iphone/internal/session-lifecycle"
+import { type IphoneSessionPort } from "#synapse/modules/iphone/public/contracts"
 import { TestIphoneFactory } from "./doubles"
 import { type IphoneSessionTestSut } from "./types"
 

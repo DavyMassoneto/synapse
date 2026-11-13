@@ -1,21 +1,21 @@
 import {
+  IPHONE_ACTION_SCROLL,
+  type IphoneDeviceActionPort,
+  type IphoneSwipeAction,
+  type IphoneSwipeDirection,
+} from "#synapse/modules/iphone/public/contracts"
+import {
   IPHONE_ACTION_DOWN,
   IPHONE_ACTION_DRAG_SCRIPT,
   IPHONE_ACTION_LEFT,
   IPHONE_ACTION_OPPOSITE_DIRECTIONS,
-  IPHONE_ACTION_SCROLL,
   IPHONE_ACTION_SCROLL_SCRIPT,
   IPHONE_ACTION_SWIPE_FRACTION,
   IPHONE_ACTION_SWIPE_SECONDS,
   IPHONE_ACTION_UP,
 } from "./constants"
 import { executeIphoneFallback } from "./fallback"
-import {
-  type IphoneDeviceActionPort,
-  type IphoneSwipeAction,
-  type IphoneSwipeDirection,
-  type IphoneSwipeEndpoints,
-} from "./types"
+import { type IphoneSwipeEndpoints } from "./types"
 
 async function swipeIphoneScreen(
   port: IphoneDeviceActionPort,

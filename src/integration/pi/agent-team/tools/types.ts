@@ -4,24 +4,18 @@ import { type AgentTeam } from "#synapse/modules"
 import {
   type TEAM_TOOL_CREATE_TASK_PARAMETERS,
   type TEAM_TOOL_GET_TASK_PARAMETERS,
-  type TEAM_TOOL_INTERRUPT_AGENT,
   type TEAM_TOOL_INTERRUPT_AGENT_PARAMETERS,
-  type TEAM_TOOL_LIST_AGENTS,
-  type TEAM_TOOL_LIST_MODELS,
   type TEAM_TOOL_LIST_TASKS_PARAMETERS,
   type TEAM_TOOL_NO_PARAMETERS,
-  type TEAM_TOOL_SEND_MESSAGE,
   type TEAM_TOOL_SEND_MESSAGE_PARAMETERS,
-  type TEAM_TOOL_SUBAGENT,
   type TEAM_TOOL_SUBAGENT_PARAMETERS,
-  type TEAM_TOOL_TASK_CREATE,
-  type TEAM_TOOL_TASK_GET,
-  type TEAM_TOOL_TASK_LIST,
-  type TEAM_TOOL_TASK_UPDATE,
   type TEAM_TOOL_UPDATE_TASK_PARAMETERS,
-  type TEAM_TOOL_WAIT_AGENT,
   type TEAM_TOOL_WAIT_AGENT_PARAMETERS,
-} from "./constants"
+} from "./schemas"
+
+export type TeamModelToolSignal = Parameters<
+  ToolDefinition<typeof TEAM_TOOL_NO_PARAMETERS, TeamToolDetails>["execute"]
+>[2]
 
 export type TeamModelToolUpdate = Parameters<
   ToolDefinition<typeof TEAM_TOOL_NO_PARAMETERS, TeamToolDetails>["execute"]
@@ -68,28 +62,30 @@ export type TeamToolOutcome =
   | ReturnType<AgentTeam["interrupt"]>
 
 export type TeamToolName =
-  | typeof TEAM_TOOL_SUBAGENT
-  | typeof TEAM_TOOL_SEND_MESSAGE
-  | typeof TEAM_TOOL_LIST_AGENTS
-  | typeof TEAM_TOOL_WAIT_AGENT
-  | typeof TEAM_TOOL_INTERRUPT_AGENT
-  | typeof TEAM_TOOL_LIST_MODELS
-  | typeof TEAM_TOOL_TASK_CREATE
-  | typeof TEAM_TOOL_TASK_LIST
-  | typeof TEAM_TOOL_TASK_GET
-  | typeof TEAM_TOOL_TASK_UPDATE
+  | "subagent"
+  | "send_message"
+  | "list_agents"
+  | "wait_agent"
+  | "interrupt_agent"
+  | "list_models"
+  | "team_task_create"
+  | "team_task_list"
+  | "team_task_get"
+  | "team_task_update"
 
-export type TeamRegisteredTool = Omit<ToolDefinition, "name"> & TeamToolIdentity
+export type TeamRegisteredTool = Omit<
+  ToolDefinition<TSchema, TeamToolDetails, never>,
+  "name" | "renderCall" | "renderResult"
+> &
+  TeamToolIdentity
 
 export interface TeamToolIdentity {
   name: TeamToolName
 }
 
-export type TeamWaitSignal = Parameters<AgentTeam["wait"]>[2]
-
 export interface TeamToolRegistration<T extends TSchema> {
   name: TeamToolName
   description: string
   parameters: T
-  execute: ToolDefinition<T, TeamToolDetails>["execute"]
+  execute: ToolDefinition<T, TeamToolDetails, never>["execute"]
 }

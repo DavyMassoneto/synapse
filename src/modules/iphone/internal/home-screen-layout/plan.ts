@@ -1,4 +1,4 @@
-import { IPHONE_REFUSED } from "#synapse/modules/iphone/public/contracts"
+import { IPHONE_REFUSED, type IphoneHomeIcon, type IphoneHomeLayout } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_ADJACENT,
   IPHONE_HOME_FULL,
@@ -8,7 +8,7 @@ import {
   IPHONE_HOME_SLOT_OCCUPIED,
   IPHONE_HOME_WIDGET_OCCUPIED,
 } from "./constants"
-import { type IphoneHomeIcon, type IphoneHomeLayout, type IphoneHomePlan } from "./types"
+import { type IphoneHomePlan } from "./types"
 
 export function planIphoneHomeMove(
   layout: IphoneHomeLayout,

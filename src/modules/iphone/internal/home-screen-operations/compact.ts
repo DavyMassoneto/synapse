@@ -1,9 +1,11 @@
+import { IPHONE_HOME_GRID, IPHONE_HOME_MOVE } from "#synapse/modules/iphone/internal/home-screen-layout"
 import {
-  IPHONE_HOME_GRID,
-  IPHONE_HOME_MOVE,
+  IPHONE_ACCEPTED,
   IPHONE_HOME_PAGE_KNOWN,
-} from "#synapse/modules/iphone/internal/home-screen-layout"
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneSupportResult } from "#synapse/modules/iphone/public/contracts"
+  IPHONE_REFUSED,
+  type IphoneHomeScreenPort,
+  type IphoneSupportResult,
+} from "#synapse/modules/iphone/public/contracts"
 import { moveIphoneHomeIcon } from "./adjacency"
 import {
   IPHONE_HOME_ALERT_FAILURE,
@@ -14,7 +16,6 @@ import {
 import { editIphoneHomeScreen } from "./edit"
 import { gotoIphoneHomePage } from "./goto"
 import { readIphoneHomeScreen } from "./read"
-import { type IphoneHomeScreenPort } from "./types"
 
 export async function compactIphoneHomePage(
   port: IphoneHomeScreenPort,

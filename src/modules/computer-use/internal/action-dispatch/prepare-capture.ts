@@ -1,5 +1,4 @@
 import {
-  COMPUTER_AX_FORMAT,
   COMPUTER_MODE_SOM,
   COMPUTER_MODE_VISION,
   type ComputerCapture,
@@ -8,7 +7,7 @@ import {
   type ComputerDriverArguments,
   type ComputerDriverEnvelope,
 } from "#synapse/modules/computer-use/public/contracts"
-import { COMPUTER_TREE_READ, computerReadElementTree } from "../element-tree-reading"
+import { computerReadElementTree } from "../element-tree-reading"
 import {
   COMPUTER_EXACT_TARGET_SELECTED,
   COMPUTER_TARGET_SCREEN,
@@ -61,10 +60,7 @@ export function computerCaptureFromEnvelope(
   prepared: ComputerPreparedCapture,
   envelope: ComputerDriverEnvelope,
 ): ComputerCapture {
-  const tree = computerReadElementTree(envelope.tree, COMPUTER_AX_FORMAT)
-  if (tree.kind !== COMPUTER_TREE_READ) {
-    throw new Error(tree.format)
-  }
+  const tree = computerReadElementTree(envelope.tree)
   const elements = envelope.elements.length ? envelope.elements : tree.elements
   for (const element of elements) {
     element.app = prepared.app

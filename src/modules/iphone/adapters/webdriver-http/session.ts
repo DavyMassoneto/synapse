@@ -1,10 +1,9 @@
 import { setTimeout } from "node:timers/promises"
-import { Value } from "typebox/value"
-import { type IphoneActionArguments } from "#synapse/modules/iphone/internal/device-actions"
-import { type IphonePointerAction } from "#synapse/modules/iphone/internal/pointer-gestures"
 import {
+  type IphoneActionArguments,
   type IphoneElement,
   type IphoneMobileInfo,
+  type IphonePointerAction,
   type IphoneRectangle,
 } from "#synapse/modules/iphone/public/contracts"
 import { requestIphoneWebDriver } from "./client"
@@ -15,32 +14,36 @@ import {
   IPHONE_HTTP_ELEMENT_CLEAR,
   IPHONE_HTTP_ELEMENT_ID,
   IPHONE_HTTP_ELEMENT_ROOT,
-  IPHONE_HTTP_ELEMENT_SCHEMA,
   IPHONE_HTTP_ELEMENT_VALUE,
-  IPHONE_HTTP_EMPTY_SCHEMA,
+  IPHONE_HTTP_EMPTY_OBJECT_BODY,
   IPHONE_HTTP_EXECUTE,
   IPHONE_HTTP_FINGER,
   IPHONE_HTTP_GET,
-  IPHONE_HTTP_INFO_SCHEMA,
   IPHONE_HTTP_MOBILE_LAUNCH,
-  IPHONE_HTTP_MOBILE_LAUNCH_SCHEMA,
   IPHONE_HTTP_MOBILE_PREFIX,
-  IPHONE_HTTP_MOBILE_RESULT_SCHEMA,
   IPHONE_HTTP_MOBILE_TERMINATE,
-  IPHONE_HTTP_MOBILE_TERMINATE_SCHEMA,
   IPHONE_HTTP_ORIENTATION,
   IPHONE_HTTP_POINTER,
   IPHONE_HTTP_POST,
   IPHONE_HTTP_RECT,
-  IPHONE_HTTP_RECT_SCHEMA,
   IPHONE_HTTP_SCREENSHOT,
   IPHONE_HTTP_SESSION,
   IPHONE_HTTP_SOURCE,
-  IPHONE_HTTP_STRING_SCHEMA,
   IPHONE_HTTP_TIMEOUT_MS,
   IPHONE_HTTP_TOUCH,
   IPHONE_HTTP_URL,
 } from "./constants"
+import { requestIphoneMobile } from "./mobile-request"
+import {
+  IPHONE_HTTP_ELEMENT_SCHEMA,
+  IPHONE_HTTP_EMPTY_SCHEMA,
+  IPHONE_HTTP_INFO_SCHEMA,
+  IPHONE_HTTP_MOBILE_LAUNCH_SCHEMA,
+  IPHONE_HTTP_MOBILE_RESULT_SCHEMA,
+  IPHONE_HTTP_MOBILE_TERMINATE_SCHEMA,
+  IPHONE_HTTP_RECT_SCHEMA,
+  IPHONE_HTTP_STRING_SCHEMA,
+} from "./schemas"
 
 export class IphoneWebDriverSession {
   readonly id: string
@@ -71,41 +74,43 @@ export class IphoneWebDriverSession {
   }
 
   private async emptyRequest(url: string, method: string, body: string, signal: AbortSignal): Promise<void> {
-    const text = await requestIphoneWebDriver(url, method, body, signal, IPHONE_HTTP_TIMEOUT_MS)
-    Value.Parse(IPHONE_HTTP_EMPTY_SCHEMA, JSON.parse(text))
+    await requestIphoneWebDriver(url, method, body, signal, IPHONE_HTTP_TIMEOUT_MS, IPHONE_HTTP_EMPTY_SCHEMA)
   }
 
   async source(signal: AbortSignal): Promise<string> {
-    const text = await requestIphoneWebDriver(
+    const result = await requestIphoneWebDriver(
       this.url(IPHONE_HTTP_SOURCE),
       IPHONE_HTTP_GET,
       "",
       signal,
       IPHONE_HTTP_TIMEOUT_MS,
+      IPHONE_HTTP_STRING_SCHEMA,
     )
-    return Value.Parse(IPHONE_HTTP_STRING_SCHEMA, JSON.parse(text)).value
+    return result
   }
 
   async screenshot(signal: AbortSignal): Promise<string> {
-    const text = await requestIphoneWebDriver(
+    const result = await requestIphoneWebDriver(
       this.url(IPHONE_HTTP_SCREENSHOT),
       IPHONE_HTTP_GET,
       "",
       signal,
       IPHONE_HTTP_TIMEOUT_MS,
+      IPHONE_HTTP_STRING_SCHEMA,
     )
-    return Value.Parse(IPHONE_HTTP_STRING_SCHEMA, JSON.parse(text)).value
+    return result
   }
 
   async rect(signal: AbortSignal): Promise<IphoneRectangle> {
-    const text = await requestIphoneWebDriver(
+    const result = await requestIphoneWebDriver(
       this.url(IPHONE_HTTP_RECT),
       IPHONE_HTTP_GET,
       "",
       signal,
       IPHONE_HTTP_TIMEOUT_MS,
+      IPHONE_HTTP_RECT_SCHEMA,
     )
-    return Value.Parse(IPHONE_HTTP_RECT_SCHEMA, JSON.parse(text)).value
+    return result
   }
 
   async actions(actions: IphonePointerAction[], signal: AbortSignal): Promise<void> {
@@ -118,46 +123,46 @@ export class IphoneWebDriverSession {
   }
 
   async activeElement(signal: AbortSignal): Promise<string> {
-    const text = await requestIphoneWebDriver(
+    const result = await requestIphoneWebDriver(
       this.url(IPHONE_HTTP_ELEMENT),
       IPHONE_HTTP_GET,
       "",
       signal,
       IPHONE_HTTP_TIMEOUT_MS,
+      IPHONE_HTTP_ELEMENT_SCHEMA,
     )
-    return Value.Parse(IPHONE_HTTP_ELEMENT_SCHEMA, JSON.parse(text)).value[IPHONE_HTTP_ELEMENT_ID]
+    return result[IPHONE_HTTP_ELEMENT_ID]
   }
 
   async mobile(script: string, args: IphoneActionArguments, signal: AbortSignal): Promise<void> {
-    const text = await requestIphoneWebDriver(
-      this.url(IPHONE_HTTP_EXECUTE),
-      IPHONE_HTTP_POST,
-      JSON.stringify({ script: `${IPHONE_HTTP_MOBILE_PREFIX}${script}`, args: [args] }),
-      signal,
-      IPHONE_HTTP_TIMEOUT_MS,
-    )
     switch (script) {
       case IPHONE_HTTP_MOBILE_TERMINATE:
-        Value.Parse(IPHONE_HTTP_MOBILE_TERMINATE_SCHEMA, JSON.parse(text))
+        await requestIphoneMobile(
+          this.url(IPHONE_HTTP_EXECUTE),
+          script,
+          args,
+          signal,
+          IPHONE_HTTP_MOBILE_TERMINATE_SCHEMA,
+        )
         break
       case IPHONE_HTTP_MOBILE_LAUNCH:
-        Value.Parse(IPHONE_HTTP_MOBILE_LAUNCH_SCHEMA, JSON.parse(text))
+        await requestIphoneMobile(this.url(IPHONE_HTTP_EXECUTE), script, args, signal, IPHONE_HTTP_MOBILE_LAUNCH_SCHEMA)
         break
       default:
-        Value.Parse(IPHONE_HTTP_MOBILE_RESULT_SCHEMA, JSON.parse(text))
+        await requestIphoneMobile(this.url(IPHONE_HTTP_EXECUTE), script, args, signal, IPHONE_HTTP_MOBILE_RESULT_SCHEMA)
     }
   }
 
   async mobileInfo(script: string, signal: AbortSignal): Promise<IphoneMobileInfo> {
-    const text = await requestIphoneWebDriver(
+    const result = await requestIphoneWebDriver(
       this.url(IPHONE_HTTP_EXECUTE),
       IPHONE_HTTP_POST,
       JSON.stringify({ script: `${IPHONE_HTTP_MOBILE_PREFIX}${script}`, args: [{}] }),
       signal,
       IPHONE_HTTP_TIMEOUT_MS,
+      IPHONE_HTTP_INFO_SCHEMA,
     )
-    const result = Value.Parse(IPHONE_HTTP_INFO_SCHEMA, JSON.parse(text))
-    return result.value
+    return result
   }
 
   async elementValue(id: string, value: string, signal: AbortSignal): Promise<void> {
@@ -167,7 +172,7 @@ export class IphoneWebDriverSession {
 
   async clearElement(id: string, signal: AbortSignal): Promise<void> {
     const path = `${IPHONE_HTTP_ELEMENT_ROOT}/${encodeURIComponent(id)}/${IPHONE_HTTP_ELEMENT_CLEAR}`
-    await this.emptyRequest(this.url(path), IPHONE_HTTP_POST, "{}", signal)
+    await this.emptyRequest(this.url(path), IPHONE_HTTP_POST, IPHONE_HTTP_EMPTY_OBJECT_BODY, signal)
   }
 
   async openUrl(url: string, signal: AbortSignal): Promise<void> {
@@ -175,14 +180,15 @@ export class IphoneWebDriverSession {
   }
 
   async getOrientation(signal: AbortSignal): Promise<string> {
-    const text = await requestIphoneWebDriver(
+    const result = await requestIphoneWebDriver(
       this.url(IPHONE_HTTP_ORIENTATION),
       IPHONE_HTTP_GET,
       "",
       signal,
       IPHONE_HTTP_TIMEOUT_MS,
+      IPHONE_HTTP_STRING_SCHEMA,
     )
-    return Value.Parse(IPHONE_HTTP_STRING_SCHEMA, JSON.parse(text)).value
+    return result
   }
 
   async setOrientation(orientation: string, signal: AbortSignal): Promise<void> {

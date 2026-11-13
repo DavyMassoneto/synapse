@@ -1,5 +1,6 @@
 import { randomUUID } from "node:crypto"
 import {
+  COMPUTER_CANCELLED,
   COMPUTER_DIAGNOSTIC_READY,
   COMPUTER_DIAGNOSTIC_UNAVAILABLE,
   COMPUTER_FAILED,
@@ -19,8 +20,13 @@ import { ComputerActionDispatch, computerDispatchFailure } from "../action-dispa
 import { COMPUTER_SAFETY_REFUSED, computerCheckActionSafety } from "../action-safety"
 import { COMPUTER_DRIVER_COMPATIBLE, computerCheckDriverVersion } from "../driver-compatibility"
 import { ComputerDriverSession } from "../driver-session"
+import { COMPUTER_CANCELLED_MESSAGE } from "../execution-cancellation"
 import { attemptComputer } from "./attempt-computer"
-import { COMPUTER_SESSION_DISPATCH_ACTIVE, COMPUTER_SESSION_DISPATCH_IDLE } from "./constants"
+import {
+  COMPUTER_SESSION_DISPATCH_ACTIVE,
+  COMPUTER_SESSION_DISPATCH_IDLE,
+  COMPUTER_SESSION_STOPPED_MESSAGE,
+} from "./constants"
 import { hasComputerOverlay } from "./predicates"
 import { type ComputerCheckedDriver, type ComputerDispatchState } from "./types"
 
@@ -28,6 +34,10 @@ export class ComputerUseService implements ComputerUse {
   private readonly dependencies: ComputerUseDependencies
 
   private dispatch: ComputerDispatchState = { kind: COMPUTER_SESSION_DISPATCH_IDLE }
+
+  private generation = 0
+
+  private stopping?: Promise<void>
 
   private queue?: Promise<ComputerExecuteResult>
 
@@ -38,27 +48,52 @@ export class ComputerUseService implements ComputerUse {
     this.dependencies = dependencies
   }
 
-  async execute(action: ComputerAction, context: ComputerExecutionContext): Promise<ComputerExecuteResult> {
+  async execute(
+    action: ComputerAction,
+    context: ComputerExecutionContext,
+    signal?: AbortSignal,
+  ): Promise<ComputerExecuteResult> {
+    if (signal?.aborted) {
+      return computerDispatchFailure(action, COMPUTER_CANCELLED_MESSAGE, COMPUTER_CANCELLED)
+    }
     const safety = computerCheckActionSafety(action, this.dependencies.platform)
     if (safety.kind === COMPUTER_SAFETY_REFUSED) {
       return computerDispatchFailure(action, safety.message, COMPUTER_REFUSED)
     }
-    const perform = this.perform.bind(this, action, context)
+    const perform = this.perform.bind(this, action, context, this.generation, signal)
     const run = this.queue ? this.queue.then(perform, perform) : perform()
     this.queue = run
     return run
   }
 
-  private perform(action: ComputerAction, context: ComputerExecutionContext): Promise<ComputerExecuteResult> {
-    return attemptComputer(this.executeAction.bind(this, action, context), this.executionFailure.bind(this, action))
+  private perform(
+    action: ComputerAction,
+    context: ComputerExecutionContext,
+    generation: number,
+    signal?: AbortSignal,
+  ): Promise<ComputerExecuteResult> {
+    return attemptComputer(
+      this.executeAction.bind(this, action, context, generation, signal),
+      this.executionFailure.bind(this, action),
+    )
   }
 
   private async executeAction(
     action: ComputerAction,
     context: ComputerExecutionContext,
+    generation: number,
+    signal?: AbortSignal,
   ): Promise<ComputerExecuteResult> {
-    const dispatch = await this.getDispatch()
-    return dispatch.execute(action, context)
+    if (this.stopping) {
+      await this.stopping
+    }
+    this.requireGeneration(generation)
+    if (signal?.aborted) {
+      return computerDispatchFailure(action, COMPUTER_CANCELLED_MESSAGE, COMPUTER_CANCELLED)
+    }
+    const dispatch = await this.getDispatch(generation)
+    this.requireGeneration(generation)
+    return dispatch.execute(action, context, signal)
   }
 
   private executionFailure(action: ComputerAction, message: string): ComputerExecuteResult {
@@ -91,11 +126,29 @@ export class ComputerUseService implements ComputerUse {
     return { kind: COMPUTER_INSTALL_FAILED, message }
   }
 
-  async stop(): Promise<void> {
-    const state = this.dispatch
+  stop(): Promise<void> {
+    if (!this.stopping) {
+      this.generation += 1
+      const state = this.dispatch
+      this.dispatch = { kind: COMPUTER_SESSION_DISPATCH_IDLE }
+      this.stopping = this.stopDispatch(state).finally(this.clearStopping.bind(this))
+    }
+    return this.stopping
+  }
+
+  private clearStopping(): void {
+    delete this.stopping
+  }
+
+  private async stopDispatch(state: ComputerDispatchState): Promise<void> {
     if (state.kind === COMPUTER_SESSION_DISPATCH_ACTIVE) {
       await state.dispatch.stop()
-      this.dispatch = { kind: COMPUTER_SESSION_DISPATCH_IDLE }
+    }
+  }
+
+  private requireGeneration(generation: number): void {
+    if (generation !== this.generation) {
+      throw new Error(COMPUTER_SESSION_STOPPED_MESSAGE)
     }
   }
 
@@ -109,12 +162,14 @@ export class ComputerUseService implements ComputerUse {
     return { launch, manifest }
   }
 
-  private async getDispatch(): Promise<ComputerActionDispatch> {
+  private async getDispatch(generation: number): Promise<ComputerActionDispatch> {
     const state = this.dispatch
     if (state.kind === COMPUTER_SESSION_DISPATCH_ACTIVE) {
       return state.dispatch
     }
-    const dispatch = this.mountDispatch(await this.checkedDriver())
+    const checked = await this.checkedDriver()
+    this.requireGeneration(generation)
+    const dispatch = this.mountDispatch(checked)
     this.dispatch = { kind: COMPUTER_SESSION_DISPATCH_ACTIVE, dispatch }
     return dispatch
   }

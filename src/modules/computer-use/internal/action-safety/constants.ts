@@ -34,7 +34,3 @@ export const COMPUTER_INVALID_FOREGROUND_MESSAGE = "Trazer à frente exige deliv
 export const COMPUTER_SAFETY_WIN_ALIASES = ["super", "meta"]
 
 export const COMPUTER_SAFETY_WIN_KEY = "win"
-
-export const COMPUTER_SAFETY_ALT_KEY = "alt"
-
-export const COMPUTER_SAFETY_OPTION_KEY = "option"

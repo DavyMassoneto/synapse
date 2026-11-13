@@ -2,11 +2,14 @@ import { Value } from "typebox/value"
 import { isIphoneHttpUrl } from "#synapse/modules/iphone/internal/configuration"
 import {
   IPHONE_ACCEPTED,
+  IPHONE_DEVICE,
   IPHONE_REFUSED,
+  IPHONE_SIMULATOR,
   type IphoneConfigurationChange,
   type IphoneSupportResult,
 } from "#synapse/modules/iphone/public/contracts"
 import * as constants from "./constants"
+import { IPHONE_CONFIG_CAPABILITIES_SCHEMA } from "./schemas"
 import { type IphoneStoredConfiguration } from "./types"
 
 export function updateIphoneConfiguration(
@@ -68,7 +71,7 @@ function dispatchIphoneConfigurationChange(
 }
 
 function applyIphoneTarget(config: IphoneStoredConfiguration, value: string): IphoneSupportResult {
-  if (value !== constants.IPHONE_CONFIG_TARGET_DEVICE && value !== constants.IPHONE_CONFIG_TARGET_SIMULATOR) {
+  if (value !== IPHONE_DEVICE && value !== IPHONE_SIMULATOR) {
     return {
       kind: IPHONE_REFUSED,
       message: `${constants.IPHONE_CONFIG_UPDATE_ERROR}${constants.IPHONE_CONFIG_KEY_TARGET}`,
@@ -125,7 +128,7 @@ function applyIphoneWdaInstalled(config: IphoneStoredConfiguration, value: strin
 
 function applyIphoneCapabilities(config: IphoneStoredConfiguration, value: string): IphoneSupportResult {
   try {
-    config.capabilities = Value.Parse(constants.IPHONE_CONFIG_CAPABILITIES_SCHEMA, JSON.parse(value))
+    config.capabilities = Value.Parse(IPHONE_CONFIG_CAPABILITIES_SCHEMA, JSON.parse(value))
     return { kind: IPHONE_ACCEPTED }
   } catch {
     return {

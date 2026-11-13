@@ -1,13 +1,11 @@
-import { type COMPUTER_DIMENSIONS_ABSENT, type COMPUTER_DIMENSIONS_FOUND } from "./constants"
-
 export interface ComputerFoundDimensions {
-  kind: typeof COMPUTER_DIMENSIONS_FOUND
+  kind: "dimensions-found"
   width: number
   height: number
 }
 
 export interface ComputerAbsentDimensions {
-  kind: typeof COMPUTER_DIMENSIONS_ABSENT
+  kind: "dimensions-absent"
 }
 
 export type ComputerImageDimensions = ComputerFoundDimensions | ComputerAbsentDimensions

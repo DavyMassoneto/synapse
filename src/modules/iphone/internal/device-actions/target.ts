@@ -1,4 +1,8 @@
-import { findIphoneElement, IPHONE_TREE_FOUND } from "#synapse/modules/iphone/internal/element-tree"
+import {
+  findIphoneElement,
+  IPHONE_TREE_FOUND,
+  iphoneElementCenter,
+} from "#synapse/modules/iphone/internal/element-tree"
 import {
   IPHONE_TARGET_ELEMENT,
   IPHONE_TARGET_POINT,
@@ -30,8 +34,5 @@ export function resolveIphoneTarget(target: IphoneActionTarget, elements: Iphone
   if (!element) {
     throw new Error(IPHONE_ACTION_TARGET_MISSING)
   }
-  return {
-    x: Math.round(element.rect.x + element.rect.width / 2),
-    y: Math.round(element.rect.y + element.rect.height / 2),
-  }
+  return iphoneElementCenter(element.rect)
 }

@@ -1,26 +1,16 @@
 import { type ComputerWindow } from "#synapse/modules/computer-use/public/contracts"
-import {
-  type COMPUTER_EXACT_TARGET_SELECTED,
-  type COMPUTER_TARGET_ABSENT,
-  type COMPUTER_TARGET_APP,
-  type COMPUTER_TARGET_EXACT,
-  type COMPUTER_TARGET_IMPLICIT,
-  type COMPUTER_TARGET_REJECTED,
-  type COMPUTER_TARGET_SCREEN,
-  type COMPUTER_TARGET_SELECTED,
-} from "./outcomes"
 
 export interface ComputerImplicitTargetRequest {
-  kind: typeof COMPUTER_TARGET_IMPLICIT
+  kind: "target-implicit"
 }
 
 export interface ComputerAppTargetRequest {
-  kind: typeof COMPUTER_TARGET_APP
+  kind: "target-app"
   app: string
 }
 
 export interface ComputerExactTargetRequest {
-  kind: typeof COMPUTER_TARGET_EXACT
+  kind: "target-exact"
   pid: number
   windowId: number
 }
@@ -31,21 +21,21 @@ export type ComputerTargetRequest =
   | ComputerExactTargetRequest
 
 export interface ComputerSelectedTarget {
-  kind: typeof COMPUTER_TARGET_SELECTED
+  kind: "target-selected"
   window: ComputerWindow
 }
 
 export interface ComputerAbsentTarget {
-  kind: typeof COMPUTER_TARGET_ABSENT
+  kind: "target-absent"
 }
 
 export interface ComputerRejectedTarget {
-  kind: typeof COMPUTER_TARGET_REJECTED
+  kind: "target-rejected"
   message: string
 }
 
 export interface ComputerScreenTarget {
-  kind: typeof COMPUTER_TARGET_SCREEN
+  kind: "target-screen"
 }
 
 export type ComputerTargetSelection =
@@ -65,7 +55,7 @@ export interface ComputerShellNames {
 }
 
 export interface ComputerSelectedExactTarget {
-  kind: typeof COMPUTER_EXACT_TARGET_SELECTED
+  kind: "exact-target-selected"
   pid: number
   windowId: number
 }

@@ -8,9 +8,9 @@ export const RESPONSE_RULES_TEST_HANDLER_MISSING = "Handler de contexto não reg
 
 export const RESPONSE_INTEGRATION_REMINDER = "\n\n<system-reminder>\nSeja conciso.\n</system-reminder>"
 
-export const PI_PROCESS_RULES = "## Respostas\nSeja conciso."
+export const RESPONSE_RULES_DISTRIBUTION_RULES = "## Respostas\nSeja conciso."
 
-export const PI_PROCESS_UNRELATED_RULES = "## Outra\nSeja conciso."
+export const RESPONSE_RULES_DISTRIBUTION_UNRELATED_RULES = "## Outra\nSeja conciso."
 
 export const RESPONSE_RULES_TEST_PROMPT = "Olá\u2028mundo\u2029!"
 

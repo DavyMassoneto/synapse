@@ -1,6 +1,7 @@
 import { Value } from "typebox/value"
 import { type ConfigLoadResult, parseModelReference } from "#synapse/modules/advisor/public/contracts"
-import { CONFIG_INVALID, configSchema } from "./constants"
+import { CONFIG_INVALID } from "./constants"
+import { configSchema } from "./schemas"
 
 export function parseConfig(content: string): ConfigLoadResult {
   try {

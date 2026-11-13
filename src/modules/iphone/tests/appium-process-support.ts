@@ -6,6 +6,10 @@ import { Value } from "typebox/value"
 import { IPHONE_APPIUM_WINDOWS } from "#synapse/modules/iphone/adapters/appium-process"
 import { IPHONE_MACOS, type IphoneHost } from "#synapse/modules/iphone/public/contracts"
 
+export const IPHONE_APPIUM_TEST_PACKAGE_FILE = "package.json"
+
+export const IPHONE_APPIUM_TEST_PACKAGE_CONTENT = '{"type":"commonjs"}'
+
 export const IPHONE_APPIUM_TEST_SCRIPT_NAME = "appium"
 
 export const IPHONE_APPIUM_TEST_WINDOWS_SCRIPT_NAME = "appium.cmd"
@@ -78,6 +82,7 @@ export function iphoneAppiumTestScriptName(host: IphoneHost): string {
 
 export function writeIphoneAppiumScript(directory: string, host: IphoneHost, body: string): void {
   mkdirSync(directory, { recursive: true })
+  writeFileSync(join(directory, IPHONE_APPIUM_TEST_PACKAGE_FILE), IPHONE_APPIUM_TEST_PACKAGE_CONTENT)
   if (host === IPHONE_APPIUM_WINDOWS) {
     writeFileSync(join(directory, IPHONE_APPIUM_TEST_WINDOWS_MODULE_NAME), body)
     writeFileSync(join(directory, IPHONE_APPIUM_TEST_WINDOWS_SCRIPT_NAME), IPHONE_APPIUM_TEST_WINDOWS_WRAPPER)

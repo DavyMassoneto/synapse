@@ -1,4 +1,10 @@
-import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphoneElement } from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACCEPTED,
+  IPHONE_REFUSED,
+  type IphoneElement,
+  type IphoneHomeIcon,
+  type IphoneHomeLayoutResult,
+} from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_HOME_DIRECTION_MARKS,
   IPHONE_HOME_FOLDER_PREFIX,
@@ -8,7 +14,7 @@ import {
   IPHONE_HOME_WIDGET_PATTERN,
 } from "./constants"
 import { iphoneHomeSlotPoint } from "./point"
-import { type IphoneHomeIcon, type IphoneHomeInput, type IphoneHomeLayoutResult } from "./types"
+import { type IphoneHomeInput } from "./types"
 
 function iconColumn(x: number): number {
   let best = 0

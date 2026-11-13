@@ -1,8 +1,8 @@
 import { type ModelRouter, type RouteRequest } from "../public"
-import { type RouterClassifierDouble } from "./doubles"
+import { type RouterTestClassifier } from "./doubles"
 
-export interface RouterTestSut {
+export interface RouterSelectionSut {
   router: ModelRouter
-  classifier: RouterClassifierDouble
   request: RouteRequest
+  classifier: RouterTestClassifier
 }

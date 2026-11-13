@@ -3,21 +3,21 @@ import {
   IPHONE_ACTION_CLOSE,
   IPHONE_ACTION_HOME,
   IPHONE_ACTION_INSTALL,
-  IPHONE_ACTION_INSTALL_SCRIPT,
-  IPHONE_ACTION_MAX_WAIT_SECONDS,
-  IPHONE_ACTION_MS_PER_SECOND,
   IPHONE_ACTION_ORIENTATION,
   IPHONE_ACTION_PRESS,
-  IPHONE_ACTION_PRESS_SCRIPT,
-  IPHONE_ACTION_SENT,
   IPHONE_ACTION_WAIT,
-} from "./constants"
-import {
   type IphoneActionArguments,
   type IphoneAlertAction,
   type IphoneDeviceActionPort,
-  type IphoneSimpleDeviceAction,
-} from "./types"
+} from "#synapse/modules/iphone/public/contracts"
+import {
+  IPHONE_ACTION_INSTALL_SCRIPT,
+  IPHONE_ACTION_MAX_WAIT_SECONDS,
+  IPHONE_ACTION_MS_PER_SECOND,
+  IPHONE_ACTION_PRESS_SCRIPT,
+  IPHONE_ACTION_SENT,
+} from "./constants"
+import { type IphoneSimpleDeviceAction } from "./types"
 
 export async function executeIphoneDeviceCommand(
   port: IphoneDeviceActionPort,

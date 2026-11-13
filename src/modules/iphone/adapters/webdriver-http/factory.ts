@@ -2,12 +2,12 @@ import { type IphoneAppiumProcess } from "#synapse/modules/iphone/adapters/appiu
 import { loadIphoneCompleteConfiguration } from "#synapse/modules/iphone/adapters/configuration-file"
 import { discoverIphoneSimulators } from "#synapse/modules/iphone/adapters/simulator-discovery"
 import { buildIphoneCapabilities } from "#synapse/modules/iphone/internal/session-capabilities"
-import { type IphoneSessionFactory } from "#synapse/modules/iphone/internal/session-lifecycle"
 import {
   IPHONE_REFUSED,
   IPHONE_SIMULATOR,
   type IphoneConfiguration,
   type IphoneModuleDependencies,
+  type IphoneSessionFactory,
 } from "#synapse/modules/iphone/public/contracts"
 import { IPHONE_HTTP_NO_BOOTED_SIMULATOR } from "./constants"
 import { createIphoneWebDriverSession } from "./create-session"

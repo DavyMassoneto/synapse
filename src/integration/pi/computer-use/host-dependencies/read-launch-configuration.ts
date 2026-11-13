@@ -5,10 +5,10 @@ import {
   PI_COMPUTER_CONFIGURATION_ERROR_CODE_PROPERTY,
   PI_COMPUTER_CONFIGURATION_MISSING_CODE,
   PI_COMPUTER_DRIVER_CONFIGURATION_FILE,
-  PI_COMPUTER_DRIVER_CONFIGURATION_SCHEMA,
   PI_COMPUTER_LAUNCH_CONFIGURED,
   PI_COMPUTER_LAUNCH_UNCONFIGURED,
 } from "./constants"
+import { PI_COMPUTER_DRIVER_CONFIGURATION_SCHEMA } from "./schemas"
 import { type PiComputerLaunchConfigurationResult } from "./types"
 
 export function computerReadLaunchConfiguration(directory: string): PiComputerLaunchConfigurationResult {

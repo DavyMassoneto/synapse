@@ -1,7 +1,6 @@
-import { type COMPUTER_COMPLETED, type COMPUTER_UNCONFIRMED } from "#synapse/modules/computer-use/public/contracts"
 import { type ComputerDoneVerdict, type ComputerVerifyVerdict } from "../types"
 
-export type ComputerPolicyResultKind = typeof COMPUTER_COMPLETED | typeof COMPUTER_UNCONFIRMED
+export type ComputerPolicyResultKind = "completed" | "unconfirmed"
 
 export type ComputerPolicyVerdict = ComputerDoneVerdict | ComputerVerifyVerdict
 

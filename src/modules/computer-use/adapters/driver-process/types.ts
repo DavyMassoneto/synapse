@@ -1,8 +1,9 @@
+import { type ChildProcessWithoutNullStreams } from "node:child_process"
 import {
   type ComputerDriverArguments,
   type ComputerDriverFailure,
 } from "#synapse/modules/computer-use/public/contracts"
-import { type COMPUTER_PROCESS_RPC_SUCCESS, type ComputerRawRpc } from "../driver-response-validation"
+import { type ComputerRawRpc } from "../driver-response-validation"
 
 export interface ComputerRpcInitializeParameters {
   protocolVersion: string
@@ -34,7 +35,7 @@ export interface ComputerRpcClientInfo {
 }
 
 export interface ComputerProcessRpcSuccess {
-  kind: typeof COMPUTER_PROCESS_RPC_SUCCESS
+  kind: "process-rpc-success"
   response: ComputerRawRpc
 }
 
@@ -48,3 +49,11 @@ export interface ComputerProcessPendingCall {
 export type ComputerProcessResolver = (result: ComputerProcessRpcResult) => void
 
 export type ComputerProcessLineHandler = (line: string) => void
+
+export interface ComputerStoppableProcess extends NodeJS.EventEmitter {
+  readonly exitCode: ChildProcessWithoutNullStreams["exitCode"]
+  readonly signalCode: ChildProcessWithoutNullStreams["signalCode"]
+  kill(signal?: NodeJS.Signals): boolean
+}
+
+export type ComputerProcessCloseResolver = () => void

@@ -1,6 +1,7 @@
-import { IPHONE_ACCEPTED, IPHONE_REFUSED } from "#synapse/modules/iphone/public/contracts"
+import { IPHONE_ACCEPTED, IPHONE_REFUSED, type IphonePointerAction } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_EDGE_INSET,
+  IPHONE_EDGE_LEFT,
   IPHONE_EDGE_MOVE_MS,
   IPHONE_EDGE_REENTRY,
   IPHONE_INVALID_GESTURE,
@@ -11,10 +12,10 @@ import {
   IPHONE_POINTER_UP,
 } from "./constants"
 import { buildIphoneDrag } from "./gestures"
-import { type IphoneGestureResult, type IphonePageDragSpec, type IphonePointerAction } from "./types"
+import { type IphoneGestureResult, type IphonePageDragSpec } from "./types"
 
 function appendIphoneFlips(actions: IphonePointerAction[], spec: IphonePageDragSpec, edgeX: number): void {
-  const reentry = spec.edge === "left" ? edgeX + IPHONE_EDGE_REENTRY : edgeX - IPHONE_EDGE_REENTRY
+  const reentry = spec.edge === IPHONE_EDGE_LEFT ? edgeX + IPHONE_EDGE_REENTRY : edgeX - IPHONE_EDGE_REENTRY
   for (let flip = 0; flip < spec.flips; flip++) {
     actions.push({ type: IPHONE_POINTER_PAUSE, duration: spec.flipWaitMs })
     if (flip < spec.flips - 1) {
@@ -52,7 +53,7 @@ export function buildIphonePageDrag(spec: IphonePageDragSpec): IphoneGestureResu
   if (destination.kind === IPHONE_REFUSED) {
     return destination
   }
-  const edgeX = spec.edge === "left" ? IPHONE_EDGE_INSET : Math.round(spec.viewportWidth - IPHONE_EDGE_INSET)
+  const edgeX = spec.edge === IPHONE_EDGE_LEFT ? IPHONE_EDGE_INSET : Math.round(spec.viewportWidth - IPHONE_EDGE_INSET)
   const approach = buildIphoneDrag({
     ...spec.drag,
     destination: { x: edgeX, y: spec.drag.from.y },

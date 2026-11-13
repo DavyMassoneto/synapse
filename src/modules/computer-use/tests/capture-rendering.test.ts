@@ -83,6 +83,23 @@ function textOnly(): void {
   expect(makeSut().render(computerTestCapture(), COMPUTER_TEXT_RENDER_OPTIONS).image.kind).toBe("image-omitted")
 }
 
+function textToVision(): void {
+  const sut = makeSut()
+  sut.render(computerTestCapture(), COMPUTER_TEXT_RENDER_OPTIONS)
+  expect(sut.render(computerTestCapture(), COMPUTER_IMAGE_RENDER_OPTIONS).image.kind).toBe("image-included")
+}
+
+function textDoesNotCountAsDelivery(): void {
+  const sut = makeSut()
+  sut.render(computerTestCapture(), COMPUTER_IMAGE_RENDER_OPTIONS)
+  const changed = computerTestCapture()
+  if (changed.image.kind === "image-present") {
+    changed.image.data = "different pixels"
+  }
+  sut.render(changed, COMPUTER_TEXT_RENDER_OPTIONS)
+  expect(sut.render(changed, COMPUTER_IMAGE_RENDER_OPTIONS).image.kind).toBe("image-included")
+}
+
 function tiny(): void {
   const capture = computerTestCapture()
   if (capture.image.kind === "image-present") {
@@ -109,6 +126,8 @@ function register(): void {
   test("anota escala nativa", scale)
   test("trunca lista e rótulos salvando originais", truncate)
   test("omite imagem para modelo textual", textOnly)
+  test("primeira imagem visual não foi entregue ao modelo textual", textToVision)
+  test("captura textual diferente não conta como imagem entregue", textDoesNotCountAsDelivery)
   test("recusa imagem minúscula", tiny)
   test("omite imagem no modo AX", accessibilityOnly)
 }

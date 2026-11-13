@@ -1,11 +1,11 @@
 import { availableMemberModels, type MemberModelContext } from "../model-selection"
 import { teamTextOutput } from "./tool-output"
-import { type TeamModelToolUpdate, type TeamNoInput, type TeamToolOutput, type TeamWaitSignal } from "./types"
+import { type TeamModelToolSignal, type TeamModelToolUpdate, type TeamNoInput, type TeamToolOutput } from "./types"
 
 export async function listTeamModels(
   _id: string,
   _input: TeamNoInput,
-  _signal: TeamWaitSignal,
+  _signal: TeamModelToolSignal,
   _update: TeamModelToolUpdate,
   context: MemberModelContext,
 ): Promise<TeamToolOutput> {

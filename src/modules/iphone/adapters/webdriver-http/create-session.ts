@@ -1,13 +1,12 @@
-import { Value } from "typebox/value"
 import { type IphoneCapabilities } from "#synapse/modules/iphone/internal/session-capabilities"
 import { requestIphoneWebDriver } from "./client"
 import {
   IPHONE_HTTP_POST,
   IPHONE_HTTP_SESSION,
-  IPHONE_HTTP_SESSION_SCHEMA,
   IPHONE_HTTP_SESSION_TIMEOUT_MS,
   IPHONE_HTTP_TIMEOUT_MS,
 } from "./constants"
+import { IPHONE_HTTP_SESSION_SCHEMA } from "./schemas"
 import { IphoneWebDriverSession } from "./session"
 
 export async function createIphoneWebDriverSession(
@@ -15,15 +14,15 @@ export async function createIphoneWebDriverSession(
   capabilities: IphoneCapabilities,
   signal: AbortSignal,
 ): Promise<IphoneWebDriverSession> {
-  const text = await requestIphoneWebDriver(
+  const result = await requestIphoneWebDriver(
     `${base}/${IPHONE_HTTP_SESSION}`,
     IPHONE_HTTP_POST,
     JSON.stringify({ capabilities: { alwaysMatch: capabilities } }),
     signal,
     IPHONE_HTTP_SESSION_TIMEOUT_MS,
+    IPHONE_HTTP_SESSION_SCHEMA,
   )
-  const result = Value.Parse(IPHONE_HTTP_SESSION_SCHEMA, JSON.parse(text))
-  const session = new IphoneWebDriverSession(base, result.value.sessionId)
+  const session = new IphoneWebDriverSession(base, result.sessionId)
   if (signal.aborted) {
     await session.dispose(AbortSignal.timeout(IPHONE_HTTP_TIMEOUT_MS))
     signal.throwIfAborted()

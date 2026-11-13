@@ -2,15 +2,19 @@ import { type ExtensionContext, type ToolDefinition } from "@earendil-works/pi-c
 import { type Static } from "typebox"
 import {
   type IphoneActionTarget,
+  type IphoneDeviceActionOutput,
   type IphoneInfoOutput,
   type IphonePoint,
   type IphoneTextOutput,
   type IphoneTreeOutput,
 } from "#synapse/modules"
-import { type PI_IPHONE_DESTINATION_FOUND, type PI_IPHONE_DESTINATION_MISSING } from "./constants"
 import { type PI_IPHONE_PARAMETERS } from "./parameters"
 
-export type PiIphoneInput = Static<typeof PI_IPHONE_PARAMETERS>
+export type PiIphoneInput = Omit<Static<typeof PI_IPHONE_PARAMETERS>, "alert_action"> & PiIphoneAlertInput
+
+export interface PiIphoneAlertInput {
+  alert_action?: string
+}
 
 export interface PiIphoneText {
   type: "text"
@@ -27,6 +31,7 @@ export type PiIphoneContent = PiIphoneText | PiIphoneImage
 
 export interface PiIphoneDetails {
   operation: string
+  completed?: IphoneDeviceActionOutput
 }
 
 export interface PiIphoneOutput {
@@ -43,16 +48,21 @@ export type PiIphoneSignal = Parameters<ToolDefinition<typeof PI_IPHONE_PARAMETE
 
 export type PiIphoneTextResult = IphoneInfoOutput | IphoneTreeOutput | IphoneTextOutput
 
-export interface PiIphoneDestinationFound {
-  kind: typeof PI_IPHONE_DESTINATION_FOUND
+export interface PiIphoneTargetFound {
+  kind: "found"
   target: IphoneActionTarget
 }
 
-export interface PiIphoneDestinationMissing {
-  kind: typeof PI_IPHONE_DESTINATION_MISSING
+export interface PiIphoneTargetMissing {
+  kind: "missing"
 }
 
-export type PiIphoneDestination = PiIphoneDestinationFound | PiIphoneDestinationMissing
+export type PiIphoneTargetSource = PiIphoneTargetFound | PiIphoneTargetMissing
+
+export interface PiIphoneTargets {
+  source: PiIphoneTargetSource
+  destination: PiIphoneTargetSource
+}
 
 export interface PiIphonePointOption {
   point?: IphonePoint
