@@ -82,6 +82,14 @@ export const ROUTER_TEST_CONTEXT_WINDOW = 100000
 
 export const ROUTER_TEST_FAILURE_MESSAGE = "erro"
 
+export const ROUTER_TEST_PROVIDER_NOT_CONFIGURED = "Provider is not configured: typesafe"
+
+export const ROUTER_TEST_SENSITIVE_PROVIDER_ERROR =
+  "Provider is not configured: typesafe; Authorization: Bearer synthetic-secret-174"
+
+export const ROUTER_TEST_HTTP_ERROR =
+  'System One API returned 401: {"apiKey":"synthetic-secret-174","prompt":"private prompt"}'
+
 export const ROUTER_TEST_FALLBACK_PATTERN = /^Fallback técnico:/
 
 export const ROUTER_TEST_UNAVAILABLE_FALLBACK = "fallback conservador indisponível"
