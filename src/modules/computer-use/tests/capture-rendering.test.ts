@@ -79,6 +79,23 @@ function truncate(): void {
   expect(rendered.summary).toContain(`${COMPUTER_RENDER_MAX_ELEMENTS} de ${COMPUTER_RENDER_MAX_ELEMENTS + 1}`)
 }
 
+function absentLabels(): void {
+  const capture = computerTestCapture()
+  capture.elements = [{ index: 0, role: "AXWindow", bounds: { kind: "bounds-absent" } }]
+  const rendered = makeSut().render(capture, COMPUTER_IMAGE_RENDER_OPTIONS)
+  expect(rendered.elements[0]).not.toHaveProperty("label")
+  expect(rendered.summary).toContain("#0 AXWindow @ ")
+  expect(rendered.summary).not.toContain("undefined")
+}
+
+function emptyLabel(): void {
+  const capture = computerTestCapture()
+  capture.elements = [{ index: 0, role: "AXButton", label: "", bounds: { kind: "bounds-absent" } }]
+  const rendered = makeSut().render(capture, COMPUTER_IMAGE_RENDER_OPTIONS)
+  expect(rendered.elements[0]?.label).toBe("")
+  expect(rendered.summary).toContain("#0 AXButton @ ")
+}
+
 function textOnly(): void {
   expect(makeSut().render(computerTestCapture(), COMPUTER_TEXT_RENDER_OPTIONS).image.kind).toBe("image-omitted")
 }
@@ -125,6 +142,8 @@ function register(): void {
   test("alvo diferente recebe imagem", changedTarget)
   test("anota escala nativa", scale)
   test("trunca lista e rótulos salvando originais", truncate)
+  test("renderiza elemento zero sem inventar rótulo ausente", absentLabels)
+  test("preserva rótulo vazio", emptyLabel)
   test("omite imagem para modelo textual", textOnly)
   test("primeira imagem visual não foi entregue ao modelo textual", textToVision)
   test("captura textual diferente não conta como imagem entregue", textDoesNotCountAsDelivery)

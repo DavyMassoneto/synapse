@@ -11,7 +11,7 @@ import {
   type ComputerWindow,
 } from "#synapse/modules/computer-use/public/contracts"
 import { COMPUTER_DIMENSIONS_FOUND, computerReadImageDimensions } from "../image-dimensions"
-import { COMPUTER_RESPONSE_BASE64_ENCODING } from "./constants"
+import { COMPUTER_RESPONSE_BASE64_ENCODING, COMPUTER_RESPONSE_LABEL_PROPERTY } from "./constants"
 import { type ComputerRawApp, type ComputerRawElement, type ComputerRawState, type ComputerRawWindow } from "./types"
 
 export function computerConvertDriverWindow(window: ComputerRawWindow): ComputerWindow {
@@ -40,8 +40,10 @@ export function computerConvertDriverElement(element: ComputerRawElement): Compu
   const result: ComputerElement = {
     index: element.element_index,
     role: element.role,
-    label: element.label,
     bounds: { kind: COMPUTER_BOUNDS_ABSENT },
+  }
+  if (COMPUTER_RESPONSE_LABEL_PROPERTY in element) {
+    result.label = element.label
   }
   if (element.frame) {
     result.bounds = {

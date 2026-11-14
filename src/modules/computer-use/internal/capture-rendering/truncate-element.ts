@@ -2,5 +2,9 @@ import { type ComputerElement } from "#synapse/modules/computer-use/public/contr
 import { COMPUTER_RENDER_MAX_LABEL_CHARS } from "./constants"
 
 export function computerTruncateElement(element: ComputerElement): ComputerElement {
-  return { ...element, label: element.label.slice(0, COMPUTER_RENDER_MAX_LABEL_CHARS) }
+  const truncated = { ...element }
+  if (element.label) {
+    truncated.label = element.label.slice(0, COMPUTER_RENDER_MAX_LABEL_CHARS)
+  }
+  return truncated
 }

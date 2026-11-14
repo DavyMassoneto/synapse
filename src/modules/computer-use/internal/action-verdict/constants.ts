@@ -29,4 +29,6 @@ export const COMPUTER_CODE_OUTCOME_UNCERTAINTY: ComputerCodePolicies = {
   type_text_incomplete: false,
   timeout_outcome_unknown: true,
   transport_outcome_unknown: true,
+  window_id_not_found: false,
+  window_owner_pid_mismatch: false,
 }

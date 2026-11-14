@@ -61,17 +61,24 @@ export function computerConvertEnvelope(raw: ComputerRawEnvelope): ComputerDrive
   for (const part of raw.content) {
     if (part.type === COMPUTER_RPC_IMAGE_PART) {
       result.image = computerConvertDriverImage(part.data, part.mimeType)
-    } else if (part.type === COMPUTER_RPC_TEXT_PART && !raw.structuredContent) {
-      const text = part.text.trim()
-      if (text.startsWith(COMPUTER_RESPONSE_JSON_START)) {
-        result = computerStateEnvelope(computerParseDriverJson(COMPUTER_RAW_STATE_SCHEMA, text))
-      } else {
+    } else if (part.type === COMPUTER_RPC_TEXT_PART) {
+      if (!raw.structuredContent) {
+        result = computerTextEnvelope(result, part.text)
+      } else if (raw.isError && !result.message) {
         result.message = part.text
-        result.tree = part.text
       }
     }
   }
   result.isError = raw.isError === true
+  return result
+}
+
+function computerTextEnvelope(result: ComputerDriverEnvelope, text: string): ComputerDriverEnvelope {
+  if (text.trim().startsWith(COMPUTER_RESPONSE_JSON_START)) {
+    return computerStateEnvelope(computerParseDriverJson(COMPUTER_RAW_STATE_SCHEMA, text))
+  }
+  result.message = text
+  result.tree = text
   return result
 }
 

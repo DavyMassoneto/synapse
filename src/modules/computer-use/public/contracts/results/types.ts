@@ -47,7 +47,12 @@ export type ComputerActionResult =
 
 export type ComputerActionEffect = "confirmed" | "unverifiable" | "suspected_noop"
 
-export type ComputerActionCode = "type_text_incomplete" | "timeout_outcome_unknown" | "transport_outcome_unknown"
+export type ComputerActionCode =
+  | "type_text_incomplete"
+  | "timeout_outcome_unknown"
+  | "transport_outcome_unknown"
+  | "window_id_not_found"
+  | "window_owner_pid_mismatch"
 
 export type ComputerVerdictDecision = "done" | "verify-fresh-state" | "escalate" | "stop"
 

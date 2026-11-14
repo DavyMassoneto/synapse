@@ -22,4 +22,8 @@ export const COMPUTER_TIMEOUT_UNKNOWN = "timeout_outcome_unknown"
 
 export const COMPUTER_TRANSPORT_UNKNOWN = "transport_outcome_unknown"
 
+export const COMPUTER_WINDOW_NOT_FOUND = "window_id_not_found"
+
+export const COMPUTER_WINDOW_OWNER_MISMATCH = "window_owner_pid_mismatch"
+
 export const COMPUTER_COORDINATE_RECOMMENDATION = "px"
