@@ -6,4 +6,6 @@ export const TEAM_TEST_ALICE_REQUEST: StartMemberRequest = { name: "alice", desc
 
 export const TEAM_TEST_SUBSCRIPTION_FAILURE = "Falha ao assinar sessão"
 
-export const TEAM_TEST_SUBSCRIPTION_FAILURE_TEST = "falha de assinatura descarta uma vez e libera a reserva"
+export const TEAM_TEST_SUBSCRIPTION_FAILURE_TEST = "falha de assinatura descarta uma vez sem registrar membro"
+
+export const TEAM_TEST_SUBSCRIPTION_NAME_REUSE_TEST = "falha de assinatura libera o nome"
