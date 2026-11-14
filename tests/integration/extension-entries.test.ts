@@ -19,6 +19,7 @@ import {
   ENTRIES_ROUTER,
   ENTRIES_ROUTER_ABSENT_REQUEST,
   ENTRIES_RULES,
+  ENTRIES_SDK_IMPORT_TIMEOUT_MS,
   ENTRIES_SUITE,
   ENTRIES_UNAVAILABLE_MODEL,
   ENTRIES_VIRTUAL_MODEL,
@@ -156,14 +157,14 @@ async function rejectsVirtualMemberWithoutRouter(): Promise<void> {
 }
 
 function suite(): void {
-  test(ENTRIES_ROUTER_ABSENT_REQUEST, rejectsVirtualMemberWithoutRouter)
+  test(ENTRIES_ROUTER_ABSENT_REQUEST, rejectsVirtualMemberWithoutRouter, ENTRIES_SDK_IMPORT_TIMEOUT_MS)
   test(ENTRIES_REAL_PATHS, loadsSevenRealPaths)
   test(ENTRIES_REAL_DEDUPE, realPathDedupe)
   test(ENTRIES_REAL_ABSENT, disabledEntriesAreAbsent)
   test(ENTRIES_NONE, noneInherited)
   test(ENTRIES_ROUTER, inheritsRouter)
   test(ENTRIES_RULES, rulesOnce)
-  test(ENTRIES_RELOAD, reloadClearsPresence)
+  test(ENTRIES_RELOAD, reloadClearsPresence, ENTRIES_SDK_IMPORT_TIMEOUT_MS)
   test(ENTRIES_COOLDOWN, cooldownIndependent)
   test(ENTRIES_FAILED, failedFactoryAbsent)
   test(ENTRIES_EXPLICIT, explicitWithoutInheritance)

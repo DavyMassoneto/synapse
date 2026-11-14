@@ -62,3 +62,5 @@ export const ENTRIES_REGISTRATIONS: EntryRegistrationExpectation[] = [
   { tools: ["computer_use"], commands: ["computer-use"], events: ["session_shutdown"], eventCounts: [1] },
 ]
 export const ENTRIES_VIRTUAL_MODEL: EntryVirtualModelExpectation = { provider: "jev", id: "auto" }
+
+export const ENTRIES_SDK_IMPORT_TIMEOUT_MS = 15000
