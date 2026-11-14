@@ -1,5 +1,6 @@
 import { type ExtensionAPI, type ExtensionContext, type MessageEndEvent } from "@earendil-works/pi-coding-agent"
 import { type TeamLead } from "#synapse/modules"
+import { type MemberModelContext } from "../model-selection"
 
 export interface TeamLeadContextAttached {
   kind: "context-attached"
@@ -15,10 +16,9 @@ export type TeamLeadContextState = TeamLeadContextAttached | TeamLeadContextDeta
 export type AgentTeamContext = Pick<ExtensionContext, "cwd" | "mode" | "hasUI" | "model" | "thinkingLevel" | "isIdle"> &
   AgentTeamContextPorts
 
-export interface AgentTeamContextPorts {
+export interface AgentTeamContextPorts extends Pick<MemberModelContext, "modelRegistry"> {
   ui: AgentTeamUi
   sessionManager: Pick<ExtensionContext["sessionManager"], AgentTeamSessionOperation>
-  modelRegistry: Pick<ExtensionContext["modelRegistry"], AgentTeamRegistryOperation>
 }
 
 export type AgentTeamLeadHost = Pick<ExtensionAPI, "sendMessage" | "appendEntry">
@@ -33,8 +33,6 @@ export interface AgentTeamUi {
 }
 
 export type AgentTeamSessionOperation = "getBranch" | "getSessionId"
-
-export type AgentTeamRegistryOperation = "getAvailable" | "find" | "hasConfiguredAuth"
 
 export type PiTeamLeadSession = TeamLead & PiTeamLeadLifecycle
 
