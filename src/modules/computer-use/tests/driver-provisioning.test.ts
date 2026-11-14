@@ -10,9 +10,11 @@ import {
 import { COMPUTER_LINUX, createComputerUse } from "#synapse/modules/computer-use/public"
 import {
   COMPUTER_PROVISION_CONTEXT,
+  COMPUTER_PROVISION_INSTALL_TEST_TITLE,
   COMPUTER_PROVISION_NO_OVERRIDE,
   COMPUTER_PROVISION_PARTIAL_CONTENT,
   COMPUTER_PROVISION_PARTIAL_FILE,
+  COMPUTER_PROVISION_REUSE_TEST_TITLE,
   COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS,
   COMPUTER_PROVISION_WRONG_CHECKSUM,
   ComputerProvisioningFixture,
@@ -36,6 +38,10 @@ async function automaticProvisioning(): Promise<void> {
   expect(fixture.download).toHaveBeenCalledTimes(1)
   const binary = computerDriverBinaryPath(fixture.installationDirectory, COMPUTER_LINUX, "0.21.0")
   expect(await fixture.service.diagnose()).toStrictEqual({ kind: "computer-ready", binary, version: "0.21.0" })
+}
+
+async function reusesProvisionedDriver(): Promise<void> {
+  await fixture.service.execute({ action: "list_apps" }, COMPUTER_PROVISION_CONTEXT)
   await fixture.service.stop()
   const restarted = createComputerUse(fixture.dependencies)
   try {
@@ -162,11 +168,8 @@ async function nonexecutableBinaryDoesNotPublish(): Promise<void> {
 }
 
 function registerTests(): void {
-  test(
-    "provisiona no uso normal e reutiliza o executável gerenciado em nova instância",
-    automaticProvisioning,
-    COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS,
-  )
+  test(COMPUTER_PROVISION_INSTALL_TEST_TITLE, automaticProvisioning, COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS)
+  test(COMPUTER_PROVISION_REUSE_TEST_TITLE, reusesProvisionedDriver, COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS)
   test("diagnostica ausência sem instalar", diagnosticDoesNotInstall)
   test("recusa override ausente sem instalar", missingOverrideDoesNotInstall)
   test("recusa checksum sem publicar versão parcial", checksumDoesNotPublish)

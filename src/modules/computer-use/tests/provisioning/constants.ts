@@ -1,3 +1,5 @@
+export const COMPUTER_PROVISION_INSTALL_TEST_TITLE = "provisiona no uso normal e diagnostica o executável instalado"
+export const COMPUTER_PROVISION_REUSE_TEST_TITLE = "reutiliza o executável gerenciado em nova instância"
 export const COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS = 30_000
 export const COMPUTER_PROVISION_TEST_ROOT = ".driver-provisioning-tests"
 export const COMPUTER_PROVISION_ARCHIVE = "driver.tar.gz"
