@@ -13,11 +13,11 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 
 ## Estado do projeto
 
-O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. A integração foi verificada com pi 1.5.1. Compile com `npm run build` e instale localmente com `pi install ./`. Não carregue outra extensão advisor simultaneamente.
+O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. O pacote carrega as fontes TypeScript pelo loader do pi, sem compilação manual nem dependências de desenvolvimento. Instale pelo Git com `pi install git:github.com/DavyMassoneto/synapse` ou, no diretório do pacote, com `pi install ./`. Não carregue outra extensão advisor simultaneamente.
 
 ## Desenvolvimento
 
-O desenvolvimento foi verificado com Node.js 24. Execute `npm ci` para instalar as dependências e `npm run validate` para executar Biome, verificação de tipos, build e testes Vitest. `npm run format` aplica as correções seguras do Biome. `npm run build` compila CommonJS e seu manifesto em `dist/`, preservando os imports de diretório para carregamento pelo Pi.
+O desenvolvimento foi verificado com Node.js 24. Execute `npm ci` para instalar as dependências e `npm run validate` para executar Biome, verificação de tipos, build e testes Vitest. `npm run format` aplica as correções seguras do Biome. `npm run build` continua produzindo a árvore CommonJS em `dist/` e deriva o manifesto JavaScript do manifesto das fontes, preservando os imports de diretório. A instalação pelo pi usa `src/entry.ts`, sem depender de `dist/`.
 
 ## Documentação
 

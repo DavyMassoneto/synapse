@@ -7,7 +7,7 @@
     "pi-package"
   ],
   "scripts": {
-    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsgo -p tsconfig.build.json",
+    "build": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\" && tsgo -p tsconfig.build.json && tsx src/package-distribution/generate.ts",
     "typecheck": "tsgo --noEmit",
     "format": "biome check --write .",
     "lint": "biome ci .",
@@ -33,7 +33,7 @@
   },
   "pi": {
     "extensions": [
-      "./dist/entry.js"
+      "./src/entry.ts"
     ]
   }
 }

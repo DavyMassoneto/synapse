@@ -1,6 +1,6 @@
 {
   "type": "commonjs",
   "imports": {
-    "#synapse/*": "./*/index.js"
+    "#synapse/*": "./*/index.ts"
   }
 }
