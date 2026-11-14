@@ -16,6 +16,8 @@ export function hasComputerRenderableImage(capture: ComputerCapture): boolean {
 
 export function hasComputerLostDetail(capture: ComputerCapture, visible: ComputerElement[]): boolean {
   const omitted = capture.elements.length > visible.length
-  const truncatedLabel = capture.elements.some((element) => element.label.length > COMPUTER_RENDER_MAX_LABEL_CHARS)
+  const truncatedLabel = capture.elements.some(
+    (element) => element.label && element.label.length > COMPUTER_RENDER_MAX_LABEL_CHARS,
+  )
   return omitted || truncatedLabel
 }

@@ -104,10 +104,19 @@ function respondEnvelope(request: ComputerFakeRequest): void {
       name === COMPUTER_FAKE_LIST_WINDOWS
         ? [{ app_name: "Editor", pid: 10, window_id: 20, is_on_screen: true, title: "Documento", z_index: 1 }]
         : [],
-    apps: name === COMPUTER_FAKE_LIST_APPS ? [{ name: "Editor", pid: 10, running: true }] : [],
+    apps:
+      name === COMPUTER_FAKE_LIST_APPS
+        ? [
+            { name: "Editor", pid: 10, running: true },
+            { name: "Installed", pid: 0, running: false, bundle_id: "com.installed" },
+          ]
+        : [],
     elements:
       name === COMPUTER_FAKE_GET_WINDOW_STATE
-        ? [{ element_index: 1, role: "AXButton", label: "Salvar", element_token: "snapshot-1" }]
+        ? [
+            { element_index: 0, role: "AXWindow", element_token: "snapshot-0" },
+            { element_index: 1, role: "AXButton", label: "Salvar", element_token: "snapshot-1" },
+          ]
         : [],
     tree_markdown: 'AXWindow "Documento"\n[1] AXButton "Salvar"',
   }

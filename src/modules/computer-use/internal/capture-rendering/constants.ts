@@ -71,7 +71,9 @@ export const COMPUTER_RENDER_ELEMENT_PREFIX = "  #"
 
 export const COMPUTER_RENDER_LABEL_OPEN = " '"
 
-export const COMPUTER_RENDER_LABEL_BOUNDS = "' @ "
+export const COMPUTER_RENDER_LABEL_CLOSE = "'"
+
+export const COMPUTER_RENDER_BOUNDS_OPEN = " @ "
 
 export const COMPUTER_RENDER_APP_OPEN = " ["
 

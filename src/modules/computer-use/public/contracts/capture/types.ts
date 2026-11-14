@@ -36,7 +36,7 @@ export interface ComputerApplication {
 export interface ComputerElement {
   index: number
   role: string
-  label: string
+  label?: string
   bounds: ComputerBounds
   app?: string
   token?: string

@@ -11,6 +11,8 @@ import {
   COMPUTER_TIMEOUT_UNKNOWN,
   COMPUTER_TRANSPORT_UNKNOWN,
   COMPUTER_TYPE_INCOMPLETE,
+  COMPUTER_WINDOW_NOT_FOUND,
+  COMPUTER_WINDOW_OWNER_MISMATCH,
 } from "#synapse/modules/computer-use/public/contracts"
 
 export const COMPUTER_RAW_RECTANGLE_SCHEMA = Type.Object({
@@ -30,17 +32,28 @@ export const COMPUTER_RAW_WINDOW_SCHEMA = Type.Object({
   bounds: Type.Optional(COMPUTER_RAW_RECTANGLE_SCHEMA),
 })
 
-export const COMPUTER_RAW_APP_SCHEMA = Type.Object({
+export const COMPUTER_RAW_APP_BASE_SCHEMA = Type.Object({
   name: Type.String(),
-  pid: Type.Integer({ minimum: 1 }),
-  running: Type.Boolean(),
   bundle_id: Type.Optional(Type.String()),
 })
 
+export const COMPUTER_RAW_APP_SCHEMA = Type.Union([
+  Type.Object({
+    ...COMPUTER_RAW_APP_BASE_SCHEMA.properties,
+    pid: Type.Integer({ minimum: 1 }),
+    running: Type.Literal(true),
+  }),
+  Type.Object({
+    ...COMPUTER_RAW_APP_BASE_SCHEMA.properties,
+    pid: Type.Literal(0),
+    running: Type.Literal(false),
+  }),
+])
+
 export const COMPUTER_RAW_ELEMENT_SCHEMA = Type.Object({
-  element_index: Type.Integer({ minimum: 1 }),
+  element_index: Type.Integer({ minimum: 0 }),
   role: Type.String(),
-  label: Type.String(),
+  label: Type.Optional(Type.String()),
   element_token: Type.Optional(Type.String()),
   frame: Type.Optional(Type.Object({ x: Type.Number(), y: Type.Number(), w: Type.Number(), h: Type.Number() })),
 })
@@ -66,6 +79,8 @@ export const COMPUTER_RAW_STATE_SCHEMA = Type.Object({
       Type.Literal(COMPUTER_TYPE_INCOMPLETE),
       Type.Literal(COMPUTER_TIMEOUT_UNKNOWN),
       Type.Literal(COMPUTER_TRANSPORT_UNKNOWN),
+      Type.Literal(COMPUTER_WINDOW_NOT_FOUND),
+      Type.Literal(COMPUTER_WINDOW_OWNER_MISMATCH),
     ]),
   ),
   escalation: Type.Optional(

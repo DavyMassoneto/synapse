@@ -11,6 +11,7 @@ import {
   COMPUTER_RENDER_APP_OPEN,
   COMPUTER_RENDER_APP_TEXT,
   COMPUTER_RENDER_AX_CAP_TEXT,
+  COMPUTER_RENDER_BOUNDS_OPEN,
   COMPUTER_RENDER_COORDINATE_SEPARATOR,
   COMPUTER_RENDER_COUNT_TEXT,
   COMPUTER_RENDER_DIMENSION_SEPARATOR,
@@ -19,7 +20,7 @@ import {
   COMPUTER_RENDER_ELEMENTS_TEXT,
   COMPUTER_RENDER_EMPTY,
   COMPUTER_RENDER_HEADER_TEXT,
-  COMPUTER_RENDER_LABEL_BOUNDS,
+  COMPUTER_RENDER_LABEL_CLOSE,
   COMPUTER_RENDER_LABEL_OPEN,
   COMPUTER_RENDER_LINE_BREAKS,
   COMPUTER_RENDER_LINE_LABEL_CHARS,
@@ -47,14 +48,18 @@ function computerFormatElement(element: ComputerElement): string {
     const rectangle = element.bounds.rectangle
     bounds = `${rectangle.x}${COMPUTER_RENDER_COORDINATE_SEPARATOR}${rectangle.y}${COMPUTER_RENDER_COORDINATE_SEPARATOR}${rectangle.width}${COMPUTER_RENDER_COORDINATE_SEPARATOR}${rectangle.height}`
   }
-  const label = element.label
-    .replace(COMPUTER_RENDER_LINE_BREAKS, COMPUTER_RENDER_SPACE)
-    .slice(0, COMPUTER_RENDER_LINE_LABEL_CHARS)
+  let label = COMPUTER_RENDER_EMPTY
+  if (element.label) {
+    const text = element.label
+      .replace(COMPUTER_RENDER_LINE_BREAKS, COMPUTER_RENDER_SPACE)
+      .slice(0, COMPUTER_RENDER_LINE_LABEL_CHARS)
+    label = `${COMPUTER_RENDER_LABEL_OPEN}${text}${COMPUTER_RENDER_LABEL_CLOSE}`
+  }
   let app = COMPUTER_RENDER_EMPTY
   if (element.app) {
     app = `${COMPUTER_RENDER_APP_OPEN}${element.app}${COMPUTER_RENDER_APP_CLOSE}`
   }
-  return `${COMPUTER_RENDER_ELEMENT_PREFIX}${element.index}${COMPUTER_RENDER_SPACE}${element.role}${COMPUTER_RENDER_LABEL_OPEN}${label}${COMPUTER_RENDER_LABEL_BOUNDS}${bounds}${app}`
+  return `${COMPUTER_RENDER_ELEMENT_PREFIX}${element.index}${COMPUTER_RENDER_SPACE}${element.role}${label}${COMPUTER_RENDER_BOUNDS_OPEN}${bounds}${app}`
 }
 
 function computerFormatHeader(input: ComputerFormatInput): string[] {

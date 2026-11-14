@@ -18,4 +18,6 @@ export interface ComputerCodePolicies {
   type_text_incomplete: boolean
   timeout_outcome_unknown: boolean
   transport_outcome_unknown: boolean
+  window_id_not_found: boolean
+  window_owner_pid_mismatch: boolean
 }

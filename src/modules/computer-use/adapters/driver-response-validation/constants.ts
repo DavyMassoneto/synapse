@@ -27,3 +27,5 @@ export const COMPUTER_RESPONSE_DELIVERED_PROPERTY = "delivered_chars"
 export const COMPUTER_RESPONSE_REQUESTED_PROPERTY = "requested_chars"
 
 export const COMPUTER_RESPONSE_BASE64_ENCODING = "base64"
+
+export const COMPUTER_RESPONSE_LABEL_PROPERTY = "label"
