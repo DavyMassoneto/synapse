@@ -1,3 +1,4 @@
+import { IPHONE_WDA_BINDING_IP, isIphoneLocalSimulatorWda } from "#synapse/modules/iphone/internal/wda-endpoint"
 import {
   IPHONE_DEVICE,
   IPHONE_MACOS,
@@ -37,6 +38,9 @@ export function buildIphoneCapabilities(config: IphoneConfiguration, host: Iphon
     caps["appium:usePreinstalledWDA"] = true
   }
   applyIphoneCapabilityOverrides(caps, config)
+  if (isIphoneLocalSimulatorWda(config)) {
+    caps["appium:wdaBindingIP"] = IPHONE_WDA_BINDING_IP
+  }
   if (host === IPHONE_MACOS && target.kind === IPHONE_DEVICE) {
     if (config.xcodeOrgId) {
       caps["appium:xcodeOrgId"] = config.xcodeOrgId
@@ -66,6 +70,9 @@ function applyIphoneCapabilityOverrides(caps: IphoneCapabilities, config: Iphone
     }
     if (overrides.wdaConnectionTimeout) {
       caps["appium:wdaConnectionTimeout"] = overrides.wdaConnectionTimeout
+    }
+    if (overrides.wdaLocalPort) {
+      caps["appium:wdaLocalPort"] = overrides.wdaLocalPort
     }
     if (typeof overrides.useNewWDA === "boolean") {
       caps["appium:useNewWDA"] = overrides.useNewWDA

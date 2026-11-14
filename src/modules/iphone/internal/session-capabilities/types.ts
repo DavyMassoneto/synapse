@@ -6,6 +6,8 @@ export interface IphoneCapabilities {
   "appium:wdaLaunchTimeout": number
   "appium:wdaConnectionTimeout": number
   "appium:useNewWDA": boolean
+  "appium:wdaLocalPort"?: number
+  "appium:wdaBindingIP"?: string
   "appium:deviceName": string
   "appium:udid"?: string
   "appium:platformVersion"?: string
