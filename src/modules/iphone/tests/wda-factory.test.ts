@@ -1,8 +1,19 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http"
-import { describe, expect, test } from "vitest"
-import { IPHONE_WDA_IPV4_WILDCARD } from "#synapse/modules/iphone/adapters/wda-admission"
-import { TestIphoneHttpServer } from "./doubles"
-import { IPHONE_TEST_WDA_BIND_PLAN_IPV4_BUSY } from "./wda-bind-plan-constants"
+import { describe, expect, test, vi } from "vitest"
+import {
+  IPHONE_WDA_DEFAULT_BIND_HOSTS,
+  IPHONE_WDA_ENDPOINT_BUSY,
+  IPHONE_WDA_IPV4_WILDCARD,
+  IPHONE_WDA_LINUX,
+  IPHONE_WDA_LINUX_BIND_HOSTS,
+  IphoneWdaSocket,
+} from "#synapse/modules/iphone/adapters/wda-admission"
+import { IPHONE_TEST_HTTP_STATUS_PATH, TestIphoneHttpServer } from "./doubles"
+import {
+  IPHONE_TEST_WDA_BIND_METHOD,
+  IPHONE_TEST_WDA_BIND_PLAN_IPV4_BUSY,
+  IPHONE_TEST_WDA_CLOSE_METHOD,
+} from "./wda-bind-plan-constants"
 import { WdaFactoryScenario } from "./wda-factory-scenario"
 import { closeWdaTest, freeWdaTestPort, listenWdaTest, simulatorWdaConfig } from "./wda-support"
 
@@ -47,27 +58,45 @@ async function refusesWildcard(): Promise<void> {
 async function admitsOneFactory(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const config = simulatorWdaConfig(base, await freeWdaTestPort())
+  const config = simulatorWdaConfig(base, Number(new URL(base).port))
   const first = new WdaFactoryScenario(config)
   const second = new WdaFactoryScenario(config)
   const signal = new AbortController().signal
+  const hosts = process.platform === IPHONE_WDA_LINUX ? IPHONE_WDA_LINUX_BIND_HOSTS : IPHONE_WDA_DEFAULT_BIND_HOSTS
+  const bind = vi.spyOn(IphoneWdaSocket.prototype, IPHONE_TEST_WDA_BIND_METHOD).mockResolvedValue(undefined)
+  const close = vi.spyOn(IphoneWdaSocket.prototype, IPHONE_TEST_WDA_CLOSE_METHOD).mockResolvedValue(undefined)
+  server.statusPath.hold = true
   try {
     server.responses = ['{"value":{"ready":true}}', '{"value":{"sessionId":"owned"}}']
     const creating = first.factory.create(signal)
-    await expect(second.factory.create(signal)).rejects.toThrow()
+    await Promise.race([server.statusPath.requested.promise, creating])
+    expect(bind).toHaveBeenCalledTimes(hosts.length)
+    expect(close).not.toHaveBeenCalled()
+    expect(server.paths).toEqual([IPHONE_TEST_HTTP_STATUS_PATH])
+    await expect(second.factory.create(signal)).rejects.toThrow(IPHONE_WDA_ENDPOINT_BUSY)
+    expect(bind).toHaveBeenCalledTimes(hosts.length)
+    expect(server.paths).toEqual([IPHONE_TEST_HTTP_STATUS_PATH])
+    server.statusPath.hold = false
+    server.statusPath.released.resolve()
     const session = await creating
+    expect(close).toHaveBeenCalledTimes(hosts.length)
     expect(server.paths.filter((path) => path === "/session")).toHaveLength(1)
     expect(server.bodies.join("")).toContain(`"appium:wdaLocalPort":${config.capabilities?.wdaLocalPort}`)
     expect(server.bodies.join("")).toContain('"appium:wdaBindingIP":"127.0.0.1"')
+    await expect(second.factory.create(signal)).rejects.toThrow(IPHONE_WDA_ENDPOINT_BUSY)
+    expect(server.requests).toBe(2)
     server.response = '{"value":null}'
     await session.dispose(signal)
     server.responses = ['{"value":{"ready":true}}', '{"value":{"sessionId":"next"}}']
     await second.factory.create(signal)
+    expect(bind).toHaveBeenCalledTimes(hosts.length * 2)
     expect(server.paths.filter((path) => path === "/session")).toHaveLength(2)
   } finally {
+    server.statusPath.released.resolve()
     await first.stop()
     await second.stop()
     await server.stop()
+    vi.restoreAllMocks()
   }
 }
 
