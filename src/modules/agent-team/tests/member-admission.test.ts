@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
 import { TEAM_OPERATION_FAILED } from "../public"
-import { TEAM_TEST_ALICE_REQUEST } from "./constants"
+import { TEAM_TEST_ALICE_REQUEST, TEAM_TEST_SUBSCRIPTION_FAILURE_TEST } from "./constants"
 import { failedAliceAcceptance, failedAliceRecord, failedAliceStart, makeTeamSut, startAlice } from "./team-scenario"
 
 async function starts(): Promise<void> {
@@ -104,7 +104,19 @@ async function constructorFailureDisposesSession(): Promise<void> {
   expect(sessions.session.disposals).toBe(1)
 }
 
+async function subscriptionFailureDisposesAndReleases(): Promise<void> {
+  const { team, sessions, lead } = makeTeamSut()
+  sessions.session.failSubscribe = true
+  const result = await team.start(TEAM_TEST_ALICE_REQUEST)
+  expect(result.kind).toBe(TEAM_OPERATION_FAILED)
+  expect(sessions.session.disposals).toBe(1)
+  expect(lead.records).toHaveLength(0)
+  sessions.session.failSubscribe = false
+  expect((await team.start(TEAM_TEST_ALICE_REQUEST)).kind).toBe("started")
+}
+
 function register(): void {
+  test(TEAM_TEST_SUBSCRIPTION_FAILURE_TEST, subscriptionFailureDisposesAndReleases)
   test("falha no construtor descarta a sessão preparada uma vez", constructorFailureDisposesSession)
   test("inicia membro", starts)
   test("recusa nome inválido", invalid)
