@@ -34,10 +34,16 @@ export async function readIphoneProvisionFile(root: string, name: string): Promi
   }
   const handle = await open(path, "r")
   try {
-    const buffer = Buffer.alloc(IPHONE_PROVISION_FILE_BYTES + 1)
+    let buffer = Buffer.alloc(details.size + 1)
     let length = 0
     let reading = true
-    while (reading && length < buffer.length) {
+    while (reading && length <= IPHONE_PROVISION_FILE_BYTES) {
+      if (length === buffer.length) {
+        const capacity = Math.min(buffer.length * 2, IPHONE_PROVISION_FILE_BYTES + 1)
+        const expanded = Buffer.alloc(capacity)
+        buffer.copy(expanded)
+        buffer = expanded
+      }
       const output = await handle.read(buffer, length, buffer.length - length, length)
       length += output.bytesRead
       reading = output.bytesRead > 0

@@ -4,16 +4,20 @@ import { join } from "node:path"
 import { installIphoneAppiumDependencies, probeIphoneAppiumInstallation } from "./commands"
 import {
   IPHONE_PROVISION_ACTIVE,
+  IPHONE_PROVISION_ACTIVE_MISSING,
+  IPHONE_PROVISION_ACTIVE_READY,
   IPHONE_PROVISION_APPIUM_ENTRY,
   IPHONE_PROVISION_APPIUM_PACKAGE,
   IPHONE_PROVISION_DIRECTORY,
   IPHONE_PROVISION_DIRECTORY_MODE,
   IPHONE_PROVISION_EMPTY_NPMRC,
   IPHONE_PROVISION_EMPTY_PACKAGE,
+  IPHONE_PROVISION_EXISTS_CODE,
   IPHONE_PROVISION_FILE_MODE,
   IPHONE_PROVISION_GLOBAL_NPMRC,
   IPHONE_PROVISION_HOME,
   IPHONE_PROVISION_LINK_UNSUPPORTED,
+  IPHONE_PROVISION_MISSING_CODE,
   IPHONE_PROVISION_NODE_MODULES,
   IPHONE_PROVISION_NPMRC,
   IPHONE_PROVISION_PACKAGE_JSON,
@@ -69,12 +73,12 @@ export async function readIphoneActiveInstallation(
   try {
     active = await readIphoneProvisionFile(layout.root, IPHONE_PROVISION_ACTIVE)
   } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "ENOENT") {
-      return { kind: "missing" }
+    if (error instanceof Error && "code" in error && error.code === IPHONE_PROVISION_MISSING_CODE) {
+      return { kind: IPHONE_PROVISION_ACTIVE_MISSING }
     }
     throw error
   }
-  return { kind: "ready", receipt: await verifyIphoneProvisionReceipt(layout.root, active) }
+  return { kind: IPHONE_PROVISION_ACTIVE_READY, receipt: await verifyIphoneProvisionReceipt(layout.root, active) }
 }
 
 export async function installIphoneManagedAppium(
@@ -86,11 +90,11 @@ export async function installIphoneManagedAppium(
   const installation = randomUUID()
   const layout = await iphoneProvisionLayout(request.stateDirectory, installation)
   let winner = await readIphoneActiveInstallation(layout)
-  if (winner.kind === "missing") {
+  if (winner.kind === IPHONE_PROVISION_ACTIVE_MISSING) {
     await createIphoneProvisionInstallation(layout, installation, request, execute, signal)
     winner = await readIphoneActiveInstallation(layout)
   }
-  if (winner.kind !== "ready") {
+  if (winner.kind !== IPHONE_PROVISION_ACTIVE_READY) {
     throw new Error(IPHONE_PROVISION_LINK_UNSUPPORTED)
   }
   const home = join(layout.root, winner.receipt.installation, IPHONE_PROVISION_HOME)
@@ -159,7 +163,7 @@ async function publishIphoneProvisionInstallation(
     await link(ready, layout.active)
     return true
   } catch (error) {
-    if (error instanceof Error && "code" in error && error.code === "EEXIST") {
+    if (error instanceof Error && "code" in error && error.code === IPHONE_PROVISION_EXISTS_CODE) {
       return false
     }
     throw new Error(IPHONE_PROVISION_LINK_UNSUPPORTED, { cause: error })

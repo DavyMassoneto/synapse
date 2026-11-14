@@ -38,7 +38,7 @@ async function provision(signal: AbortSignal): Promise<string> {
 
 async function installsPinnedStack(): Promise<void> {
   const executable = await provision(new AbortController().signal)
-  expect(executable).toContain("/home/node_modules/appium/index.js")
+  expect(executable).toContain(join("home", "node_modules", "appium", "index.js"))
   expect(executor.commands.map((command) => command.arguments)).toContainEqual(expect.arrayContaining(["appium@3.9.0"]))
   expect(executor.commands.map((command) => command.arguments)).toContainEqual(
     expect.arrayContaining(["xcuitest@12.22.8"]),
@@ -74,7 +74,7 @@ async function retriesInterruptedDownload(): Promise<void> {
   executor.fail = true
   await expect(provision(new AbortController().signal)).rejects.toThrow("download failed")
   executor.fail = false
-  expect(await provision(new AbortController().signal)).toContain("appium/index.js")
+  expect(await provision(new AbortController().signal)).toContain(join("appium", "index.js"))
 }
 
 async function doesNotRepairCorruptWinner(): Promise<void> {

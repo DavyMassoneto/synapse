@@ -2,7 +2,9 @@ import childProcess from "node:child_process"
 import { once } from "node:events"
 import { syncBuiltinESMExports } from "node:module"
 import { afterEach, beforeEach, describe, expect, test, vi } from "vitest"
-import { runIphoneProvisionCommand } from "#synapse/modules/iphone/adapters/appium-provision"
+import { runProvisionFixture } from "./appium-provision-runner-command"
+import * as scenario from "./appium-provision-runner-constants"
+import * as runnerPlatform from "./appium-provision-runner-platform"
 import { IphoneProvisionChildDouble } from "./appium-provision-runner-support"
 
 let child = new IphoneProvisionChildDouble()
@@ -23,33 +25,10 @@ function dispose(): void {
   vi.useRealTimers()
 }
 
-function run(executable: string): Promise<string> {
-  const result = runIphoneProvisionCommand({
-    executable,
-    arguments: ["path with spaces/index.js"],
-    directory: "/private/own-home",
-    environment: {},
-    signal: controller.signal,
-  })
-  return result.then(successText, failureText)
-}
-
-function successText(): string {
-  return "success"
-}
-
-function failureText(error: Error): string {
-  return error.message
-}
-
-function mockWindows(): void {
-  vi.stubGlobal("process", { ...process, platform: "win32" })
-}
-
 async function nodeArgumentsRemainQuoted(): Promise<void> {
   const spawn = vi.spyOn(childProcess, "spawn").mockReturnValue(child)
   syncBuiltinESMExports()
-  const result = run("C:/Program Files/node/node.exe")
+  const result = runProvisionFixture("C:/Program Files/node/node.exe", controller.signal)
   Object.defineProperty(child, "exitCode", { value: 0 })
   child.emit("close")
   expect(await result).toBe("success")
@@ -57,10 +36,10 @@ async function nodeArgumentsRemainQuoted(): Promise<void> {
 }
 
 async function cmdArgumentsRemainVerbatim(): Promise<void> {
-  mockWindows()
+  runnerPlatform.mockProvisionWindows()
   const spawn = vi.spyOn(childProcess, "spawn").mockReturnValue(child)
   syncBuiltinESMExports()
-  const result = run("cmd.exe")
+  const result = runProvisionFixture("cmd.exe", controller.signal)
   Object.defineProperty(child, "exitCode", { value: 0 })
   child.emit("close")
   expect(await result).toBe("success")
@@ -68,83 +47,88 @@ async function cmdArgumentsRemainVerbatim(): Promise<void> {
 }
 
 async function deniedKillSettlesUncertainty(): Promise<void> {
+  runnerPlatform.mockProvisionPosix()
   vi.spyOn(childProcess, "spawn").mockReturnValue(child)
-  const kill = vi.spyOn(process, "kill").mockImplementation(denyKill)
+  const kill = vi.spyOn(process, "kill").mockImplementation(runnerPlatform.denyProvisionKill)
   syncBuiltinESMExports()
-  const result = run("node")
+  const result = runProvisionFixture("node", controller.signal)
   controller.abort()
-  expect(await result).toContain("término da árvore de processos é incerto")
-  expect(await result).toContain("/private/own-home")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN_TERMINATION)
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_HOME)
+  expect(await result).not.toContain(scenario.IPHONE_PROVISION_RUNNER_SECRET)
   expect(kill).toHaveBeenCalledTimes(1)
 }
 
-function denyKill(): never {
-  throw new Error("EPERM secret-do-not-log")
-}
-
 async function missingCloseHasBoundedSettlement(): Promise<void> {
+  runnerPlatform.mockProvisionPosix()
   vi.spyOn(childProcess, "spawn").mockReturnValue(child)
   vi.spyOn(process, "kill").mockReturnValue(true)
   syncBuiltinESMExports()
   const unref = vi.spyOn(child, "unref")
-  const result = run("node")
+  const result = runProvisionFixture("node", controller.signal)
   controller.abort()
   await vi.advanceTimersByTimeAsync(1000)
-  expect(await result).toContain("cancelamento solicitado")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_CANCELLED)
   expect(child.stdout?.destroyed).toBe(true)
   expect(child.stderr?.destroyed).toBe(true)
   expect(child.stdout?.listenerCount("data")).toBe(0)
   expect(child.listenerCount("close")).toBe(0)
   expect(unref).toHaveBeenCalledTimes(1)
-  child.emit("error", new Error("late error"))
+  child.emit("error", new Error(scenario.IPHONE_PROVISION_RUNNER_LATE_CHILD_FAILURE))
   child.emit("close")
-  expect(await result).toContain("incerto")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN)
 }
 
 async function outputOverflowOnlyTerminatesOnce(): Promise<void> {
+  runnerPlatform.mockProvisionPosix()
   vi.spyOn(childProcess, "spawn").mockReturnValue(child)
   const kill = vi.spyOn(process, "kill").mockReturnValue(true)
   syncBuiltinESMExports()
-  const result = run("node")
+  const result = runProvisionFixture("node", controller.signal)
   child.stdout?.emit("data", "x".repeat(2_097_153))
   child.stdout?.emit("data", "x")
   child.stderr?.emit("data", "x")
   await vi.advanceTimersByTimeAsync(1000)
-  expect(await result).toContain("limite de saída")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_OVERFLOW)
   expect(kill).toHaveBeenCalledTimes(1)
 }
 
 async function timeoutIdentifiesReason(): Promise<void> {
+  runnerPlatform.mockProvisionPosix()
   vi.spyOn(childProcess, "spawn").mockReturnValue(child)
   vi.spyOn(process, "kill").mockReturnValue(true)
   syncBuiltinESMExports()
-  const result = run("node")
+  const result = runProvisionFixture("node", controller.signal)
   await vi.advanceTimersByTimeAsync(601000)
-  expect(await result).toContain("prazo do comando excedido")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_TIMEOUT)
 }
 
 async function taskkillErrorSettles(): Promise<void> {
-  mockWindows()
+  runnerPlatform.mockProvisionWindows()
+  vi.spyOn(process, "kill").mockReturnValue(true)
   const spawn = vi.spyOn(childProcess, "spawn").mockReturnValueOnce(child).mockReturnValue(terminator)
   syncBuiltinESMExports()
-  const result = run("node.exe")
+  const result = runProvisionFixture("node.exe", controller.signal)
   controller.abort()
-  terminator.emit("error", new Error("secret failure"))
+  terminator.emit("error", new Error(scenario.IPHONE_PROVISION_RUNNER_TERMINATOR_FAILURE))
   child.stdout?.emit("data", "x".repeat(2_097_153))
   child.emit("close")
-  expect(await result).toContain("incerto")
-  expect(await result).not.toContain("secret failure")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN)
+  expect(await result).not.toContain(scenario.IPHONE_PROVISION_RUNNER_TERMINATOR_FAILURE)
   expect(spawn).toHaveBeenCalledTimes(2)
+  expectTaskkill()
 }
 
 async function taskkillNonzeroSettles(): Promise<void> {
-  mockWindows()
+  runnerPlatform.mockProvisionWindows()
+  vi.spyOn(process, "kill").mockReturnValue(true)
   vi.spyOn(childProcess, "spawn").mockReturnValueOnce(child).mockReturnValue(terminator)
   syncBuiltinESMExports()
-  const result = run("node.exe")
+  const result = runProvisionFixture("node.exe", controller.signal)
   controller.abort()
+  expectTaskkill()
   terminator.emit("close", 1)
-  expect(await result).toContain("incerto")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN)
 }
 
 async function livePosixChildReleasesLocalResources(): Promise<void> {
@@ -153,14 +137,15 @@ async function livePosixChildReleasesLocalResources(): Promise<void> {
     stdio: ["ignore", "pipe", "pipe"],
     detached: true,
   })
+  runnerPlatform.mockProvisionPosix()
   const unref = vi.spyOn(live, "unref")
   vi.spyOn(childProcess, "spawn").mockReturnValue(live)
-  vi.spyOn(process, "kill").mockImplementation(denyKill)
+  vi.spyOn(process, "kill").mockImplementation(runnerPlatform.denyProvisionKill)
   syncBuiltinESMExports()
   try {
-    const result = run("node")
+    const result = runProvisionFixture("node", controller.signal)
     controller.abort()
-    expect(await result).toContain("incerto")
+    expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN)
     expect(live.exitCode).toBeNull()
     expect(live.killed).toBe(false)
     expect(live.stdout?.destroyed).toBe(true)
@@ -168,8 +153,11 @@ async function livePosixChildReleasesLocalResources(): Promise<void> {
     expect(live.stdout?.listenerCount("data")).toBe(0)
     expect(live.listenerCount("close")).toBe(0)
     expect(unref).toHaveBeenCalledTimes(1)
-    live.emit("error", new Error("late error"))
+    live.emit("error", new Error(scenario.IPHONE_PROVISION_RUNNER_LATE_CHILD_FAILURE))
   } finally {
+    vi.unstubAllGlobals()
+    vi.restoreAllMocks()
+    syncBuiltinESMExports()
     const closed = once(live, "close")
     live.kill("SIGKILL")
     await closed
@@ -177,36 +165,47 @@ async function livePosixChildReleasesLocalResources(): Promise<void> {
 }
 
 async function liveTerminatorHandleIsReleased(): Promise<void> {
-  mockWindows()
+  runnerPlatform.mockProvisionWindows()
+  vi.spyOn(process, "kill").mockReturnValue(true)
   vi.spyOn(childProcess, "spawn").mockReturnValueOnce(child).mockReturnValue(terminator)
   const unrefChild = vi.spyOn(child, "unref")
   const unrefTerminator = vi.spyOn(terminator, "unref")
   syncBuiltinESMExports()
-  const result = run("node.exe")
+  const result = runProvisionFixture("node.exe", controller.signal)
   controller.abort()
   await vi.advanceTimersByTimeAsync(1000)
-  expect(await result).toContain("incerto")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN)
   expect(unrefChild).toHaveBeenCalledTimes(1)
   expect(unrefTerminator).toHaveBeenCalledTimes(1)
+  expectTaskkill()
   expect(terminator.listenerCount("close")).toBe(0)
-  terminator.emit("error", new Error("late terminator error"))
+  terminator.emit("error", new Error(scenario.IPHONE_PROVISION_RUNNER_LATE_TERMINATOR_FAILURE))
   terminator.emit("close")
-  expect(await result).toContain("incerto")
+  expect(await result).toContain(scenario.IPHONE_PROVISION_RUNNER_UNCERTAIN)
+}
+
+function expectTaskkill(): void {
+  expect(childProcess.spawn).toHaveBeenCalledTimes(2)
+  expect(childProcess.spawn).toHaveBeenNthCalledWith(2, "taskkill", ["/pid", "321", "/T", "/F"], {
+    windowsHide: true,
+    stdio: "ignore",
+  })
+  expect(process.kill).not.toHaveBeenCalled()
 }
 
 function suite(): void {
   beforeEach(prepare)
   afterEach(dispose)
-  test("Node usa argv normal mesmo em caminho com espaços", nodeArgumentsRemainQuoted)
-  test("somente cmd pré-cotado usa verbatim", cmdArgumentsRemainVerbatim)
-  test("EPERM não deixa promise pendente nem expõe causa secreta", deniedKillSettlesUncertainty)
-  test("child sem close tem settlement limitado e eventos tardios inofensivos", missingCloseHasBoundedSettlement)
-  test("overflow repetido termina árvore uma só vez", outputOverflowOnlyTerminatesOnce)
-  test("timeout preserva motivo específico", timeoutIdentifiesReason)
-  test("erro taskkill resolve incerto uma só vez", taskkillErrorSettles)
-  test("taskkill não zero resolve sem close do filho", taskkillNonzeroSettles)
-  test("EPERM com Node vivo solta pipes e referências locais", livePosixChildReleasesLocalResources)
-  test("taskkill sem close solta handle e tolera eventos tardios", liveTerminatorHandleIsReleased)
+  test(scenario.IPHONE_PROVISION_RUNNER_NODE_ARGUMENTS_TEST, nodeArgumentsRemainQuoted)
+  test(scenario.IPHONE_PROVISION_RUNNER_CMD_ARGUMENTS_TEST, cmdArgumentsRemainVerbatim)
+  test(scenario.IPHONE_PROVISION_RUNNER_DENIED_KILL_TEST, deniedKillSettlesUncertainty)
+  test(scenario.IPHONE_PROVISION_RUNNER_MISSING_CLOSE_TEST, missingCloseHasBoundedSettlement)
+  test(scenario.IPHONE_PROVISION_RUNNER_OVERFLOW_TEST, outputOverflowOnlyTerminatesOnce)
+  test(scenario.IPHONE_PROVISION_RUNNER_TIMEOUT_TEST, timeoutIdentifiesReason)
+  test(scenario.IPHONE_PROVISION_RUNNER_TASKKILL_ERROR_TEST, taskkillErrorSettles)
+  test(scenario.IPHONE_PROVISION_RUNNER_TASKKILL_NONZERO_TEST, taskkillNonzeroSettles)
+  test(scenario.IPHONE_PROVISION_RUNNER_LIVE_CHILD_TEST, livePosixChildReleasesLocalResources)
+  test(scenario.IPHONE_PROVISION_RUNNER_LIVE_TERMINATOR_TEST, liveTerminatorHandleIsReleased)
 }
 
-describe("execução do provisionamento", suite)
+describe(scenario.IPHONE_PROVISION_RUNNER_SUITE, suite)

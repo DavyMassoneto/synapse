@@ -2,7 +2,7 @@ import { type ChildProcess, spawn } from "node:child_process"
 import { closeSync, mkdirSync, openSync } from "node:fs"
 import { join } from "node:path"
 import { type IphoneHost } from "#synapse/modules/iphone/public/contracts"
-import { iphoneAppiumCommand } from "./command"
+import { iphoneAppiumLaunchCommand } from "./command"
 import {
   IPHONE_APPIUM_DEFAULT_PORT,
   IPHONE_APPIUM_ERROR_EVENT,
@@ -12,7 +12,6 @@ import {
   IPHONE_APPIUM_LOG_APPEND,
   IPHONE_APPIUM_LOG_FILE,
   IPHONE_APPIUM_LOG_OPTION,
-  IPHONE_APPIUM_NODE_SCRIPT_EXTENSION,
   IPHONE_APPIUM_PORT_OPTION,
   IPHONE_APPIUM_REMOTE,
   IPHONE_APPIUM_SHUTDOWN_MS,
@@ -103,9 +102,7 @@ export class IphoneAppiumProcess {
 
   private spawn(executable: string, port: string, host: IphoneHost, descriptor: number, appiumHome?: string): void {
     const argumentsValue = [IPHONE_APPIUM_PORT_OPTION, port, IPHONE_APPIUM_LOG_OPTION]
-    const launch = executable.endsWith(IPHONE_APPIUM_NODE_SCRIPT_EXTENSION)
-      ? { command: process.execPath, arguments: [executable, ...argumentsValue] }
-      : iphoneAppiumCommand(executable, argumentsValue, host)
+    const launch = iphoneAppiumLaunchCommand(executable, argumentsValue, host)
     const child = spawn(launch.command, launch.arguments, {
       stdio: ["ignore", descriptor, descriptor],
       windowsHide: host === IPHONE_APPIUM_WINDOWS,

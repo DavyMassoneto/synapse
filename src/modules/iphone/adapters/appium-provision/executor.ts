@@ -136,19 +136,7 @@ export class IphoneProvisionCommandRunner {
     if (pid) {
       try {
         if (process.platform === IPHONE_PROVISION_WINDOWS) {
-          const terminator = spawn(
-            IPHONE_PROVISION_TASKKILL,
-            [
-              IPHONE_PROVISION_PID_ARGUMENT,
-              String(pid),
-              IPHONE_PROVISION_TREE_ARGUMENT,
-              IPHONE_PROVISION_FORCE_ARGUMENT,
-            ],
-            { windowsHide: true, stdio: "ignore" },
-          )
-          this.terminator = terminator
-          terminator.once(IPHONE_PROVISION_ERROR_EVENT, this.receiveClose)
-          terminator.once(IPHONE_PROVISION_CLOSE_EVENT, this.receiveClose)
+          this.terminateWindows(pid)
         } else {
           process.kill(-pid, IPHONE_PROVISION_FORCE_SIGNAL)
         }
@@ -160,6 +148,17 @@ export class IphoneProvisionCommandRunner {
         }
       }
     }
+  }
+
+  private terminateWindows(pid: number): void {
+    const terminator = spawn(
+      IPHONE_PROVISION_TASKKILL,
+      [IPHONE_PROVISION_PID_ARGUMENT, String(pid), IPHONE_PROVISION_TREE_ARGUMENT, IPHONE_PROVISION_FORCE_ARGUMENT],
+      { windowsHide: true, stdio: "ignore" },
+    )
+    this.terminator = terminator
+    terminator.once(IPHONE_PROVISION_ERROR_EVENT, this.receiveClose)
+    terminator.once(IPHONE_PROVISION_CLOSE_EVENT, this.receiveClose)
   }
 
   private releaseLocalResources(): void {
