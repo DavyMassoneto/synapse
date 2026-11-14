@@ -14,12 +14,16 @@ import {
   COMPUTER_MOUNT_LOG_TOO_LARGE,
   COMPUTER_MOUNT_NEWLINE,
   COMPUTER_MOUNT_RESULT_MISSING,
+  COMPUTER_MOUNT_RESULT_TEXT_MISSING,
+  COMPUTER_MOUNT_RESULT_TEXT_PENDING,
+  COMPUTER_MOUNT_RESULT_TEXT_PRESENT,
+  COMPUTER_MOUNT_TEXT,
+  COMPUTER_MOUNT_TOOL_RESULT_ROLE,
   COMPUTER_MOUNT_TSX,
   COMPUTER_MOUNT_UTF8,
 } from "./constants"
-import { isComputerMountText, isComputerMountToolResult } from "./predicates"
 import { COMPUTER_MOUNT_EVENT_SCHEMA } from "./schemas"
-import { type ComputerMountEvent } from "./types"
+import { type ComputerMountEvent, type ComputerMountRequestMessage, type ComputerMountResultText } from "./types"
 
 export function configureComputerMountDriver(pi: PiProcessScenarioHandle): string {
   const log = join(pi.homeDirectory.home, COMPUTER_MOUNT_LOG_FILE)
@@ -69,12 +73,31 @@ function parseComputerMountEvent(line: string): ComputerMountEvent {
 }
 
 export function computerMountToolResultText(request: PiProcessRequestLog): string {
-  const message = request.messages.findLast(isComputerMountToolResult)
-  if (message && typeof message.content !== "string") {
-    const block = message.content.find(isComputerMountText)
-    if (block?.text) {
-      return block.text
-    }
+  const result = request.messages.reduceRight<ComputerMountResultText>(parseComputerMountResultText, {
+    kind: COMPUTER_MOUNT_RESULT_TEXT_PENDING,
+  })
+  if (result.kind === COMPUTER_MOUNT_RESULT_TEXT_PRESENT) {
+    return result.text
   }
   throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
+}
+
+function parseComputerMountResultText(
+  previous: ComputerMountResultText,
+  message: ComputerMountRequestMessage,
+): ComputerMountResultText {
+  if (previous.kind !== COMPUTER_MOUNT_RESULT_TEXT_PENDING || message.role !== COMPUTER_MOUNT_TOOL_RESULT_ROLE) {
+    return previous
+  }
+  if (typeof message.content !== "string") {
+    for (const block of message.content) {
+      if (block.type === COMPUTER_MOUNT_TEXT) {
+        if (block.text) {
+          return { kind: COMPUTER_MOUNT_RESULT_TEXT_PRESENT, text: block.text }
+        }
+        break
+      }
+    }
+  }
+  return { kind: COMPUTER_MOUNT_RESULT_TEXT_MISSING }
 }

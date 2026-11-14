@@ -75,9 +75,27 @@ export interface ComputerMountFakeState {
   tree_markdown: string
 }
 
+export interface ComputerMountLifecycle {
+  pid: number
+  sessionEndCount: number
+}
+
 export type ComputerMountRequestMessage = PiProcessRequestLog["messages"][number]
 
-export interface ComputerMountRequestBlock {
-  type: string
-  text?: string
+export interface ComputerMountResultTextPresent {
+  kind: "result-text-present"
+  text: string
 }
+
+export interface ComputerMountResultTextMissing {
+  kind: "result-text-missing"
+}
+
+export interface ComputerMountResultTextPending {
+  kind: "result-text-pending"
+}
+
+export type ComputerMountResultText =
+  | ComputerMountResultTextPresent
+  | ComputerMountResultTextMissing
+  | ComputerMountResultTextPending
