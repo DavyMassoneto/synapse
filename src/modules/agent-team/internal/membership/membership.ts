@@ -96,12 +96,7 @@ export class TeamMembership {
       this.ensureGeneration(generation)
       const member = new TeamMember(opened, this.team)
       attempt.member = member
-      member.accept(request.task)
-      this.lead.recordMember(opened.record)
-      this.roster.add(member)
-      this.events.add(`${opened.record.name}${TEAM_EVENT_STARTED}${request.description}`)
-      member.startPending()
-      return { kind: TEAM_STARTED, name: opened.record.name, model: opened.record.model }
+      return this.publishMember(member, opened.record, request)
     } catch (error) {
       if (attempt.member) {
         await attempt.member.dispose()
@@ -110,6 +105,15 @@ export class TeamMembership {
       }
       throw error
     }
+  }
+
+  private publishMember(member: TeamMember, record: MemberRecord, request: StartMemberRequest): TeamStartOutcome {
+    member.accept(request.task)
+    this.lead.recordMember(record)
+    this.roster.add(member)
+    this.events.add(`${record.name}${TEAM_EVENT_STARTED}${request.description}`)
+    member.startPending()
+    return { kind: TEAM_STARTED, name: record.name, model: record.model }
   }
 
   async restore(records: MemberRecord[]): Promise<void> {

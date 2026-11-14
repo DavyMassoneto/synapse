@@ -4,9 +4,12 @@ import {
   type MemberSessionListener,
   type MemberUnsubscribe,
 } from "#synapse/modules/agent-team"
+import { TEAM_TEST_SUBSCRIPTION_FAILURE } from "../constants"
 import { type TeamTestResolve } from "./types"
 
 export class TeamTestSession implements MemberSession {
+  failSubscribe = false
+
   streaming = false
 
   disposed = false
@@ -46,6 +49,9 @@ export class TeamTestSession implements MemberSession {
   }
 
   subscribe(listener: MemberSessionListener): MemberUnsubscribe {
+    if (this.failSubscribe) {
+      throw new Error(TEAM_TEST_SUBSCRIPTION_FAILURE)
+    }
     this.listener = listener
     return this.unsubscribe.bind(this)
   }
