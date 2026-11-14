@@ -99,3 +99,19 @@ export const ROUTER_TEST_UNAVAILABLE_SELECTION = "Modelo ou nível escolhido ind
 export const ROUTER_TEST_ABORT_ERROR = "AbortError"
 
 export const ROUTER_TEST_MESSAGE_END = "message_end"
+
+export const ROUTER_TEST_PROVIDER_FALLBACK_REASON = "Fallback técnico: Provider is not configured: typesafe"
+
+export const ROUTER_TEST_INVALID_CLASSIFICATION_REASON = "Fallback técnico: Resposta de classificação Jev inválida."
+
+export const ROUTER_TEST_DIAGNOSTICS_SUITE = "diagnósticos do classificador model-router"
+
+export const ROUTER_TEST_PROVIDER_DIAGNOSTIC_TITLE = "provider ausente preserva diagnóstico e fallback Sol/high"
+
+export const ROUTER_TEST_SENSITIVE_DIAGNOSTIC_TITLE = "recusa diagnóstico com sufixo sensível"
+
+export const ROUTER_TEST_HTTP_DIAGNOSTIC_TITLE = "não expõe corpo HTTP no diagnóstico"
+
+export const ROUTER_TEST_MALFORMED_DIAGNOSTIC_TITLE = "resposta malformada não é confundida com provider ausente"
+
+export const ROUTER_TEST_STALE_ERROR_TITLE = "resposta válida ignora mensagem de erro residual"
