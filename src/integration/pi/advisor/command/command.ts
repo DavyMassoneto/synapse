@@ -1,4 +1,4 @@
-import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules"
+import { type Advisor, type AdvisorResult, type Config } from "#synapse/modules/advisor"
 import { type AdvisorToolActivation, syncAdvisor } from "../lifecycle"
 import { chooseModel, type ModelSelection } from "../model-picker"
 import {

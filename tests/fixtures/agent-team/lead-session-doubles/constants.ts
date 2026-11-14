@@ -1,4 +1,4 @@
-import { type MemberRecord } from "#synapse/modules"
+import { type MemberRecord } from "#synapse/modules/agent-team"
 
 export const TEAM_SESSION_FIXTURE_TEST_PREFIX = "synapse-team-session-"
 

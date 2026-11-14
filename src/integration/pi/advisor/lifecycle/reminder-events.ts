@@ -1,5 +1,5 @@
 import { type TurnEndEvent } from "@earendil-works/pi-coding-agent"
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor"
 import { COMPLETED_TURN, CUSTOM_MESSAGE_ENTRY, REMINDER_DISPLAY, REMINDER_TYPE } from "./constants"
 import { type TurnEndOutcome } from "./types"
 

@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { readMemberExtensions } from "#synapse/integration"
+import { readMemberExtensions } from "#synapse/integration/pi/agent-team"
 import { createTeamExtensionsDirectory, RESPONSE_RULES_TEST_BOM, removeTeamExtensionsDirectory } from "../fixtures"
 
 let directory: string

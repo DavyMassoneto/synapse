@@ -101,7 +101,7 @@ Assim, uma funcionalidade do pi-web que necessite de memória depende de uma por
 
 As entradas do Pi package, declaradas em `pi.extensions`, são uma por capacidade entregue, e cada uma aciona a montagem da sua capacidade. A integração com o host registra as capacidades resultantes. Ela não replica regras dos módulos nem transforma persistência própria em histórico autoritativo do pi.
 
-Cada entrada é desativada no pi independentemente das outras e aparece separada em `pi config` e na listagem de extensões; `pi list` mostra o pacote. Uma capacidade desativada não volta por outro caminho: os membros da equipe de agentes herdam só as capacidades efetivamente carregadas na sessão que os cria. As entradas não compartilham estado de módulo nem mapa global; uma entrada só sabe de outra por um contrato tipado no barramento de eventos do host, com canal, formato validado e origem explícitos.
+Cada entrada é desativada no pi independentemente das outras e aparece separada em `pi config` e na listagem de extensões; `pi list` mostra o pacote. Uma capacidade desativada não volta por outro caminho: os membros da equipe de agentes carregam as extensões pela mesma configuração persistida do pi da sessão que os cria (settings, `pi config`, filtros e confiança no projeto), exceto as excluídas na configuração da equipe. As entradas não compartilham estado de módulo nem mapa global e não dependem umas das outras.
 
 ## Suporte por sistema operacional
 

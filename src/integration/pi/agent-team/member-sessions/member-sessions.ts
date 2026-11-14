@@ -1,11 +1,11 @@
+import { REFERENCE_SEPARATOR } from "#synapse/modules/advisor"
 import {
   type AgentTeam,
   type MemberRecord,
   type MemberSessions,
   type OpenedMember,
   type OpenMemberRequest,
-  REFERENCE_SEPARATOR,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import { type AgentTeamContext } from "../lead-session"
 import { selectMemberModel } from "../model-selection"
 import { PiTeamSessionAdapter } from "../session-events"

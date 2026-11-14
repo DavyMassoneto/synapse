@@ -1,6 +1,6 @@
 import { type Api, type Model } from "@earendil-works/pi-ai"
 import { type ExtensionContext, type SessionEntry } from "@earendil-works/pi-coding-agent"
-import { type AgentTeamContext, type TeamLeadWidgetContent } from "#synapse/integration"
+import { type AgentTeamContext, type TeamLeadWidgetContent } from "#synapse/integration/pi/agent-team"
 import { ToolsModelRegistry } from "../tools"
 import {
   TEAM_SESSION_FIXTURE_RPC_MODE,

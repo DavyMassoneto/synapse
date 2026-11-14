@@ -1,5 +1,9 @@
 import { type ExtensionAPI } from "@earendil-works/pi-coding-agent"
-import { type PiIphoneHost, type PiIphoneShutdownHandler, type PiIphoneToolDefinition } from "#synapse/integration"
+import {
+  type PiIphoneHost,
+  type PiIphoneShutdownHandler,
+  type PiIphoneToolDefinition,
+} from "#synapse/integration/pi/iphone"
 import { IPHONE_FIXTURE_TOOL_MISSING } from "./constants"
 
 export class IphoneFixtureHost implements PiIphoneHost {

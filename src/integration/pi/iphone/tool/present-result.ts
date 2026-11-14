@@ -1,4 +1,4 @@
-import { IPHONE_RESULT_INFO, IPHONE_RESULT_TREE } from "#synapse/modules"
+import { IPHONE_RESULT_INFO, IPHONE_RESULT_TREE } from "#synapse/modules/iphone"
 import { PI_IPHONE_SCREEN_DIMENSION_SEPARATOR, PI_IPHONE_SCREEN_LABEL, PI_IPHONE_SCREEN_UNIT } from "./constants"
 import { type PiIphoneTextResult } from "./types"
 

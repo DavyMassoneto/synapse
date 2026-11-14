@@ -1,3 +1,3 @@
-import { registerCooldownRetry } from "#synapse/integration"
+import { registerCooldownRetry } from "#synapse/integration/pi/cooldown-retry"
 
 export default registerCooldownRetry

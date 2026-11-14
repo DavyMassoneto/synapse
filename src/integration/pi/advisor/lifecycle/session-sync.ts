@@ -1,5 +1,5 @@
 import { type BeforeAgentStartEvent, type SessionStartEvent } from "@earendil-works/pi-coding-agent"
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor"
 import { CONFIGURATION_FAILURE_LEVEL } from "./constants"
 import { syncAdvisor } from "./sync-advisor"
 import { type AdvisorToolActivation, type SessionContext } from "./types"

@@ -1,23 +1,40 @@
+import { type AdvisorHost, type AdvisorTool } from "#synapse/integration/pi/advisor"
 import {
-  type AdvisorTool,
   type AgentTeamBeforeStartHandler,
+  type AgentTeamHost,
   type AgentTeamMessageHandler,
   type AgentTeamSettledHandler,
   type AgentTeamShutdownHandler,
   type AgentTeamStartHandler,
   type AgentTeamToolDefinition,
   type AgentTeamTurnHandler,
-  type CooldownMessageEndHandler,
+  type TeamLeadWidgetContent,
+} from "#synapse/integration/pi/agent-team"
+import {
+  type PiComputerHost,
   type PiComputerShutdown,
   type PiComputerToolDefinition,
+} from "#synapse/integration/pi/computer-use"
+import { type CooldownMessageEndHandler, type CooldownRetryHost } from "#synapse/integration/pi/cooldown-retry"
+import {
   type PiIphoneExecutionHost,
+  type PiIphoneHost,
   type PiIphoneShutdownHandler,
   type PiIphoneToolDefinition,
-  type ResponseRulesContextHandler,
-  type TeamLeadWidgetContent,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/iphone"
+import { type ModelRouterHost } from "#synapse/integration/pi/model-router"
+import { type ResponseRulesContextHandler, type ResponseRulesHost } from "#synapse/integration/pi/response-rules"
 import { type TeamWidgetOptions } from "../agent-team"
 import { type AdvisorEventRegistration } from "../host"
+
+export type SynapseHost = AdvisorHost &
+  CooldownRetryHost &
+  ResponseRulesHost &
+  ModelRouterHost &
+  AgentTeamHost &
+  PiIphoneHost &
+  PiIphoneExecutionHost &
+  PiComputerHost
 
 export type SynapseCollectedTool =
   | AdvisorTool

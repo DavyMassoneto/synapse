@@ -1,6 +1,6 @@
 import { type ClassifierApi, type ClassifierModel } from "@earendil-works/pi-ai"
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent"
-import { type RouterClassifierFailed } from "#synapse/modules"
+import { type RouterClassifierFailed } from "#synapse/modules/model-router"
 
 export interface PiRouterClassificationContext {
   modelRegistry: PiRouterClassificationRegistry

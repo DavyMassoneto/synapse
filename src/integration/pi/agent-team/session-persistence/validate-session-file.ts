@@ -1,4 +1,4 @@
-import { type MemberRecord } from "#synapse/modules"
+import { type MemberRecord } from "#synapse/modules/agent-team"
 import { TEAM_PI_MEMBER_INVALID_SESSION } from "./constants"
 import { parseTeamSessionFile } from "./parse-session-file"
 import { readTeamSessionFile } from "./read-session-file"

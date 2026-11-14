@@ -1,4 +1,4 @@
-import { type PiTeamLeadSession, TEAM_PI_NO_SESSION } from "#synapse/integration"
+import { type PiTeamLeadSession, TEAM_PI_NO_SESSION } from "#synapse/integration/pi/agent-team"
 import { ToolsTeamDouble } from "../tools"
 
 export class LifecycleTeamDouble extends ToolsTeamDouble {

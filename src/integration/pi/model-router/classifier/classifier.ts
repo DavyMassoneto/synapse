@@ -3,7 +3,7 @@ import {
   type ClassifierRequest,
   ROUTER_FAILED_KIND,
   type RouterClassifier,
-} from "#synapse/modules"
+} from "#synapse/modules/model-router"
 import { buildPiRouterClassifierContext, piRouterClassifierOptions } from "./classifier-context"
 import { convertPiRouterClassifierResult } from "./classifier-response"
 import { resolvePiRouterClassifier } from "./resolve-classifier"

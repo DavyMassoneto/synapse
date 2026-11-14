@@ -1,4 +1,4 @@
-import { type IphoneSimulatorCommandOutput } from "#synapse/modules"
+import { type IphoneSimulatorCommandOutput } from "#synapse/modules/iphone"
 import { type PiIphoneExecutionHost } from "./types"
 
 export class PiIphoneSimulatorExecutor {

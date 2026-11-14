@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { leadTools, memberTools, TeamAgentHandlers, TeamTaskHandlers } from "#synapse/integration"
+import { leadTools, memberTools, TeamAgentHandlers, TeamTaskHandlers } from "#synapse/integration/pi/agent-team"
 import { type TeamToolsSut, ToolsTeamDouble } from "../fixtures"
 
 function makeSut(): TeamToolsSut {

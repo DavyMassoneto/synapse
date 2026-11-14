@@ -13,7 +13,7 @@ import {
   type IphonePoint,
   type IphoneSwipeAction,
   type IphoneTypeAction,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import {
   PI_IPHONE_DEFAULT_FLIP_MS,
   PI_IPHONE_DEFAULT_HOLD_MS,

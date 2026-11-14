@@ -5,7 +5,7 @@ import {
   type SessionStartEvent,
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam } from "#synapse/modules"
+import { type AgentTeam } from "#synapse/modules/agent-team"
 import { TEAM_PI_LEAD_INSTRUCTIONS, TEAM_PI_PROMPT_SECTION } from "./constants"
 import { type AgentTeamContext, type PiTeamLeadSession } from "./lead-session"
 import { readTeamHistory } from "./session-history"

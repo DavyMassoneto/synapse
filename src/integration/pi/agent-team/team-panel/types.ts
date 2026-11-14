@@ -1,5 +1,12 @@
 import { type ThemeColor } from "@earendil-works/pi-coding-agent"
-import { TEAM_FAILED, TEAM_FINISHED, TEAM_IDLE, TEAM_INTERRUPTED, TEAM_WAITING, TEAM_WORKING } from "#synapse/modules"
+import {
+  TEAM_FAILED,
+  TEAM_FINISHED,
+  TEAM_IDLE,
+  TEAM_INTERRUPTED,
+  TEAM_WAITING,
+  TEAM_WORKING,
+} from "#synapse/modules/agent-team"
 
 export type TeamPanelTone = "title" | "row" | "event"
 

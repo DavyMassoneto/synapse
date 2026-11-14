@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { availableMemberModels, selectMemberModel } from "#synapse/integration"
+import { availableMemberModels, selectMemberModel } from "#synapse/integration/pi/agent-team"
 import { fixtureModel, type MemberModelSut, ToolsModelRegistry } from "../fixtures"
 
 function makeSut(): MemberModelSut {

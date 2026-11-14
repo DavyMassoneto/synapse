@@ -1,3 +1,3 @@
-import { composeAgentTeam } from "#synapse/composition"
+import { composeAgentTeam } from "#synapse/composition/agent-team"
 
 export default composeAgentTeam

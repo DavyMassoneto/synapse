@@ -6,7 +6,7 @@ import {
   parseModelReference,
   type ResolvedModel,
   type ThinkingLevel,
-} from "#synapse/modules"
+} from "#synapse/modules/advisor"
 import {
   CAPABILITIES_CHANGED,
   INVALID_REFERENCE,

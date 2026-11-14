@@ -1,7 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, test } from "vitest"
-import { createPiTeamLeadSession, memberTools, PiTeamMemberSessions } from "#synapse/integration"
+import { createPiTeamLeadSession, memberTools, PiTeamMemberSessions } from "#synapse/integration/pi/agent-team"
 import {
   fixtureModel,
   TEAM_SESSION_FIXTURE_CONTEXT_WINDOW,

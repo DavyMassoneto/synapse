@@ -1,6 +1,6 @@
 import { type Api, type Model } from "@earendil-works/pi-ai"
 import { type ModelRegistry } from "@earendil-works/pi-coding-agent"
-import { type Failure } from "#synapse/modules"
+import { type Failure } from "#synapse/modules/advisor"
 
 export type AdvisorModelRegistry = Pick<ModelRegistry, "find" | "hasConfiguredAuth" | "streamSimple">
 

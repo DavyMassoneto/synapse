@@ -1,5 +1,10 @@
 import { describe, expect, test } from "vitest"
-import { iphoneTargets, type PiIphoneInput, translateIphoneAction, translateIphoneHome } from "#synapse/integration"
+import {
+  iphoneTargets,
+  type PiIphoneInput,
+  translateIphoneAction,
+  translateIphoneHome,
+} from "#synapse/integration/pi/iphone"
 
 function translatesRead(): void {
   expect(translateIphoneHome({ action: "homescreen", op: "read", page: 3 })).toEqual({ kind: "read", page: 3 })

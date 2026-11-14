@@ -1,4 +1,4 @@
-import { type AgentTeam } from "#synapse/modules"
+import { type AgentTeam } from "#synapse/modules/agent-team"
 import { TeamAgentHandlers } from "./agent-handlers"
 import {
   TEAM_TOOL_LIST_AGENTS,

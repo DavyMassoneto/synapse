@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
-import { PI_ROUTER_VIRTUAL_ID, PI_ROUTER_VIRTUAL_PROVIDER } from "#synapse/integration"
-import { ROUTER_UNAVAILABLE_REASON } from "#synapse/modules"
+import { PI_ROUTER_VIRTUAL_ID, PI_ROUTER_VIRTUAL_PROVIDER } from "#synapse/integration/pi/model-router"
+import { ROUTER_UNAVAILABLE_REASON } from "#synapse/modules/model-router"
 import {
   PI_PROCESS_TIMEOUT_MS,
   type PiProcessScenarioHandle,

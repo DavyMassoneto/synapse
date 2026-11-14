@@ -7,7 +7,7 @@ import {
   memberTools,
   PiTeamMemberSessions,
   TeamMemberResourceLoader,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/agent-team"
 import { TeamLeadContext, TeamLeadHost, ToolsTeamDouble } from "../agent-team"
 import { fixtureModel } from "../context"
 import {

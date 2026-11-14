@@ -1,6 +1,6 @@
 import { mkdirSync, unlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { ADVISOR_CONFIG_FILE } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE } from "#synapse/integration/pi/advisor"
 import { BLOCKED_CONTENT, BLOCKED_ENTRY } from "./constants"
 import { TypedAdvisorHost } from "./host"
 

@@ -7,7 +7,8 @@ import {
   ModelRouterExtension,
   ResponseRulesExtension,
 } from "#synapse/extensions"
-import { advisorConfigPath, responseRulesInstructionsPath } from "#synapse/integration"
+import { advisorConfigPath } from "#synapse/integration/pi/advisor"
+import { responseRulesInstructionsPath } from "#synapse/integration/pi/response-rules"
 import {
   COOLING_DOWN_ERROR,
   CompositionContext,

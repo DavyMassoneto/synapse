@@ -1,5 +1,5 @@
 import { type ModelRoute, type ModelRouteRequest } from "@earendil-works/pi-coding-agent"
-import { type ModelRouterFactory } from "#synapse/modules"
+import { type ModelRouterFactory } from "#synapse/modules/model-router"
 import { checkRouterAbort } from "./cancellation"
 import { PiRouterClassifier } from "./classifier"
 import { applyRouterSelection } from "./physical-selection"

@@ -1,5 +1,5 @@
 import { type Message } from "@earendil-works/pi-ai"
-import { type RouterMessage } from "#synapse/modules"
+import { type RouterMessage } from "#synapse/modules/model-router"
 import {
   PI_ROUTER_BLOCK_BREAK,
   PI_ROUTER_EMPTY_TEXT,

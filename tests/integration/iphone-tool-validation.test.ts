@@ -5,7 +5,7 @@ import {
   PI_IPHONE_PARAMETERS,
   type PiIphoneInput,
   PiIphoneTool,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/iphone"
 import { fixtureModel, IphoneToolModule } from "../fixtures"
 
 async function rejectsUnknownAlert(): Promise<void> {

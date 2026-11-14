@@ -1,5 +1,5 @@
 import { type ExtensionAPI, type ExtensionContext, type MessageEndEvent } from "@earendil-works/pi-coding-agent"
-import { type TeamLead } from "#synapse/modules"
+import { type TeamLead } from "#synapse/modules/agent-team"
 import { type MemberModelContext } from "../model-selection"
 
 export interface TeamLeadContextAttached {

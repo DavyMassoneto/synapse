@@ -9,7 +9,7 @@ import {
   type AdvisorTool,
   type AdvisorTurnEndHandler,
   type Unsubscribe,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/advisor"
 import { HostSessionEvents } from "./session-events"
 import { type AdvisorEventRegistration, type CommandCompletions, type TurnEndResult } from "./types"
 

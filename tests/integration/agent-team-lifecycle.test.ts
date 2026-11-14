@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { createPiTeamLeadSession, PiTeamLifecycle } from "#synapse/integration"
+import { createPiTeamLeadSession, PiTeamLifecycle } from "#synapse/integration/pi/agent-team"
 import { fixtureModel, LifecycleTeamDouble, TeamLeadContext, TeamLeadHost } from "../fixtures"
 
 async function suspendsBeforeDetach(): Promise<void> {

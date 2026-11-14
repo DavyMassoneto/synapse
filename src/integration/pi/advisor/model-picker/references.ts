@@ -1,4 +1,4 @@
-import { REFERENCE_SEPARATOR } from "#synapse/modules"
+import { REFERENCE_SEPARATOR } from "#synapse/modules/advisor"
 import { type ListedModel, type PickerContext } from "./types"
 
 function* listedModels(context: PickerContext): Generator<ListedModel> {

@@ -1,5 +1,5 @@
-import { registerModelRouter } from "#synapse/integration"
-import { createModelRouter } from "#synapse/modules"
+import { registerModelRouter } from "#synapse/integration/pi/model-router"
+import { createModelRouter } from "#synapse/modules/model-router"
 import { fixtureModel, TestUI } from "../context"
 import {
   ROUTER_TEST_CONTEXT_WINDOW,

@@ -2,7 +2,7 @@ import {
   type ComputerExecutedAction,
   type ComputerExecuteResult,
   type ComputerRenderedScreenshot,
-} from "#synapse/modules"
+} from "#synapse/modules/computer-use"
 
 export const COMPUTER_CANCELLATION_COMPLETED: ComputerExecutedAction = {
   kind: "computer-executed",

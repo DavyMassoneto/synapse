@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { PI_IPHONE_PARAMETERS, PiIphoneCommand, PiIphoneTool, registerIphone } from "#synapse/integration"
+import { PI_IPHONE_PARAMETERS, PiIphoneCommand, PiIphoneTool, registerIphone } from "#synapse/integration/pi/iphone"
 import {
   cleanupIphoneScenario,
   fixtureModel,

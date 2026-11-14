@@ -1,5 +1,5 @@
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent"
-import { type MemberRecord, type TaskSnapshot } from "#synapse/modules"
+import { type MemberRecord, type TaskSnapshot } from "#synapse/modules/agent-team"
 
 export type TeamMembersByName = Map<string, MemberRecord>
 

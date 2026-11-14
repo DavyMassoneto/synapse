@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { createIphone, type IphoneConfiguration } from "#synapse/modules"
+import { createIphone, type IphoneConfiguration } from "#synapse/modules/iphone"
 import {
   IPHONE_FIXTURE_CONFIG_FILE,
   IPHONE_FIXTURE_ENCODING,

@@ -11,7 +11,7 @@ import {
   TASK_RELEASE,
   TASK_REOPEN,
   TASK_SET_DEPENDENCIES,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import { TEAM_TOOL_MAX_WAIT_MS, TEAM_TOOL_MIN_WAIT_MS } from "./constants"
 
 export const TEAM_TOOL_SUBAGENT_PARAMETERS = Type.Object({

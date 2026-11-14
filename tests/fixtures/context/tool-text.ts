@@ -1,4 +1,4 @@
-import { type AdvisorToolOutput } from "#synapse/integration"
+import { type AdvisorToolOutput } from "#synapse/integration/pi/advisor"
 
 export function toolText(result: AdvisorToolOutput): string {
   const [content] = result.content

@@ -1,3 +1,3 @@
-import { composeModelRouter } from "#synapse/composition"
+import { composeModelRouter } from "#synapse/composition/model-router"
 
 export default composeModelRouter

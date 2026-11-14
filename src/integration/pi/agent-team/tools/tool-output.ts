@@ -1,4 +1,4 @@
-import { TEAM_OPERATION_FAILED, TEAM_REFUSED } from "#synapse/modules"
+import { TEAM_OPERATION_FAILED, TEAM_REFUSED } from "#synapse/modules/agent-team"
 import { TEAM_TOOL_TEXT_CONTENT } from "./constants"
 import { type TeamToolOutcome, type TeamToolOutput } from "./types"
 

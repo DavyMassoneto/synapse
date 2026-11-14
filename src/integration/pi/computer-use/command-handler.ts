@@ -1,4 +1,4 @@
-import { COMPUTER_DIAGNOSTIC_READY, COMPUTER_INSTALL_SUCCEEDED, type ComputerUse } from "#synapse/modules"
+import { COMPUTER_DIAGNOSTIC_READY, COMPUTER_INSTALL_SUCCEEDED, type ComputerUse } from "#synapse/modules/computer-use"
 import {
   PI_COMPUTER_COMMAND_DOCTOR,
   PI_COMPUTER_COMMAND_INSTALL,

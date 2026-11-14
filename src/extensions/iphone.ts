@@ -1,3 +1,3 @@
-import { composeIphone } from "#synapse/composition"
+import { composeIphone } from "#synapse/composition/iphone"
 
 export default composeIphone

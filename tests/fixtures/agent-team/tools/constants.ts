@@ -1,4 +1,4 @@
-import { type TaskRefused, type TaskView } from "#synapse/modules"
+import { type TaskRefused, type TaskView } from "#synapse/modules/agent-team"
 
 export const TEAM_FIXTURE_REFUSAL: TaskRefused = { kind: "refused", message: "Operação recusada." }
 

@@ -7,7 +7,7 @@ import {
   type IphonePoint,
   type IphoneTextOutput,
   type IphoneTreeOutput,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import { type PI_IPHONE_PARAMETERS } from "./parameters"
 
 export type PiIphoneInput = Omit<Static<typeof PI_IPHONE_PARAMETERS>, "alert_action"> & PiIphoneAlertInput

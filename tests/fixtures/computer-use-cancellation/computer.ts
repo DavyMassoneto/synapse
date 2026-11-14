@@ -5,7 +5,7 @@ import {
   type ComputerExecutionContext,
   type ComputerInstallResult,
   type ComputerUse,
-} from "#synapse/modules"
+} from "#synapse/modules/computer-use"
 import { COMPUTER_CANCELLATION_COMPLETED, COMPUTER_CANCELLATION_DIAGNOSTIC } from "./constants"
 
 export class CancellationComputer implements ComputerUse {

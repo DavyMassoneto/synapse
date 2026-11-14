@@ -1,5 +1,5 @@
 import { type ExtensionAPI, type ExtensionContext, type ToolDefinition } from "@earendil-works/pi-coding-agent"
-import { type ComputerExecuteResult, type ComputerRenderedScreenshot } from "#synapse/modules"
+import { type ComputerExecuteResult, type ComputerRenderedScreenshot } from "#synapse/modules/computer-use"
 import { type PI_COMPUTER_PARAMETERS } from "./tool-schema"
 
 export type PiComputerRegistry = Pick<ExtensionAPI, "registerCommand">

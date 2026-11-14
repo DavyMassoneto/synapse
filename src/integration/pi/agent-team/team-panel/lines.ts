@@ -1,4 +1,4 @@
-import { type TeamOverview } from "#synapse/modules"
+import { type TeamOverview } from "#synapse/modules/agent-team"
 import {
   TEAM_PANEL_AGENT_TITLE,
   TEAM_PANEL_EMPTY,

@@ -1,7 +1,11 @@
 import { writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
-import { TEAM_EXTENSIONS_CONFIG_FILE, TEAM_TOOL_SUBAGENT, TEAM_TOOL_WAIT_AGENT } from "#synapse/integration"
+import {
+  TEAM_EXTENSIONS_CONFIG_FILE,
+  TEAM_TOOL_SUBAGENT,
+  TEAM_TOOL_WAIT_AGENT,
+} from "#synapse/integration/pi/agent-team"
 import { type PiProcessScenarioHandle, type PiProcessSession } from "../pi-process"
 import {
   SCRIPTED_PROVIDER_PROVIDER_URL,

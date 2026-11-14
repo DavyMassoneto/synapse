@@ -1,4 +1,4 @@
-import { type Cancelled } from "#synapse/modules"
+import { type Cancelled } from "#synapse/modules/advisor"
 import {
   AMBIGUOUS_LEVEL,
   AMBIGUOUS_MODEL,

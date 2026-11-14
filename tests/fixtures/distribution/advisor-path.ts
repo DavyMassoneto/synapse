@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { ADVISOR_CONFIG_FILE } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE } from "#synapse/integration/pi/advisor"
 import { PI_PROCESS_ENCODING, type PiProcessScenarioHandle } from "../pi-process"
 
 export function packageAdvisorPath(agentDirectory: string): string {

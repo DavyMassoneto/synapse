@@ -1,5 +1,5 @@
 import { type AgentSession, type SessionManager, type SettingsManager } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules"
+import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { type AgentTeamContext } from "../lead-session"
 import { type SelectedMemberModel } from "../model-selection"

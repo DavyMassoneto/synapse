@@ -1,4 +1,11 @@
-import { TEAM_FAILED, TEAM_FINISHED, TEAM_IDLE, TEAM_INTERRUPTED, TEAM_WAITING, TEAM_WORKING } from "#synapse/modules"
+import {
+  TEAM_FAILED,
+  TEAM_FINISHED,
+  TEAM_IDLE,
+  TEAM_INTERRUPTED,
+  TEAM_WAITING,
+  TEAM_WORKING,
+} from "#synapse/modules/agent-team"
 import { type TeamPanelStateLabels, type TeamPanelToneColors } from "./types"
 
 export const TEAM_PANEL_TITLE = "title"

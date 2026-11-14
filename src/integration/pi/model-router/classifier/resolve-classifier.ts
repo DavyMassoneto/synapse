@@ -1,4 +1,4 @@
-import { ROUTER_FAILED_KIND } from "#synapse/modules"
+import { ROUTER_FAILED_KIND } from "#synapse/modules/model-router"
 import {
   PI_ROUTER_CLASSIFIER_FOUND,
   PI_ROUTER_CLASSIFIER_MODEL,

@@ -1,5 +1,5 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
-import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules"
+import { type TranscriptBlock, type TranscriptMessage } from "#synapse/modules/advisor"
 import { TEXT_CONTENT } from "../content-text"
 import {
   ASSISTANT_ROLE,

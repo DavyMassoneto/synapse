@@ -1,5 +1,5 @@
 import { type AgentSession, type ExtensionError } from "@earendil-works/pi-coding-agent"
-import { type TeamMemberExtensionSession } from "#synapse/integration"
+import { type TeamMemberExtensionSession } from "#synapse/integration/pi/agent-team"
 import {
   TEAM_EXTENSION_FIXTURE_DISPOSE,
   TEAM_EXTENSION_FIXTURE_EVENT,

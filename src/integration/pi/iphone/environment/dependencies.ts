@@ -1,6 +1,6 @@
 import { join } from "node:path"
 import { getAgentDir } from "@earendil-works/pi-coding-agent"
-import { type IphoneModuleDependencies } from "#synapse/modules"
+import { type IphoneModuleDependencies } from "#synapse/modules/iphone"
 import {
   PI_IPHONE_CONFIG_FILE,
   PI_IPHONE_LINUX,

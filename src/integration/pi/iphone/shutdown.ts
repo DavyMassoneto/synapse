@@ -1,4 +1,4 @@
-import { type IphoneModule } from "#synapse/modules"
+import { type IphoneModule } from "#synapse/modules/iphone"
 import { type PiIphoneCommand } from "./command"
 
 export class PiIphoneShutdown {

@@ -6,7 +6,7 @@ import {
   IPHONE_TARGET_POINT,
   type IphoneDeviceActionOutput,
   type IphoneModule,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import {
   PI_IPHONE_ABORT_NAME,
   PI_IPHONE_DEFAULT_MAX,

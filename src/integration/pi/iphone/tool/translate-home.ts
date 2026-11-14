@@ -15,7 +15,7 @@ import {
   type IphoneHomeMergeOperation,
   type IphoneHomeOperation,
   type IphoneHomeReadOperation,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import { PI_IPHONE_INVALID_ARGUMENTS } from "./constants"
 import { iphoneRequiredText } from "./input-values"
 import { type PiIphoneInput } from "./types"

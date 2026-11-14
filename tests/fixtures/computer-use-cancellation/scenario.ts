@@ -1,4 +1,4 @@
-import { PiComputerToolHandler } from "#synapse/integration"
+import { PiComputerToolHandler } from "#synapse/integration/pi/computer-use"
 import { CancellationComputer } from "./computer"
 import { COMPUTER_CANCELLATION_SESSION } from "./constants"
 import { type ComputerCancellationSut } from "./types"

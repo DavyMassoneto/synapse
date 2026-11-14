@@ -1,4 +1,4 @@
-import { type UpdateTaskInput } from "#synapse/modules"
+import { type UpdateTaskInput } from "#synapse/modules/agent-team"
 import { TEAM_TOOL_DESCRIPTION_FIELD, TEAM_TOOL_OWNER_FIELD, TEAM_TOOL_SUBJECT_FIELD } from "./constants"
 import { type TeamUpdateTaskInput } from "./types"
 

@@ -1,4 +1,8 @@
-import { type ComputerInputOptions, type ComputerInputScope, type ComputerMouseButton } from "#synapse/modules"
+import {
+  type ComputerInputOptions,
+  type ComputerInputScope,
+  type ComputerMouseButton,
+} from "#synapse/modules/computer-use"
 
 export type PiComputerCoordinate = [number, number]
 

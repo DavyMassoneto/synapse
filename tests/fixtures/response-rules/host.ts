@@ -4,7 +4,7 @@ import {
   type ResponseRulesContextOutcome,
   type ResponseRulesHost,
   type ResponseRulesUnsubscribe,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/response-rules"
 import { RESPONSE_RULES_TEST_HANDLER_MISSING } from "./constants"
 
 export class ResponseRulesTestHost implements ResponseRulesHost {

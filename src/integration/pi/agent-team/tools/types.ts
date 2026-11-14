@@ -1,6 +1,6 @@
 import { type ToolDefinition } from "@earendil-works/pi-coding-agent"
 import { type Static, type TSchema } from "typebox"
-import { type AgentTeam } from "#synapse/modules"
+import { type AgentTeam } from "#synapse/modules/agent-team"
 import {
   type TEAM_TOOL_CREATE_TASK_PARAMETERS,
   type TEAM_TOOL_GET_TASK_PARAMETERS,

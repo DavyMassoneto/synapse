@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { readTeamHistory } from "#synapse/integration"
+import { readTeamHistory } from "#synapse/integration/pi/agent-team"
 import { TEAM_HISTORY_INVALID_ENTRIES, TEAM_HISTORY_TEST_ENTRIES, TeamHistoryTestSession } from "../fixtures"
 
 function filtersLeadCatalog(): void {

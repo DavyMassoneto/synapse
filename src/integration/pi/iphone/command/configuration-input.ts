@@ -1,5 +1,5 @@
 import { Value } from "typebox/value"
-import { type IphoneConfigurationChange } from "#synapse/modules"
+import { type IphoneConfigurationChange } from "#synapse/modules/iphone"
 import {
   PI_IPHONE_COMMAND_CONFIG,
   PI_IPHONE_COMMAND_INVALID_CHANGE,

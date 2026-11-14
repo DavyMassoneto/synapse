@@ -2,7 +2,7 @@ import { mkdirSync, rmSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { SessionManager } from "@earendil-works/pi-coding-agent"
 import { describe, expect, test, vi } from "vitest"
-import { createPiTeamMemberSession, type TeamMemberSessionRequest } from "#synapse/integration"
+import { createPiTeamMemberSession, type TeamMemberSessionRequest } from "#synapse/integration/pi/agent-team"
 import {
   fixtureModel,
   MEMBER_CONFIG_AGENT_ENVIRONMENT,

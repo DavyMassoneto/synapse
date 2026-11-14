@@ -10,7 +10,7 @@ import {
   type IphoneModuleLog,
   type IphoneSupportResult,
   type IphoneTargetedAction,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import {
   IPHONE_FIXTURE_ACTION_RESULT,
   IPHONE_FIXTURE_IMAGE_RESULT,

@@ -1,6 +1,6 @@
 import { type SessionProjection } from "@earendil-works/pi-coding-agent"
-import { type AdvisorContext } from "#synapse/integration"
-import { type ThinkingLevel } from "#synapse/modules"
+import { type AdvisorContext } from "#synapse/integration/pi/advisor"
+import { type ThinkingLevel } from "#synapse/modules/advisor"
 
 export type TestStopReason = "stop" | "aborted" | "error"
 

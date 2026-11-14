@@ -1,5 +1,5 @@
 import { type SessionEntry } from "@earendil-works/pi-coding-agent"
-import { type AgentTeamContext, type TeamLeadWidgetContent } from "#synapse/integration"
+import { type AgentTeamContext, type TeamLeadWidgetContent } from "#synapse/integration/pi/agent-team"
 import { type TeamWidgetOptions } from "../agent-team"
 import { TestContext, TestSession, TestUI } from "../context"
 import { COMPOSITION_RPC_MODE, COMPOSITION_SESSION_ID, COMPOSITION_THINKING_LEVEL } from "./constants"

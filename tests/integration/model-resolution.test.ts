@@ -3,14 +3,14 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { thinkingBudgetForLevel } from "@earendil-works/pi-ai/api/simple-options"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { ADVISOR_CONFIG_FILE, AdvisorModel, PI_THINKING_BUDGETS } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE, AdvisorModel, PI_THINKING_BUDGETS } from "#synapse/integration/pi/advisor"
 import {
   createAdvisor,
   type ModelRequest,
   type ResolvedModel,
   THINKING_LEVELS,
   type ThinkingLevel,
-} from "#synapse/modules"
+} from "#synapse/modules/advisor"
 import {
   IDLE_SIGNAL,
   MODEL_DIRECTORY_PREFIX,

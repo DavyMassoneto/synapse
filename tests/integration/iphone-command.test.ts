@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { PiIphoneCommand } from "#synapse/integration"
+import { PiIphoneCommand } from "#synapse/integration/pi/iphone"
 import {
   cleanupIphoneScenario,
   IphoneFixtureUI,

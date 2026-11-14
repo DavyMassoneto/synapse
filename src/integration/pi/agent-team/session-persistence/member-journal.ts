@@ -1,7 +1,7 @@
 import { existsSync } from "node:fs"
 import { type SessionManager } from "@earendil-works/pi-coding-agent"
 import { Value } from "typebox/value"
-import { type MemberCheckpoint, type MemberJournal } from "#synapse/modules"
+import { type MemberCheckpoint, type MemberJournal } from "#synapse/modules/agent-team"
 import {
   TEAM_PI_MEMBER_CHECKPOINT,
   TEAM_PI_MEMBER_CUSTOM_ENTRY,

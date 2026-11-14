@@ -1,6 +1,6 @@
 import { writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { validateTeamSessionFile } from "#synapse/integration"
+import { validateTeamSessionFile } from "#synapse/integration/pi/agent-team"
 import {
   TEAM_SESSION_FIXTURE_BLANK_LINES,
   TEAM_SESSION_FIXTURE_BLANK_LINES_TEST,

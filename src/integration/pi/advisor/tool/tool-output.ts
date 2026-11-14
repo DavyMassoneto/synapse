@@ -1,4 +1,4 @@
-import { type ConsultationResult } from "#synapse/modules"
+import { type ConsultationResult } from "#synapse/modules/advisor"
 import { TEXT_CONTENT } from "../content-text"
 import { TOOL_CANCELLED, TOOL_PROGRESS, TOOL_UNAVAILABLE } from "./constants"
 import { type AdvisorToolOutput, type AdvisorToolUpdate } from "./types"

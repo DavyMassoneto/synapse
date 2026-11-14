@@ -1,5 +1,10 @@
 import { type ClassifierResult } from "@earendil-works/pi-ai"
-import { type ClassifierOutcome, ROUTER_CANCELLED_KIND, ROUTER_CHOICE_KIND, ROUTER_FAILED_KIND } from "#synapse/modules"
+import {
+  type ClassifierOutcome,
+  ROUTER_CANCELLED_KIND,
+  ROUTER_CHOICE_KIND,
+  ROUTER_FAILED_KIND,
+} from "#synapse/modules/model-router"
 import {
   PI_ROUTER_ABORTED_REASON,
   PI_ROUTER_CHOICE_TYPE,

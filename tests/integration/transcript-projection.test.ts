@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { captureTranscript } from "#synapse/integration"
+import { captureTranscript } from "#synapse/integration/pi/advisor"
 import { TestContext } from "../fixtures"
 
 function preservesProjectedMessages(): void {

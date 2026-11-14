@@ -1,4 +1,4 @@
-import { type IphoneModule } from "#synapse/modules"
+import { type IphoneModule } from "#synapse/modules/iphone"
 import { PI_IPHONE_COMMAND_DESCRIPTION, PI_IPHONE_COMMAND_NAME, PiIphoneCommand } from "./command"
 import { PI_IPHONE_SHUTDOWN_EVENT } from "./constants"
 import { registeredIphoneTool } from "./registered-tool"

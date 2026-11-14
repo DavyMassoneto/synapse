@@ -1,4 +1,4 @@
-import { type AgentTeamLeadHost } from "#synapse/integration"
+import { type AgentTeamLeadHost } from "#synapse/integration/pi/agent-team"
 import { type TeamRecordedEntry, type TeamRecordedNotice } from "./types"
 
 export class TeamLeadHost implements AgentTeamLeadHost {

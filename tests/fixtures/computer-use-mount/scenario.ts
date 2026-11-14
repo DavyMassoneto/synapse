@@ -2,7 +2,7 @@ import { closeSync, existsSync, openSync, readSync, writeFileSync } from "node:f
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { Value } from "typebox/value"
-import { PI_COMPUTER_DRIVER_CONFIGURATION_FILE } from "#synapse/integration"
+import { PI_COMPUTER_DRIVER_CONFIGURATION_FILE } from "#synapse/integration/pi/computer-use"
 import { type PiProcessScenarioHandle } from "../pi-process"
 import { type PiProcessRequestLog } from "../request-log"
 import {

@@ -1,4 +1,4 @@
-import { type TeamOverview } from "#synapse/modules"
+import { type TeamOverview } from "#synapse/modules/agent-team"
 import { teamPanelLines } from "../team-panel"
 import {
   TEAM_PI_CONTEXT_ATTACHED,

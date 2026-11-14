@@ -16,7 +16,7 @@ import {
   type ComputerAction,
   type ComputerCoordinate,
   type ComputerPointerOptions,
-} from "#synapse/modules"
+} from "#synapse/modules/computer-use"
 import {
   PI_COMPUTER_REQUIRED_APP,
   PI_COMPUTER_REQUIRED_KEYS,

@@ -1,7 +1,7 @@
 import { existsSync, statSync } from "node:fs"
 import { join } from "node:path"
 import { getAgentDir, SessionManager } from "@earendil-works/pi-coding-agent"
-import { type MemberRecord } from "#synapse/modules"
+import { type MemberRecord } from "#synapse/modules/agent-team"
 import {
   TEAM_PI_MEMBER_DIRECTORY,
   TEAM_PI_MEMBER_MISSING_SESSION,

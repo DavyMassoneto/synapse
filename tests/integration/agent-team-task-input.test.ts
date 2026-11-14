@@ -1,6 +1,6 @@
 import { Value } from "typebox/value"
 import { describe, expect, test } from "vitest"
-import { TEAM_TOOL_UPDATE_TASK_PARAMETERS, translateTeamTaskUpdate } from "#synapse/integration"
+import { TEAM_TOOL_UPDATE_TASK_PARAMETERS, translateTeamTaskUpdate } from "#synapse/integration/pi/agent-team"
 
 function rejectsEmptySubject(): void {
   expect(

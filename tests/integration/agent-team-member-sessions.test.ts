@@ -5,7 +5,7 @@ import {
   PiTeamMemberJournal,
   TEAM_PI_MEMBER_SEED,
   TEAM_PI_MEMBER_USER_ROLE,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/agent-team"
 import {
   TEAM_SESSION_FIXTURE_HEADER_TYPE,
   TEAM_SESSION_FIXTURE_LEGACY_VERSION,

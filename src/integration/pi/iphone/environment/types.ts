@@ -1,5 +1,5 @@
 import { type ExtensionAPI } from "@earendil-works/pi-coding-agent"
-import { type IphoneModuleDependencies } from "#synapse/modules"
+import { type IphoneModuleDependencies } from "#synapse/modules/iphone"
 
 export type PiIphoneSimulatorExecution = IphoneModuleDependencies["executeSimulatorCommand"]
 

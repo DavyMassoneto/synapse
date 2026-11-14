@@ -1,4 +1,4 @@
-import { TEAM_PI_MEMBER_IDENTITY_PREFIX } from "#synapse/integration"
+import { TEAM_PI_MEMBER_IDENTITY_PREFIX } from "#synapse/integration/pi/agent-team"
 import { SCRIPTED_PROVIDER_TEXT_KIND, type ScriptedProviderStep } from "../scripted-provider"
 
 export const TEAM_DISTRIBUTION_DONE_STEP: ScriptedProviderStep = {

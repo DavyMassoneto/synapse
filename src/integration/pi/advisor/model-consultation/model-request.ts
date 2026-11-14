@@ -1,5 +1,5 @@
 import { type Context, type ModelsSimpleStreamOptions } from "@earendil-works/pi-ai"
-import { type ModelRequest, type ResolvedModel } from "#synapse/modules"
+import { type ModelRequest, type ResolvedModel } from "#synapse/modules/advisor"
 import { TEXT_CONTENT } from "../content-text"
 import { NO_REASONING, PROMPT_ROLE } from "./constants"
 

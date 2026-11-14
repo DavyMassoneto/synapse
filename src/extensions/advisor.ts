@@ -1,3 +1,3 @@
-import { composeAdvisor } from "#synapse/composition"
+import { composeAdvisor } from "#synapse/composition/advisor"
 
 export default composeAdvisor

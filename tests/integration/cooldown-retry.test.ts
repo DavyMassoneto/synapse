@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { registerCooldownRetry } from "#synapse/integration"
+import { registerCooldownRetry } from "#synapse/integration/pi/cooldown-retry"
 import {
   COOLING_DOWN_ERROR,
   CooldownRetryHostDouble,

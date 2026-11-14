@@ -1,5 +1,5 @@
 import { type ClassifierChoiceQuestion, type ClassifierContext } from "@earendil-works/pi-ai"
-import { type ClassifierRequest } from "#synapse/modules"
+import { type ClassifierRequest } from "#synapse/modules/model-router"
 import { PI_ROUTER_CHOICE_TYPE } from "./constants"
 import { type PiClassifyOptions } from "./types"
 
