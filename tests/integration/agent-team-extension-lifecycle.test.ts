@@ -1,14 +1,15 @@
 import { describe, expect, test } from "vitest"
-import { TeamMemberExtensionLifecycle } from "#synapse/integration"
+import { startCreatedTeamMemberSession, TeamMemberExtensionLifecycle } from "#synapse/integration"
 import {
   TEAM_EXTENSION_FIXTURE_AGGREGATE_TEST,
   TEAM_EXTENSION_FIXTURE_BIND_FAILURE_TEST,
   TEAM_EXTENSION_FIXTURE_DISPOSE,
+  TEAM_EXTENSION_FIXTURE_FACTORY_START_TEST,
   TEAM_EXTENSION_FIXTURE_FAILURE,
+  TEAM_EXTENSION_FIXTURE_FALLBACK_CLEANUP_TEST,
   TEAM_EXTENSION_FIXTURE_FALLBACK_TEST,
   TEAM_EXTENSION_FIXTURE_SHUTDOWN,
   TEAM_EXTENSION_FIXTURE_START,
-  TEAM_EXTENSION_FIXTURE_START_EXPECTED_FAILURE,
   TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL,
   TeamExtensionSessionDouble,
 } from "../fixtures"
@@ -74,8 +75,7 @@ async function failedAttemptDoesNotDisposeSibling(): Promise<void> {
 
 async function refusesModelFallback(): Promise<void> {
   const session = new TeamExtensionSessionDouble()
-  const lifecycle = new TeamMemberExtensionLifecycle(session)
-  await expect(lifecycle.start(TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL)).rejects.toThrow(
+  await expect(startCreatedTeamMemberSession(session, TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL)).rejects.toThrow(
     TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL,
   )
   expect(session.operations).toEqual([TEAM_EXTENSION_FIXTURE_SHUTDOWN, TEAM_EXTENSION_FIXTURE_DISPOSE])
@@ -98,18 +98,14 @@ async function preservesStartupAndCleanupErrors(): Promise<void> {
   session.startupFailure = true
   session.shutdownFailure = true
   const lifecycle = new TeamMemberExtensionLifecycle(session)
-  try {
-    await lifecycle.start()
-    expect.fail(TEAM_EXTENSION_FIXTURE_START_EXPECTED_FAILURE)
-  } catch (error) {
-    expect(error).toBeInstanceOf(AggregateError)
-    if (error instanceof AggregateError) {
-      expect(error.errors).toHaveLength(2)
-      expect(error.errors[0]).toBeInstanceOf(Error)
-      expect(error.errors[0]).not.toBeInstanceOf(AggregateError)
-      expect(error.errors[1]).not.toBeInstanceOf(AggregateError)
-    }
-  }
+  const starting = lifecycle.start()
+  await expect(starting).rejects.toBeInstanceOf(AggregateError)
+  await expect(starting).rejects.toMatchObject({
+    errors: [expect.any(Error), expect.any(Error)],
+  })
+  await expect(starting).rejects.toMatchObject({
+    errors: [{ constructor: Error }, { constructor: Error }],
+  })
   expect(session.operations).toEqual([
     TEAM_EXTENSION_FIXTURE_START,
     TEAM_EXTENSION_FIXTURE_SHUTDOWN,
@@ -117,7 +113,35 @@ async function preservesStartupAndCleanupErrors(): Promise<void> {
   ])
 }
 
+async function factoryStartsWithoutFallback(): Promise<void> {
+  const session = new TeamExtensionSessionDouble()
+  const lifecycle = await startCreatedTeamMemberSession(session)
+  expect(session.operations).toEqual([TEAM_EXTENSION_FIXTURE_START])
+  await lifecycle.close()
+  expect(session.operations).toEqual([
+    TEAM_EXTENSION_FIXTURE_START,
+    TEAM_EXTENSION_FIXTURE_SHUTDOWN,
+    TEAM_EXTENSION_FIXTURE_DISPOSE,
+  ])
+}
+
+async function preservesFallbackAndCleanupFailure(): Promise<void> {
+  const session = new TeamExtensionSessionDouble()
+  session.disposeFailure = true
+  const starting = startCreatedTeamMemberSession(session, TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL)
+  await expect(starting).rejects.toBeInstanceOf(AggregateError)
+  await expect(starting).rejects.toMatchObject({
+    errors: [
+      { constructor: Error, message: TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL },
+      { constructor: Error, message: TEAM_EXTENSION_FIXTURE_FAILURE },
+    ],
+  })
+  expect(session.operations).toEqual([TEAM_EXTENSION_FIXTURE_SHUTDOWN, TEAM_EXTENSION_FIXTURE_DISPOSE])
+}
+
 function registerTests(): void {
+  test(TEAM_EXTENSION_FIXTURE_FACTORY_START_TEST, factoryStartsWithoutFallback)
+  test(TEAM_EXTENSION_FIXTURE_FALLBACK_CLEANUP_TEST, preservesFallbackAndCleanupFailure)
   test(TEAM_EXTENSION_FIXTURE_FALLBACK_TEST, refusesModelFallback)
   test(TEAM_EXTENSION_FIXTURE_BIND_FAILURE_TEST, disposesAfterBindFailure)
   test(TEAM_EXTENSION_FIXTURE_AGGREGATE_TEST, preservesStartupAndCleanupErrors)

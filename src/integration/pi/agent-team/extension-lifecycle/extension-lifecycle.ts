@@ -17,10 +17,10 @@ export class TeamMemberExtensionLifecycle {
     this.session = session
   }
 
-  async start(modelFallbackMessage?: string): Promise<void> {
+  async start(initialFailure?: Error): Promise<void> {
     try {
-      if (modelFallbackMessage) {
-        throw new Error(modelFallbackMessage)
+      if (initialFailure) {
+        throw initialFailure
       }
       await this.session.bindExtensions({ onError: this.recordFailure.bind(this) })
       this.ensureHealthy()

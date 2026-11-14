@@ -53,8 +53,6 @@ export const TEAM_SESSION_FIXTURE_WRONG_ID = "wrong-session"
 
 export const TEAM_EXTENSION_FIXTURE_UNAVAILABLE_MODEL = "Modelo solicitado indisponível"
 
-export const TEAM_EXTENSION_FIXTURE_START_EXPECTED_FAILURE = "Startup deveria falhar"
-
 export const TEAM_EXTENSION_FIXTURE_FALLBACK_TEST = "fallback de modelo é recusado e limpo uma vez"
 
 export const TEAM_EXTENSION_FIXTURE_BIND_FAILURE_TEST = "falha direta de bind limpa uma vez"
@@ -118,3 +116,9 @@ export const TEAM_SESSION_FIXTURE_MEMBERSHIP_SUITE = "pertencimento da sessão r
 export const TEAM_SESSION_FIXTURE_ZERO_WIDTH_END = "\n\u200b"
 
 export const TEAM_SESSION_FIXTURE_ZERO_WIDTH_TEST = "recusa U200B como espaço final"
+
+export const TEAM_EXTENSION_FIXTURE_FALLBACK_CLEANUP_TEST = "fallback preserva recusa e erro de cleanup sem bind"
+
+export const TEAM_EXTENSION_FIXTURE_FACTORY_START_TEST = "factory inicia extensão sem fallback"
+
+export const TEAM_EXTENSION_FIXTURE_NON_ERROR_TEST = "settled relança falha não Error sem notificar listener"

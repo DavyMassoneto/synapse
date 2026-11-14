@@ -27,6 +27,8 @@ export class TeamExtensionSessionDouble implements TeamMemberExtensionSession {
 
   shutdownFailure = false
 
+  disposeFailure = false
+
   private errorListener?: Parameters<AgentSession["bindExtensions"]>[0]["onError"]
 
   async bindExtensions(bindings: Parameters<AgentSession["bindExtensions"]>[0]): Promise<void> {
@@ -52,6 +54,9 @@ export class TeamExtensionSessionDouble implements TeamMemberExtensionSession {
 
   dispose(): void {
     this.operations.push(TEAM_EXTENSION_FIXTURE_DISPOSE)
+    if (this.disposeFailure) {
+      throw new Error(TEAM_EXTENSION_FIXTURE_FAILURE)
+    }
   }
 
   finishShutdown(): void {

@@ -1,5 +1,9 @@
 import { createAgentSession, DefaultResourceLoader, getAgentDir } from "@earendil-works/pi-coding-agent"
-import { TEAM_PI_MEMBER_EXTENSION_FAILURE, TeamMemberExtensionLifecycle } from "../extension-lifecycle"
+import {
+  TEAM_PI_MEMBER_EXTENSION_FAILURE,
+  TeamMemberExtensionLifecycle,
+  type TeamMemberExtensionSession,
+} from "../extension-lifecycle"
 import { type TeamCreatedMemberSession, type TeamMemberSessionRequest } from "./types"
 
 export async function createPiTeamMemberSession(request: TeamMemberSessionRequest): Promise<TeamCreatedMemberSession> {
@@ -12,8 +16,7 @@ export async function createPiTeamMemberSession(request: TeamMemberSessionReques
     thinkingLevel: request.selection.thinkingLevel,
     customTools: request.tools,
   })
-  const lifecycle = new TeamMemberExtensionLifecycle(session)
-  await lifecycle.start(modelFallbackMessage)
+  const lifecycle = await startCreatedTeamMemberSession(session, modelFallbackMessage)
   return { session, lifecycle }
 }
 
@@ -32,4 +35,17 @@ async function createTeamResourceLoader(request: TeamMemberSessionRequest): Prom
     throw new Error(TEAM_PI_MEMBER_EXTENSION_FAILURE + JSON.stringify(errors))
   }
   return loader
+}
+
+export async function startCreatedTeamMemberSession(
+  session: TeamMemberExtensionSession,
+  modelFallbackMessage?: string,
+): Promise<TeamMemberExtensionLifecycle> {
+  const lifecycle = new TeamMemberExtensionLifecycle(session)
+  if (modelFallbackMessage) {
+    await lifecycle.start(new Error(modelFallbackMessage))
+  } else {
+    await lifecycle.start()
+  }
+  return lifecycle
 }

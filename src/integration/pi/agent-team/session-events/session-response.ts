@@ -7,7 +7,6 @@ import {
   REFERENCE_SEPARATOR,
 } from "#synapse/modules"
 import { TEAM_PI_MEMBER_ERROR_REASON, TEAM_PI_MEMBER_RESPONSE_FAILURE } from "./constants"
-import { type TeamMemberSessionPort } from "./types"
 
 export function teamMemberAssistantResponse(message: AssistantMessage): MemberAssistantResponse {
   const response: MemberAssistantResponse = {
@@ -22,9 +21,8 @@ export function teamMemberAssistantResponse(message: AssistantMessage): MemberAs
   return response
 }
 
-export function teamMemberSettledResponse(session: TeamMemberSessionPort, aborted: boolean): MemberExecutionSettled {
+export function teamMemberSettledResponse(aborted: boolean, answer?: string): MemberExecutionSettled {
   const settled: MemberExecutionSettled = { kind: MEMBER_EXECUTION_SETTLED, aborted }
-  const answer = session.getLastAssistantText()
   if (answer) {
     settled.answer = answer
   }

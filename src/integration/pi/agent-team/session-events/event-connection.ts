@@ -17,6 +17,7 @@ import {
   TEAM_PI_MEMBER_TOOL_START,
   TEAM_PI_MEMBER_TURN_START,
 } from "./constants"
+import { applyTeamMemberExtensionFailure } from "./extension-failure"
 import { teamMemberAssistantResponse, teamMemberSettledResponse } from "./session-response"
 import { type TeamMemberSessionPort } from "./types"
 
@@ -53,16 +54,9 @@ export class PiTeamEventConnection {
         }
         break
       case TEAM_PI_MEMBER_SETTLED: {
-        const settled = teamMemberSettledResponse(this.session, event.aborted)
-        try {
-          this.lifetime.ensureHealthy()
-        } catch (error) {
-          if (error instanceof Error) {
-            settled.failure = error.message
-          } else {
-            throw error
-          }
-        }
+        const answer = this.session.getLastAssistantText()
+        const settled = teamMemberSettledResponse(event.aborted, answer)
+        applyTeamMemberExtensionFailure(settled, this.lifetime)
         this.listener(settled)
         break
       }
