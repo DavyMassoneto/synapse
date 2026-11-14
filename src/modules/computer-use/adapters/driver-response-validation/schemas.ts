@@ -32,18 +32,21 @@ export const COMPUTER_RAW_WINDOW_SCHEMA = Type.Object({
   bounds: Type.Optional(COMPUTER_RAW_RECTANGLE_SCHEMA),
 })
 
+export const COMPUTER_RAW_APP_BASE_SCHEMA = Type.Object({
+  name: Type.String(),
+  bundle_id: Type.Optional(Type.String()),
+})
+
 export const COMPUTER_RAW_APP_SCHEMA = Type.Union([
   Type.Object({
-    name: Type.String(),
+    ...COMPUTER_RAW_APP_BASE_SCHEMA.properties,
     pid: Type.Integer({ minimum: 1 }),
     running: Type.Literal(true),
-    bundle_id: Type.Optional(Type.String()),
   }),
   Type.Object({
-    name: Type.String(),
+    ...COMPUTER_RAW_APP_BASE_SCHEMA.properties,
     pid: Type.Literal(0),
     running: Type.Literal(false),
-    bundle_id: Type.Optional(Type.String()),
   }),
 ])
 

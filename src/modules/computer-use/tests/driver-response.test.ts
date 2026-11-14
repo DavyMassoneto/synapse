@@ -1,12 +1,12 @@
 import { describe, expect, test } from "vitest"
 import { computerConvertEnvelope, computerParseRpcResponse } from "../adapters"
-import { ComputerStickyWindowTarget, computerJudgeAction } from "../internal"
+import { ComputerStickyWindowTarget } from "../internal"
 import {
   COMPUTER_INSTALLED_APP,
   COMPUTER_RUNNING_APP,
   COMPUTER_WINDOW_REFUSAL_MESSAGE,
 } from "./driver-response-constants"
-import { computerTestRpcKind } from "./driver-response-support"
+import { computerJudgeTestEnvelope, computerTestRpcKind } from "./driver-response-support"
 import { computerTestWindow } from "./support"
 
 function runningAndInstalled(): void {
@@ -21,10 +21,7 @@ function runningAndInstalled(): void {
   const envelope = computerConvertEnvelope({
     content: [],
     structuredContent: {
-      apps: [
-        { name: "Editor", pid: 10, running: true, bundle_id: "com.editor" },
-        { name: "Installed", pid: 0, running: false, bundle_id: "com.installed" },
-      ],
+      apps: [COMPUTER_RUNNING_APP, COMPUTER_INSTALLED_APP],
     },
   })
   expect(envelope.applications).toEqual([
@@ -65,7 +62,7 @@ function installedCannotSelectWindow(): void {
   const envelope = computerConvertEnvelope({
     content: [],
     structuredContent: {
-      apps: [{ name: "Installed", pid: 0, running: false, bundle_id: "com.installed" }],
+      apps: [COMPUTER_INSTALLED_APP],
     },
   })
   const target = new ComputerStickyWindowTarget()
@@ -136,14 +133,11 @@ function windowNotFound(): void {
     elements: [],
     windows: [],
   })
-  expect(
-    computerJudgeAction({
-      action: "capture",
-      ok: !envelope.isError,
-      message: envelope.message,
-      ...(envelope.code ? { code: envelope.code } : {}),
-    }).result,
-  ).toEqual({ kind: "failed", action: "capture", message: COMPUTER_WINDOW_REFUSAL_MESSAGE })
+  expect(computerJudgeTestEnvelope(envelope).result).toEqual({
+    kind: "failed",
+    action: "capture",
+    message: COMPUTER_WINDOW_REFUSAL_MESSAGE,
+  })
 }
 
 function ownerMismatch(): void {
@@ -156,14 +150,7 @@ function ownerMismatch(): void {
     isError: true,
   })
   expect(envelope.message).toBe(COMPUTER_WINDOW_REFUSAL_MESSAGE)
-  expect(
-    computerJudgeAction({
-      action: "capture",
-      ok: !envelope.isError,
-      message: envelope.message,
-      ...(envelope.code ? { code: envelope.code } : {}),
-    }).result.kind,
-  ).toBe("failed")
+  expect(computerJudgeTestEnvelope(envelope).result.kind).toBe("failed")
 }
 
 function unknownCode(): void {
