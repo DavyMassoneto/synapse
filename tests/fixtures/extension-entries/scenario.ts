@@ -1,5 +1,10 @@
 import { fileURLToPath } from "node:url"
-import { DefaultResourceLoader, type ExtensionAPI, type ExtensionFactory } from "@earendil-works/pi-coding-agent"
+import {
+  DefaultResourceLoader,
+  type Extension,
+  type ExtensionAPI,
+  type ExtensionFactory,
+} from "@earendil-works/pi-coding-agent"
 import { composeResponseRules, selectMemberFactories } from "#synapse/composition"
 import {
   CAPABILITY_ROUTER_PRESENT,
@@ -22,6 +27,7 @@ import {
   ENTRIES_MEMBER_PROVIDER,
   ENTRIES_MEMBER_VIRTUAL_REFERENCE,
   ENTRIES_PATHS,
+  ENTRIES_RULES_PATH,
 } from "./constants"
 
 export async function openMemberWithoutRouter(host: CapabilityPresenceHost, team: AgentTeam): Promise<OpenedMember> {
@@ -62,7 +68,7 @@ export async function failedPresenceLoader(host: CapabilityPresenceHost): Promis
 }
 
 export async function explicitRulesLoader(): Promise<DefaultResourceLoader> {
-  const paths = [fileURLToPath(new URL("../../../src/extensions/response-rules.ts", import.meta.url))]
+  const paths = [fileURLToPath(new URL(ENTRIES_RULES_PATH, import.meta.url))]
   const loader = new DefaultResourceLoader({
     cwd: process.cwd(),
     agentDir: process.cwd(),
@@ -101,7 +107,7 @@ export async function entryPathsLoader(
 }
 
 export async function explicitAndInheritedRulesLoader(): Promise<DefaultResourceLoader> {
-  const paths = [fileURLToPath(new URL("../../../src/extensions/response-rules.ts", import.meta.url))]
+  const paths = [fileURLToPath(new URL(ENTRIES_RULES_PATH, import.meta.url))]
   const lead = new SynapseHostCollector()
   composeResponseRules(lead)
   const factories: ExtensionFactory[] = selectMemberFactories(lead)
@@ -117,4 +123,8 @@ export async function explicitAndInheritedRulesLoader(): Promise<DefaultResource
   })
   await loader.reload()
   return loader
+}
+
+export function entryToolCount(extension: Extension): number {
+  return extension.tools.size
 }

@@ -23,6 +23,7 @@ import {
   ENTRIES_UNAVAILABLE_MODEL,
   ENTRIES_VIRTUAL_MODEL,
   entryPathsLoader,
+  entryToolCount,
   explicitAndInheritedRulesLoader,
   explicitRulesLoader,
   failedPresenceLoader,
@@ -99,11 +100,7 @@ async function loadsSevenRealPaths(): Promise<void> {
   const result = loader.getExtensions()
   expect(result.errors).toEqual([])
   expect(result.extensions).toHaveLength(7)
-  const tools: number[] = []
-  for (const extension of result.extensions) {
-    tools.push(extension.tools.size)
-  }
-  expect(tools).toEqual([1, 0, 0, 0, 10, 1, 1])
+  expect(result.extensions.map(entryToolCount)).toEqual([1, 0, 0, 0, 10, 1, 1])
   result.runtime.invalidate()
 }
 

@@ -5,8 +5,6 @@ export const ENTRIES_ROUTER = "router carregado é herdado uma vez"
 export const ENTRIES_RULES = "regras explícitas e herdadas registram uma vez"
 export const ENTRIES_RELOAD = "reload elimina presença antiga"
 export const ENTRIES_COOLDOWN = "cooldown independente não ativa router nem regras"
-export const ENTRIES_CONTEXT = "context"
-export const ENTRIES_MESSAGE_END = "message_end"
 export const ENTRIES_FAILED = "fábrica que falha não deixa presença carregada"
 export const ENTRIES_FAILURE = "failed entry"
 export const ENTRIES_ROUTER_ABSENT_REQUEST = "membro sem router recusa jev/auto sem provider nem modelo virtual"
@@ -18,10 +16,12 @@ export const ENTRIES_MEMBER_CONTEXT_WINDOW = 100000
 export const ENTRIES_MEMBER_VIRTUAL_REFERENCE = "jev/auto"
 export const ENTRIES_EXPLICIT = "escolha explícita carrega mesmo sem presença no lead"
 
+export const ENTRIES_RULES_PATH = "../../../src/extensions/response-rules.ts"
+
 export const ENTRIES_PATHS = [
   "../../../src/extensions/advisor.ts",
   "../../../src/extensions/cooldown-retry.ts",
-  "../../../src/extensions/response-rules.ts",
+  ENTRIES_RULES_PATH,
   "../../../src/extensions/model-router.ts",
   "../../../src/extensions/agent-team.ts",
   "../../../src/extensions/iphone.ts",

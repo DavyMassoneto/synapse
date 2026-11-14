@@ -23,3 +23,5 @@ export type SynapseCooldownHost = CooldownRetryHost & CapabilityPresenceHost
 export type SynapseRulesHost = ResponseRulesHost & CapabilityPresenceHost
 export type SynapseRouterHost = ModelRouterHost & CapabilityPresenceHost
 export type SynapseIphoneHost = PiIphoneHost & PiIphoneExecutionHost
+
+export type SynapseCapabilityMount = () => void
