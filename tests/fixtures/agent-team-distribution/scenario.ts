@@ -14,6 +14,7 @@ import {
   TEAM_DISTRIBUTION_MEMBER_MARKER,
   TEAM_DISTRIBUTION_MEMBER_NAME,
   TEAM_DISTRIBUTION_MEMBER_REPLY,
+  TEAM_DISTRIBUTION_PI_SETTINGS,
   TEAM_DISTRIBUTION_SESSION_DIRECTORY,
   TEAM_DISTRIBUTION_SESSION_FILE,
   TEAM_DISTRIBUTION_TASK,
@@ -23,7 +24,11 @@ import {
 export function configureMemberScenario(piProcess: PiProcessScenarioHandle, finalSteps: ScriptedProviderStep[]): void {
   writeFileSync(
     join(piProcess.homeDirectory.agentDirectory, TEAM_EXTENSIONS_CONFIG_FILE),
-    JSON.stringify({ memberExtensions: [fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL)] }),
+    JSON.stringify({ excludedMemberExtensions: [] }),
+  )
+  writeFileSync(
+    join(piProcess.homeDirectory.agentDirectory, TEAM_DISTRIBUTION_PI_SETTINGS),
+    JSON.stringify({ extensions: [fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL)] }),
   )
   piProcess.homeDirectory.script({
     tracks: [

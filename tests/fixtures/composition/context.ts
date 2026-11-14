@@ -36,6 +36,10 @@ export class CompositionContext extends TestContext implements AgentTeamContext 
 
   readonly model = this.modelRegistry.model
 
+  isProjectTrusted(): boolean {
+    return true
+  }
+
   isIdle(): boolean {
     return true
   }

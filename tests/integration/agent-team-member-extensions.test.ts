@@ -20,21 +20,24 @@ function missingConfig(): void {
 
 function validConfig(): void {
   const absolute = join(directory, "externa")
-  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ memberExtensions: ["minha-extensao", absolute] }))
-  expect(readMemberExtensions(directory)).toStrictEqual([join(directory, "extensions", "minha-extensao"), absolute])
+  writeFileSync(
+    join(directory, "agent-team.json"),
+    JSON.stringify({ excludedMemberExtensions: ["minha-extensao", absolute] }),
+  )
+  expect(readMemberExtensions(directory)).toStrictEqual([join(directory, "minha-extensao"), absolute])
 }
 
 function invalidConfig(): void {
-  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ memberExtensions: [42] }))
+  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ excludedMemberExtensions: [42] }))
   expect(readMemberExtensions.bind(null, directory)).toThrow("Configuração de extensões de membros inválida")
 }
 
 function acceptsBomInConfig(): void {
   writeFileSync(
     join(directory, "agent-team.json"),
-    `${RESPONSE_RULES_TEST_BOM}${JSON.stringify({ memberExtensions: ["minha-extensao"] })}`,
+    `${RESPONSE_RULES_TEST_BOM}${JSON.stringify({ excludedMemberExtensions: ["minha-extensao"] })}`,
   )
-  expect(readMemberExtensions(directory)).toStrictEqual([join(directory, "extensions", "minha-extensao")])
+  expect(readMemberExtensions(directory)).toStrictEqual([join(directory, "minha-extensao")])
 }
 
 function rejectsInvalidJsonAfterBom(): void {
@@ -42,26 +45,26 @@ function rejectsInvalidJsonAfterBom(): void {
   expect(readMemberExtensions.bind(null, directory)).toThrow("Configuração de extensões de membros inválida")
 }
 
-function rejectsParentTraversal(): void {
-  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ memberExtensions: [join("..", "externa")] }))
+function rejectsEmptyPath(): void {
+  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ excludedMemberExtensions: [""] }))
   expect(readMemberExtensions.bind(null, directory)).toThrow("Configuração de extensões de membros inválida")
 }
 
-function rejectsExtensionsDirectory(): void {
-  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ memberExtensions: ["."] }))
+function rejectsNullList(): void {
+  writeFileSync(join(directory, "agent-team.json"), JSON.stringify({ excludedMemberExtensions: null }))
   expect(readMemberExtensions.bind(null, directory)).toThrow("Configuração de extensões de membros inválida")
 }
 
 function registerTests(): void {
   beforeEach(prepare)
   afterEach(cleanup)
-  test("configuração ausente não carrega extensões", missingConfig)
-  test("resolve nomes e preserva caminhos absolutos", validConfig)
+  test("configuração ausente não exclui extensões", missingConfig)
+  test("resolve exclusões relativas e preserva caminhos absolutos", validConfig)
   test("recusa configuração inválida", invalidConfig)
   test("aceita configuração com marca UTF-8", acceptsBomInConfig)
   test("recusa JSON inválido após marca UTF-8", rejectsInvalidJsonAfterBom)
-  test("recusa extensão fora do diretório", rejectsParentTraversal)
-  test("recusa o próprio diretório de extensões", rejectsExtensionsDirectory)
+  test("recusa caminho de exclusão vazio", rejectsEmptyPath)
+  test("recusa lista de exclusões nula", rejectsNullList)
 }
 
 describe("extensões de membros", registerTests)

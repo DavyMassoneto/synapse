@@ -11,7 +11,9 @@ import {
 import { type TeamWidgetOptions } from "./types"
 
 export class TeamLeadContext implements AgentTeamContext {
-  readonly cwd = TEAM_SESSION_FIXTURE_TEST_CWD
+  cwd = TEAM_SESSION_FIXTURE_TEST_CWD
+
+  projectTrusted = true
 
   readonly mode = TEAM_SESSION_FIXTURE_RPC_MODE
 
@@ -36,6 +38,10 @@ export class TeamLeadContext implements AgentTeamContext {
   constructor(model: Model<Api>) {
     this.model = model
     this.modelRegistry = new ToolsModelRegistry(model)
+  }
+
+  isProjectTrusted(): boolean {
+    return this.projectTrusted
   }
 
   isIdle(): boolean {

@@ -53,3 +53,5 @@ export const TEAM_DISTRIBUTION_TOOL_END_EVENT = "tool_execution_end"
 export const TEAM_DISTRIBUTION_EMPTY_ARGUMENTS = "{}"
 
 export const TEAM_DISTRIBUTION_WAIT_MILLISECONDS = 1000
+
+export const TEAM_DISTRIBUTION_PI_SETTINGS = "settings.json"

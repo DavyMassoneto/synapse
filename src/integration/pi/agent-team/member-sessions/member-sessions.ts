@@ -1,4 +1,3 @@
-import { getAgentDir } from "@earendil-works/pi-coding-agent"
 import {
   type AgentTeam,
   type MemberRecord,
@@ -8,7 +7,6 @@ import {
   REFERENCE_SEPARATOR,
 } from "#synapse/modules"
 import { type AgentTeamContext } from "../lead-session"
-import { readMemberExtensions } from "../member-extensions"
 import { selectMemberModel } from "../model-selection"
 import { PiTeamSessionAdapter } from "../session-events"
 import { createTeamMemberStorage, openTeamMemberStorage, PiTeamMemberJournal } from "../session-persistence"
@@ -35,7 +33,14 @@ export class PiTeamMemberSessions implements MemberSessions {
     const selection = selectMemberModel(context, request)
     const leadId = context.sessionManager.getSessionId()
     const storage = createTeamMemberStorage(context.cwd, leadId)
-    const opened = await this.openStored({ cwd: context.cwd, storage, selection, name: request.name, team })
+    const opened = await this.openStored({
+      cwd: context.cwd,
+      storage,
+      selection,
+      name: request.name,
+      team,
+      projectTrusted: context.isProjectTrusted(),
+    })
     return {
       session: new PiTeamSessionAdapter(opened.session.session, opened.session.lifecycle),
       journal: new PiTeamMemberJournal(storage),
@@ -69,7 +74,14 @@ export class PiTeamMemberSessions implements MemberSessions {
     this.ensureRecordBelongsToContext(record, context)
     const selection = selectMemberModel(context, { model: record.model, thinking: record.thinking })
     const storage = openTeamMemberStorage(record)
-    const session = await this.create({ cwd: record.cwd, storage, selection, name: record.name, team })
+    const session = await this.create({
+      cwd: record.cwd,
+      storage,
+      selection,
+      name: record.name,
+      team,
+      projectTrusted: context.isProjectTrusted(),
+    })
     return {
       session: new PiTeamSessionAdapter(session.session, session.lifecycle),
       journal: new PiTeamMemberJournal(storage),
@@ -91,8 +103,7 @@ export class PiTeamMemberSessions implements MemberSessions {
       selection,
       instructions: `${TEAM_PI_MEMBER_IDENTITY_START}${name}${TEAM_PI_MEMBER_IDENTITY_END}`,
       tools: this.dependencies.tools(team, name),
-      extensions: this.dependencies.extensions(),
-      extensionPaths: readMemberExtensions(getAgentDir()),
+      projectTrusted: input.projectTrusted,
     })
   }
 

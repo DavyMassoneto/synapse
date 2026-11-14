@@ -13,7 +13,10 @@ export interface TeamLeadContextDetached {
 
 export type TeamLeadContextState = TeamLeadContextAttached | TeamLeadContextDetached
 
-export type AgentTeamContext = Pick<ExtensionContext, "cwd" | "mode" | "hasUI" | "model" | "thinkingLevel" | "isIdle"> &
+export type AgentTeamContext = Pick<
+  ExtensionContext,
+  "cwd" | "mode" | "hasUI" | "model" | "thinkingLevel" | "isIdle" | "isProjectTrusted"
+> &
   AgentTeamContextPorts
 
 export interface AgentTeamContextPorts extends Pick<MemberModelContext, "modelRegistry"> {

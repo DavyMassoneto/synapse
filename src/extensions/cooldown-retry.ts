@@ -1,3 +1,3 @@
-import { composeCooldownRetry } from "#synapse/composition"
+import { registerCooldownRetry } from "#synapse/integration"
 
-export default composeCooldownRetry
+export default registerCooldownRetry

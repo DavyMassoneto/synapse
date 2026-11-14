@@ -1,7 +1,6 @@
 import {
   type BeforeAgentStartEvent,
   type ExtensionAPI,
-  type ExtensionFactory,
   type MessageEndEvent,
   type SessionShutdownEvent,
   type SessionStartEvent,
@@ -12,9 +11,7 @@ import { type AgentTeamContext } from "./lead-session"
 
 import { type TeamRegisteredTool } from "./tools"
 
-export type AgentTeamHost = AgentTeamEventsHost &
-  Pick<ExtensionAPI, "sendMessage" | "appendEntry" | "events"> &
-  AgentTeamToolHost
+export type AgentTeamHost = AgentTeamEventsHost & Pick<ExtensionAPI, "sendMessage" | "appendEntry"> & AgentTeamToolHost
 
 export interface AgentTeamEventsHost {
   on(event: "session_start", handler: AgentTeamStartHandler): AgentTeamUnsubscribe
@@ -46,5 +43,3 @@ export interface AgentTeamToolHost {
 }
 
 export type AgentTeamToolDefinition = Omit<TeamRegisteredTool, "renderCall" | "renderResult">
-
-export type AgentTeamMemberExtensions = () => ExtensionFactory[]

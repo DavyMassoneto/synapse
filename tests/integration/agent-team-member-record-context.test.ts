@@ -1,6 +1,5 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { type ExtensionFactory } from "@earendil-works/pi-coding-agent"
 import { describe, expect, test } from "vitest"
 import { createPiTeamLeadSession, memberTools, PiTeamMemberSessions } from "#synapse/integration"
 import {
@@ -25,10 +24,6 @@ import {
   ToolsTeamDouble,
 } from "../fixtures"
 
-function memberExtensions(): ExtensionFactory[] {
-  return []
-}
-
 function makeSut(): PiTeamMemberSessions {
   const lead = createPiTeamLeadSession(new TeamLeadHost())
   lead.attach(
@@ -38,7 +33,6 @@ function makeSut(): PiTeamMemberSessions {
   )
   return new PiTeamMemberSessions({
     context: lead.context.bind(lead),
-    extensions: memberExtensions,
     tools: memberTools,
   })
 }
