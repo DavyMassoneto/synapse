@@ -1,9 +1,8 @@
 import {
+  IPHONE_WDA_DEFAULT_BIND_HOSTS,
   IPHONE_WDA_ENDPOINT_BUSY,
-  IPHONE_WDA_IPV4_LOOPBACK,
-  IPHONE_WDA_IPV4_WILDCARD,
-  IPHONE_WDA_IPV6_LOOPBACK,
-  IPHONE_WDA_IPV6_WILDCARD,
+  IPHONE_WDA_LINUX,
+  IPHONE_WDA_LINUX_BIND_HOSTS,
 } from "./constants"
 import { IphoneWdaSocket } from "./socket"
 import { type IphoneWdaAdmissions } from "./types"
@@ -42,10 +41,10 @@ export class IphoneWdaAdmission {
     this.owned = true
     this.admissions.add(this)
     try {
-      await this.bind(IPHONE_WDA_IPV4_LOOPBACK, signal)
-      await this.bind(IPHONE_WDA_IPV6_LOOPBACK, signal)
-      await this.bind(IPHONE_WDA_IPV4_WILDCARD, signal)
-      await this.bind(IPHONE_WDA_IPV6_WILDCARD, signal)
+      const hosts = process.platform === IPHONE_WDA_LINUX ? IPHONE_WDA_LINUX_BIND_HOSTS : IPHONE_WDA_DEFAULT_BIND_HOSTS
+      for (const host of hosts) {
+        await this.bind(host, signal)
+      }
     } catch (error) {
       await this.release()
       throw error

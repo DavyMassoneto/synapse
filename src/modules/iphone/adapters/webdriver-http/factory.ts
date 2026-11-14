@@ -4,6 +4,7 @@ import { discoverIphoneSimulators } from "#synapse/modules/iphone/adapters/simul
 import {
   IPHONE_WDA_EXTERNAL,
   IPHONE_WDA_REQUIRED,
+  type IphoneRequiredWdaAdmission,
   IphoneWdaAdmission,
   type IphoneWdaAdmissions,
   type IphoneWdaSelection,
@@ -65,19 +66,30 @@ export class IphoneConcreteSessionFactory implements IphoneSessionFactory<Iphone
     const config = await this.resolveTarget(lifecycleSignal)
     lifecycleSignal.throwIfAborted()
     const selection = this.admit(config)
-    const combined =
-      selection.kind === IPHONE_WDA_REQUIRED
-        ? AbortSignal.any([lifecycleSignal, selection.admission.signal])
-        : lifecycleSignal
+    if (selection.kind === IPHONE_WDA_REQUIRED) {
+      return this.createWithWdaAdmission(config, lifecycleSignal, selection)
+    }
+    await startIphoneServer(config, this.dependencies, this.server, lifecycleSignal)
+    lifecycleSignal.throwIfAborted()
+    return createIphoneWebDriverSession(
+      config.serverUrl,
+      buildIphoneCapabilities(config, this.dependencies.host),
+      lifecycleSignal,
+      selection,
+    )
+  }
+
+  private async createWithWdaAdmission(
+    config: IphoneConfiguration,
+    lifecycleSignal: AbortSignal,
+    selection: IphoneRequiredWdaAdmission,
+  ): Promise<IphoneWebDriverSession> {
+    const combined = AbortSignal.any([lifecycleSignal, selection.admission.signal])
     try {
-      if (selection.kind === IPHONE_WDA_REQUIRED) {
-        await selection.admission.reserve(combined)
-      }
+      await selection.admission.reserve(combined)
       await startIphoneServer(config, this.dependencies, this.server, combined)
       combined.throwIfAborted()
-      if (selection.kind === IPHONE_WDA_REQUIRED) {
-        await selection.admission.handoff(combined)
-      }
+      await selection.admission.handoff(combined)
       return await createIphoneWebDriverSession(
         config.serverUrl,
         buildIphoneCapabilities(config, this.dependencies.host),
@@ -85,9 +97,7 @@ export class IphoneConcreteSessionFactory implements IphoneSessionFactory<Iphone
         selection,
       )
     } catch (error) {
-      if (selection.kind === IPHONE_WDA_REQUIRED) {
-        await selection.admission.release()
-      }
+      await selection.admission.release()
       throw error
     }
   }

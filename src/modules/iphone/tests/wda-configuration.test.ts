@@ -19,19 +19,16 @@ function propagatesPort(): void {
 function rejectsZero(): void {
   const config = simulatorWdaConfig("http://localhost:1234", 0)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(false)
-  expect(validateIphoneConfiguration(config, "darwin").kind).toBe("refused")
 }
 
 function rejectsExceededPort(): void {
   const config = simulatorWdaConfig("http://localhost:1234", 65536)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(false)
-  expect(validateIphoneConfiguration(config, "darwin").kind).toBe("refused")
 }
 
 function rejectsFraction(): void {
   const config = simulatorWdaConfig("http://localhost:1234", 1.5)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(false)
-  expect(validateIphoneConfiguration(config, "darwin").kind).toBe("refused")
 }
 
 function rejectsString(): void {

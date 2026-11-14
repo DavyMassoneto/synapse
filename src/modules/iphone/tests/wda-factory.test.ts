@@ -1,6 +1,8 @@
 import { createServer, type IncomingMessage, type ServerResponse } from "node:http"
 import { describe, expect, test } from "vitest"
+import { IPHONE_WDA_IPV4_WILDCARD } from "#synapse/modules/iphone/adapters/wda-admission"
 import { TestIphoneHttpServer } from "./doubles"
+import { IPHONE_TEST_WDA_BIND_PLAN_IPV4_BUSY } from "./wda-bind-plan-constants"
 import { WdaFactoryScenario } from "./wda-factory-scenario"
 import { closeWdaTest, freeWdaTestPort, listenWdaTest, simulatorWdaConfig } from "./wda-support"
 
@@ -89,6 +91,7 @@ function suite(): void {
   test("ocupação IPv4 recusa antes de qualquer HTTP", refusesIpv4)
   test("ocupação IPv6 recusa antes de qualquer HTTP", refusesIpv6)
   test("ocupação wildcard recusa antes de qualquer HTTP", refusesWildcard)
+  test(IPHONE_TEST_WDA_BIND_PLAN_IPV4_BUSY, refusesOccupied.bind(null, IPHONE_WDA_IPV4_WILDCARD))
   test("duas factories só admitem uma sessão até dispose", admitsOneFactory)
   test("criação recusada libera reserva", releasesFailedCreation)
 }

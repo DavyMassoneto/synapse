@@ -1,4 +1,5 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
+import { HeldHttpPath } from "./held-http-path"
 import {
   IPHONE_TEST_HTTP_RESPONSE,
   IPHONE_TEST_HTTP_SESSION_PATH,
@@ -24,17 +25,9 @@ export class TestIphoneHttpServer {
 
   bodies: string[] = []
 
-  readonly statusRequested = Promise.withResolvers<void>()
+  readonly statusPath = new HeldHttpPath()
 
-  readonly statusReleased = Promise.withResolvers<void>()
-
-  holdStatus = false
-
-  readonly sessionRequested = Promise.withResolvers<void>()
-
-  readonly sessionReleased = Promise.withResolvers<void>()
-
-  holdSession = false
+  readonly sessionPath = new HeldHttpPath()
 
   constructor() {
     this.server = createServer(this.handle.bind(this))
@@ -47,25 +40,13 @@ export class TestIphoneHttpServer {
     if (request.url) {
       this.paths.push(request.url)
     }
-    if (this.holdStatus && request.url === IPHONE_TEST_HTTP_STATUS_PATH) {
-      this.statusRequested.resolve()
-      void this.releaseStatus(response)
-    } else if (this.holdSession && request.url === IPHONE_TEST_HTTP_SESSION_PATH) {
-      this.sessionRequested.resolve()
-      void this.releaseSession(response)
+    if (this.statusPath.hold && request.url === IPHONE_TEST_HTTP_STATUS_PATH) {
+      void this.statusPath.waitAndRespond(response, this.respond.bind(this))
+    } else if (this.sessionPath.hold && request.url === IPHONE_TEST_HTTP_SESSION_PATH) {
+      void this.sessionPath.waitAndRespond(response, this.respond.bind(this))
     } else {
       this.respond(response)
     }
-  }
-
-  private async releaseSession(response: ServerResponse): Promise<void> {
-    await this.sessionReleased.promise
-    this.respond(response)
-  }
-
-  private async releaseStatus(response: ServerResponse): Promise<void> {
-    await this.statusReleased.promise
-    this.respond(response)
   }
 
   private respond(response: ServerResponse): void {

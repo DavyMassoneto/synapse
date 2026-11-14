@@ -64,21 +64,21 @@ async function stopsPendingStatus(): Promise<void> {
   const first = new WdaFactoryScenario(config)
   const second = new WdaFactoryScenario(config)
   const signal = new AbortController().signal
-  server.holdStatus = true
+  server.statusPath.hold = true
   try {
     const creating = first.factory.create(signal)
     const rejected = expect(creating).rejects.toThrow()
-    await Promise.race([server.statusRequested.promise, creating])
+    await Promise.race([server.statusPath.requested.promise, creating])
     await first.factory.stop()
-    server.holdStatus = false
-    server.statusReleased.resolve()
+    server.statusPath.hold = false
+    server.statusPath.released.resolve()
     await rejected
     expect(server.paths.filter((path) => path === "/session")).toHaveLength(0)
     server.responses = ['{"value":{"ready":true}}', '{"value":{"sessionId":"second"}}']
     await second.factory.create(signal)
     expect(server.paths.filter((path) => path === "/session")).toHaveLength(1)
   } finally {
-    server.statusReleased.resolve()
+    server.statusPath.released.resolve()
     await first.stop()
     await second.stop()
     await server.stop()

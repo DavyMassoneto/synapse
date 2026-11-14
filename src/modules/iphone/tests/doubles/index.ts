@@ -1,5 +1,6 @@
 export * from "./diagnosis"
 export * from "./factory"
+export * from "./held-http-path"
 export * from "./http-constants"
 export * from "./http-server"
 export * from "./session"
