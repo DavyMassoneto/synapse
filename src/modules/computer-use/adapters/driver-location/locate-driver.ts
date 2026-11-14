@@ -1,13 +1,15 @@
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
+import { randomUUID } from "node:crypto"
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, rmSync, writeFileSync } from "node:fs"
 import { join, normalize } from "node:path"
 import { type ComputerPlatform } from "#synapse/modules/computer-use/public/contracts"
 import { COMPUTER_ERROR_CODE_MISSING_FILE, isErrorWithCode } from "../command-execution"
 import { COMPUTER_DRIVER_BINARY_FOLDERS } from "./binary-folders"
 import {
+  COMPUTER_DRIVER_ABSENT,
   COMPUTER_DRIVER_CURRENT_FILE,
   COMPUTER_DRIVER_ENCODING,
   COMPUTER_DRIVER_FOREIGN_SEPARATOR_PATTERN,
-  COMPUTER_DRIVER_NOT_INSTALLED,
+  COMPUTER_DRIVER_FOUND,
   COMPUTER_DRIVER_OVERRIDE_MISSING,
   COMPUTER_DRIVER_POINTER_END,
   COMPUTER_DRIVER_POINTER_MODE,
@@ -17,7 +19,7 @@ import {
   COMPUTER_DRIVER_VERSION_FOUND,
   COMPUTER_DRIVER_VERSION_PATTERN,
 } from "./constants"
-import { type ComputerDriverVersionResult } from "./types"
+import { type ComputerDriverLocation, type ComputerDriverVersionResult } from "./types"
 
 export function computerDriverBinaryPath(directory: string, platform: ComputerPlatform, version: string): string {
   return join(directory, version, ...COMPUTER_DRIVER_BINARY_FOLDERS[platform])
@@ -44,9 +46,13 @@ export function computerReadCurrentVersion(directory: string): ComputerDriverVer
 
 export function computerWriteCurrentVersion(directory: string, version: string): void {
   mkdirSync(directory, { recursive: true })
-  writeFileSync(join(directory, COMPUTER_DRIVER_CURRENT_FILE), `${version}${COMPUTER_DRIVER_POINTER_END}`, {
-    mode: COMPUTER_DRIVER_POINTER_MODE,
-  })
+  const pointer = join(directory, `${COMPUTER_DRIVER_CURRENT_FILE}-${randomUUID()}`)
+  try {
+    writeFileSync(pointer, `${version}${COMPUTER_DRIVER_POINTER_END}`, { mode: COMPUTER_DRIVER_POINTER_MODE })
+    renameSync(pointer, join(directory, COMPUTER_DRIVER_CURRENT_FILE))
+  } finally {
+    rmSync(pointer, { force: true })
+  }
 }
 
 function computerInstalledVersions(directory: string): string[] {
@@ -74,21 +80,21 @@ export async function computerLocateDriver(
   directory: string,
   platform: ComputerPlatform,
   override?: string,
-): Promise<string> {
+): Promise<ComputerDriverLocation> {
   if (override) {
     const command = computerDriverCommandPath(override)
     if (!existsSync(command)) {
       throw new Error(COMPUTER_DRIVER_OVERRIDE_MISSING)
     }
-    return command
+    return { kind: COMPUTER_DRIVER_FOUND, command }
   }
   const installed = computerFindInstalledVersion(directory)
   if (installed.kind === COMPUTER_DRIVER_VERSION_ABSENT) {
-    throw new Error(COMPUTER_DRIVER_NOT_INSTALLED)
+    return { kind: COMPUTER_DRIVER_ABSENT }
   }
   const binary = computerDriverBinaryPath(directory, platform, installed.version)
   if (!existsSync(binary)) {
-    throw new Error(COMPUTER_DRIVER_NOT_INSTALLED)
+    return { kind: COMPUTER_DRIVER_ABSENT }
   }
-  return binary
+  return { kind: COMPUTER_DRIVER_FOUND, command: binary }
 }

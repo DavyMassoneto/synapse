@@ -6,7 +6,6 @@ import { COMPUTER_DRIVER_ARTIFACT_VERSION } from "#synapse/modules/computer-use/
 import {
   COMPUTER_DRIVER_BINARY_FOLDERS,
   COMPUTER_DRIVER_CURRENT_FILE,
-  COMPUTER_DRIVER_NOT_INSTALLED,
   COMPUTER_DRIVER_OVERRIDE_MISSING,
   computerDriverBinaryPath,
   computerDriverCommandPath,
@@ -94,13 +93,14 @@ function noInstalledVersion(): void {
 
 async function locatedDriver(): Promise<void> {
   installVersion(COMPUTER_DRIVER_ARTIFACT_VERSION)
-  expect(await computerLocateDriver(directory, COMPUTER_LINUX)).toBe(
-    join(directory, COMPUTER_DRIVER_ARTIFACT_VERSION, ...COMPUTER_DRIVER_BINARY_FOLDERS[COMPUTER_LINUX]),
-  )
+  expect(await computerLocateDriver(directory, COMPUTER_LINUX)).toStrictEqual({
+    kind: "driver-found",
+    command: join(directory, COMPUTER_DRIVER_ARTIFACT_VERSION, ...COMPUTER_DRIVER_BINARY_FOLDERS[COMPUTER_LINUX]),
+  })
 }
 
 async function missingDriverRefused(): Promise<void> {
-  await expect(computerLocateDriver(directory, COMPUTER_LINUX)).rejects.toThrow(COMPUTER_DRIVER_NOT_INSTALLED)
+  expect(await computerLocateDriver(directory, COMPUTER_LINUX)).toStrictEqual({ kind: "driver-absent" })
 }
 
 async function missingOverrideRefused(): Promise<void> {
@@ -112,7 +112,10 @@ async function missingOverrideRefused(): Promise<void> {
 async function overrideAccepted(): Promise<void> {
   const command = join(directory, "cua-driver")
   writeFileSync(command, "")
-  expect(await computerLocateDriver(directory, COMPUTER_LINUX, command)).toBe(command)
+  expect(await computerLocateDriver(directory, COMPUTER_LINUX, command)).toStrictEqual({
+    kind: "driver-found",
+    command,
+  })
 }
 
 function registerTests(): void {
@@ -127,7 +130,7 @@ function registerTests(): void {
   test("prefere a versão do ponteiro", pointerBeforeInstalledVersions)
   test("informa ausência de versão instalada", noInstalledVersion)
   test("localiza o binário da versão instalada", locatedDriver)
-  test("recusa máquina sem driver instalado", missingDriverRefused)
+  test("informa ausência do driver gerenciado", missingDriverRefused)
   test("recusa caminho informado inexistente", missingOverrideRefused)
   test("aceita caminho informado existente", overrideAccepted)
 }

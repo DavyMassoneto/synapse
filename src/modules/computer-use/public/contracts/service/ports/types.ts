@@ -9,8 +9,12 @@ export interface ComputerDriverManifest {
   arguments: string[]
 }
 
+export interface ComputerDriverLaunchRequest {
+  provisionMissing: boolean
+}
+
 export interface ComputerDriverInfrastructure {
-  launch(): Promise<ComputerDriverLaunch>
+  launch(request: ComputerDriverLaunchRequest): Promise<ComputerDriverLaunch>
   manifest(launch: ComputerDriverLaunch): Promise<ComputerDriverManifest>
   driver(launch: ComputerDriverLaunch): ComputerDriverPort
   install(): Promise<string>

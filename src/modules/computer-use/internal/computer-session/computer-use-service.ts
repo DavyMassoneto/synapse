@@ -10,6 +10,7 @@ import {
   type ComputerAction,
   type ComputerDiagnostic,
   type ComputerDriverInfrastructure,
+  type ComputerDriverLaunchRequest,
   type ComputerExecuteResult,
   type ComputerExecutionContext,
   type ComputerInstallResult,
@@ -105,7 +106,7 @@ export class ComputerUseService implements ComputerUse {
   }
 
   private async readDriverDiagnostic(): Promise<ComputerDiagnostic> {
-    const checked = await this.checkedDriver()
+    const checked = await this.checkedDriver({ provisionMissing: false })
     return { kind: COMPUTER_DIAGNOSTIC_READY, binary: checked.launch.command, version: checked.manifest.version }
   }
 
@@ -152,8 +153,8 @@ export class ComputerUseService implements ComputerUse {
     }
   }
 
-  private async checkedDriver(): Promise<ComputerCheckedDriver> {
-    const launch = await this.infrastructure.launch()
+  private async checkedDriver(request: ComputerDriverLaunchRequest): Promise<ComputerCheckedDriver> {
+    const launch = await this.infrastructure.launch(request)
     const manifest = await this.infrastructure.manifest(launch)
     const compatibility = computerCheckDriverVersion(manifest.version)
     if (compatibility.kind !== COMPUTER_DRIVER_COMPATIBLE) {
@@ -167,7 +168,7 @@ export class ComputerUseService implements ComputerUse {
     if (state.kind === COMPUTER_SESSION_DISPATCH_ACTIVE) {
       return state.dispatch
     }
-    const checked = await this.checkedDriver()
+    const checked = await this.checkedDriver({ provisionMissing: true })
     this.requireGeneration(generation)
     const dispatch = this.mountDispatch(checked)
     this.dispatch = { kind: COMPUTER_SESSION_DISPATCH_ACTIVE, dispatch }

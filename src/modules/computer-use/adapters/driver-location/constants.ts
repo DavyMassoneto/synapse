@@ -18,6 +18,10 @@ export const COMPUTER_DRIVER_VERSION_FOUND = "version-found"
 
 export const COMPUTER_DRIVER_VERSION_ABSENT = "version-absent"
 
+export const COMPUTER_DRIVER_FOUND = "driver-found"
+
+export const COMPUTER_DRIVER_ABSENT = "driver-absent"
+
 export const COMPUTER_DRIVER_NOT_INSTALLED = "O cua-driver não está instalado nesta máquina."
 
 export const COMPUTER_DRIVER_OVERRIDE_MISSING = "O caminho informado para o cua-driver não existe."
