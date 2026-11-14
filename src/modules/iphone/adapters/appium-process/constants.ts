@@ -2,6 +2,8 @@ export const IPHONE_APPIUM_WINDOWS = "win32"
 
 export const IPHONE_APPIUM_NAME = "appium"
 
+export const IPHONE_APPIUM_NODE_SCRIPT_EXTENSION = ".js"
+
 export const IPHONE_APPIUM_WINDOWS_EXTENSIONS = [".cmd", ".exe", ".bat"]
 
 export const IPHONE_APPIUM_WINDOWS_SCRIPT_EXTENSIONS = [".cmd", ".bat"]
