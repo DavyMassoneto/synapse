@@ -1,6 +1,6 @@
 import { type SessionEntry } from "@earendil-works/pi-coding-agent"
-import { type AgentTeamContext } from "#synapse/integration"
-import { type TeamWidgetContent, type TeamWidgetOptions } from "../agent-team"
+import { type AgentTeamContext, type TeamLeadWidgetContent } from "#synapse/integration"
+import { type TeamWidgetOptions } from "../agent-team"
 import { TestContext, TestSession, TestUI } from "../context"
 import { COMPOSITION_RPC_MODE, COMPOSITION_SESSION_ID, COMPOSITION_THINKING_LEVEL } from "./constants"
 import { type CompositionWidget } from "./types"
@@ -18,7 +18,7 @@ export class CompositionSession extends TestSession {
 export class CompositionUI extends TestUI {
   readonly widgets: CompositionWidget[] = []
 
-  setWidget(key: string, content?: TeamWidgetContent, options?: TeamWidgetOptions): void {
+  setWidget(key: string, content?: TeamLeadWidgetContent, options?: TeamWidgetOptions): void {
     this.widgets.push({ key, content, options })
   }
 }

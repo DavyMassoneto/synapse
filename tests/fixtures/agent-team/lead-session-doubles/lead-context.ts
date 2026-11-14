@@ -1,6 +1,6 @@
 import { type Api, type Model } from "@earendil-works/pi-ai"
 import { type ExtensionContext, type SessionEntry } from "@earendil-works/pi-coding-agent"
-import { type AgentTeamContext } from "#synapse/integration"
+import { type AgentTeamContext, type TeamLeadWidgetContent } from "#synapse/integration"
 import { ToolsModelRegistry } from "../tools"
 import {
   TEAM_SESSION_FIXTURE_RPC_MODE,
@@ -8,7 +8,7 @@ import {
   TEAM_SESSION_FIXTURE_TEST_LEAD,
   TEAM_SESSION_FIXTURE_THINKING_LEVEL,
 } from "./constants"
-import { type TeamWidgetContent, type TeamWidgetOptions } from "./types"
+import { type TeamWidgetOptions } from "./types"
 
 export class TeamLeadContext implements AgentTeamContext {
   readonly cwd = TEAM_SESSION_FIXTURE_TEST_CWD
@@ -54,7 +54,7 @@ export class TeamLeadContext implements AgentTeamContext {
     this.notifications.push(JSON.stringify(args))
   }
 
-  setWidget(key: string, content?: TeamWidgetContent, options?: TeamWidgetOptions): void {
+  setWidget(key: string, content?: TeamLeadWidgetContent, options?: TeamWidgetOptions): void {
     this.widgets.push(JSON.stringify([key, content, options]))
   }
 }

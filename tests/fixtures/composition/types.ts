@@ -14,8 +14,9 @@ import {
   type PiIphoneShutdownHandler,
   type PiIphoneToolDefinition,
   type ResponseRulesContextHandler,
+  type TeamLeadWidgetContent,
 } from "#synapse/integration"
-import { type TeamWidgetContent, type TeamWidgetOptions } from "../agent-team"
+import { type TeamWidgetOptions } from "../agent-team"
 import { type AdvisorEventRegistration } from "../host"
 
 export type SynapseCollectedTool =
@@ -45,7 +46,7 @@ export type SynapseMessageHandler = AgentTeamMessageHandler | CooldownMessageEnd
 
 export interface CompositionWidget {
   key: string
-  content?: TeamWidgetContent
+  content?: TeamLeadWidgetContent
   options?: TeamWidgetOptions
 }
 
