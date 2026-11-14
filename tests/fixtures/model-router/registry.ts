@@ -35,6 +35,10 @@ export class RouterFixtureRegistry implements PiRouterRegistry {
 
   classifierFails = false
 
+  errorMessage?: string
+
+  omitAnswers = false
+
   stopReason: ClassifierResult["stopReason"] = ROUTER_TEST_STOP
 
   unauthorized = new Set<string>()
@@ -72,6 +76,17 @@ export class RouterFixtureRegistry implements PiRouterRegistry {
       stopReason: this.classifierFails ? ROUTER_TEST_ERROR : this.stopReason,
       timestamp: 0,
     }
+    if (this.errorMessage) {
+      result.errorMessage = this.errorMessage
+    }
+    if (!this.omitAnswers) {
+      result.answers = this.buildAnswers(context)
+    }
+    return result
+  }
+
+  private buildAnswers(context: ClassifierContext): ClassifierResult["answers"] {
+    const answers: ClassifierResult["answers"] = {}
     for (const [name, question] of Object.entries(context.questions)) {
       if (question.type === ROUTER_TEST_CHOICE) {
         const choice = name === ROUTER_TEST_MODEL_QUESTION ? this.selected : ROUTER_TEST_HIGH
@@ -79,9 +94,9 @@ export class RouterFixtureRegistry implements PiRouterRegistry {
         for (const option of Object.keys(question.criteria)) {
           probabilities[option] = option === choice ? 1 : 0
         }
-        result.answers[name] = { type: ROUTER_TEST_CHOICE, choice, probabilities, confidence: 1 }
+        answers[name] = { type: ROUTER_TEST_CHOICE, choice, probabilities, confidence: 1 }
       }
     }
-    return result
+    return answers
   }
 }

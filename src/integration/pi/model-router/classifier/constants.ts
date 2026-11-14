@@ -10,6 +10,10 @@ export const PI_ROUTER_CHOICE_TYPE = "choice"
 
 export const PI_ROUTER_STOP_REASON = "stop"
 
+export const PI_ROUTER_ERROR_REASON = "error"
+
+export const PI_ROUTER_PROVIDER_NOT_CONFIGURED = "Provider is not configured: typesafe"
+
 export const PI_ROUTER_ABORTED_REASON = "aborted"
 
 export const PI_ROUTER_INVALID_ANSWER = "Resposta de classificação Jev inválida."
