@@ -2,7 +2,7 @@ import { type ChildProcess, spawn } from "node:child_process"
 import { closeSync, mkdirSync, openSync } from "node:fs"
 import { join } from "node:path"
 import { type IphoneHost } from "#synapse/modules/iphone/public/contracts"
-import { iphoneAppiumCommand } from "./command"
+import { iphoneAppiumLaunchCommand } from "./command"
 import {
   IPHONE_APPIUM_DEFAULT_PORT,
   IPHONE_APPIUM_ERROR_EVENT,
@@ -18,6 +18,7 @@ import {
   IPHONE_APPIUM_SIGNAL,
   IPHONE_APPIUM_STARTED,
   IPHONE_APPIUM_WINDOWS,
+  IPHONE_APPIUM_WINDOWS_SHELL,
 } from "./constants"
 import { iphoneAppiumEnvironment } from "./environment"
 import { findIphoneAppium } from "./find"
@@ -46,6 +47,7 @@ export class IphoneAppiumProcess {
     path: string,
     host: IphoneHost,
     appiumHome?: string,
+    executable?: string,
   ): IphoneAppiumStartResult {
     const url = new URL(serverUrl)
     if (!IPHONE_APPIUM_LOCAL_NAMES.includes(url.hostname)) {
@@ -53,7 +55,7 @@ export class IphoneAppiumProcess {
     }
     if (!this.child) {
       this.host = host
-      this.launch(url, stateDirectory, path, host, appiumHome)
+      this.launch(url, stateDirectory, path, host, appiumHome, executable)
     }
     return { kind: IPHONE_APPIUM_STARTED }
   }
@@ -66,8 +68,15 @@ export class IphoneAppiumProcess {
     }
   }
 
-  private launch(url: URL, stateDirectory: string, path: string, host: IphoneHost, appiumHome?: string): void {
-    const executable = findIphoneAppium(path, host)
+  private launch(
+    url: URL,
+    stateDirectory: string,
+    path: string,
+    host: IphoneHost,
+    appiumHome?: string,
+    resolvedExecutable?: string,
+  ): void {
+    const executable = resolvedExecutable || findIphoneAppium(path, host)
     const port = url.port.length > 0 ? url.port : IPHONE_APPIUM_DEFAULT_PORT
     this.spawnLogged(executable, port, host, this.openLog(stateDirectory), appiumHome)
   }
@@ -92,11 +101,12 @@ export class IphoneAppiumProcess {
   }
 
   private spawn(executable: string, port: string, host: IphoneHost, descriptor: number, appiumHome?: string): void {
-    const launch = iphoneAppiumCommand(executable, [IPHONE_APPIUM_PORT_OPTION, port, IPHONE_APPIUM_LOG_OPTION], host)
+    const argumentsValue = [IPHONE_APPIUM_PORT_OPTION, port, IPHONE_APPIUM_LOG_OPTION]
+    const launch = iphoneAppiumLaunchCommand(executable, argumentsValue, host)
     const child = spawn(launch.command, launch.arguments, {
       stdio: ["ignore", descriptor, descriptor],
       windowsHide: host === IPHONE_APPIUM_WINDOWS,
-      windowsVerbatimArguments: host === IPHONE_APPIUM_WINDOWS,
+      windowsVerbatimArguments: launch.command === IPHONE_APPIUM_WINDOWS_SHELL,
       env: iphoneAppiumEnvironment(appiumHome),
     })
     this.child = child

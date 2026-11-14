@@ -1,6 +1,7 @@
 import { type IphoneHost } from "#synapse/modules/iphone/public/contracts"
 import {
   IPHONE_APPIUM_ARGUMENT_SEPARATOR,
+  IPHONE_APPIUM_NODE_SCRIPT_EXTENSION,
   IPHONE_APPIUM_WINDOWS_PERCENT,
   IPHONE_APPIUM_WINDOWS_PERCENT_MESSAGE,
   IPHONE_APPIUM_WINDOWS_QUOTE,
@@ -11,6 +12,17 @@ import {
 } from "./constants"
 import { isWindowsShellScript } from "./predicates"
 import { type IphoneAppiumSpawnCommand } from "./types"
+
+export function iphoneAppiumLaunchCommand(
+  executable: string,
+  argumentsValue: string[],
+  host: IphoneHost,
+): IphoneAppiumSpawnCommand {
+  if (executable.endsWith(IPHONE_APPIUM_NODE_SCRIPT_EXTENSION)) {
+    return { command: process.execPath, arguments: [executable, ...argumentsValue] }
+  }
+  return iphoneAppiumCommand(executable, argumentsValue, host)
+}
 
 export function iphoneAppiumCommand(
   executable: string,
