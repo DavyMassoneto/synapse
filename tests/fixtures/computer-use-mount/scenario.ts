@@ -14,16 +14,13 @@ import {
   COMPUTER_MOUNT_LOG_TOO_LARGE,
   COMPUTER_MOUNT_NEWLINE,
   COMPUTER_MOUNT_RESULT_MISSING,
-  COMPUTER_MOUNT_RESULT_TEXT_MISSING,
-  COMPUTER_MOUNT_RESULT_TEXT_PENDING,
-  COMPUTER_MOUNT_RESULT_TEXT_PRESENT,
   COMPUTER_MOUNT_TEXT,
   COMPUTER_MOUNT_TOOL_RESULT_ROLE,
   COMPUTER_MOUNT_TSX,
   COMPUTER_MOUNT_UTF8,
 } from "./constants"
 import { COMPUTER_MOUNT_EVENT_SCHEMA } from "./schemas"
-import { type ComputerMountEvent, type ComputerMountRequestMessage, type ComputerMountResultText } from "./types"
+import { type ComputerMountEvent } from "./types"
 
 export function configureComputerMountDriver(pi: PiProcessScenarioHandle): string {
   const log = join(pi.homeDirectory.home, COMPUTER_MOUNT_LOG_FILE)
@@ -73,31 +70,24 @@ function parseComputerMountEvent(line: string): ComputerMountEvent {
 }
 
 export function computerMountToolResultText(request: PiProcessRequestLog): string {
-  const result = request.messages.reduceRight<ComputerMountResultText>(parseComputerMountResultText, {
-    kind: COMPUTER_MOUNT_RESULT_TEXT_PENDING,
-  })
-  if (result.kind === COMPUTER_MOUNT_RESULT_TEXT_PRESENT) {
-    return result.text
+  for (let position = request.messages.length - 1; position >= 0; position--) {
+    const message = request.messages[position]
+    if (!message || message.role !== COMPUTER_MOUNT_TOOL_RESULT_ROLE) {
+      continue
+    }
+    if (typeof message.content === "string") {
+      throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
+    }
+    for (const block of message.content) {
+      if (block.type !== COMPUTER_MOUNT_TEXT) {
+        continue
+      }
+      if (!block.text) {
+        throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
+      }
+      return block.text
+    }
+    throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
   }
   throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
-}
-
-function parseComputerMountResultText(
-  previous: ComputerMountResultText,
-  message: ComputerMountRequestMessage,
-): ComputerMountResultText {
-  if (previous.kind !== COMPUTER_MOUNT_RESULT_TEXT_PENDING || message.role !== COMPUTER_MOUNT_TOOL_RESULT_ROLE) {
-    return previous
-  }
-  if (typeof message.content !== "string") {
-    for (const block of message.content) {
-      if (block.type === COMPUTER_MOUNT_TEXT) {
-        if (block.text) {
-          return { kind: COMPUTER_MOUNT_RESULT_TEXT_PRESENT, text: block.text }
-        }
-        break
-      }
-    }
-  }
-  return { kind: COMPUTER_MOUNT_RESULT_TEXT_MISSING }
 }

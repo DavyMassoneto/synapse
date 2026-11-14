@@ -116,12 +116,6 @@ export const COMPUTER_MOUNT_TOOL_RESULT_ROLE = "toolResult"
 
 export const COMPUTER_MOUNT_RESULT_MISSING = "O provedor falso não recebeu o resultado da ferramenta."
 
-export const COMPUTER_MOUNT_RESULT_TEXT_PENDING = "result-text-pending"
-
-export const COMPUTER_MOUNT_RESULT_TEXT_PRESENT = "result-text-present"
-
-export const COMPUTER_MOUNT_RESULT_TEXT_MISSING = "result-text-missing"
-
 export const COMPUTER_MOUNT_RESULT_LAST_DESCRIPTION = "texto vem do último toolResult, ignorando mensagem posterior"
 
 export const COMPUTER_MOUNT_RESULT_FIRST_DESCRIPTION =
