@@ -6,7 +6,7 @@ Synapse contém oito módulos: **memória**, **pi-web**, **navegador**, **adviso
 
 Adota-se **monólito modular com Portas e Adaptadores (arquitetura hexagonal)**, organizado verticalmente por módulo:
 
-- **Monólito modular:** uma composição e uma distribuição como Pi package, sem exigir serviços independentes para separar responsabilidades. Processos auxiliares continuam sob o controle do módulo que os utiliza.
+- **Monólito modular:** uma distribuição como Pi package, com uma entrada por capacidade entregue, sem exigir serviços independentes para separar responsabilidades. Processos auxiliares continuam sob o controle do módulo que os utiliza.
 - **Organização vertical:** código, adaptadores e testes de uma capacidade ficam no diretório da frente responsável, em vez de distribuir as frentes por pastas globais de controllers, services ou repositories. Isso reduz arquivos compartilhados durante mudanças paralelas.
 - **Portas e Adaptadores:** cada módulo declara as operações externas de que necessita; a composição fornece implementações. Essa inversão de dependência permite desenvolver e testar uma frente sem carregar o pi ou a implementação das outras frentes.
 
@@ -49,8 +49,8 @@ Estrutura alvo do código. Cada ocorrência de `<modulo>` corresponde a `memory`
 | `src/modules/<modulo>/tests/` | Testes isolados do módulo e substitutos de suas portas |
 | `src/integration/pi/` | Adaptação ao SDK, eventos e registros do host, e as capacidades que só ajustam o comportamento do host |
 | `src/integration/bridges/` | Adaptadores que conectam a porta de um módulo ao contrato público de outro |
-| `src/composition/` | Montagem, injeção de dependências, distribuição da configuração e encerramento |
-| `src/entry.ts` | Entrada do pacote Pi que aciona a composição |
+| `src/composition/` | Montagem de cada capacidade entregue, injeção de dependências, distribuição da configuração e encerramento próprio de cada montagem |
+| `src/extensions/` | Entradas do pacote Pi, uma por capacidade entregue, cada uma acionando a montagem da sua capacidade; o barrel da pasta não é entrada |
 | `tests/integration/` | Verificação dos contratos conectados e da integração com o host |
 | `tests/fixtures/` | Substitutos e dados usados nos testes de integração |
 
@@ -62,6 +62,7 @@ As setas representam dependências de código, não ordem de execução.
 
 ```mermaid
 flowchart TD
+    entradas["extensions/"] --> composicao
     composicao["composition/"] --> integracao["integration/pi e bridges"]
     composicao --> memoria["memory/public/"]
     composicao --> web["pi-web/public/"]
@@ -95,10 +96,12 @@ Assim, uma funcionalidade do pi-web que necessite de memória depende de uma por
 - **Superfície pública:** define operações, entradas, saídas e portas exigidas. Dados transferidos são valores independentes de banco, framework e SDK; contratos não expõem entidades mutáveis ou handles internos.
 - **Contexto explícito:** cada operação recebe as identidades e os escopos de que necessita. Não resolve sua origem consultando uma sessão global que pode mudar durante uma chamada assíncrona.
 - **Resultado explícito:** o contrato distingue sucesso, falha, confirmação pendente e conclusão desconhecida quando aplicáveis, incluindo efeitos parciais. Cancelamento ou timeout não equivalem a ausência de efeito.
-- **Ciclo de vida:** a montagem recebe dependências e configuração e devolve a interface operacional e o mecanismo de encerramento. Cada módulo libera os recursos que criou; a composição coordena o encerramento sem acessar detalhes privados.
+- **Ciclo de vida:** a montagem recebe dependências e configuração e devolve a interface operacional e o mecanismo de encerramento. Cada módulo libera os recursos que criou; a composição coordena o encerramento sem acessar detalhes privados. Cada entrada monta só a sua capacidade e encerra o que montou, sem depender de outra entrada estar carregada.
 - **Evolução:** cada frente controla seus contratos públicos. Alterações compatíveis preservam consumidores existentes; uma alteração incompatível exige migração coordenada das bridges e consumidores afetados, sem depender de mudanças simultâneas nas implementações privadas.
 
-A entrada do Pi package, declarada em `pi.extensions`, aciona a composição. A integração com o host registra as capacidades resultantes. Ela não replica regras dos módulos nem transforma persistência própria em histórico autoritativo do pi.
+As entradas do Pi package, declaradas em `pi.extensions`, são uma por capacidade entregue, e cada uma aciona a montagem da sua capacidade. A integração com o host registra as capacidades resultantes. Ela não replica regras dos módulos nem transforma persistência própria em histórico autoritativo do pi.
+
+Cada entrada é desativada no pi independentemente das outras e aparece separada em `pi config` e na listagem de extensões; `pi list` mostra o pacote. Uma capacidade desativada não volta por outro caminho: os membros da equipe de agentes herdam só as capacidades efetivamente carregadas na sessão que os cria. As entradas não compartilham estado de módulo nem mapa global; uma entrada só sabe de outra por um contrato tipado no barramento de eventos do host, com canal, formato validado e origem explícitos.
 
 ## Suporte por sistema operacional
 
@@ -142,6 +145,6 @@ O modelo usado é fixo no workflow. A automação não tem testes unitários: é
 ## Desenvolvimento paralelo e proteção das fronteiras
 
 - Cada frente modifica seu diretório `src/modules/<modulo>/` e valida o módulo isoladamente, substituindo portas externas por implementações de teste.
-- Para cada mudança que atravesse fronteiras, uma das frentes assume a integração. Esse responsável concentra alterações em `src/integration/`, `src/composition/`, `tests/integration/` e manifestos, lockfiles e configurações da raiz; esses arquivos não recebem escrita concorrente das frentes.
+- Para cada mudança que atravesse fronteiras, uma das frentes assume a integração. Esse responsável concentra alterações em `src/integration/`, `src/composition/`, `src/extensions/`, `tests/integration/` e manifestos, lockfiles e configurações da raiz; esses arquivos não recebem escrita concorrente das frentes.
 - As bridges são testadas contra os contratos da consumidora e da produtora, permitindo trocar uma implementação sem adaptar a outra frente.
 - A verificação de dependências rejeita imports entre módulos, acesso externo a diretórios privados, dependência do núcleo em adaptadores e uso do SDK do pi fora da integração. Os testes de contrato verificam as fronteiras públicas; testes do host verificam a montagem e o ciclo de vida.
