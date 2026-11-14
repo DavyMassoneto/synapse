@@ -17,7 +17,9 @@ O módulo advisor está disponível; memória, pi-web e navegador continuam como
 
 ## Desenvolvimento
 
-O desenvolvimento foi verificado com Node.js 24. Execute `npm ci` para instalar as dependências e `npm run validate` para executar Biome, verificação de tipos, build e testes Vitest. `npm run format` aplica as correções seguras do Biome. `npm run build` continua produzindo a árvore CommonJS em `dist/` e deriva o manifesto JavaScript do manifesto das fontes, preservando os imports de diretório. A instalação pelo pi usa `src/entry.ts`, sem depender de `dist/`.
+O desenvolvimento foi verificado com Node.js 24. Execute `npm ci` para instalar as dependências e `npm run validate` para executar Biome, verificação de tipos, build e testes Vitest. `npm run format` aplica as correções seguras do Biome. `npm run build` continua produzindo a árvore CommonJS em `dist/` e deriva o manifesto JavaScript do manifesto das fontes, preservando os imports de diretório. A instalação pelo pi usa as sete entradas TypeScript de `src/extensions/`, sem depender de `dist/`.
+
+Cada capacidade aparece separadamente em `pi config` e na listagem de extensões: advisor, cooldown-retry, response-rules, model-router, agent-team, iphone e computer-use. Desativar uma entrada não desativa as outras. Os membros herdam automaticamente somente cooldown-retry, response-rules e model-router que estejam carregados no lead; cada membro recebe montagens próprias. Os caminhos configurados explicitamente em `agent-team.json` continuam sendo uma escolha independente para o membro, inclusive quando essa capacidade está desativada no lead. Uma entrada explícita carregada antes da herança não é registrada novamente por ela. Sem model-router no membro, `jev/auto` não é disponibilizado.
 
 ## Documentação
 

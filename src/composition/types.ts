@@ -1,6 +1,7 @@
 import {
   type AdvisorHost,
   type AgentTeamHost,
+  type CapabilityPresenceHost,
   type CooldownRetryHost,
   type ModelRouterHost,
   type PiComputerHost,
@@ -18,4 +19,7 @@ export type SynapseHost = AdvisorHost &
   PiIphoneExecutionHost &
   PiComputerHost
 
-export type SynapseMemberHost = CooldownRetryHost & ResponseRulesHost & ModelRouterHost
+export type SynapseCooldownHost = CooldownRetryHost & CapabilityPresenceHost
+export type SynapseRulesHost = ResponseRulesHost & CapabilityPresenceHost
+export type SynapseRouterHost = ModelRouterHost & CapabilityPresenceHost
+export type SynapseIphoneHost = PiIphoneHost & PiIphoneExecutionHost

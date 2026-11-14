@@ -1,5 +1,6 @@
 export * from "./advisor"
 export * from "./agent-team"
+export * from "./capability-presence"
 export * from "./computer-use"
 export * from "./cooldown-retry"
 export * from "./iphone"

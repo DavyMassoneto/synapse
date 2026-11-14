@@ -1,14 +1,14 @@
-import { type AgentSession, type SessionManager } from "@earendil-works/pi-coding-agent"
+import { type AgentSession, type ExtensionFactory, type SessionManager } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { type AgentTeamContext } from "../lead-session"
 import { type SelectedMemberModel } from "../model-selection"
 import { type TeamRegisteredTool } from "../tools"
-import { type AgentTeamMemberExtension } from "../types"
+import { type AgentTeamMemberExtensions } from "../types"
 
 export interface TeamMemberSessionDependencies {
   context(): AgentTeamContext
-  extension: AgentTeamMemberExtension
+  extensions: AgentTeamMemberExtensions
   tools(team: AgentTeam, caller: string): TeamRegisteredTool[]
 }
 
@@ -18,7 +18,7 @@ export interface TeamMemberSessionRequest {
   selection: SelectedMemberModel
   instructions: string
   tools: TeamRegisteredTool[]
-  extension: AgentTeamMemberExtension
+  extensions: ExtensionFactory[]
   extensionPaths: string[]
 }
 

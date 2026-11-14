@@ -75,7 +75,7 @@ export interface PiProcessScenarioHandle {
   readonly homeDirectory: PiProcessScenarioHome
   readonly received: PiProcessScenarioRecords
   readonly stderr: string
-  start(entrypoint: string): void
+  start(entrypoint: PiProcessEntrypoints): void
   configureSelection(selection: PiProcessModelSelection): void
   configureSession(session: PiProcessSession): void
   close(): Promise<void>
@@ -116,3 +116,5 @@ export interface PiProcessQueryErrors {
   get_commands: string
   get_last_assistant_text: string
 }
+
+export type PiProcessEntrypoints = string | string[]

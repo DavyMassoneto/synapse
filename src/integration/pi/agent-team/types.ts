@@ -12,7 +12,9 @@ import { type AgentTeamContext } from "./lead-session"
 
 import { type TeamRegisteredTool } from "./tools"
 
-export type AgentTeamHost = AgentTeamEventsHost & Pick<ExtensionAPI, "sendMessage" | "appendEntry"> & AgentTeamToolHost
+export type AgentTeamHost = AgentTeamEventsHost &
+  Pick<ExtensionAPI, "sendMessage" | "appendEntry" | "events"> &
+  AgentTeamToolHost
 
 export interface AgentTeamEventsHost {
   on(event: "session_start", handler: AgentTeamStartHandler): AgentTeamUnsubscribe
@@ -39,10 +41,10 @@ export type AgentTeamSettledHandler = () => void
 
 export type AgentTeamMount = (lead: TeamLead, sessions: MemberSessions, clock: TeamClock) => AgentTeam
 
-export type AgentTeamMemberExtension = ExtensionFactory
-
 export interface AgentTeamToolHost {
   registerTool(tool: AgentTeamToolDefinition): void
 }
 
 export type AgentTeamToolDefinition = Omit<TeamRegisteredTool, "renderCall" | "renderResult">
+
+export type AgentTeamMemberExtensions = () => ExtensionFactory[]

@@ -1,6 +1,12 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { compose } from "#synapse/composition"
+import {
+  AdvisorExtension,
+  AgentTeamExtension,
+  CooldownRetryExtension,
+  ModelRouterExtension,
+  ResponseRulesExtension,
+} from "#synapse/extensions"
 import { advisorConfigPath, responseRulesInstructionsPath } from "#synapse/integration"
 import {
   COOLING_DOWN_ERROR,
@@ -25,14 +31,14 @@ function prepare(): void {
 
 function configureModel(): void {
   writeFileSync(advisorConfigPath(), JSON.stringify({ model: "provider/model", thinking: "low" }))
-  compose(host)
+  AdvisorExtension(host)
 }
 
 async function registersAdvisor(): Promise<void> {
   configureModel()
   await host.emitSessionStart(context)
   expect(host.active).toContain("advisor")
-  expect(host.shutdowns).toHaveLength(4)
+  expect(host.shutdowns).toHaveLength(1)
 }
 
 async function consultsWithLiveSignal(): Promise<void> {
@@ -63,7 +69,7 @@ async function refusesAfterShutdown(): Promise<void> {
 }
 
 async function missingConfiguration(): Promise<void> {
-  compose(host)
+  AdvisorExtension(host)
   await host.emitSessionStart(context)
   expect(host.active).not.toContain("advisor")
   const result = await host.requireTool().execute("id", {}, undefined, undefined, context)
@@ -75,7 +81,7 @@ async function missingConfiguration(): Promise<void> {
 async function composeInvalid(): Promise<void> {
   writeFileSync(advisorConfigPath(), "{broken")
   context.hasUI = true
-  compose(host)
+  AdvisorExtension(host)
   await host.emitSessionStart(context)
 }
 
@@ -106,7 +112,7 @@ function cleanup(): void {
 }
 
 function registersCooldownRetry(): void {
-  compose(host)
+  CooldownRetryExtension(host)
   const message = failedAssistantMessage(COOLING_DOWN_ERROR)
   const results = host.messageEnds.map((handler) => handler({ type: "message_end", message })).filter(Boolean)
   expect(results).toStrictEqual([{ message: { ...message, errorMessage: `${REWRITE_PREFIX}${COOLING_DOWN_ERROR}` } }])
@@ -114,7 +120,7 @@ function registersCooldownRetry(): void {
 
 function registersResponseRules(): void {
   writeFileSync(responseRulesInstructionsPath(), "## Respostas\nSeja direto.\n")
-  compose(host)
+  ResponseRulesExtension(host)
   const result = host.requireContextHandler()(responseRulesContextEvent())
   expect(result).toStrictEqual({
     messages: [
@@ -131,19 +137,19 @@ function registersResponseRules(): void {
 }
 
 function ignoresMissingResponseRules(): void {
-  compose(host)
+  ResponseRulesExtension(host)
   const result = host.requireContextHandler()(responseRulesContextEvent())
   expect(result).toBeUndefined()
 }
 
 function registersModelRouter(): void {
-  compose(host)
+  ModelRouterExtension(host)
   const model = host.requireVirtualModel()
   expect([model.provider, model.id]).toStrictEqual(["jev", "auto"])
 }
 
 function registersTeamTools(): void {
-  compose(host)
+  AgentTeamExtension(host)
   expect(Array.from(host.tools.keys())).toEqual(
     expect.arrayContaining([
       "subagent",

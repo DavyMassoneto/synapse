@@ -91,7 +91,7 @@ export class PiTeamMemberSessions implements MemberSessions {
       selection,
       instructions: `${TEAM_PI_MEMBER_IDENTITY_START}${name}${TEAM_PI_MEMBER_IDENTITY_END}`,
       tools: this.dependencies.tools(team, name),
-      extension: this.dependencies.extension,
+      extensions: this.dependencies.extensions(),
       extensionPaths: readMemberExtensions(getAgentDir()),
     })
   }

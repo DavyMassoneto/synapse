@@ -25,7 +25,7 @@ async function createTeamResourceLoader(request: TeamMemberSessionRequest): Prom
     cwd: request.cwd,
     agentDir: getAgentDir(),
     noExtensions: true,
-    extensionFactories: [request.extension],
+    extensionFactories: request.extensions,
     additionalExtensionPaths: request.extensionPaths,
     appendSystemPrompt: [request.instructions],
   })
