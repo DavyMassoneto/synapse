@@ -17,8 +17,11 @@ export class TeamMemberExtensionLifecycle {
     this.session = session
   }
 
-  async start(): Promise<void> {
+  async start(initialFailure?: Error): Promise<void> {
     try {
+      if (initialFailure) {
+        throw initialFailure
+      }
       await this.session.bindExtensions({ onError: this.recordFailure.bind(this) })
       this.ensureHealthy()
     } catch (error) {

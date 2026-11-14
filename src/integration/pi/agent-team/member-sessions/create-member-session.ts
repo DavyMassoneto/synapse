@@ -43,14 +43,9 @@ export async function startCreatedTeamMemberSession(
 ): Promise<TeamMemberExtensionLifecycle> {
   const lifecycle = new TeamMemberExtensionLifecycle(session)
   if (modelFallbackMessage) {
-    const failure = new Error(modelFallbackMessage)
-    try {
-      await lifecycle.close()
-    } catch (cleanupError) {
-      throw new AggregateError([failure, cleanupError], TEAM_PI_MEMBER_EXTENSION_FAILURE)
-    }
-    throw failure
+    await lifecycle.start(new Error(modelFallbackMessage))
+  } else {
+    await lifecycle.start()
   }
-  await lifecycle.start()
   return lifecycle
 }

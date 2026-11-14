@@ -17,6 +17,7 @@ import {
   TEAM_PI_MEMBER_TOOL_START,
   TEAM_PI_MEMBER_TURN_START,
 } from "./constants"
+import { applyTeamMemberExtensionFailure } from "./extension-failure"
 import { teamMemberAssistantResponse, teamMemberSettledResponse } from "./session-response"
 import { type TeamMemberSessionPort } from "./types"
 
@@ -52,9 +53,13 @@ export class PiTeamEventConnection {
           this.listener(teamMemberAssistantResponse(event.message))
         }
         break
-      case TEAM_PI_MEMBER_SETTLED:
-        this.listener(teamMemberSettledResponse(this.session, event.aborted, this.lifetime))
+      case TEAM_PI_MEMBER_SETTLED: {
+        const answer = this.session.getLastAssistantText()
+        const settled = teamMemberSettledResponse(event.aborted, answer)
+        applyTeamMemberExtensionFailure(settled, this.lifetime)
+        this.listener(settled)
         break
+      }
     }
   }
 }

@@ -6,9 +6,7 @@ import {
   type MemberExecutionSettled,
   REFERENCE_SEPARATOR,
 } from "#synapse/modules"
-import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { TEAM_PI_MEMBER_ERROR_REASON, TEAM_PI_MEMBER_RESPONSE_FAILURE } from "./constants"
-import { type TeamMemberSessionPort } from "./types"
 
 export function teamMemberAssistantResponse(message: AssistantMessage): MemberAssistantResponse {
   const response: MemberAssistantResponse = {
@@ -23,23 +21,10 @@ export function teamMemberAssistantResponse(message: AssistantMessage): MemberAs
   return response
 }
 
-export function teamMemberSettledResponse(
-  session: TeamMemberSessionPort,
-  aborted: boolean,
-  lifetime: TeamMemberExtensionLifetime,
-): MemberExecutionSettled {
+export function teamMemberSettledResponse(aborted: boolean, answer?: string): MemberExecutionSettled {
   const settled: MemberExecutionSettled = { kind: MEMBER_EXECUTION_SETTLED, aborted }
-  const answer = session.getLastAssistantText()
   if (answer) {
     settled.answer = answer
-  }
-  try {
-    lifetime.ensureHealthy()
-  } catch (error) {
-    if (!(error instanceof Error)) {
-      throw error
-    }
-    settled.failure = error.message
   }
   return settled
 }
