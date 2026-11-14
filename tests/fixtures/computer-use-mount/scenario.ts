@@ -14,10 +14,11 @@ import {
   COMPUTER_MOUNT_LOG_TOO_LARGE,
   COMPUTER_MOUNT_NEWLINE,
   COMPUTER_MOUNT_RESULT_MISSING,
+  COMPUTER_MOUNT_TEXT,
+  COMPUTER_MOUNT_TOOL_RESULT_ROLE,
   COMPUTER_MOUNT_TSX,
   COMPUTER_MOUNT_UTF8,
 } from "./constants"
-import { isComputerMountText, isComputerMountToolResult } from "./predicates"
 import { COMPUTER_MOUNT_EVENT_SCHEMA } from "./schemas"
 import { type ComputerMountEvent } from "./types"
 
@@ -69,12 +70,24 @@ function parseComputerMountEvent(line: string): ComputerMountEvent {
 }
 
 export function computerMountToolResultText(request: PiProcessRequestLog): string {
-  const message = request.messages.findLast(isComputerMountToolResult)
-  if (message && typeof message.content !== "string") {
-    const block = message.content.find(isComputerMountText)
-    if (block?.text) {
+  for (let position = request.messages.length - 1; position >= 0; position--) {
+    const message = request.messages[position]
+    if (!message || message.role !== COMPUTER_MOUNT_TOOL_RESULT_ROLE) {
+      continue
+    }
+    if (typeof message.content === "string") {
+      throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
+    }
+    for (const block of message.content) {
+      if (block.type !== COMPUTER_MOUNT_TEXT) {
+        continue
+      }
+      if (!block.text) {
+        throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
+      }
       return block.text
     }
+    throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
   }
   throw new Error(COMPUTER_MOUNT_RESULT_MISSING)
 }

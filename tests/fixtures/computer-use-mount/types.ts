@@ -1,5 +1,4 @@
 import { type Static } from "typebox"
-import { type PiProcessRequestLog } from "../request-log"
 import {
   type COMPUTER_MOUNT_EVENT_SCHEMA,
   type COMPUTER_MOUNT_INPUT_SCHEMA,
@@ -75,9 +74,7 @@ export interface ComputerMountFakeState {
   tree_markdown: string
 }
 
-export type ComputerMountRequestMessage = PiProcessRequestLog["messages"][number]
-
-export interface ComputerMountRequestBlock {
-  type: string
-  text?: string
+export interface ComputerMountLifecycle {
+  pid: number
+  sessionEndCount: number
 }

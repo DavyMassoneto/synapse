@@ -1,4 +1,4 @@
-import { type ComputerMountFakeElement, type ComputerMountFakeState } from "./types"
+import { type ComputerMountEvent, type ComputerMountFakeElement, type ComputerMountFakeState } from "./types"
 export const COMPUTER_MOUNT_TOOL = "computer_use"
 
 export const COMPUTER_MOUNT_REPLY = "computer mount verified"
@@ -116,6 +116,33 @@ export const COMPUTER_MOUNT_TOOL_RESULT_ROLE = "toolResult"
 
 export const COMPUTER_MOUNT_RESULT_MISSING = "O provedor falso não recebeu o resultado da ferramenta."
 
+export const COMPUTER_MOUNT_RESULT_LAST_DESCRIPTION = "texto vem do último toolResult, ignorando mensagem posterior"
+
+export const COMPUTER_MOUNT_RESULT_FIRST_DESCRIPTION =
+  "texto vem do primeiro bloco textual entre blocos de outros tipos"
+
+export const COMPUTER_MOUNT_RESULT_EMPTY_DESCRIPTION = "último toolResult vazio não reutiliza resultado anterior"
+
+export const COMPUTER_MOUNT_RESULT_EMPTY_FIRST_DESCRIPTION = "primeiro bloco textual vazio impede aceitar o segundo"
+
+export const COMPUTER_MOUNT_RESULT_ABSENT_TEXT_DESCRIPTION = "primeiro bloco textual sem text impede aceitar o segundo"
+
+export const COMPUTER_MOUNT_RESULT_STRING_DESCRIPTION = "conteúdo string no último toolResult é recusado"
+
+export const COMPUTER_MOUNT_RESULT_NON_TEXT_DESCRIPTION = "último toolResult sem bloco textual é recusado"
+
+export const COMPUTER_MOUNT_RESULT_NO_MESSAGE_DESCRIPTION = "histórico sem toolResult é recusado"
+
+export const COMPUTER_MOUNT_RESULT_WHITESPACE_DESCRIPTION = "texto com espaço preserva o conteúdo original"
+
+export const COMPUTER_MOUNT_RESULT_RECOVERY_DESCRIPTION = "toolResult válido substitui resultado anterior vazio"
+
+export const COMPUTER_MOUNT_LIFECYCLE_DESCRIPTION = "resumo conta encerramentos antes e depois do início"
+
+export const COMPUTER_MOUNT_LIFECYCLE_OPEN_DESCRIPTION = "resumo de processo ativo conta zero encerramentos"
+
+export const COMPUTER_MOUNT_PID_REPEATED_DESCRIPTION = "prova PID recusa duas partidas com o mesmo identificador"
+
 export const COMPUTER_MOUNT_STORED = "capture-stored"
 
 export const COMPUTER_MOUNT_DRIVER_STARTED = "driver-started"
@@ -137,3 +164,19 @@ export const COMPUTER_MOUNT_PROCESS_STILL_ALIVE = "O processo do driver falso pe
 export const COMPUTER_MOUNT_LIVE_NEGATIVE_DESCRIPTION = "prova de término recusa processo que permanece vivo"
 
 export const COMPUTER_MOUNT_FAKE_SERVER_NAME = "computer-mount-fake"
+
+export const COMPUTER_MOUNT_LIFECYCLE_EVENTS: ComputerMountEvent[] = [
+  { name: COMPUTER_MOUNT_SESSION_END },
+  { name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 12 },
+  { name: COMPUTER_MOUNT_GET_WINDOW },
+  { name: COMPUTER_MOUNT_SESSION_END },
+]
+
+export const COMPUTER_MOUNT_LIFECYCLE_OPEN_EVENTS: ComputerMountEvent[] = [
+  { name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 12 },
+]
+
+export const COMPUTER_MOUNT_PID_REPEATED_EVENTS: ComputerMountEvent[] = [
+  { name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 12 },
+  { name: COMPUTER_MOUNT_DRIVER_STARTED, pid: 12 },
+]
