@@ -17,3 +17,13 @@ export const IPHONE_PROVISION_BOUNDARY_SUITE = "fronteiras do provisionamento Ap
 export const IPHONE_PROVISION_BOUNDARY_FORBIDDEN_SIMULATOR = "simulator command must not run"
 
 export const IPHONE_PROVISION_BOUNDARY_SMALL_CONTENT = "small receipt"
+
+export const IPHONE_PROVISION_BOUNDARY_NESTED = "nested"
+
+export const IPHONE_PROVISION_BOUNDARY_ALIAS = "alias"
+
+export const IPHONE_PROVISION_BOUNDARY_RECEIPT = "receipt"
+
+export const IPHONE_PROVISION_BOUNDARY_JUNCTION = "junction"
+
+export const IPHONE_PROVISION_BOUNDARY_SYMLINK_ANCESTOR_TEST = "recusa ancestral simbólico antes de abrir arquivo"

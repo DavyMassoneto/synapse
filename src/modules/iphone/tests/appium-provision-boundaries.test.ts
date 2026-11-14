@@ -6,6 +6,7 @@ import { IphoneAppiumProcess, runIphoneAppiumCommand } from "#synapse/modules/ip
 import {
   IPHONE_PROVISION_FILE_BYTES,
   IPHONE_PROVISION_INVALID_INSTALLATION,
+  IPHONE_PROVISION_INVALID_PATH,
   provisionIphoneAppium,
   readIphoneProvisionFile,
 } from "#synapse/modules/iphone/adapters/appium-provision"
@@ -23,7 +24,8 @@ let appium = new IphoneAppiumProcess(runIphoneAppiumCommand)
 let base = ""
 
 async function prepare(): Promise<void> {
-  directory = await fileSystem.mkdtemp(join(tmpdir(), "synapse-appium-boundaries-"))
+  const temporary = await fileSystem.mkdtemp(join(tmpdir(), "synapse-appium-boundaries-"))
+  directory = await fileSystem.realpath(temporary)
   http = new TestIphoneHttpServer()
   base = await http.start()
   appium = new IphoneAppiumProcess(runIphoneAppiumCommand)
@@ -160,7 +162,28 @@ async function rejectsGrowthBeyondLimitAfterStat(): Promise<void> {
   const root = await fileSystem.lstat(directory)
   await fileSystem.writeFile(path, Buffer.alloc(IPHONE_PROVISION_FILE_BYTES + 1, "x"))
   vi.spyOn(fileSystem, "lstat").mockResolvedValueOnce(root).mockResolvedValueOnce(initial)
+  const opening = vi.spyOn(fileSystem, "open").mockClear()
   await expect(readIphoneProvisionFile(directory, "receipt")).rejects.toThrow(IPHONE_PROVISION_INVALID_INSTALLATION)
+  expect(opening).toHaveBeenCalledWith(path, "r")
+}
+
+async function rejectsSymbolicAncestor(): Promise<void> {
+  const nested = join(directory, scenario.IPHONE_PROVISION_BOUNDARY_NESTED)
+  const alias = join(directory, scenario.IPHONE_PROVISION_BOUNDARY_ALIAS)
+  await fileSystem.mkdir(nested)
+  await fileSystem.writeFile(
+    join(nested, scenario.IPHONE_PROVISION_BOUNDARY_RECEIPT),
+    scenario.IPHONE_PROVISION_BOUNDARY_SMALL_CONTENT,
+  )
+  await fileSystem.symlink(directory, alias, scenario.IPHONE_PROVISION_BOUNDARY_JUNCTION)
+  const opening = vi.spyOn(fileSystem, "open").mockClear()
+  await expect(
+    readIphoneProvisionFile(
+      join(alias, scenario.IPHONE_PROVISION_BOUNDARY_NESTED),
+      scenario.IPHONE_PROVISION_BOUNDARY_RECEIPT,
+    ),
+  ).rejects.toThrow(IPHONE_PROVISION_INVALID_PATH)
+  expect(opening).not.toHaveBeenCalled()
 }
 
 function suite(): void {
@@ -169,6 +192,7 @@ function suite(): void {
   test(scenario.IPHONE_PROVISION_BOUNDARY_SMALL_FILE_TEST, readsSmallFileWithoutMaximumAllocation)
   test(scenario.IPHONE_PROVISION_BOUNDARY_GROWING_FILE_TEST, readsGrowthAfterStatCompletely)
   test(scenario.IPHONE_PROVISION_BOUNDARY_OVERSIZED_FILE_TEST, rejectsGrowthBeyondLimitAfterStat)
+  test(scenario.IPHONE_PROVISION_BOUNDARY_SYMLINK_ANCESTOR_TEST, rejectsSymbolicAncestor)
   test(scenario.IPHONE_PROVISION_BOUNDARY_LOCAL_SERVER_TEST, existingServerRemainsUntouched)
   test(scenario.IPHONE_PROVISION_BOUNDARY_REMOTE_SERVER_TEST, remoteServerRemainsUntouched)
   test(scenario.IPHONE_PROVISION_BOUNDARY_EXISTING_EXECUTABLE_TEST, existingExecutablePreserved)
