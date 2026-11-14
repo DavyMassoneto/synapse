@@ -1,4 +1,5 @@
 import { setTimeout } from "node:timers/promises"
+import { type IphoneWdaSelection } from "#synapse/modules/iphone/adapters/wda-admission"
 import {
   type IphoneActionArguments,
   type IphoneElement,
@@ -7,9 +8,9 @@ import {
   type IphoneRectangle,
 } from "#synapse/modules/iphone/public/contracts"
 import { requestIphoneWebDriver } from "./client"
+import { closeIphoneWebDriverSession } from "./close-session"
 import {
   IPHONE_HTTP_ACTIONS,
-  IPHONE_HTTP_DELETE,
   IPHONE_HTTP_ELEMENT,
   IPHONE_HTTP_ELEMENT_CLEAR,
   IPHONE_HTTP_ELEMENT_ID,
@@ -52,9 +53,14 @@ export class IphoneWebDriverSession {
 
   private readonly base: string
 
-  constructor(base: string, id: string) {
+  private readonly selection?: IphoneWdaSelection
+
+  constructor(base: string, id: string, selection?: IphoneWdaSelection) {
     this.base = base
     this.id = id
+    if (selection) {
+      this.selection = selection
+    }
   }
 
   private url(path: string): string {
@@ -206,11 +212,10 @@ export class IphoneWebDriverSession {
   }
 
   async close(signal: AbortSignal): Promise<void> {
-    await this.emptyRequest(
+    await closeIphoneWebDriverSession(
       `${this.base}/${IPHONE_HTTP_SESSION}/${encodeURIComponent(this.id)}`,
-      IPHONE_HTTP_DELETE,
-      "",
       signal,
+      this.selection,
     )
   }
 }

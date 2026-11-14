@@ -45,7 +45,11 @@ function rejectsConfiguration(): void {
 function rejectsSimulatorId(): void {
   expect(
     validateIphoneConfiguration(
-      { serverUrl: "http://localhost:4723", target: { kind: "simulator", deviceName: "sim", wdaInstalled: false } },
+      {
+        serverUrl: "http://localhost:4723",
+        target: { kind: "simulator", deviceName: "sim", wdaInstalled: false },
+        capabilities: { wdaLocalPort: 54321, useNewWDA: true },
+      },
       "darwin",
     ).kind,
   ).toBe("accepted")

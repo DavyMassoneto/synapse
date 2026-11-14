@@ -37,6 +37,7 @@ export interface IphoneExtraCapabilities {
   newCommandTimeout?: number
   wdaLaunchTimeout?: number
   wdaConnectionTimeout?: number
+  wdaLocalPort?: number
   useNewWDA?: boolean
 }
 

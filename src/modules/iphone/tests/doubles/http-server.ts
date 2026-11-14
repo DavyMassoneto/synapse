@@ -1,5 +1,10 @@
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from "node:http"
-import { IPHONE_TEST_HTTP_RESPONSE } from "./http-constants"
+import { HeldHttpPath } from "./held-http-path"
+import {
+  IPHONE_TEST_HTTP_RESPONSE,
+  IPHONE_TEST_HTTP_SESSION_PATH,
+  IPHONE_TEST_HTTP_STATUS_PATH,
+} from "./http-constants"
 
 export class TestIphoneHttpServer {
   readonly server: Server
@@ -18,15 +23,33 @@ export class TestIphoneHttpServer {
 
   delayMs = 0
 
+  bodies: string[] = []
+
+  readonly statusPath = new HeldHttpPath()
+
+  readonly sessionPath = new HeldHttpPath()
+
   constructor() {
     this.server = createServer(this.handle.bind(this))
   }
 
   private handle(request: IncomingMessage, response: ServerResponse): void {
     this.requests++
+    request.setEncoding("utf8")
+    request.on("data", this.readBody.bind(this))
     if (request.url) {
       this.paths.push(request.url)
     }
+    if (this.statusPath.hold && request.url === IPHONE_TEST_HTTP_STATUS_PATH) {
+      void this.statusPath.waitAndRespond(response, this.respond.bind(this))
+    } else if (this.sessionPath.hold && request.url === IPHONE_TEST_HTTP_SESSION_PATH) {
+      void this.sessionPath.waitAndRespond(response, this.respond.bind(this))
+    } else {
+      this.respond(response)
+    }
+  }
+
+  private respond(response: ServerResponse): void {
     const status = this.statuses.shift()
     const body = this.responses.shift()
     response.writeHead(status ? status : this.status, { "content-type": "application/json" })
@@ -35,6 +58,10 @@ export class TestIphoneHttpServer {
     } else {
       response.end(body ? body : this.response)
     }
+  }
+
+  private readBody(chunk: string): void {
+    this.bodies.push(chunk)
   }
 
   private finish(response: ServerResponse, body: string): void {

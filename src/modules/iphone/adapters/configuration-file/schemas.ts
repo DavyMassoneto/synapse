@@ -8,6 +8,7 @@ export const IPHONE_CONFIG_CAPABILITIES_SCHEMA = Type.Object(
     newCommandTimeout: Type.Optional(Type.Number({ minimum: 1 })),
     wdaLaunchTimeout: Type.Optional(Type.Number({ minimum: 1 })),
     wdaConnectionTimeout: Type.Optional(Type.Number({ minimum: 1 })),
+    wdaLocalPort: Type.Optional(Type.Integer({ minimum: 1, maximum: IPHONE_CONFIG_MAX_PORT })),
     useNewWDA: Type.Optional(Type.Boolean()),
   },
   { additionalProperties: false },

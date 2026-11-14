@@ -1,5 +1,6 @@
 export * from "./body"
 export * from "./client"
+export * from "./close-session"
 export * from "./constants"
 export * from "./create-session"
 export * from "./diagnosis"

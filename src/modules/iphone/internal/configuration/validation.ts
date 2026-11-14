@@ -1,6 +1,6 @@
 import { checkIphoneHostSupport } from "#synapse/modules/iphone/internal/host-support"
+import { validateIphoneWdaEndpoint } from "#synapse/modules/iphone/internal/wda-endpoint"
 import {
-  IPHONE_ACCEPTED,
   IPHONE_MACOS,
   IPHONE_REFUSED,
   IPHONE_SIMULATOR,
@@ -34,5 +34,5 @@ export function validateIphoneConfiguration(config: IphoneConfiguration, host: I
   if (config.target.wdaUrl && !isIphoneHttpUrl(config.target.wdaUrl)) {
     return { kind: IPHONE_REFUSED, message: IPHONE_WDA_URL_INVALID }
   }
-  return { kind: IPHONE_ACCEPTED }
+  return validateIphoneWdaEndpoint(config)
 }
