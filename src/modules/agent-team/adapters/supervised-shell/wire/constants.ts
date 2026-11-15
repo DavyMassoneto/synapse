@@ -39,7 +39,7 @@ export const SHELL_REQUIREMENT_ADD_TYPE = "Shell supervisionado requer Add-Type 
 export const SHELL_REQUIREMENT_ADD_TYPE_MARKER = "ADD_TYPE_AVAILABLE"
 export const SHELL_REQUIREMENT_PROBE_FLAGS = ["-NoLogo", "-NoProfile", "-NonInteractive", "-Command"]
 export const SHELL_REQUIREMENT_PROBE =
-  "$ErrorActionPreference='Stop';Add-Type -TypeDefinition 'public sealed class SupervisedShellCapabilityProbe {}';[Console]::Out.WriteLine('ADD_TYPE_AVAILABLE')"
+  "$ErrorActionPreference='Stop';Add-Type -TypeDefinition 'public sealed class SupervisedShellCapabilityProbe { public static string Check() { return \"ADD_TYPE_AVAILABLE\"; } }';[Console]::Out.WriteLine([SupervisedShellCapabilityProbe]::Check())"
 export const SHELL_REQUIREMENT_PROBE_MS = 15000
 
 export const SHELL_WIRE_EVENT_DATA = "data"

@@ -54,7 +54,7 @@ function probeWindowsShell(
     checkedWindowsShell.bind(undefined, resolve, reject),
   )
 }
-function checkedWindowsShell(
+export function checkedWindowsShell(
   resolve: ShellRequirementResolve,
   reject: ShellRequirementReject,
   error: ShellRequirementError,

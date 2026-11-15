@@ -105,3 +105,9 @@ export const SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE = "diagnóstico limita bytes UTF
 export const SHELL_PROBE_DIAGNOSTIC_SUCCESS_TITLE = "diagnóstico preserva código e stderr inclusive marcador inválido"
 export const SHELL_PROBE_DIAGNOSTIC_PRIVATE_TEXT =
   "Add-Type failed C:\\Users\\Person\\secret.ps1 /home/person/secret.ps1 user@example.invalid token=private-token \u001b[31m"
+
+export const SHELL_REQUIREMENT_EXACT_MARKER_TITLE = "probe aceita somente marcador exato com sucesso"
+export const SHELL_REQUIREMENT_EXTRA_LINE_TITLE = "probe recusa stdout com linha extra mesmo com código zero"
+export const SHELL_REQUIREMENT_TEST_MARKER = "ADD_TYPE_AVAILABLE\n"
+export const SHELL_REQUIREMENT_TEST_EXTRA_LINE =
+  "WARNING: The generated type defines no public methods or properties.\nADD_TYPE_AVAILABLE\n"
