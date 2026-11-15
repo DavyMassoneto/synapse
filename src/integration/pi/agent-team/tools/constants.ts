@@ -43,7 +43,7 @@ export const TEAM_TOOL_TASK_GET_DESCRIPTION =
   "Lê o valor atual completo de uma tarefa compartilhada, antes de alterá-la ou executá-la."
 
 export const TEAM_TOOL_TASK_UPDATE_DESCRIPTION =
-  "Aplica uma transição a uma tarefa compartilhada, comparando com a revisão atual lida em team_task_get ou team_task_list."
+  "Aplica uma transição a uma tarefa compartilhada, comparando com a revisão atual lida em team_task_get ou team_task_list. reassign só reserva o responsável, mantém a tarefa pendente, aceita bloqueios e não inicia execução; só o lead reatribui. claim posterior do responsável inicia a tarefa quando pronta."
 
 export const TEAM_TOOL_SUBJECT_FIELD = "subject"
 

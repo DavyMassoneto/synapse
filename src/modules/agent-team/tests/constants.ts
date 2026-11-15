@@ -22,3 +22,31 @@ export const TEAM_TEST_CLEAN_MUTATION = "journal que altera lote e lança não m
 export const TEAM_TEST_CLEAN_UNRELATED = "limpeza não revisa abertas sem dependência das concluídas"
 export const TEAM_TEST_CLEAN_PLAN_ORDER = "plano preserva ordem e repetições sobreviventes sem alterar as fontes"
 export const TEAM_TEST_CLEAN_PLAN_COUNT = "plano conta concluídas sem contar abertas desbloqueadas"
+
+export const TEAM_TEST_REASSIGN_SUITE = "reserva de responsável no quadro"
+
+export const TEAM_TEST_REASSIGN_PENDING = "reserva responsável mantendo tarefa pendente"
+
+export const TEAM_TEST_REASSIGN_BLOCKED = "reserva responsável de tarefa bloqueada"
+
+export const TEAM_TEST_REASSIGN_NOT_STARTED = "não inicia tarefa reservada"
+
+export const TEAM_TEST_REASSIGN_ACTIVE_TO_PENDING = "reatribuição de tarefa em andamento volta a pendente"
+
+export const TEAM_TEST_REASSIGN_STALE_REVISION = "recusa revisão antiga sem mudar reserva"
+
+export const TEAM_TEST_REASSIGN_MEMBER_REFUSED = "recusa reatribuição por membro"
+
+export const TEAM_TEST_REASSIGN_OWNER_MISSING = "recusa responsável inexistente"
+
+export const TEAM_TEST_REASSIGN_OWNER_CLAIMS = "claim posterior do responsável inicia tarefa"
+
+export const TEAM_TEST_REASSIGN_OTHER_CLAIM_REFUSED = "reserva impede claim de outro membro"
+
+export const TEAM_TEST_REASSIGN_BLOCKED_CLAIM_REFUSED = "responsável reservado não assume enquanto bloqueada"
+
+export const TEAM_TEST_REASSIGN_REMOVE_RESERVATION = "lead remove reserva sem iniciar tarefa"
+
+export const TEAM_TEST_REASSIGN_MEMBER_MESSAGE = "Só o lead pode reatribuir tarefas"
+
+export const TEAM_TEST_REASSIGN_OWNER_MESSAGE = "O agente não existe nesta equipe: absent"
