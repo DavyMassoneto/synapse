@@ -10,6 +10,12 @@ export const PI_COMPUTER_CAPTURE_DIRECTORY = "captures"
 
 export const PI_COMPUTER_DRIVER_CONFIGURATION_FILE = "computer-use-driver.json"
 
+export const PI_COMPUTER_DRIVER_POLICY_CONFIGURATION_FILE = "computer-use-driver-policy.json"
+
+export const PI_COMPUTER_DRIVER_POLICY_CONFIGURED = "driver-policy-configured"
+
+export const PI_COMPUTER_DRIVER_POLICY_UNCONFIGURED = "driver-policy-unconfigured"
+
 export const PI_COMPUTER_DRIVER_PATH_VARIABLE = "PI_CUA_DRIVER_CMD"
 
 export const PI_COMPUTER_HOST_TIMEOUT_MILLISECONDS = 30000
