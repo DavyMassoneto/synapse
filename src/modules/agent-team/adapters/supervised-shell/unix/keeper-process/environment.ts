@@ -1,4 +1,4 @@
-import { type ShellWireEnvironmentEntry } from "../wire"
+import { type ShellWireEnvironmentEntry } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 
 export function createUnixShellEnvironment(entries: ShellWireEnvironmentEntry[]): NodeJS.ProcessEnv {
   const environment: NodeJS.ProcessEnv = {}

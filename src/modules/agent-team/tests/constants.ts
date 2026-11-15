@@ -174,7 +174,7 @@ export const SHELL_NATIVE_SESSION_DEATH_TITLE = "morte do keeper de sessão não
 
 export const SHELL_NATIVE_JOIN_KERNEL_TITLE = "kernel recusa join de outra sessão antes do exec"
 
-export const SHELL_RUNTIME_FILE = "../adapters/supervised-shell/unix/keeper.ts"
+export const SHELL_RUNTIME_FILE = "../adapters/supervised-shell/unix/keeper-process/keeper.ts"
 export const SHELL_RUNTIME_STDIO: ShellTestStdioOptions = ["ignore", "pipe", "pipe", "pipe", "ignore", "pipe"]
 export const SHELL_RUNTIME_INVALID_TITLE = "keeper real preserva controle inválido e encerra com writer aberto"
 export const SHELL_RUNTIME_PARTIAL_TITLE = "keeper real limita STOP parcial ao prazo original"

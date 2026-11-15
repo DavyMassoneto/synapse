@@ -1,17 +1,29 @@
 import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team/public/supervised-shell"
-import { type ShellCleanupAction, type ShellCleanupOutcome, type ShellOperationOutcome } from "./types"
+import {
+  type ShellCleanupInput,
+  type ShellCleanupOutcome,
+  type ShellCleanupReject,
+  type ShellOperationOutcome,
+} from "./types"
 
-export async function captureShellCleanup<T>(action: ShellCleanupAction<T>): Promise<ShellOperationOutcome<T>> {
+export async function captureShellCleanup<T>(
+  action: ShellCleanupInput<T>,
+  rejected?: ShellCleanupReject,
+): Promise<ShellOperationOutcome<T>> {
   try {
-    return { failed: false, value: await action() }
+    if (typeof action === "function") {
+      return { failed: false, value: await action() }
+    }
+    return { failed: false, value: await action }
   } catch (failure) {
+    let error = new Error(SUPERVISED_SHELL_STOP_FAILED)
     if (failure instanceof Error) {
-      return { failed: true, error: failure }
+      error = failure
+    } else if (typeof failure === "string") {
+      error = new Error(failure)
     }
-    if (typeof failure === "string") {
-      return { failed: true, error: new Error(failure) }
-    }
-    return { failed: true, error: new Error(SUPERVISED_SHELL_STOP_FAILED) }
+    rejected?.(error)
+    return { failed: true, error }
   }
 }
 

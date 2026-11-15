@@ -216,3 +216,5 @@ export const SUPERVISED_TEST_SETTINGS_FILE = "settings.json"
 export const SUPERVISED_TEST_BASH_TOOL = "bash"
 export const SUPERVISED_TEST_CAUSAL_SINK_DELAY_MS = 150
 export const SUPERVISED_TEST_NATIVE_OUTPUT_PARITY_TITLE = "saída 200 KB aceita com paridade nativa background=%s"
+
+export const SUPERVISED_TEST_STOP_RACE_TITLE = "abort vence falha de saída publicada um microtask após STOP"

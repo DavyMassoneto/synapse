@@ -111,8 +111,6 @@ export const SHELL_ZOMBIE_EXEC_SUFFIX = "'"
 
 export const SHELL_FIXTURE_CLOSE_TIMEOUT_ERROR = "processo da fixture não encerrou dentro do prazo"
 
-export const SHELL_BARRIER_POLL_MS = 10
-
 export const SHELL_BARRIER_STATUS_RUNNING = "Rs keeper-barrier.ts"
 export const SHELL_BARRIER_STATUS_ZOMBIE = "Z keeper-barrier.ts"
 export const SHELL_BARRIER_STATUS_RUNNING_TITLE = "processo ativo R não é tratado como morto"

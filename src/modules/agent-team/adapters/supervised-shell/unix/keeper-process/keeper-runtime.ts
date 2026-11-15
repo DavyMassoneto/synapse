@@ -1,7 +1,7 @@
 import { type ChildProcess } from "node:child_process"
 import { Socket } from "node:net"
 import { type Readable, type Writable } from "node:stream"
-import { type ShellWireSpec } from "../wire"
+import { type ShellWireSpec } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import {
   UNIX_CONTROL_INVALID,
   UNIX_CONTROL_RELEASE,
@@ -18,7 +18,7 @@ import {
 } from "./constants"
 import { UnixControlDecoder } from "./control-decoder"
 import { launchUnixNative } from "./native-launch"
-import { type UnixKeeperChunk, type UnixNativeDeadlineTimer, type UnixShellExitStatus } from "./types"
+import { type UnixNativeDeadlineTimer, type UnixShellExitStatus } from "./types"
 
 export class UnixKeeper {
   private readonly spec: ShellWireSpec
@@ -69,8 +69,7 @@ export class UnixKeeper {
       this.failed()
     }
   }
-  private receive(chunk: UnixKeeperChunk): void {
-    const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+  private receive(bytes: Buffer): void {
     this.input?.write(bytes)
     for (const instruction of this.decoder.receive(bytes)) {
       if (instruction.kind !== UNIX_CONTROL_RELEASE) {

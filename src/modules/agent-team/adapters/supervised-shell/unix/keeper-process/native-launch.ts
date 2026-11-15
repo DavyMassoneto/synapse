@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process"
 import { closeSync } from "node:fs"
-import { type ShellWireSpec } from "../wire"
+import { type ShellWireSpec } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import {
   UNIX_KEEPER_INVALID,
   UNIX_KEEPER_STDERR_FD,

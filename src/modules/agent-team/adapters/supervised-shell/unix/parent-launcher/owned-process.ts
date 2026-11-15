@@ -1,6 +1,6 @@
 import { type ChildProcess } from "node:child_process"
+import { SupervisedWireLease } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { SupervisedWireLease } from "../wire"
 import { UNIX_KEEPER_CONTROL_FD, UNIX_KEEPER_INVALID } from "./constants"
 import { confirmUnixKeeperClosed, terminateUnixKeeper } from "./terminate"
 import { type UnixPreparedProcess } from "./types"

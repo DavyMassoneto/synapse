@@ -34,6 +34,10 @@ function selectSupervisedBash(
       return Array.from(registered.values())
     }
   }
+  return [...registered.values(), buildSupervisedBashDefinition(request, shell)]
+}
+
+function buildSupervisedBashDefinition(request: SupervisedBashMountRequest, shell: SupervisedShellService) {
   const options: SupervisedBashToolOptions = {
     operations: new SupervisedBashOperations(shell, request.settings.getShellPath()),
   }
@@ -41,8 +45,5 @@ function selectSupervisedBash(
   if (prefix) {
     options.commandPrefix = prefix
   }
-  return [
-    ...registered.values(),
-    defineTool({ ...createBashToolDefinition(request.cwd, options), defaultActive: false }),
-  ]
+  return defineTool({ ...createBashToolDefinition(request.cwd, options), defaultActive: false })
 }

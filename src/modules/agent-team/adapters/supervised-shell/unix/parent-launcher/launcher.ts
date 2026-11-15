@@ -1,13 +1,18 @@
 import { spawn } from "node:child_process"
 import { join } from "node:path"
 import {
+  encodeShellSpec,
+  prepareShellLease,
+  writeShellSpec,
+} from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
+import {
   type SupervisedShellLauncher,
   type SupervisedShellLease,
   type SupervisedShellOutput,
   type SupervisedShellPreparedObserver,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { encodeShellSpec, prepareShellLease, writeShellSpec } from "../wire"
+import { provisionUnixLauncher } from "../provision"
 import {
   UNIX_KEEPER_IGNORE,
   UNIX_KEEPER_IMPORT,
@@ -19,7 +24,6 @@ import {
 } from "./constants"
 import { feedUnixShellInput } from "./input"
 import { ownUnixProcess } from "./owned-process"
-import { provisionUnixLauncher } from "./provision"
 
 export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
   async create(

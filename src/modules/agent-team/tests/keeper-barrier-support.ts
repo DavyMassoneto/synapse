@@ -1,7 +1,6 @@
 import { execFileSync, spawn } from "node:child_process"
 import { once } from "node:events"
 import { join } from "node:path"
-import { setTimeout } from "node:timers/promises"
 import { expect } from "vitest"
 import { confirmUnixGroupEmpty } from "./confirm-group"
 import { SHELL_KEEPER_BARRIER_ERROR, SHELL_KEEPER_BARRIER_FD, SHELL_KEEPER_BARRIER_FILE } from "./constants"
@@ -18,7 +17,6 @@ import {
 import {
   SHELL_BARRIER_CONTROL_FD,
   SHELL_BARRIER_MAX_ATTEMPTS,
-  SHELL_BARRIER_POLL_MS,
   SHELL_BARRIER_PS_ARGUMENT,
   SHELL_BARRIER_PS_ENCODING,
   SHELL_BARRIER_PS_FORMAT,
@@ -81,16 +79,13 @@ export class KeeperBarrierScenario {
       },
     ).trim()
   }
-  async assertOldKillRejected(): Promise<void> {
+  assertOldKillRejected(): void {
     let rejected = false
     for (let attempt = 0; attempt < SHELL_BARRIER_MAX_ATTEMPTS && !rejected; attempt++) {
       try {
         verifyBarrierStatus(this.readStatus())
       } catch {
         rejected = true
-      }
-      if (!rejected) {
-        await setTimeout(SHELL_BARRIER_POLL_MS)
       }
     }
     expect(rejected).toBe(true)

@@ -5,7 +5,7 @@ import {
   SHELL_WIRE_FRAME_LENGTH_BYTES,
   SHELL_WIRE_MAX_SPEC_BYTES,
   type ShellWireSpec,
-} from "../wire"
+} from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import { UNIX_KEEPER_CONTROL_FD, UNIX_KEEPER_INCOMPLETE_FRAME } from "./constants"
 import { UNIX_KEEPER_SPEC_SCHEMA } from "./schemas"
 

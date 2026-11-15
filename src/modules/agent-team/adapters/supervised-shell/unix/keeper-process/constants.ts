@@ -1,17 +1,10 @@
 import { type UnixNativeStdio } from "./types"
-export const UNIX_KEEPER_URL = "./keeper.ts"
-export const UNIX_KEEPER_PIPE = "pipe"
-export const UNIX_KEEPER_IGNORE = "ignore"
-export const UNIX_KEEPER_NODE = "--no-warnings"
 export const UNIX_KEEPER_INVALID = "Protocolo do keeper de shell inválido."
 
-export const UNIX_KEEPER_JITI_REGISTER = "jiti/register"
-export const UNIX_KEEPER_IMPORT = "--import"
 export const UNIX_KEEPER_CONTROL_FD = 3
 export const UNIX_KEEPER_INCOMPLETE_FRAME = "Frame de shell incompleto."
 
 export const UNIX_KEEPER_STDERR_FD = 2
-export const UNIX_KEEPER_UTF8 = "utf8"
 
 export const UNIX_NATIVE_CONTROL_FD = 3
 export const UNIX_NATIVE_STATUS_FD = 4

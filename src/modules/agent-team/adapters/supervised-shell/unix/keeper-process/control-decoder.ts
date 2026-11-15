@@ -1,4 +1,4 @@
-import { SHELL_WIRE_GATE_RELEASE } from "../wire"
+import { SHELL_WIRE_GATE_RELEASE } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import {
   UNIX_CONTROL_INVALID,
   UNIX_CONTROL_PARTIAL,
