@@ -1,4 +1,6 @@
 import {
+  COMPUTER_DRIVER_MAX_ELEMENTS_PROPERTY,
+  COMPUTER_DRIVER_TREE_FORMAT_PROPERTY,
   COMPUTER_MODE_SOM,
   COMPUTER_MODE_VISION,
   COMPUTER_TREE_FORMAT_ELEMENTS,
@@ -7,6 +9,7 @@ import {
   type ComputerCaptureMode,
   type ComputerDriverArguments,
   type ComputerDriverEnvelope,
+  type ComputerDriverTool,
 } from "#synapse/modules/computer-use/public/contracts"
 import { computerReadElementTree } from "../element-tree-reading"
 import {
@@ -26,6 +29,7 @@ import { type ComputerPreparedCapture } from "./types"
 export function computerPrepareCapture(
   action: ComputerCaptureAction,
   selection: ComputerTargetSelection,
+  tools: ComputerDriverTool[],
 ): ComputerPreparedCapture {
   const argumentsValue: ComputerDriverArguments = {}
   let mode: ComputerCaptureMode = COMPUTER_MODE_SOM
@@ -48,10 +52,22 @@ export function computerPrepareCapture(
     throw new Error(selection.message)
   }
   if (tool === COMPUTER_DISPATCH_WINDOW_STATE) {
-    argumentsValue.max_elements = COMPUTER_DISPATCH_MAX_ELEMENTS
-    argumentsValue.tree_format = COMPUTER_TREE_FORMAT_ELEMENTS
+    computerPrepareWindowStateArguments(argumentsValue, tools)
   }
   return { tool, arguments: argumentsValue, mode, app }
+}
+
+function computerPrepareWindowStateArguments(
+  argumentsValue: ComputerDriverArguments,
+  tools: ComputerDriverTool[],
+): void {
+  const windowState = tools.find((tool) => tool.name === COMPUTER_DISPATCH_WINDOW_STATE)
+  if (windowState?.inputProperties.includes(COMPUTER_DRIVER_MAX_ELEMENTS_PROPERTY)) {
+    argumentsValue.max_elements = COMPUTER_DISPATCH_MAX_ELEMENTS
+  }
+  if (windowState?.inputProperties.includes(COMPUTER_DRIVER_TREE_FORMAT_PROPERTY)) {
+    argumentsValue.tree_format = COMPUTER_TREE_FORMAT_ELEMENTS
+  }
 }
 
 export function computerCaptureFromEnvelope(

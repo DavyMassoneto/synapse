@@ -49,9 +49,10 @@ export class ComputerActionCaptures {
   async capture(
     action: ComputerCaptureAction,
     context: ComputerExecutionContext,
+    tools: ComputerDriverTool[],
     signal?: AbortSignal,
   ): Promise<ComputerRenderedScreenshot> {
-    const capture = await this.reader.capture(action, signal)
+    const capture = await this.reader.capture(action, tools, signal)
     this.snapshotTokens.clear()
     for (const element of capture.elements) {
       if (element.token) {
@@ -76,6 +77,7 @@ export class ComputerActionCaptures {
     action: ComputerInputAction,
     result: ComputerExecutedAction,
     context: ComputerExecutionContext,
+    tools: ComputerDriverTool[],
     signal?: AbortSignal,
   ): Promise<void> {
     if (
@@ -87,7 +89,7 @@ export class ComputerActionCaptures {
       } else {
         const target = computerTargetIdentity(this.target.current())
         if (target.kind === COMPUTER_EXACT_TARGET_SELECTED) {
-          await this.captureFollowingResult(target, result, context, signal)
+          await this.captureFollowingResult(target, result, context, tools, signal)
         }
       }
     }
@@ -97,12 +99,14 @@ export class ComputerActionCaptures {
     target: ComputerSelectedExactTarget,
     result: ComputerExecutedAction,
     context: ComputerExecutionContext,
+    tools: ComputerDriverTool[],
     signal?: AbortSignal,
   ): Promise<void> {
     try {
       result.capture = await this.capture(
         { action: COMPUTER_CAPTURE, pid: target.pid, windowId: target.windowId },
         context,
+        tools,
         signal,
       )
     } catch (error) {

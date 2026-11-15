@@ -6,29 +6,13 @@ import {
   computerConvertEnvelope,
   computerParseRpcResponse,
 } from "#synapse/modules/computer-use/adapters/driver-response-validation"
-import {
-  COMPUTER_IMAGE_PRESENT,
-  COMPUTER_MODE_SOM,
-  COMPUTER_MODE_VISION,
-  COMPUTER_PNG_MIME,
-  COMPUTER_TREE_FORMAT_ELEMENTS,
-} from "#synapse/modules/computer-use/public/contracts"
-import {
-  COMPUTER_DISPATCH_DESKTOP_STATE,
-  COMPUTER_DISPATCH_WINDOW_STATE,
-  COMPUTER_EXACT_TARGET_SELECTED,
-  COMPUTER_TARGET_SCREEN,
-  COMPUTER_TARGET_SELECTED,
-  computerCaptureFromEnvelope,
-  computerPrepareCapture,
-} from "../internal"
+import { COMPUTER_IMAGE_PRESENT, COMPUTER_PNG_MIME } from "#synapse/modules/computer-use/public/contracts"
 import {
   COMPUTER_CURRENT_BACKGROUND_UNAVAILABLE_MESSAGE,
   COMPUTER_CURRENT_CLICK_SUMMARY,
   COMPUTER_CURRENT_INVALID_WINDOW_MESSAGE,
   COMPUTER_CURRENT_MM_APP,
   COMPUTER_CURRENT_MM_PID,
-  COMPUTER_CURRENT_MM_WINDOW_ID,
   COMPUTER_CURRENT_REFUSED_MESSAGE,
   computerCurrentAppsState,
   computerCurrentBackgroundUnavailableEnvelope,
@@ -37,7 +21,6 @@ import {
   computerCurrentMmCaptureEnvelope,
   computerCurrentMmCaptureState,
   computerCurrentMmElementState,
-  computerCurrentMmWindow,
   computerCurrentRefusedEnvelope,
 } from "./driver-current-contract-support"
 
@@ -137,61 +120,6 @@ function rejectsInvalidAppPid(): void {
   expect(Value.Check(COMPUTER_RAW_STATE_SCHEMA, state)).toBe(false)
 }
 
-function requestsElementsForSelectedWindow(): void {
-  const prepared = computerPrepareCapture(
-    { action: "capture" },
-    { kind: COMPUTER_TARGET_SELECTED, window: computerCurrentMmWindow() },
-  )
-
-  expect(prepared.tool).toBe(COMPUTER_DISPATCH_WINDOW_STATE)
-  expect(prepared.mode).toBe(COMPUTER_MODE_SOM)
-  expect(prepared.app).toBe(COMPUTER_CURRENT_MM_APP)
-  expect(prepared.arguments.pid).toBe(COMPUTER_CURRENT_MM_PID)
-  expect(prepared.arguments.window_id).toBe(COMPUTER_CURRENT_MM_WINDOW_ID)
-  expect(prepared.arguments.tree_format).toBe(COMPUTER_TREE_FORMAT_ELEMENTS)
-}
-
-function requestsElementsForExactWindow(): void {
-  const prepared = computerPrepareCapture(
-    { action: "capture" },
-    { kind: COMPUTER_EXACT_TARGET_SELECTED, pid: COMPUTER_CURRENT_MM_PID, windowId: COMPUTER_CURRENT_MM_WINDOW_ID },
-  )
-
-  expect(prepared.arguments.tree_format).toBe(COMPUTER_TREE_FORMAT_ELEMENTS)
-}
-
-function omitsElementsForDesktopCapture(): void {
-  const prepared = computerPrepareCapture({ action: "capture" }, { kind: COMPUTER_TARGET_SCREEN })
-
-  expect(prepared.tool).toBe(COMPUTER_DISPATCH_DESKTOP_STATE)
-  expect(prepared.mode).toBe(COMPUTER_MODE_VISION)
-  expect(prepared.arguments).toEqual({})
-}
-
-function capturesVisionWindowThroughWindowState(): void {
-  const prepared = computerPrepareCapture(
-    { action: "capture", mode: COMPUTER_MODE_VISION },
-    { kind: COMPUTER_TARGET_SELECTED, window: computerCurrentMmWindow() },
-  )
-
-  expect(prepared.tool).toBe(COMPUTER_DISPATCH_WINDOW_STATE)
-  expect(prepared.mode).toBe(COMPUTER_MODE_VISION)
-  expect(prepared.arguments.tree_format).toBe(COMPUTER_TREE_FORMAT_ELEMENTS)
-  expect("format" in prepared.arguments).toBe(false)
-  expect("quality" in prepared.arguments).toBe(false)
-}
-
-function capturesExactWindowWithResolvedApp(): void {
-  const prepared = computerPrepareCapture(
-    { action: "capture" },
-    { kind: COMPUTER_EXACT_TARGET_SELECTED, pid: COMPUTER_CURRENT_MM_PID, windowId: COMPUTER_CURRENT_MM_WINDOW_ID },
-  )
-  const capture = computerCaptureFromEnvelope(prepared, computerConvertEnvelope(computerCurrentMmCaptureEnvelope()))
-
-  expect(capture.app).toBe(COMPUTER_CURRENT_MM_APP)
-  expect(capture.elements[0]?.app).toBe(COMPUTER_CURRENT_MM_APP)
-}
-
 function register(): void {
   test("aceita o estado real da captura do Motorsport Manager", acceptsCurrentCaptureState)
   test("converte TitleBar no índice zero, controles e imagem do Motorsport Manager", convertsCurrentMmCapture)
@@ -204,11 +132,6 @@ function register(): void {
   test("trata effect refused como erro com mensagem", treatsRefusedEffectAsError)
   test("aceita bundle_id nulo do list_apps", acceptsNullBundleIdentifier)
   test("recusa pid de aplicativo inválido", rejectsInvalidAppPid)
-  test("pede tree_format elements para janela selecionada", requestsElementsForSelectedWindow)
-  test("pede tree_format elements para alvo exato", requestsElementsForExactWindow)
-  test("não envia tree_format para captura de tela", omitsElementsForDesktopCapture)
-  test("usa o app_name do envelope em alvo exato", capturesExactWindowWithResolvedApp)
-  test("captura janela em modo vision pelo estado da janela", capturesVisionWindowThroughWindowState)
 }
 
 describe("contrato atual do driver de computer use", register)

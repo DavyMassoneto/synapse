@@ -107,7 +107,7 @@ export class ComputerActionDispatch {
   ): Promise<ComputerExecuteResult> {
     switch (action.action) {
       case COMPUTER_CAPTURE:
-        return { kind: COMPUTER_CAPTURED, capture: await this.captures.capture(action, context, signal) }
+        return { kind: COMPUTER_CAPTURED, capture: await this.captures.capture(action, context, this.tools, signal) }
       case COMPUTER_LIST_APPS:
       case COMPUTER_LIST_WINDOWS:
         return computerDispatchList(this.driver, action, this.target, signal)
@@ -176,7 +176,7 @@ export class ComputerActionDispatch {
       this.captures.attachToken(prepared, this.tools)
       computerCheckCancellation(signal)
       const result = computerDispatchJudgment(action, await this.driver.call(prepared.tool, prepared.arguments, signal))
-      await this.captures.after(action, result, context, signal)
+      await this.captures.after(action, result, context, this.tools, signal)
       return result
     } catch (error) {
       if (error instanceof ComputerExecutionCancelled) {

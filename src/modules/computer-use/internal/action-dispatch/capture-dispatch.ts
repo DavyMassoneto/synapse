@@ -5,6 +5,7 @@ import {
   type ComputerDriverArguments,
   type ComputerDriverEnvelope,
   type ComputerDriverPort,
+  type ComputerDriverTool,
   type ComputerPlatform,
   type ComputerWindow,
 } from "#synapse/modules/computer-use/public/contracts"
@@ -35,9 +36,13 @@ export class ComputerCaptureDispatch {
     this.platform = platform
   }
 
-  async capture(action: ComputerCaptureAction, signal?: AbortSignal): Promise<ComputerCapture> {
+  async capture(
+    action: ComputerCaptureAction,
+    tools: ComputerDriverTool[],
+    signal?: AbortSignal,
+  ): Promise<ComputerCapture> {
     const selection = await this.select(action, signal)
-    const prepared = computerPrepareCapture(action, selection)
+    const prepared = computerPrepareCapture(action, selection, tools)
     const envelope = await this.readState(prepared.tool, prepared.arguments, signal)
     return computerCaptureFromEnvelope(prepared, envelope)
   }

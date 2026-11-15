@@ -29,6 +29,10 @@ export const COMPUTER_DRIVER_PROTOCOL_VERSION = "2025-06-18"
 
 export const COMPUTER_TREE_FORMAT_ELEMENTS = "elements"
 
+export const COMPUTER_DRIVER_TREE_FORMAT_PROPERTY = "tree_format"
+
+export const COMPUTER_DRIVER_MAX_ELEMENTS_PROPERTY = "max_elements"
+
 export const COMPUTER_DRIVER_CLICK_TOOL = "click"
 
 export const COMPUTER_DRIVER_INPUT_TOOLS = [

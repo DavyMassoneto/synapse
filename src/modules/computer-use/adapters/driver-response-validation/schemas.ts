@@ -173,6 +173,8 @@ export const COMPUTER_RAW_INPUT_PROPERTIES_SCHEMA = Type.Object({
   element_token: Type.Optional(Type.Object({ type: Type.String() })),
   delivery_mode: Type.Optional(Type.Object({ type: Type.String() })),
   x: Type.Optional(Type.Object({ type: Type.String() })),
+  tree_format: Type.Optional(Type.Object({ type: Type.String() })),
+  max_elements: Type.Optional(Type.Object({ type: Type.String() })),
 })
 
 export const COMPUTER_RAW_TOOL_SCHEMA = Type.Object({
