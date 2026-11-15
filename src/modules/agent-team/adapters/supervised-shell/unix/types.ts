@@ -1,5 +1,5 @@
-import { type StdioOptions } from "node:child_process"
-import { type Writable } from "node:stream"
+import { type ChildProcess, type StdioOptions } from "node:child_process"
+import { type Readable, type Writable } from "node:stream"
 import { type SupervisedWireLease } from "../wire"
 export type UnixShellExitStatus = number | null
 
@@ -27,3 +27,9 @@ export interface UnixControlStop {
   deadline: bigint
 }
 export type UnixControlInstruction = UnixControlRelease | UnixControlPartial | UnixControlInvalid | UnixControlStop
+
+export interface UnixNativeProcess {
+  child: ChildProcess
+  input: Writable
+  status: Readable
+}

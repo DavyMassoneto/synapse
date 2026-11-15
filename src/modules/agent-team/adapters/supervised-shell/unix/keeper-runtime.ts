@@ -1,5 +1,4 @@
-import { type ChildProcess, spawn } from "node:child_process"
-import { closeSync } from "node:fs"
+import { type ChildProcess } from "node:child_process"
 import { Socket } from "node:net"
 import { type Readable, type Writable } from "node:stream"
 import { type ShellWireSpec } from "../wire"
@@ -10,26 +9,21 @@ import {
   UNIX_KEEPER_CONTROL_FD,
   UNIX_KEEPER_EVENT_CLOSE,
   UNIX_KEEPER_EVENT_DATA,
+  UNIX_KEEPER_EVENT_DRAIN,
   UNIX_KEEPER_EVENT_END,
   UNIX_KEEPER_EVENT_ERROR,
-  UNIX_KEEPER_INVALID,
-  UNIX_KEEPER_STDERR_FD,
-  UNIX_NATIVE_CONTROL_FD,
   UNIX_NATIVE_FAILURE_EXIT,
   UNIX_NATIVE_RECHECK_MS,
-  UNIX_NATIVE_STATUS_FD,
-  UNIX_NATIVE_STDIO,
   UNIX_NATIVE_STOP_BUDGET_NS,
-  UNIX_PARENT_STDIN_FD,
 } from "./constants"
 import { UnixControlDecoder } from "./control-decoder"
+import { launchUnixNative } from "./native-launch"
 import { type UnixKeeperChunk, type UnixNativeDeadlineTimer, type UnixShellExitStatus } from "./types"
 
 export class UnixKeeper {
   private readonly spec: ShellWireSpec
   private readonly executable: string
   private readonly control = new Socket({ fd: UNIX_KEEPER_CONTROL_FD, readable: true, writable: false })
-  private native?: ChildProcess
   private input?: Writable
   private statusInput?: Readable
   private readonly decoder = new UnixControlDecoder()
@@ -41,28 +35,17 @@ export class UnixKeeper {
     this.executable = executable
   }
   run(): void {
-    const environment: NodeJS.ProcessEnv = {}
-    for (const entry of this.spec.environment) {
-      environment[entry.name] = entry.value
-    }
-    this.native = spawn(this.executable, [this.spec.cwd, this.spec.executable, ...this.spec.arguments], {
-      env: environment,
-      stdio: UNIX_NATIVE_STDIO,
-    })
-    const input = this.native.stdio[UNIX_NATIVE_CONTROL_FD]
-    const status = this.native.stdio[UNIX_NATIVE_STATUS_FD]
-    if (!input || !("write" in input) || !status || !("read" in status)) {
-      throw new Error(UNIX_KEEPER_INVALID)
-    }
-    closeSync(UNIX_KEEPER_STDERR_FD)
-    closeSync(UNIX_PARENT_STDIN_FD)
-    this.input = input
-    this.statusInput = status
+    const native = launchUnixNative(this.spec, this.executable)
+    this.input = native.input
+    this.statusInput = native.status
+    this.bindEvents(native.child, native.input, native.status)
+  }
+  private bindEvents(child: ChildProcess, input: Writable, status: Readable): void {
     input.on(UNIX_KEEPER_EVENT_ERROR, this.eof.bind(this))
     status.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
     status.on(UNIX_KEEPER_EVENT_DATA, this.status.bind(this))
-    this.native.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
-    this.native.on(UNIX_KEEPER_EVENT_CLOSE, this.closed.bind(this))
+    child.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
+    child.on(UNIX_KEEPER_EVENT_CLOSE, this.closed.bind(this))
     process.stdout.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
     this.control.on(UNIX_KEEPER_EVENT_DATA, this.receive.bind(this))
     this.control.on(UNIX_KEEPER_EVENT_END, this.eof.bind(this))
@@ -75,7 +58,7 @@ export class UnixKeeper {
     } else {
       if (!process.stdout.write(bytes)) {
         this.statusInput?.pause()
-        process.stdout.once("drain", this.resumeStatus.bind(this))
+        process.stdout.once(UNIX_KEEPER_EVENT_DRAIN, this.resumeStatus.bind(this))
       }
     }
   }

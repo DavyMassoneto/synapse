@@ -56,7 +56,7 @@ export type ShellWirePreparationEmpty = ShellWirePreparationCancelled | ShellWir
 export type ShellUserAuthorization = "forbidden" | "authorized"
 export type ShellReleaseRequest = "absent" | "sent" | "revoked"
 export type ShellGateCommit = "closed" | "revoked" | "execution"
-export type ShellReservationProof = "absent" | "empty" | "uncertain"
+export type ShellReservationProof = "absent" | "empty"
 
 export type ShellWireStatus =
   | ShellWirePreparationEmpty

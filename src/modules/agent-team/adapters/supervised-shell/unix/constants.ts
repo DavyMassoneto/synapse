@@ -43,3 +43,5 @@ export const UNIX_CONTROL_RELEASE = "release"
 export const UNIX_CONTROL_PARTIAL = "partial-stop"
 export const UNIX_CONTROL_INVALID = "invalid"
 export const UNIX_CONTROL_STOP = "stop"
+
+export const UNIX_KEEPER_EVENT_DRAIN = "drain"

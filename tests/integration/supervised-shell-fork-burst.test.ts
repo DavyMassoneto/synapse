@@ -1,5 +1,7 @@
 import { afterAll, beforeAll, test } from "vitest"
 import {
+  SUPERVISED_BURST_LEASE_COUNT,
+  SUPERVISED_BURST_PREPARATION_HOOK_MS,
   SUPERVISED_TEST_NATIVE_BURST_TITLE,
   SUPERVISED_TEST_TIMEOUT_MS,
   SUPERVISED_TEST_WINDOWS,
@@ -10,13 +12,11 @@ const trials: SupervisedForkBurst[] = []
 
 async function prepareBursts(): Promise<void> {
   if (process.platform !== SUPERVISED_TEST_WINDOWS) {
-    const preparations: Promise<void>[] = []
-    for (let index = 0; index < 30; index++) {
+    for (let index = 0; index < SUPERVISED_BURST_LEASE_COUNT; index++) {
       const trial = new SupervisedForkBurst()
       trials.push(trial)
-      preparations.push(trial.prepare(index))
+      await trial.prepare(index)
     }
-    await Promise.all(preparations)
   }
 }
 
@@ -36,7 +36,7 @@ async function closeBursts(): Promise<void> {
   await Promise.all(closing)
 }
 
-beforeAll(prepareBursts, SUPERVISED_TEST_TIMEOUT_MS)
+beforeAll(prepareBursts, SUPERVISED_BURST_PREPARATION_HOOK_MS)
 afterAll(closeBursts, SUPERVISED_TEST_TIMEOUT_MS)
 test.skipIf(process.platform === SUPERVISED_TEST_WINDOWS)(
   SUPERVISED_TEST_NATIVE_BURST_TITLE,
