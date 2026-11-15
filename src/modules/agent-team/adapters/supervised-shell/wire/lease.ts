@@ -42,6 +42,9 @@ export class SupervisedWireLease implements SupervisedShellLease {
   constructor(child: ShellWireProcess, output: SupervisedShellOutput) {
     this.child = child
     child.status.on("end", this.onStatusEnd.bind(this))
+    child.status.on("error", this.onTransportError.bind(this))
+    child.input.on("error", this.onTransportError.bind(this))
+    child.output.on("error", this.onTransportError.bind(this))
     this.output = new ShellOutputDrain(child.output, output, this.finishOutput.bind(this), this.onError.bind(this))
     this.completion = new Promise<number>(this.capture.bind(this))
     this.completion.catch(this.observeFailure.bind(this))
@@ -147,6 +150,12 @@ export class SupervisedWireLease implements SupervisedShellLease {
       } else {
         throw error
       }
+    }
+  }
+
+  private onTransportError(error: Error): void {
+    if (!this.stopping) {
+      this.onError(error)
     }
   }
 

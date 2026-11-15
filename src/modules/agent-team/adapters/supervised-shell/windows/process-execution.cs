@@ -14,9 +14,9 @@ public sealed partial class SupervisedShellLauncher
             FileStream outputReader = new FileStream(outputHandle, FileAccess.Read, PipeBufferBytes, false);
             FileStream errorReader = new FileStream(errorHandle, FileAccess.Read, PipeBufferBytes, false);
             OutputPump stdoutPump = new OutputPump(outputReader);
-            Task output = Task.Run(stdoutPump.Run);
+            Task output = Task.Run(delegate { stdoutPump.Run(); });
             OutputPump stderrPump = new OutputPump(errorReader);
-            Task error = Task.Run(stderrPump.Run);
+            Task error = Task.Run(delegate { stderrPump.Run(); });
             SendCreated();
             Stream control = Console.OpenStandardInput();
             if (control.ReadByte() != ReleaseInstruction)
@@ -30,13 +30,13 @@ public sealed partial class SupervisedShellLauncher
                 return (int)InterruptedExit;
             }
             ResumeChecked(child.Thread);
-            Task<int> stop = Task.Run(() => control.ReadByte());
-            Task inputTask = Task.CompletedTask;
+            Task<int> stop = Task.Run<int>(delegate { return control.ReadByte(); });
+            Task inputTask = Task.FromResult(0);
             if (stdinWrite != IntPtr.Zero)
             {
                 IntPtr inputHandle = stdinWrite;
                 stdinWrite = IntPtr.Zero;
-                inputTask = Task.Run(() => WriteInput(inputHandle, input));
+                inputTask = Task.Run(delegate { WriteInput(inputHandle, input); });
             }
             while (WaitChecked(child.Process, PollMilliseconds) != 0)
             {
