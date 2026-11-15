@@ -31,9 +31,7 @@ export class TeamMemberResourceLoader extends DefaultResourceLoader {
     this.getExtensions().runtime.invalidate()
     this.paths.splice(0, this.paths.length, ...paths)
     await super.reload()
-    if (this.request.tools && this.request.shell) {
-      updateSupervisedBashTool(this.request, this.getExtensions())
-    }
+    updateSupervisedBashTool(this.request, this.getExtensions())
     const errors = this.getExtensions().errors
     if (errors.length > 0) {
       this.getExtensions().runtime.invalidate()

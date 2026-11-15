@@ -2,11 +2,11 @@ export const SHELL_WIRE_CREATED_BYTE = 1
 export const SHELL_WIRE_EXITED = 2
 export const SHELL_WIRE_GATE_RELEASE = 1
 export const SHELL_WIRE_STATUS_BYTES = 9
-export const SHELL_WIRE_KILL = "SIGKILL"
 export const SHELL_WIRE_INVALID = "Protocolo do keeper de shell inválido."
-export const SHELL_WIRE_INCOMPLETE = "Keeper de shell encerrou antes de confirmar a criação."
 
 export const SHELL_WIRE_KILLED_EXIT = 137
+export const SHELL_WIRE_STOP_WAIT_MS = 5000
+export const SHELL_WIRE_PREPARATION_WAIT_MS = 15000
 
 export const SHELL_WIRE_STATE_CREATED = "created"
 export const SHELL_WIRE_STATE_RELEASED = "released"
@@ -28,3 +28,6 @@ export const SHELL_WIRE_ERROR_MAX_BYTES = 4096
 export const SHELL_WIRE_ERROR_HEADER_BYTES = 3
 
 export const SHELL_WIRE_STATE_ACKNOWLEDGED = "acknowledged"
+
+export const SHELL_WIRE_MAX_SPEC_BYTES = 1048576
+export const SHELL_WIRE_FRAME_LENGTH_BYTES = 4

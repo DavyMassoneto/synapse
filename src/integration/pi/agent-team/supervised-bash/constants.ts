@@ -11,6 +11,4 @@ export const SUPERVISED_BASH_TIMEOUT_MAX_MESSAGE = "Invalid timeout: maximum is 
 
 export const SUPERVISED_BASH_STDIN = "stdin"
 
-export const SUPERVISED_BASH_CLOSE_SUCCEEDED = "succeeded"
-export const SUPERVISED_BASH_CLOSE_FAILED = "failed"
 export const SUPERVISED_BASH_CLOSE_FAILURE = "Falha ao encerrar os recursos do membro."

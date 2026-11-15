@@ -10,3 +10,6 @@ export interface SupervisedTestEnvironmentEntry {
 export type WindowsFaultsResolve = (result: string) => void
 export type WindowsFaultsReject = (error: Error) => void
 export type WindowsFaultsError = Error | null
+
+export type CancelledResultResolve = () => void
+export type CancelledResultCodeResolve = (code: number) => void

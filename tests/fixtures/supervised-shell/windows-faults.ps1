@@ -10,8 +10,10 @@ foreach ($name in @('WaitChecked', 'ResumeChecked')) {
         if ($name -eq 'WaitChecked') { $method.Invoke($null, @([IntPtr]::Zero, [uint32]0)) }
         else { $method.Invoke($null, @([IntPtr]::Zero)) }
         throw 'Unchecked native failure.'
-    } catch [System.Reflection.TargetInvocationException] {
-        if (-not ($_.Exception.InnerException -is [System.ComponentModel.Win32Exception])) { throw }
+    } catch {
+        $failure = $_.Exception
+        while ($failure.InnerException -and -not ($failure -is [System.ComponentModel.Win32Exception])) { $failure = $failure.InnerException }
+        if (-not ($failure -is [System.ComponentModel.Win32Exception]) -or $failure.NativeErrorCode -ne 6) { throw }
         [Console]::Out.WriteLine($name + ':CHECKED')
     }
 }

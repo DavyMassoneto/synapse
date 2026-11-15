@@ -2,33 +2,36 @@ import { spawn } from "node:child_process"
 import { createReadStream } from "node:fs"
 import { constants as osConstants } from "node:os"
 import {
-  UNIX_KEEPER_BYTE_COUNT_OFFSET,
+  SHELL_WIRE_CREATED_BYTE,
+  SHELL_WIRE_ERROR_BYTE,
+  SHELL_WIRE_ERROR_HEADER_BYTES,
+  SHELL_WIRE_ERROR_MAX_BYTES,
+  SHELL_WIRE_EXITED,
+  SHELL_WIRE_STATUS_BYTES,
+  type ShellWireSpec,
+  WIRE_BYTE_COUNT_OFFSET,
+} from "../wire"
+import {
   UNIX_KEEPER_CONTROL_FD,
-  UNIX_KEEPER_CREATED,
-  UNIX_KEEPER_ERROR_BYTE,
-  UNIX_KEEPER_ERROR_HEADER_BYTES,
-  UNIX_KEEPER_ERROR_MAX_BYTES,
-  UNIX_KEEPER_EXITED,
   UNIX_KEEPER_INTERVAL_MS,
   UNIX_KEEPER_KILL,
   UNIX_KEEPER_SIGHUP,
   UNIX_KEEPER_SIGNAL_OFFSET,
   UNIX_KEEPER_SIGTERM,
-  UNIX_KEEPER_STATUS_BYTES,
 } from "./constants"
-import { type UnixKeeperWireSpec, type UnixShellExitSignal, type UnixShellExitStatus } from "./types"
+import { type UnixShellExitSignal, type UnixShellExitStatus } from "./types"
 
 export class UnixKeeper {
-  private readonly spec: UnixKeeperWireSpec
+  private readonly spec: ShellWireSpec
   private exitCode = 1
   private reported = false
 
-  constructor(spec: UnixKeeperWireSpec) {
+  constructor(spec: ShellWireSpec) {
     this.spec = spec
   }
 
   announce(): void {
-    process.stdout.write(Buffer.from([UNIX_KEEPER_CREATED]))
+    process.stdout.write(Buffer.from([SHELL_WIRE_CREATED_BYTE]))
     process.on(UNIX_KEEPER_SIGTERM, this.stop.bind(this))
     process.on(UNIX_KEEPER_SIGHUP, this.stop.bind(this))
   }
@@ -72,9 +75,9 @@ export class UnixKeeper {
   }
   private failed(error: Error): void {
     const text = Buffer.from(error.message)
-    const bytes = text.subarray(0, UNIX_KEEPER_ERROR_MAX_BYTES)
-    const header = Buffer.alloc(UNIX_KEEPER_ERROR_HEADER_BYTES)
-    header[0] = UNIX_KEEPER_ERROR_BYTE
+    const bytes = text.subarray(0, SHELL_WIRE_ERROR_MAX_BYTES)
+    const header = Buffer.alloc(SHELL_WIRE_ERROR_HEADER_BYTES)
+    header[0] = SHELL_WIRE_ERROR_BYTE
     header.writeUInt16BE(bytes.length, 1)
     process.stdout.write(header)
     process.stdout.write(bytes)
@@ -82,10 +85,10 @@ export class UnixKeeper {
   private reportExit(): void {
     if (!this.reported) {
       this.reported = true
-      const status = Buffer.alloc(UNIX_KEEPER_STATUS_BYTES)
-      status[0] = UNIX_KEEPER_EXITED
+      const status = Buffer.alloc(SHELL_WIRE_STATUS_BYTES)
+      status[0] = SHELL_WIRE_EXITED
       status.writeInt32BE(this.exitCode, 1)
-      status.writeUInt32BE(0, UNIX_KEEPER_BYTE_COUNT_OFFSET)
+      status.writeUInt32BE(0, WIRE_BYTE_COUNT_OFFSET)
       process.stdout.write(status)
     }
   }

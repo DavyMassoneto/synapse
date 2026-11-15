@@ -92,7 +92,13 @@ async function transportErrorsDuringStop(channel: number): Promise<void> {
   channels[channel]?.emit("error", new Error(SHELL_LEASE_TRANSPORT_FAILURE))
   await stopped
   expect(owner.kills).toBe(1)
-  expect(lease.state).toBe("exited")
+  if (channel === 1) {
+    expect(lease.state).toBe("quarantined")
+    await expect(lease.completion).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
+  } else {
+    expect(lease.state).toBe("exited")
+    expect(await lease.completion).toBe(137)
+  }
 }
 
 async function transportErrorsBeforeStop(channel: number): Promise<void> {

@@ -19,5 +19,5 @@ if ($actual -eq $ShellFieldsWithInput) {
     $stdin = $spec.input
 }
 Add-Type -Path $ShellLauncherSources
-$code = [SupervisedShellLauncher]::Run($spec.executable, [string[]]$spec.arguments, $spec.cwd, $environment, $stdin, $false)
+$code = [SupervisedShellLauncher]::Run($spec.executable, [string[]]$spec.arguments, $spec.cwd, $environment, $stdin)
 exit $code

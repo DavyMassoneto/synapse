@@ -7,6 +7,7 @@ export class WindowsRawChannel {
   readonly completion: Promise<number>
   output = ""
   error = ""
+  statusBytes = Buffer.alloc(0)
   private readonly child: ChildProcessWithoutNullStreams
   private resolve?: WindowsChannelResolve
   private reject?: WindowsChannelReject
@@ -44,6 +45,7 @@ export class WindowsRawChannel {
     this.reject?.(error)
   }
   private status(chunk: Buffer): void {
+    this.statusBytes = Buffer.concat([this.statusBytes, chunk])
     if (chunk[0] === 1) {
       this.child.stdin.write(Buffer.from([1]))
     }

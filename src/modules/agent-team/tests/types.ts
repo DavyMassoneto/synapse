@@ -17,3 +17,6 @@ export interface TeamGenerationSut extends TeamTestSut {
   previousResult: TeamStartOutcome
   current: Promise<TeamStartOutcome>
 }
+
+export type ShellTestResolve = () => void
+export type ShellTestReject = (error: Error) => void

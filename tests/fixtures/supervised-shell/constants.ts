@@ -74,3 +74,16 @@ export const SUPERVISED_TEST_WINDOWS_BIG_STDIN_TITLE = "Windows interrompe stdin
 
 export const SUPERVISED_TEST_WINDOWS_FOREGROUND_DRAIN_TITLE =
   "Windows drena fence do produtor e sink lento antes do resultado"
+
+export const SUPERVISED_TEST_MARKER_SPLIT_TITLE = "marcador reconhece cada ponto de fragmentação e preserva texto %i"
+export const SUPERVISED_TEST_MARKER_ABSENT_TITLE = "texto sem marcador não altera ordem dos chunks"
+export const SUPERVISED_TEST_WINDOWS_FAULT_BUFFER_BYTES = 65536
+export const SUPERVISED_TEST_WINDOWS_OBSERVE_URL = "./windows-observe.ps1"
+export const SUPERVISED_TEST_WINDOWS_PID_SCRIPT =
+  "process.stderr.write('CHILD_PID:'+process.pid+'\\nWINDOWS_READY\\n');setInterval(()=>{},1000)"
+
+export const SUPERVISED_TEST_OUTPUT_FAILURE = "foreground lost"
+export const SUPERVISED_TEST_CANCEL_RESULT_ABORT_TITLE = "abort aguarda T após C falhar e preserva falhas: Tfail=%s"
+export const SUPERVISED_TEST_CANCEL_RESULT_TIMEOUT_TITLE = "timeout aguarda T após C falhar e preserva falhas: Tfail=%s"
+export const SUPERVISED_TEST_IMMEDIATE_ABORT_TITLE = "abort imediato antes da admissão preserva Command aborted"
+export const SUPERVISED_TEST_CLOSED_ABORT_TITLE = "supervisor fechado não é ocultado por abort concorrente"

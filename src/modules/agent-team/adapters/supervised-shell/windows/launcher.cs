@@ -39,7 +39,7 @@ public sealed partial class SupervisedShellLauncher
         return result;
     }
 
-    public static int Run(string executable, string[] arguments, string cwd, string environment, string input, bool failAssignment)
+    public static int Run(string executable, string[] arguments, string cwd, string environment, string input)
     {
         IntPtr stdoutRead = IntPtr.Zero;
         IntPtr stdoutWrite = IntPtr.Zero;
@@ -63,7 +63,7 @@ public sealed partial class SupervisedShellLauncher
             Check(SetHandleInformation(stderrRead, HandleInherit, 0));
             job = CreateJobObject(IntPtr.Zero, null);
             if (job == IntPtr.Zero) { throw new Win32Exception(Marshal.GetLastWin32Error()); }
-            child = LaunchAssigned(executable, arguments, cwd, environmentBlock, job, failAssignment, ref stdinRead, ref stdoutWrite, ref stderrWrite, ref attributesList, ref handles);
+            child = LaunchAssigned(executable, arguments, cwd, environmentBlock, job, ref stdinRead, ref stdoutWrite, ref stderrWrite, ref attributesList, ref handles);
             return ExecuteAssigned(child, ref job, ref stdoutRead, ref stderrRead, ref stdinWrite, input);
         }
         finally

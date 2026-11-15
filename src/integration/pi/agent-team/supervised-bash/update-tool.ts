@@ -8,18 +8,18 @@ export function updateSupervisedBashTool(request: SupervisedBashMountRequest, lo
   const tools = request.tools
   const shell = request.shell
   if (tools && shell) {
-    const names: string[] = []
+    let overridden = false
     for (const extension of loaded.extensions) {
-      names.push(...extension.tools.keys())
+      if (extension.tools.has(SUPERVISED_BASH_TOOL_NAME)) {
+        overridden = true
+      }
     }
-    const replacements = new Set(names)
     const registered = new Map<string, SupervisedBashToolList[number]>()
     for (const tool of tools) {
       registered.set(tool.name, tool)
     }
     registered.delete(SUPERVISED_BASH_TOOL_NAME)
     tools.splice(0, tools.length, ...registered.values())
-    const overridden = replacements.has(SUPERVISED_BASH_TOOL_NAME)
     if (!overridden) {
       appendSupervisedBash(request, tools, shell)
     }

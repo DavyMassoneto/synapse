@@ -1,15 +1,15 @@
+import { captureShellCleanup, finishShellCleanups } from "#synapse/modules/agent-team/public/supervised-shell/cleanup"
 import {
+  SUPERVISED_SHELL_ABORTED,
   SUPERVISED_SHELL_CLOSED,
   SUPERVISED_SHELL_STOP_FAILED,
+  type SupervisedShellCleanupOutcome,
   type SupervisedShellLauncher,
   type SupervisedShellLease,
   type SupervisedShellOutput,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
 import { ShellAdmission } from "./admission"
-import { SHELL_STOP_FAILED } from "./constants"
-import { stopShellAdmission } from "./stop-admission"
-import { type ShellStopOutcome } from "./types"
 
 export class SupervisedShellSupervisor {
   private readonly launcher: SupervisedShellLauncher
@@ -21,15 +21,26 @@ export class SupervisedShellSupervisor {
     this.launcher = launcher
   }
 
-  async create(spec: SupervisedShellSpec, output: SupervisedShellOutput): Promise<SupervisedShellLease> {
+  async create(
+    spec: SupervisedShellSpec,
+    output: SupervisedShellOutput,
+    signal?: AbortSignal,
+  ): Promise<SupervisedShellLease> {
     if (this.closed) {
       throw new Error(SUPERVISED_SHELL_CLOSED)
+    }
+    if (signal?.aborted) {
+      if (signal.reason instanceof Error) {
+        throw signal.reason
+      }
+      throw new Error(SUPERVISED_SHELL_ABORTED)
     }
     const admission = new ShellAdmission()
     const epoch = this.epoch
     this.admissions.add(admission)
     try {
-      const lease = await this.launcher.create(spec, output)
+      const cancellation = AbortSignal.any([admission.cancellation.signal, ...(signal ? [signal] : [])])
+      const lease = await this.launcher.create(spec, output, cancellation)
       admission.publish(lease)
       if (this.closed || epoch !== this.epoch || admission.revoked) {
         await lease.terminate()
@@ -59,19 +70,11 @@ export class SupervisedShellSupervisor {
 
   async stop(): Promise<void> {
     this.epoch++
-    const attempts: Promise<ShellStopOutcome>[] = []
+    const attempts: Promise<SupervisedShellCleanupOutcome>[] = []
     for (const admission of this.admissions) {
       admission.revoked = true
-      attempts.push(stopShellAdmission(admission))
+      attempts.push(captureShellCleanup(admission.stop.bind(admission)))
     }
-    const failures: Error[] = []
-    for (const result of await Promise.all(attempts)) {
-      if (result.kind === SHELL_STOP_FAILED) {
-        failures.push(result.error)
-      }
-    }
-    if (failures.length > 0) {
-      throw new AggregateError(failures, SUPERVISED_SHELL_STOP_FAILED)
-    }
+    await finishShellCleanups(attempts, SUPERVISED_SHELL_STOP_FAILED)
   }
 }

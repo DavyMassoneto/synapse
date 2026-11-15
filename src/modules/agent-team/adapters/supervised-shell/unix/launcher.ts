@@ -6,7 +6,7 @@ import {
   type SupervisedShellOutput,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { SupervisedWireLease } from "../wire"
+import { encodeShellSpec, SupervisedWireLease, writeShellSpec } from "../wire"
 import { confirmUnixGroupEmpty } from "./confirm-group"
 import {
   UNIX_KEEPER_CONTROL_FD,
@@ -14,17 +14,19 @@ import {
   UNIX_KEEPER_IMPORT,
   UNIX_KEEPER_INVALID,
   UNIX_KEEPER_JITI_REGISTER,
-  UNIX_KEEPER_LENGTH_BYTES,
   UNIX_KEEPER_NODE,
   UNIX_KEEPER_PIPE,
   UNIX_KEEPER_URL,
 } from "./constants"
-import { encodeUnixKeeperSpec } from "./encode-spec"
 import { terminateUnixKeeper } from "./terminate"
 
 export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
-  async create(spec: SupervisedShellSpec, output: SupervisedShellOutput): Promise<SupervisedShellLease> {
-    const content = encodeUnixKeeperSpec(spec)
+  async create(
+    spec: SupervisedShellSpec,
+    output: SupervisedShellOutput,
+    signal?: AbortSignal,
+  ): Promise<SupervisedShellLease> {
+    const content = encodeShellSpec(spec, UNIX_KEEPER_INVALID)
     const child = spawn(
       process.execPath,
       [UNIX_KEEPER_NODE, UNIX_KEEPER_IMPORT, UNIX_KEEPER_JITI_REGISTER, join(__dirname, UNIX_KEEPER_URL)],
@@ -49,16 +51,17 @@ export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
         terminate: terminateUnixKeeper.bind(undefined, child),
       },
       output,
+      signal,
     )
-    const header = Buffer.alloc(UNIX_KEEPER_LENGTH_BYTES)
-    header.writeUInt32BE(content.length)
-    input.write(header)
-    input.write(content)
+    writeShellSpec(input, content)
     try {
       await lease.ready()
       return lease
     } catch (error) {
       await lease.terminate()
+      if (signal?.aborted && signal.reason instanceof Error) {
+        throw signal.reason
+      }
       throw error
     }
   }

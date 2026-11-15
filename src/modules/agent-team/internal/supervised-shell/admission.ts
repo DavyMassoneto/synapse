@@ -5,6 +5,7 @@ import {
 import { type AdmissionResolve } from "./types"
 
 export class ShellAdmission {
+  readonly cancellation = new AbortController()
   revoked = false
   private lease?: SupervisedShellLease
   private finished?: AdmissionResolve
@@ -29,6 +30,7 @@ export class ShellAdmission {
   }
   async stop(): Promise<void> {
     this.revoked = true
+    this.cancellation.abort()
     await this.completion
     await this.lease?.terminate()
   }

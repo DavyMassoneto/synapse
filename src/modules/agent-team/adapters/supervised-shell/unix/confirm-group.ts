@@ -29,7 +29,7 @@ function readUnixGroups(resolve: UnixGroupResolve, reject: UnixGroupReject): voi
   execFile(
     UNIX_KEEPER_PS,
     UNIX_KEEPER_PS_ARGUMENTS,
-    { encoding: "utf8", maxBuffer: UNIX_KEEPER_PS_MAX_BYTES },
+    { encoding: "utf8", maxBuffer: UNIX_KEEPER_PS_MAX_BYTES, timeout: UNIX_KEEPER_GROUP_WAIT_MS },
     groupsRead.bind(undefined, resolve, reject),
   )
 }

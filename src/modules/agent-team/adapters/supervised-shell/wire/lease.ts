@@ -4,6 +4,7 @@ import {
   type SupervisedShellLeaseState,
   type SupervisedShellOutput,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
+import { ShellWireCompletion } from "./completion"
 import {
   SHELL_WIRE_COMPLETED,
   SHELL_WIRE_CREATED,
@@ -17,132 +18,118 @@ import {
   SHELL_WIRE_STATE_RELEASED,
 } from "./constants"
 import { ShellOutputDrain } from "./output-drain"
+import { ShellWireOwnership } from "./ownership"
+import { ShellWirePreparation } from "./preparation"
 import { ShellStatusReader } from "./status"
-import { type ShellWireProcess, type ShellWireReadyResolve, type ShellWireReject, type ShellWireResolve } from "./types"
+import { type ShellWireProcess } from "./types"
 
 export class SupervisedWireLease implements SupervisedShellLease {
   readonly id = randomUUID()
   state: SupervisedShellLeaseState = SHELL_WIRE_STATE_CREATED
-  readonly completion: Promise<number>
+  private readonly execution = new ShellWireCompletion()
+  readonly completion = this.execution.result
+  private readonly preparation: ShellWirePreparation
   private readonly child: ShellWireProcess
   private readonly output: ShellOutputDrain
-  private resolve?: ShellWireResolve
-  private reject?: ShellWireReject
-  private readyResolve?: ShellWireReadyResolve
-  private readyReject?: ShellWireReject
-  private createdObserved = false
   private readonly status = new ShellStatusReader()
   private released = false
-  private exited = false
   private closed = false
+  private readonly ownership: ShellWireOwnership
   private stopping?: Promise<void>
-  private acceptedBytes = 0
+  private failure?: Error
+  private ownershipConfirmed = false
   private pendingExit?: number
+  private readonly signal?: AbortSignal
 
-  constructor(child: ShellWireProcess, output: SupervisedShellOutput) {
+  constructor(child: ShellWireProcess, output: SupervisedShellOutput, signal?: AbortSignal) {
     this.child = child
+    this.ownership = new ShellWireOwnership(child, this.stopFailed.bind(this))
+    this.preparation = new ShellWirePreparation(this.onError.bind(this))
+    if (signal) {
+      this.signal = signal
+    }
+    this.output = new ShellOutputDrain(
+      child.output,
+      output,
+      this.finishOutput.bind(this),
+      this.onOutputError.bind(this),
+    )
     child.status.on("end", this.onStatusEnd.bind(this))
     child.status.on("error", this.onTransportError.bind(this))
     child.input.on("error", this.onTransportError.bind(this))
-    child.output.on("error", this.onTransportError.bind(this))
-    this.output = new ShellOutputDrain(child.output, output, this.finishOutput.bind(this), this.onError.bind(this))
-    this.completion = new Promise<number>(this.capture.bind(this))
-    this.completion.catch(this.observeFailure.bind(this))
     child.status.on("data", this.onStatus.bind(this))
     child.process.on("error", this.onError.bind(this))
     child.process.on("close", this.onClose.bind(this))
+    signal?.addEventListener("abort", this.onAbort.bind(this), { once: true })
+    if (signal?.aborted) {
+      this.onAbort()
+    }
   }
-
   private observeFailure(): void {
     this.state = SHELL_WIRE_STATE_QUARANTINED
   }
-
   ready(): Promise<void> {
-    return new Promise<void>(this.captureCreated.bind(this))
+    return this.preparation.current()
   }
-  private captureCreated(resolve: ShellWireReadyResolve, reject: ShellWireReject): void {
-    this.readyResolve = resolve
-    this.readyReject = reject
-    if (this.createdObserved) {
-      resolve()
-    } else if (this.closed || this.state === SHELL_WIRE_STATE_QUARANTINED) {
-      reject(new Error(SHELL_WIRE_INVALID))
-    }
-  }
-  private capture(resolve: ShellWireResolve, reject: ShellWireReject): void {
-    this.resolve = resolve
-    this.reject = reject
-  }
-
   release(): void {
-    if (!this.released && !this.closed) {
+    if (this.ownership.requested || this.failure || this.closed || this.signal?.aborted) {
+      throw new Error(SHELL_WIRE_INVALID)
+    }
+    if (!this.released) {
       this.status.release()
       this.state = SHELL_WIRE_STATE_RELEASED
       this.released = true
       this.child.input.write(Buffer.from([SHELL_WIRE_GATE_RELEASE]))
     }
   }
-
   terminate(): Promise<void> {
     if (!this.stopping) {
-      this.stopping = this.stop()
+      this.preparation.fail(new Error(SHELL_WIRE_INVALID))
+      if (this.status.state.kind === SHELL_WIRE_CREATED) {
+        this.status.release()
+      }
+      const owned = this.ownership.stop()
+      this.stopping = owned.then(this.stopped.bind(this))
     }
     return this.stopping
   }
-
-  private async stop(): Promise<void> {
-    if (this.closed && this.state === SHELL_WIRE_STATE_QUARANTINED) {
-      throw new Error(SHELL_WIRE_INVALID)
+  private stopped(): void {
+    this.preparation.fail(new Error(SHELL_WIRE_INVALID))
+    if (this.child.requiresEmptyAck && !this.status.empty) {
+      const error = new Error(SHELL_WIRE_INVALID)
+      this.stopFailed(error)
+      throw error
     }
-    if (!this.closed) {
-      try {
-        if (!this.released && this.createdObserved) {
-          this.prepareTermination()
-        }
-        this.child.terminate()
-      } catch (error) {
-        this.state = SHELL_WIRE_STATE_QUARANTINED
-        throw error
-      }
-      await new Promise<void>(this.waitClosed.bind(this))
-      try {
-        await this.child.confirmEmpty()
-        if (this.child.requiresEmptyAck && !this.status.empty) {
-          throw new Error(SHELL_WIRE_INVALID)
-        }
-        this.state = SHELL_WIRE_STATE_EXITED
-      } catch (error) {
-        this.state = SHELL_WIRE_STATE_QUARANTINED
-        throw error
-      }
+    this.ownershipConfirmed = true
+    if (!this.failure) {
+      this.state = SHELL_WIRE_STATE_EXITED
+    }
+    this.finishOutput()
+    this.output.cancel()
+    if (typeof this.pendingExit !== "number" && !this.failure) {
+      this.execution.complete(SHELL_WIRE_KILLED_EXIT)
     }
   }
-
-  private prepareTermination(): void {
-    try {
-      this.status.release()
-    } catch {
-      this.state = SHELL_WIRE_STATE_QUARANTINED
-    }
+  private stopFailed(error: Error): void {
+    this.failure = error
+    this.state = SHELL_WIRE_STATE_QUARANTINED
+    this.preparation.fail(error)
+    this.execution.fail(error)
   }
-
-  private waitClosed(resolve: ShellWireReadyResolve): void {
-    this.child.process.once("close", resolve)
-  }
-
   private onStatus(chunk: Buffer): void {
     try {
       this.status.receive(chunk)
       const state = this.status.state
       if (state.kind === SHELL_WIRE_CREATED) {
-        this.createdObserved = true
-        this.state = SHELL_WIRE_STATE_ACKNOWLEDGED
-        this.readyResolve?.()
+        if (!this.ownership.requested && !this.failure) {
+          this.state = SHELL_WIRE_STATE_ACKNOWLEDGED
+          this.preparation.ready()
+        } else if (this.ownership.requested) {
+          this.status.release()
+        }
       } else if (state.kind === SHELL_WIRE_COMPLETED) {
-        this.exited = true
         this.pendingExit = state.exitCode
-        this.acceptedBytes = state.acceptedBytes
-        this.output.fence(this.acceptedBytes)
+        this.output.fence(state.acceptedBytes)
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -152,15 +139,13 @@ export class SupervisedWireLease implements SupervisedShellLease {
       }
     }
   }
-
   private onTransportError(error: Error): void {
-    if (!this.stopping) {
+    if (!this.ownership.requested) {
       this.onError(error)
     }
   }
-
   private onStatusEnd(): void {
-    if (!this.stopping) {
+    if (!this.ownership.requested) {
       try {
         this.status.eof()
       } catch (error) {
@@ -172,37 +157,44 @@ export class SupervisedWireLease implements SupervisedShellLease {
       }
     }
   }
-
   private finishOutput(): void {
-    if (typeof this.pendingExit === "number" && this.output.fenced) {
-      this.complete(this.pendingExit)
+    if (
+      typeof this.pendingExit === "number" &&
+      this.output.fenced &&
+      !this.failure &&
+      (!this.ownership.requested || this.ownershipConfirmed)
+    ) {
+      this.execution.complete(this.pendingExit)
     }
   }
-  private complete(exitCode: number): void {
-    this.resolve?.(exitCode)
+  private onOutputError(error: Error): void {
+    if (!this.execution.settled) {
+      this.failure = error
+      this.state = SHELL_WIRE_STATE_QUARANTINED
+    }
+    this.execution.fail(error)
+    if (!this.ownership.requested && !this.closed) {
+      this.onError(error)
+    }
   }
   private onError(error: Error): void {
+    this.failure = error
     this.state = SHELL_WIRE_STATE_QUARANTINED
+    this.preparation.fail(error)
+    this.execution.fail(error)
     if (!this.closed) {
       this.terminate().catch(this.observeFailure.bind(this))
     }
-    this.readyReject?.(error)
-    this.reject?.(error)
+  }
+  private onAbort(): void {
+    this.preparation.fail(new Error(SHELL_WIRE_INVALID))
+    this.terminate().catch(this.observeFailure.bind(this))
   }
   private onClose(): void {
     this.closed = true
-    this.state =
-      this.child.requiresEmptyAck && this.status.empty ? SHELL_WIRE_STATE_EXITED : SHELL_WIRE_STATE_QUARANTINED
-    if (!this.createdObserved) {
-      this.readyReject?.(new Error(SHELL_WIRE_INVALID))
+    if (!this.ownership.requested) {
+      this.onError(new Error(SHELL_WIRE_INVALID))
     }
-    if (!this.exited) {
-      if (this.stopping) {
-        this.pendingExit = SHELL_WIRE_KILLED_EXIT
-        this.output.fence(this.acceptedBytes)
-      } else {
-        this.onError(new Error(SHELL_WIRE_INVALID))
-      }
-    }
+    this.ownership.close()
   }
 }

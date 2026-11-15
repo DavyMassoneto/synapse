@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 public sealed partial class SupervisedShellLauncher
 {
-    private static ProcessInformation LaunchAssigned(string executable, string[] arguments, string cwd, IntPtr environmentBlock, IntPtr job, bool failAssignment, ref IntPtr stdinRead, ref IntPtr stdoutWrite, ref IntPtr stderrWrite, ref IntPtr attributesList, ref IntPtr handles)
+    private static ProcessInformation LaunchAssigned(string executable, string[] arguments, string cwd, IntPtr environmentBlock, IntPtr job, ref IntPtr stdinRead, ref IntPtr stdoutWrite, ref IntPtr stderrWrite, ref IntPtr attributesList, ref IntPtr handles)
     {
         ProcessInformation child = new ProcessInformation();
         bool assigned = false;
@@ -35,7 +35,7 @@ public sealed partial class SupervisedShellLauncher
             Check(CloseHandle(stdinRead)); stdinRead = IntPtr.Zero;
             Check(CloseHandle(stdoutWrite)); stdoutWrite = IntPtr.Zero;
             Check(CloseHandle(stderrWrite)); stderrWrite = IntPtr.Zero;
-            if (!AssignProcessToJobObject(failAssignment ? IntPtr.Zero : job, child.Process))
+            if (!AssignProcessToJobObject(job, child.Process))
             {
                 Check(TerminateProcess(child.Process, AssignmentFailedExit));
                 WaitChecked(child.Process, Infinite);

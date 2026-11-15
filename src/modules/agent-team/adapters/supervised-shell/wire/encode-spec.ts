@@ -1,8 +1,8 @@
 import { type SupervisedShellSpec } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { type ShellWireEnvironmentEntry, type ShellWireSpec } from "../wire"
-import { WINDOWS_SHELL_INVALID, WINDOWS_SHELL_MAX_BYTES } from "./constants"
+import { SHELL_WIRE_MAX_SPEC_BYTES } from "./constants"
+import { type ShellWireEnvironmentEntry, type ShellWireSpec } from "./types"
 
-export function encodeWindowsShellSpec(spec: SupervisedShellSpec): Buffer {
+export function encodeShellSpec(spec: SupervisedShellSpec, errorText: string): Buffer {
   const environment: ShellWireEnvironmentEntry[] = []
   for (const [name, value] of Object.entries(spec.environment)) {
     if (typeof value === "string") {
@@ -11,10 +11,8 @@ export function encodeWindowsShellSpec(spec: SupervisedShellSpec): Buffer {
   }
   const wire: ShellWireSpec = { ...spec, environment }
   const serialized = JSON.stringify(wire)
-  const bytes = Buffer.byteLength(serialized)
-  if (bytes > WINDOWS_SHELL_MAX_BYTES) {
-    throw new Error(WINDOWS_SHELL_INVALID)
+  if (Buffer.byteLength(serialized) > SHELL_WIRE_MAX_SPEC_BYTES) {
+    throw new Error(errorText)
   }
-  const body = Buffer.from(serialized)
-  return body
+  return Buffer.from(serialized)
 }

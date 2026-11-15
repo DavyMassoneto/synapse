@@ -6,19 +6,22 @@ import {
   type SupervisedShellOutput,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { SupervisedWireLease } from "../wire"
+import { encodeShellSpec, SupervisedWireLease, writeShellSpec } from "../wire"
 import {
   WINDOWS_SHELL_FLAGS,
+  WINDOWS_SHELL_INVALID,
   WINDOWS_SHELL_LAUNCHER,
-  WINDOWS_SHELL_LENGTH_BYTES,
   WINDOWS_SHELL_POWERSHELL,
 } from "./constants"
-import { encodeWindowsShellSpec } from "./encode-spec"
 import { confirmWindowsShellEmpty, terminateWindowsShell } from "./terminate"
 
 export class WindowsSupervisedShellLauncher implements SupervisedShellLauncher {
-  async create(spec: SupervisedShellSpec, output: SupervisedShellOutput): Promise<SupervisedShellLease> {
-    const body = encodeWindowsShellSpec(spec)
+  async create(
+    spec: SupervisedShellSpec,
+    output: SupervisedShellOutput,
+    signal?: AbortSignal,
+  ): Promise<SupervisedShellLease> {
+    const body = encodeShellSpec(spec, WINDOWS_SHELL_INVALID)
     const child = spawn(WINDOWS_SHELL_POWERSHELL, [...WINDOWS_SHELL_FLAGS, join(__dirname, WINDOWS_SHELL_LAUNCHER)], {
       windowsHide: true,
       stdio: ["pipe", "pipe", "pipe"],
@@ -34,16 +37,17 @@ export class WindowsSupervisedShellLauncher implements SupervisedShellLauncher {
         terminate: terminateWindowsShell.bind(undefined, child.stdin),
       },
       output,
+      signal,
     )
-    const header = Buffer.alloc(WINDOWS_SHELL_LENGTH_BYTES)
-    header.writeUInt32BE(body.length)
-    child.stdin.write(header)
-    child.stdin.write(body)
+    writeShellSpec(child.stdin, body)
     try {
       await lease.ready()
       return lease
     } catch (error) {
       await lease.terminate()
+      if (signal?.aborted && signal.reason instanceof Error) {
+        throw signal.reason
+      }
       throw error
     }
   }
