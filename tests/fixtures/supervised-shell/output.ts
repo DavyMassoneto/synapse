@@ -5,15 +5,15 @@ import { SUPERVISED_TEST_MARKER_WAIT_MS, SUPERVISED_TEST_WINDOWS_MARKER } from "
 export class SupervisedTestOutput implements SupervisedShellOutput {
   chunks: Buffer[] = []
   private readonly events = new EventEmitter()
+  private readonly marker = Buffer.from(SUPERVISED_TEST_WINDOWS_MARKER)
   private tail = Buffer.alloc(0)
   private found = false
   async write(data: Buffer): Promise<void> {
     this.chunks.push(data)
     if (!this.found) {
-      const marker = Buffer.from(SUPERVISED_TEST_WINDOWS_MARKER)
       const window = Buffer.concat([this.tail, data])
-      this.found = window.includes(marker)
-      this.tail = window.subarray(Math.max(0, window.length - marker.length + 1))
+      this.found = window.includes(this.marker)
+      this.tail = window.subarray(Math.max(0, window.length - this.marker.length + 1))
       if (this.found) {
         this.events.emit(SUPERVISED_TEST_WINDOWS_MARKER)
       }

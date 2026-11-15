@@ -26,28 +26,28 @@ export interface ShellWireSpec {
   environment: ShellWireEnvironmentEntry[]
 }
 
-export interface ShellWireWaiting {
+interface ShellWireWaiting {
   kind: "waiting"
 }
-export interface ShellWireCreated {
+interface ShellWireCreated {
   kind: "created"
 }
-export interface ShellWireReleased {
+interface ShellWireReleased {
   kind: "released"
 }
-export interface ShellWireCompleted {
+interface ShellWireCompleted {
   kind: "completed"
   exitCode: number
   acceptedBytes: number
 }
-export interface ShellWireFailed {
+interface ShellWireFailed {
   kind: "failed"
 }
-export interface ShellWirePreparationCancelled {
+interface ShellWirePreparationCancelled {
   kind: "preparation-empty"
   reason: "cancelled"
 }
-export interface ShellWirePreparationFailed {
+interface ShellWirePreparationFailed {
   kind: "preparation-empty"
   reason: "failed"
   error: string

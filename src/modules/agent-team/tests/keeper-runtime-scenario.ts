@@ -2,9 +2,20 @@ import { type ChildProcess, spawn } from "node:child_process"
 import { join } from "node:path"
 import { type Readable, type Writable } from "node:stream"
 import { provisionUnixLauncher } from "#synapse/modules/agent-team/adapters/supervised-shell/unix"
-import { type ShellWireEnvironmentEntry } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import { SHELL_KEEPER_BARRIER_ERROR, SHELL_RUNTIME_FILE, SHELL_RUNTIME_STDIO } from "./constants"
+import { keeperSpecFrame } from "./keeper-spec-frame"
+import {
+  SHELL_RUNTIME_CONTROL_FD,
+  SHELL_RUNTIME_INPUT_FD,
+  SHELL_TEST_EVENT_CLOSE,
+  SHELL_TEST_EVENT_DATA,
+  SHELL_TEST_EVENT_ERROR,
+  SHELL_TEST_NODE_IMPORT,
+  SHELL_TEST_NODE_REGISTER,
+  SHELL_TEST_PIPE_ERROR,
+} from "./native-fixture-constants"
 import { type NativeFixtureExitCode } from "./types"
+import { waitFixtureClose } from "./wait-fixture-close"
 
 export class KeeperRuntimeScenario {
   readonly process: ChildProcess
@@ -12,7 +23,10 @@ export class KeeperRuntimeScenario {
   readonly status: Readable
   readonly output: Readable
   readonly terminal: Promise<number>
-  statusBytes = Buffer.alloc(0)
+  private readonly statusChunks: Buffer[] = []
+  get statusBytes(): Buffer {
+    return Buffer.concat(this.statusChunks)
+  }
   private readonly exit = Promise.withResolvers<number>()
   private constructor(child: ChildProcess, control: Writable, status: Readable, output: Readable) {
     this.process = child
@@ -20,7 +34,7 @@ export class KeeperRuntimeScenario {
     this.status = status
     this.output = output
     this.terminal = this.exit.promise
-    status.on("data", this.recordStatus.bind(this))
+    status.on(SHELL_TEST_EVENT_DATA, this.recordStatus.bind(this))
   }
   static async create(
     command: string,
@@ -33,46 +47,34 @@ export class KeeperRuntimeScenario {
     }
     const child = spawn(
       process.execPath,
-      ["--import", "jiti/register", join(__dirname, SHELL_RUNTIME_FILE), executable],
+      [SHELL_TEST_NODE_IMPORT, SHELL_TEST_NODE_REGISTER, join(__dirname, SHELL_RUNTIME_FILE), executable],
       { detached: true, stdio: SHELL_RUNTIME_STDIO },
     )
-    const control = child.stdio.at(3)
-    const input = child.stdio.at(5)
+    const control = child.stdio.at(SHELL_RUNTIME_CONTROL_FD)
+    const input = child.stdio.at(SHELL_RUNTIME_INPUT_FD)
     if (!control || !("write" in control) || !child.stdout || !child.stderr) {
       throw new Error(SHELL_KEEPER_BARRIER_ERROR)
     }
     const scenario = new KeeperRuntimeScenario(child, control, child.stdout, child.stderr)
-    child.on("close", scenario.closed.bind(scenario))
-    control.on("error", scenario.controlError.bind(scenario))
-    const environment: ShellWireEnvironmentEntry[] = []
-    for (const [name, value] of Object.entries(process.env)) {
-      if (typeof value === "string") {
-        environment.push({ name, value })
-      }
-    }
-    if (extraEnvironment) {
-      for (const [name, value] of Object.entries(extraEnvironment)) {
-        if (typeof value === "string") {
-          environment.push({ name, value })
-        }
-      }
-    }
-    const spec = Buffer.from(
-      JSON.stringify({ executable: "/bin/bash", arguments: ["-c", command], cwd: process.cwd(), environment }),
-    )
-    const header = Buffer.alloc(4)
-    header.writeUInt32BE(spec.length)
-    control.write(Buffer.concat([header, spec]))
+    child.on(SHELL_TEST_EVENT_CLOSE, scenario.closed.bind(scenario))
+    control.on(SHELL_TEST_EVENT_ERROR, scenario.controlError.bind(scenario))
+    control.write(keeperSpecFrame(command, extraEnvironment))
     if (input && "end" in input) {
       input.end()
     }
     return scenario
   }
+  async close(): Promise<void> {
+    if (!this.control.destroyed && !this.control.writableEnded) {
+      this.control.end()
+    }
+    await waitFixtureClose(this.terminal)
+  }
   private recordStatus(bytes: Buffer): void {
-    this.statusBytes = Buffer.concat([this.statusBytes, bytes])
+    this.statusChunks.push(bytes)
   }
   private controlError(error: Error): void {
-    if (!("code" in error && error.code === "EPIPE")) {
+    if (!("code" in error && error.code === SHELL_TEST_PIPE_ERROR)) {
       this.exit.reject(error)
     }
   }

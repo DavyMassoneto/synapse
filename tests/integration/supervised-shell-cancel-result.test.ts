@@ -5,10 +5,12 @@ import { SupervisedBashOperations } from "#synapse/integration/pi/agent-team/sup
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import {
   CancelledResultShell,
+  SUPERVISED_TEST_ABORT_PATTERN,
   SUPERVISED_TEST_CANCEL_COMMAND,
   SUPERVISED_TEST_CANCEL_RESULT_ABORT_TITLE,
   SUPERVISED_TEST_CANCEL_RESULT_TIMEOUT_TITLE,
   SUPERVISED_TEST_CLOSED_ABORT_TITLE,
+  SUPERVISED_TEST_CLOSED_PATTERN,
   SUPERVISED_TEST_IMMEDIATE_ABORT_TITLE,
   SUPERVISED_TEST_KILL_ERROR,
   SUPERVISED_TEST_OUTPUT_FAILURE,
@@ -25,7 +27,7 @@ async function cancelWithOutputFailure(abort: boolean, failed: boolean): Promise
     signal: cancellation.signal,
     onData: output.push.bind(output),
   })
-  const result = executing.catch(captureFailure)
+  const result = Promise.allSettled([executing])
   if (abort) {
     await setImmediate()
     cancellation.abort()
@@ -34,7 +36,15 @@ async function cancelWithOutputFailure(abort: boolean, failed: boolean): Promise
   shell.loseOutput()
   await expect(Promise.race([result, setImmediate()])).resolves.toBeUndefined()
   shell.finish(failed)
-  const error = await result
+  const [settled] = await result
+  expect(settled.status).toBe("rejected")
+  if (settled.status !== "rejected") {
+    throw new Error(SUPERVISED_TEST_OUTPUT_FAILURE)
+  }
+  if (!(settled.reason instanceof Error)) {
+    throw new Error(SUPERVISED_TEST_OUTPUT_FAILURE)
+  }
+  const error = settled.reason
   if (failed) {
     expect(error).toBeInstanceOf(AggregateError)
     if (error instanceof AggregateError) {
@@ -45,15 +55,6 @@ async function cancelWithOutputFailure(abort: boolean, failed: boolean): Promise
   } else {
     expect(error).toHaveProperty("message", SUPERVISED_TEST_OUTPUT_FAILURE)
   }
-}
-function captureFailure(error: Error): Error {
-  return error
-}
-async function abortedOutput(failed: boolean): Promise<void> {
-  await cancelWithOutputFailure(true, failed)
-}
-async function timedOutput(failed: boolean): Promise<void> {
-  await cancelWithOutputFailure(false, failed)
 }
 async function immediateAbort(): Promise<void> {
   const shell = createSupervisedShell()
@@ -68,7 +69,7 @@ async function immediateAbort(): Promise<void> {
       signal.signal,
     )
     signal.abort()
-    await expect(executing).rejects.toThrow(/^Command aborted$/)
+    await expect(executing).rejects.toThrow(SUPERVISED_TEST_ABORT_PATTERN)
     expect(output).toHaveLength(0)
   } finally {
     await shell.close()
@@ -86,11 +87,11 @@ async function closedAndAborted(): Promise<void> {
     onData: output.push.bind(output),
   })
   signal.abort()
-  await expect(executing).rejects.toThrow(/^Supervisor de shell encerrado\.$/)
+  await expect(executing).rejects.toThrow(SUPERVISED_TEST_CLOSED_PATTERN)
   expect(output).toHaveLength(0)
 }
 
-test.each([false, true])(SUPERVISED_TEST_CANCEL_RESULT_ABORT_TITLE, abortedOutput)
-test.each([false, true])(SUPERVISED_TEST_CANCEL_RESULT_TIMEOUT_TITLE, timedOutput)
+test.each([false, true])(SUPERVISED_TEST_CANCEL_RESULT_ABORT_TITLE, cancelWithOutputFailure.bind(undefined, true))
+test.each([false, true])(SUPERVISED_TEST_CANCEL_RESULT_TIMEOUT_TITLE, cancelWithOutputFailure.bind(undefined, false))
 test(SUPERVISED_TEST_IMMEDIATE_ABORT_TITLE, immediateAbort)
 test(SUPERVISED_TEST_CLOSED_ABORT_TITLE, closedAndAborted)

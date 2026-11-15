@@ -1,4 +1,5 @@
 export * from "./cancelled-result"
+export * from "./causal-output-sink"
 export * from "./cleanup-action"
 export * from "./close-job-proof"
 export * from "./constants"

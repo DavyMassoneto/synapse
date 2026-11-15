@@ -5,18 +5,31 @@ import { join } from "node:path"
 import { expect, test } from "vitest"
 import { verifyUnixLauncher } from "#synapse/modules/agent-team/adapters/supervised-shell/unix/provision"
 import { SHELL_NATIVE_IDENTITY_NEGATIVE_TITLE } from "./constants"
+import {
+  SHELL_IDENTITY_FILE,
+  SHELL_IDENTITY_INVALID_OUTPUTS,
+  SHELL_IDENTITY_NOT_EXECUTED,
+  SHELL_IDENTITY_PERMISSIONS_PREFIX,
+  SHELL_IDENTITY_SCRIPT_PREFIX,
+  SHELL_IDENTITY_SCRIPT_SUFFIX,
+  SHELL_IDENTITY_TEMP_PREFIX,
+  SHELL_TEST_HEX_ENCODING,
+  SHELL_TEST_NO_ARCHIVE_HASH,
+  SHELL_TEST_SHA256,
+  SHELL_TEST_WINDOWS_PLATFORM,
+} from "./native-scenario-constants"
 
 async function rejectsIdentity(output: string): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), "native-identity-"))
-  const file = join(directory, "launcher")
-  const content = `#!/bin/sh\nprintf '%s\\n' '${output}'\n`
+  const directory = await mkdtemp(join(tmpdir(), SHELL_IDENTITY_TEMP_PREFIX))
+  const file = join(directory, SHELL_IDENTITY_FILE)
+  const content = `${SHELL_IDENTITY_SCRIPT_PREFIX}${output}${SHELL_IDENTITY_SCRIPT_SUFFIX}`
   try {
     await writeFile(file, content)
     await expect(
       verifyUnixLauncher(file, {
-        name: "launcher",
-        sha256: createHash("sha256").update(content).digest("hex"),
-        archiveSha256: "",
+        name: SHELL_IDENTITY_FILE,
+        sha256: createHash(SHELL_TEST_SHA256).update(content).digest(SHELL_TEST_HEX_ENCODING),
+        archiveSha256: SHELL_TEST_NO_ARCHIVE_HASH,
       }),
     ).rejects.toThrow()
   } finally {
@@ -25,16 +38,16 @@ async function rejectsIdentity(output: string): Promise<void> {
 }
 
 async function rejectsWritableDirectory(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), "native-permissions-"))
-  const file = join(directory, "launcher")
+  const directory = await mkdtemp(join(tmpdir(), SHELL_IDENTITY_PERMISSIONS_PREFIX))
+  const file = join(directory, SHELL_IDENTITY_FILE)
   try {
-    await writeFile(file, "not executed")
+    await writeFile(file, SHELL_IDENTITY_NOT_EXECUTED)
     await chmod(directory, 0o777)
     await expect(
       verifyUnixLauncher(file, {
-        name: "launcher",
-        sha256: createHash("sha256").update("not executed").digest("hex"),
-        archiveSha256: "",
+        name: SHELL_IDENTITY_FILE,
+        sha256: createHash(SHELL_TEST_SHA256).update(SHELL_IDENTITY_NOT_EXECUTED).digest(SHELL_TEST_HEX_ENCODING),
+        archiveSha256: SHELL_TEST_NO_ARCHIVE_HASH,
       }),
     ).rejects.toThrow()
   } finally {
@@ -42,12 +55,8 @@ async function rejectsWritableDirectory(): Promise<void> {
   }
 }
 
-test
-  .skipIf(process.platform === "win32")
-  .each([
-    "synapse-unix-launcher-v0 darwin arm64 1",
-    "synapse-unix-launcher-v1 wrong arm64 1",
-    "synapse-unix-launcher-v1 darwin wrong 1",
-    "synapse-unix-launcher-v1 darwin arm64 0",
-  ])(SHELL_NATIVE_IDENTITY_NEGATIVE_TITLE, rejectsIdentity)
+test.skipIf(process.platform === SHELL_TEST_WINDOWS_PLATFORM).each(SHELL_IDENTITY_INVALID_OUTPUTS)(
+  SHELL_NATIVE_IDENTITY_NEGATIVE_TITLE,
+  rejectsIdentity,
+)
 test(SHELL_NATIVE_IDENTITY_NEGATIVE_TITLE, rejectsWritableDirectory)

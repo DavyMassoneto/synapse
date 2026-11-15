@@ -29,12 +29,12 @@
 #define RECHECK_MS 10
 #define MAX_ERROR_BYTES 4096
 #define NANOSECONDS_PER_SECOND 1000000000ULL
-#define NANOSECONDS_PER_MILLISECOND 1000000ULL
 #define EXEC_FAILURE_CODE 126
 #define INTERRUPTED_CODE 137
 #define PROTOCOL_FAILURE_CODE 94
+#define IDENTITY_FORMAT "%s %s %s %" PRIu64 "\n"
 #define IDENTITY_ARGUMENT "--identity"
-#define IDENTITY_TEXT "synapse-unix-launcher-v1"
+#define IDENTITY_TEXT "synapse-unix-launcher-v2"
 #ifdef __APPLE__
 #define IDENTITY_PLATFORM "darwin"
 #else

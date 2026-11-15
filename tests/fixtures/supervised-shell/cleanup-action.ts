@@ -1,4 +1,4 @@
-import { SUPERVISED_TEST_KILL_ERROR } from "./constants"
+import { SUPERVISED_TEST_CLEANUP_RESULT, SUPERVISED_TEST_KILL_ERROR } from "./constants"
 
 export class CleanupActionScenario {
   readonly error = new Error(SUPERVISED_TEST_KILL_ERROR)
@@ -11,6 +11,6 @@ export class CleanupActionScenario {
   }
   async complete(): Promise<number> {
     this.finished = true
-    return 7
+    return SUPERVISED_TEST_CLEANUP_RESULT
   }
 }

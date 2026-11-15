@@ -3,6 +3,7 @@ import { PassThrough } from "node:stream"
 import { expect, test, vi } from "vitest"
 import { SupervisedWireLease } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import { SHELL_NATIVE_LATE_ACK_TITLE } from "./constants"
+import { SHELL_TEST_CLOCK_METHOD, SHELL_TEST_STATE_QUARANTINED } from "./native-scenario-constants"
 import { ShellWireTestOwner, ShellWireTestSink } from "./shell-wire-support"
 
 async function lateAckBeforeTimer(): Promise<void> {
@@ -28,13 +29,13 @@ async function lateAckBeforeTimer(): Promise<void> {
   await ready
   const stopped = lease.terminate()
   const clock = vi
-    .spyOn(globalThis.process.hrtime, "bigint")
+    .spyOn(globalThis.process.hrtime, SHELL_TEST_CLOCK_METHOD)
     .mockReturnValue(globalThis.process.hrtime.bigint() + 6000000000n)
   try {
     status.write(Buffer.from([5, 0, 0, 0]))
     await expect(stopped).rejects.toThrow()
     await expect(lease.completion).rejects.toThrow()
-    expect(lease.state).toBe("quarantined")
+    expect(lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
   } finally {
     clock.mockRestore()
   }

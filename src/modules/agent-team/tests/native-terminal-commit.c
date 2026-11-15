@@ -19,7 +19,7 @@ static int empty_group(pid_t group, int value) {
 #undef kill
 
 int main(void) {
-    struct launcher state;
+    struct reservation_state state;
     memset(&state, 0, sizeof(state));
     state.child = getpid();
     state.reaped = 1;

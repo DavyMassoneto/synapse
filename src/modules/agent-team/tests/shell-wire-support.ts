@@ -2,6 +2,7 @@ import { type ChildProcess } from "node:child_process"
 import { type PassThrough } from "node:stream"
 import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
 import { SHELL_LEASE_TEST_OUTPUT_FAILURE } from "./constants"
+import { SHELL_LIFECYCLE_KILLED_CODE, SHELL_TEST_EVENT_CLOSE } from "./native-fixture-constants"
 
 export class ShellWireTestOwner {
   kills = 0
@@ -17,7 +18,7 @@ export class ShellWireTestOwner {
   }
   private close(): void {
     this.output.end()
-    this.child.emit("close", 137)
+    this.child.emit(SHELL_TEST_EVENT_CLOSE, SHELL_LIFECYCLE_KILLED_CODE)
   }
   async confirmEmpty(): Promise<void> {
     this.child.removeAllListeners()

@@ -9,6 +9,7 @@ import {
   SHELL_FAILED_CREATE_TRACKED_TITLE,
 } from "./constants"
 import { FailedAdmissionLauncher } from "./failed-admission-support"
+import { SHELL_ADMISSION_BEFORE_SPAWN, SHELL_ADMISSION_FAILURE_MODES } from "./native-fixture-constants"
 import { ShellWireTestSink } from "./shell-wire-support"
 
 async function failedCreateRetainsOwnership(mode: string): Promise<void> {
@@ -35,7 +36,9 @@ async function beforeSpawnRetires(): Promise<void> {
   const launcher = new FailedAdmissionLauncher()
   launcher.beforeSpawn = true
   const supervisor = new SupervisedShellSupervisor(launcher)
-  await expect(supervisor.create(SHELL_ADMISSION_TEST_SPEC, new ShellWireTestSink())).rejects.toThrow("before spawn")
+  await expect(supervisor.create(SHELL_ADMISSION_TEST_SPEC, new ShellWireTestSink())).rejects.toThrow(
+    SHELL_ADMISSION_BEFORE_SPAWN,
+  )
   await supervisor.close()
   expect(launcher.scenario.kills).toBe(0)
   launcher.scenario.synchronousClose = true
@@ -55,6 +58,6 @@ async function failedCreateTimedOutOwnership(): Promise<void> {
 }
 
 test(SHELL_FAILED_CREATE_TIMEOUT_TITLE, failedCreateTimedOutOwnership, SHELL_FAILED_CREATE_TEST_WAIT_MS)
-test.each(["protocol", "ready", "abort"])(SHELL_FAILED_CREATE_TRACKED_TITLE, failedCreateRetainsOwnership)
+test.each(SHELL_ADMISSION_FAILURE_MODES)(SHELL_FAILED_CREATE_TRACKED_TITLE, failedCreateRetainsOwnership)
 test(SHELL_FAILED_CREATE_RETIRED_TITLE, cleanFailedCreateRetires)
 test(SHELL_FAILED_CREATE_PRESPAWN_TITLE, beforeSpawnRetires)

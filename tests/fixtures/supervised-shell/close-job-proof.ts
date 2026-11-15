@@ -1,5 +1,6 @@
 import { expect } from "vitest"
 import {
+  SUPERVISED_TEST_CHILD_ABSENT,
   SUPERVISED_TEST_CLOSE_ACCEPTED_OFFSET,
   SUPERVISED_TEST_CLOSE_CREATED_BYTE,
   SUPERVISED_TEST_CLOSE_EMPTY_BYTE,
@@ -7,11 +8,12 @@ import {
   SUPERVISED_TEST_CLOSE_EXIT_BYTE,
   SUPERVISED_TEST_CLOSE_EXIT_OFFSET,
   SUPERVISED_TEST_CLOSE_FRAME_BYTES,
+  SUPERVISED_TEST_PID_PATTERN,
 } from "./constants"
 
 export function verifyCloseJobObservation(pid: string, observed: string): void {
-  expect(pid).toMatch(/^\d+$/)
-  expect(observed.trim()).toBe(`CHILD_ABSENT:${pid}`)
+  expect(pid).toMatch(SUPERVISED_TEST_PID_PATTERN)
+  expect(observed.trim()).toBe(`${SUPERVISED_TEST_CHILD_ABSENT}${pid}`)
 }
 
 export function verifyCloseJobStatus(bytes: Buffer): void {

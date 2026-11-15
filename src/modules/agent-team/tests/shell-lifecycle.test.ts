@@ -14,6 +14,7 @@ import {
   SHELL_MATRIX_STOP_OUTPUT_TITLE,
   SHELL_MATRIX_SYNC_TITLE,
 } from "./constants"
+import { SHELL_TEST_STATE_EXITED, SHELL_TEST_STATE_QUARANTINED } from "./native-scenario-constants"
 import { ShellLifecycleScenario } from "./shell-lifecycle-support"
 
 async function incompleteEof(windows: boolean): Promise<void> {
@@ -39,7 +40,7 @@ async function outputDestroyedDuringStop(windows: boolean): Promise<void> {
   scenario.close(windows)
   await stopped
   expect(scenario.confirmations).toBe(1)
-  expect(scenario.lease.state).toBe("quarantined")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
 }
 async function confirmFailureRejectsSynthetic(windows: boolean): Promise<void> {
   const scenario = new ShellLifecycleScenario(windows)
@@ -53,7 +54,7 @@ async function confirmFailureRejectsSynthetic(windows: boolean): Promise<void> {
   scenario.close(windows)
   await expect(stopped).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
   await expect(scenario.lease.completion).rejects.toThrow()
-  expect(scenario.lease.state).toBe("quarantined")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
 }
 async function confirmationBeforeExited(windows: boolean): Promise<void> {
   const scenario = new ShellLifecycleScenario(windows)
@@ -67,7 +68,7 @@ async function confirmationBeforeExited(windows: boolean): Promise<void> {
   const stopped = scenario.lease.terminate()
   scenario.close(windows)
   await setImmediate()
-  expect(scenario.lease.state).not.toBe("exited")
+  expect(scenario.lease.state).not.toBe(SHELL_TEST_STATE_EXITED)
   scenario.confirm()
   await stopped
   await expect(scenario.lease.completion).rejects.toThrow()
@@ -78,7 +79,7 @@ async function readyAndRevocation(): Promise<void> {
   expect(scenario.lease.ready()).toBe(scenario.lease.ready())
   await scenario.prepare()
   const stopped = scenario.lease.terminate()
-  expect(() => scenario.lease.release()).toThrow()
+  expect(scenario.lease.release.bind(scenario.lease)).toThrow()
   expect(scenario.input.readableLength).toBe(0)
   scenario.close(false)
   await stopped
@@ -93,7 +94,7 @@ async function abortPreparation(): Promise<void> {
   scenario.close(false)
   await expect(ready).rejects.toThrow()
   await stopped
-  expect(() => scenario.lease.release()).toThrow()
+  expect(scenario.lease.release.bind(scenario.lease)).toThrow()
   expect(scenario.kills).toBe(1)
   expect(await scenario.lease.completion).toBe(137)
 }
@@ -105,7 +106,7 @@ async function missingEmptyAck(): Promise<void> {
   scenario.close(false)
   await expect(stopped).rejects.toThrow()
   await expect(scenario.lease.completion).rejects.toThrow()
-  expect(scenario.lease.state).toBe("quarantined")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
 }
 
 async function normalResultBeforeFailedStop(windows: boolean): Promise<void> {
@@ -119,7 +120,7 @@ async function normalResultBeforeFailedStop(windows: boolean): Promise<void> {
   scenario.close(windows)
   await expect(stopped).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
   expect(await scenario.lease.completion).toBe(0)
-  expect(scenario.lease.state).toBe("quarantined")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
 }
 async function sinkRejectDuringStop(windows: boolean): Promise<void> {
   const scenario = new ShellLifecycleScenario(windows)
@@ -134,7 +135,7 @@ async function sinkRejectDuringStop(windows: boolean): Promise<void> {
   await expect(scenario.lease.completion).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
   scenario.close(windows)
   await stopped
-  expect(scenario.lease.state).toBe("quarantined")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
 }
 
 async function readyNeverRevives(): Promise<void> {
@@ -144,12 +145,12 @@ async function readyNeverRevives(): Promise<void> {
   const ready = scenario.lease.ready()
   expect(scenario.lease.ready()).toBe(ready)
   await expect(ready).rejects.toThrow()
-  expect(() => scenario.lease.release()).toThrow()
+  expect(scenario.lease.release.bind(scenario.lease)).toThrow()
   expect(scenario.input.readableLength).toBe(0)
   const stopped = scenario.lease.terminate()
   scenario.close(false)
   await stopped
-  expect(scenario.lease.state).toBe("quarantined")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
 }
 async function synchronousClose(): Promise<void> {
   const scenario = new ShellLifecycleScenario(false)
@@ -157,7 +158,7 @@ async function synchronousClose(): Promise<void> {
   await scenario.prepare()
   await scenario.lease.terminate()
   expect(scenario.confirmations).toBe(1)
-  expect(scenario.lease.state).toBe("exited")
+  expect(scenario.lease.state).toBe(SHELL_TEST_STATE_EXITED)
   expect(await scenario.lease.completion).toBe(137)
 }
 

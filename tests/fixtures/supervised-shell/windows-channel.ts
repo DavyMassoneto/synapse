@@ -1,33 +1,48 @@
 import { type ChildProcessWithoutNullStreams, spawn } from "node:child_process"
 import { fileURLToPath } from "node:url"
-import { SUPERVISED_TEST_WINDOWS_LAUNCHER_URL, WINDOWS_SHELL_FLAGS, WINDOWS_SHELL_POWERSHELL } from "./constants"
-import { type WindowsChannelExitCode, type WindowsChannelReject, type WindowsChannelResolve } from "./types"
+import {
+  SUPERVISED_TEST_WINDOWS_CLOSE_BYTE,
+  SUPERVISED_TEST_WINDOWS_CLOSE_EVENT,
+  SUPERVISED_TEST_WINDOWS_CREATED_BYTE,
+  SUPERVISED_TEST_WINDOWS_ERROR_EVENT,
+  SUPERVISED_TEST_WINDOWS_HEADER_BYTES,
+  SUPERVISED_TEST_WINDOWS_LAUNCHER_URL,
+  SUPERVISED_TEST_WINDOWS_MARKER,
+  SUPERVISED_TEST_WINDOWS_RELEASE_BYTE,
+  SUPERVISED_TEST_WINDOWS_STATUS_EVENT,
+  SUPERVISED_TEST_WINDOWS_STDIO,
+  WINDOWS_SHELL_FLAGS,
+  WINDOWS_SHELL_POWERSHELL,
+} from "./constants"
+import { type WindowsChannelExitCode } from "./types"
 
 export class WindowsRawChannel {
   readonly completion: Promise<number>
   output = ""
   error = ""
-  statusBytes = Buffer.alloc(0)
+  private readonly statusChunks: Buffer[] = []
+  get statusBytes(): Buffer {
+    return Buffer.concat(this.statusChunks)
+  }
   closeStarted?: number
   closeFinished?: number
   private readonly child: ChildProcessWithoutNullStreams
-  private resolve?: WindowsChannelResolve
-  private reject?: WindowsChannelReject
+  private readonly result = Promise.withResolvers<number>()
   private closingHandle = false
 
   constructor(body: Buffer, closeHandle: boolean, declaredBytes?: number) {
-    this.completion = new Promise<number>(this.capture.bind(this))
+    this.completion = this.result.promise
     this.closingHandle = closeHandle
     this.child = spawn(
       WINDOWS_SHELL_POWERSHELL,
       [...WINDOWS_SHELL_FLAGS, fileURLToPath(new URL(SUPERVISED_TEST_WINDOWS_LAUNCHER_URL, import.meta.url))],
-      { stdio: ["pipe", "pipe", "pipe"] },
+      { stdio: [SUPERVISED_TEST_WINDOWS_STDIO, SUPERVISED_TEST_WINDOWS_STDIO, SUPERVISED_TEST_WINDOWS_STDIO] },
     )
-    this.child.stdout.on("data", this.status.bind(this))
-    this.child.stderr.on("data", this.receive.bind(this))
-    this.child.on("error", this.failed.bind(this))
-    this.child.on("close", this.closed.bind(this))
-    const header = Buffer.alloc(4)
+    this.child.stdout.on(SUPERVISED_TEST_WINDOWS_STATUS_EVENT, this.status.bind(this))
+    this.child.stderr.on(SUPERVISED_TEST_WINDOWS_STATUS_EVENT, this.receive.bind(this))
+    this.child.on(SUPERVISED_TEST_WINDOWS_ERROR_EVENT, this.failed.bind(this))
+    this.child.on(SUPERVISED_TEST_WINDOWS_CLOSE_EVENT, this.closed.bind(this))
+    const header = Buffer.alloc(SUPERVISED_TEST_WINDOWS_HEADER_BYTES)
     if (typeof declaredBytes === "number") {
       header.writeUInt32BE(declaredBytes)
     } else {
@@ -39,31 +54,27 @@ export class WindowsRawChannel {
       this.child.stdin.end()
     }
   }
-  private capture(resolve: WindowsChannelResolve, reject: WindowsChannelReject): void {
-    this.resolve = resolve
-    this.reject = reject
-  }
   private failed(error: Error): void {
-    this.reject?.(error)
+    this.result.reject(error)
   }
   private status(chunk: Buffer): void {
-    this.statusBytes = Buffer.concat([this.statusBytes, chunk])
-    if (chunk[0] === 1) {
-      this.child.stdin.write(Buffer.from([1]))
+    this.statusChunks.push(chunk)
+    if (chunk[0] === SUPERVISED_TEST_WINDOWS_CREATED_BYTE) {
+      this.child.stdin.write(Buffer.from([SUPERVISED_TEST_WINDOWS_RELEASE_BYTE]))
     }
   }
   private receive(chunk: Buffer): void {
     this.error += chunk.toString()
-    if (this.closingHandle && this.error.includes("WINDOWS_READY")) {
+    if (this.closingHandle && this.error.includes(SUPERVISED_TEST_WINDOWS_MARKER)) {
       this.closeStarted = performance.now()
-      this.child.stdin.end(Buffer.from([3]))
+      this.child.stdin.end(Buffer.from([SUPERVISED_TEST_WINDOWS_CLOSE_BYTE]))
       this.closingHandle = false
     }
   }
   private closed(code: WindowsChannelExitCode): void {
     this.closeFinished = performance.now()
     if (typeof code === "number") {
-      this.resolve?.(code)
+      this.result.resolve(code)
     } else {
       this.failed(new Error(this.error))
     }

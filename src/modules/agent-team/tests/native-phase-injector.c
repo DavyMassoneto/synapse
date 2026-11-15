@@ -50,7 +50,7 @@ static int phase_marker(const char *phase) {
     }
     char path[PHASE_PATH_CAPACITY];
     snprintf(path, sizeof(path), PHASE_PATH_FORMAT, directory, phase);
-    int file = open(path, O_CREAT | O_WRONLY | O_APPEND, 0600);
+    int file = open(path, O_CREAT | O_WRONLY | O_APPEND, PHASE_MARKER_PERMISSIONS);
     if (file >= 0) {
         char identity[PHASE_IDENTITY_CAPACITY];
         int size = snprintf(identity, sizeof(identity), PHASE_IDENTITY_FORMAT, getpid(), getppid());
@@ -69,9 +69,24 @@ PHASE_LINKAGE int injected_setpgid(pid_t pid, pid_t group) {
             errno = EPERM;
             return -1;
         }
-        if (strcmp(mode, PHASE_JOIN_BLOCKED) == 0) {
+        if (strcmp(mode, PHASE_OLD_ORDER) == 0) {
+            pid_t original = getppid();
             phase_marker(PHASE_JOIN_BLOCKED);
+            while (getppid() == original) {
+                usleep(PHASE_PARENT_POLL_US);
+            }
+            pid_t captured = getppid();
+            phase_marker(PHASE_ORPHAN_CAPTURED);
+            char path[PHASE_PATH_CAPACITY];
+            snprintf(path, sizeof(path), PHASE_PATH_FORMAT, getenv(PHASE_DIRECTORY_VARIABLE), PHASE_RELEASE_FILE);
+            while (getppid() == captured && access(path, F_OK) != 0) {
+                usleep(PHASE_PARENT_POLL_US);
+            }
+            _exit(PHASE_ORPHAN_EXIT);
+        }
+        if (strcmp(mode, PHASE_JOIN_BLOCKED) == 0) {
             pid_t reservation = getppid();
+            phase_marker(PHASE_JOIN_BLOCKED);
             while (getppid() == reservation) {
                 usleep(PHASE_PARENT_POLL_US);
             }
@@ -89,7 +104,7 @@ PHASE_LINKAGE ssize_t injected_read(int fd, void *bytes, size_t length) {
     ssize_t result = read(fd, bytes, length);
     const char *mode = getenv(PHASE_MODE_VARIABLE);
     const unsigned char *content = bytes;
-    if (mode && fd == 3 && result > 0 && content[0] == 2) {
+    if (mode && fd == PHASE_CONTROL_FD && result > 0 && content[0] == PHASE_STOP_BYTE) {
         stop_received = 1;
         if (strcmp(mode, PHASE_CLOCK_STOP) == 0) {
             clock_failed = 1;
@@ -100,7 +115,7 @@ PHASE_LINKAGE ssize_t injected_read(int fd, void *bytes, size_t length) {
 
 PHASE_LINKAGE ssize_t injected_write(int fd, const void *bytes, size_t length) {
     const char *mode = getenv(PHASE_MODE_VARIABLE);
-    if (mode && fd == 4 && strcmp(mode, PHASE_STATUS_PRESSURE) == 0 && !stop_received) {
+    if (mode && fd == PHASE_STATUS_FD && strcmp(mode, PHASE_STATUS_PRESSURE) == 0 && !stop_received) {
         phase_marker(PHASE_STATUS_PRESSURE);
         errno = EAGAIN;
         return -1;

@@ -1,7 +1,7 @@
 import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
-import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { captureShellCleanup, finishShellCleanups } from "../shell-cleanup"
-import { SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
+import { TEAM_MEMBER_CLOSE_FAILURE } from "./constants"
+import { type TeamMemberExtensionLifetime } from "./types"
 
 export class SupervisedMemberLifetime implements TeamMemberExtensionLifetime {
   private readonly lifetime: TeamMemberExtensionLifetime
@@ -24,6 +24,6 @@ export class SupervisedMemberLifetime implements TeamMemberExtensionLifetime {
   private async shutdown(): Promise<void> {
     const shell = captureShellCleanup(this.shell.close.bind(this.shell))
     const session = captureShellCleanup(this.lifetime.close.bind(this.lifetime))
-    await finishShellCleanups([shell, session], SUPERVISED_BASH_CLOSE_FAILURE)
+    await finishShellCleanups([shell, session], TEAM_MEMBER_CLOSE_FAILURE)
   }
 }

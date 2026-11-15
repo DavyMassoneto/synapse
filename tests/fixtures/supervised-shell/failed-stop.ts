@@ -1,14 +1,14 @@
 import {
   type SupervisedShellLease,
   type SupervisedShellService,
-} from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { SUPERVISED_TEST_KILL_ERROR } from "./constants"
+} from "#synapse/modules/agent-team/public/supervised-shell"
+import { SUPERVISED_TEST_KILL_ERROR, SUPERVISED_TEST_QUARANTINED_STATE } from "./constants"
 
 export class FailedStopShell implements SupervisedShellService {
   async create(): Promise<SupervisedShellLease> {
     return {
       id: SUPERVISED_TEST_KILL_ERROR,
-      state: "quarantined",
+      state: SUPERVISED_TEST_QUARANTINED_STATE,
       completion: new Promise<number>(this.pending.bind(this)),
       release: this.release.bind(this),
       terminate: this.terminate.bind(this),

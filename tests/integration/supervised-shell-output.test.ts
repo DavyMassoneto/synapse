@@ -1,5 +1,8 @@
 import { expect, test } from "vitest"
 import {
+  SUPERVISED_TEST_ABSENT_MARKER,
+  SUPERVISED_TEST_ABSENT_MARKER_PREFIX,
+  SUPERVISED_TEST_ABSENT_MARKER_SUFFIX,
   SUPERVISED_TEST_MARKER_ABSENT_TITLE,
   SUPERVISED_TEST_MARKER_SPLIT_TITLE,
   SUPERVISED_TEST_WINDOWS_MARKER,
@@ -17,9 +20,9 @@ async function splitMarker(split: number): Promise<void> {
 }
 async function absentMarker(): Promise<void> {
   const output = new SupervisedTestOutput()
-  await output.write(Buffer.from("WINDOW"))
-  await output.write(Buffer.from("S_ABSENT"))
-  expect(output.text()).toBe("WINDOWS_ABSENT")
+  await output.write(Buffer.from(SUPERVISED_TEST_ABSENT_MARKER_PREFIX))
+  await output.write(Buffer.from(SUPERVISED_TEST_ABSENT_MARKER_SUFFIX))
+  expect(output.text()).toBe(SUPERVISED_TEST_ABSENT_MARKER)
 }
 
 test.each(Array.from(Buffer.from(SUPERVISED_TEST_WINDOWS_MARKER).keys()))(

@@ -13,16 +13,16 @@ export interface UnixPreparedProcess {
   input: Writable
 }
 
-export interface UnixControlRelease {
+interface UnixControlRelease {
   kind: "release"
 }
-export interface UnixControlPartial {
+interface UnixControlPartial {
   kind: "partial-stop"
 }
-export interface UnixControlInvalid {
+interface UnixControlInvalid {
   kind: "invalid"
 }
-export interface UnixControlStop {
+interface UnixControlStop {
   kind: "stop"
   deadline: bigint
 }

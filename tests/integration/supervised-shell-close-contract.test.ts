@@ -2,22 +2,20 @@ import { expect, test } from "vitest"
 import {
   SUPERVISED_TEST_CLOSE_INVALID_FRAME_TITLE,
   SUPERVISED_TEST_CLOSE_OBSERVATION_TITLE,
+  SUPERVISED_TEST_CLOSE_PID,
+  SUPERVISED_TEST_HEX_ENCODING,
+  SUPERVISED_TEST_INVALID_CLOSE_FRAMES,
+  SUPERVISED_TEST_INVALID_OBSERVATIONS,
   verifyCloseJobObservation,
   verifyCloseJobStatus,
 } from "../fixtures"
 
 function rejectsObservation(observed: string): void {
-  expect(verifyCloseJobObservation.bind(undefined, "1234", observed)).toThrow()
+  expect(verifyCloseJobObservation.bind(undefined, SUPERVISED_TEST_CLOSE_PID, observed)).toThrow()
 }
 function rejectsFrame(hex: string): void {
-  expect(verifyCloseJobStatus.bind(undefined, Buffer.from(hex, "hex"))).toThrow()
+  expect(verifyCloseJobStatus.bind(undefined, Buffer.from(hex, SUPERVISED_TEST_HEX_ENCODING))).toThrow()
 }
 
-test.each(["CHILD_ALIVE:1234", "CHILD_ABSENT:5678", "CHILD_PID_MISSING"])(
-  SUPERVISED_TEST_CLOSE_OBSERVATION_TITLE,
-  rejectsObservation,
-)
-test.each(["0102000000000000001d", "0102000000000000001d0303", "0103000000000000001d02"])(
-  SUPERVISED_TEST_CLOSE_INVALID_FRAME_TITLE,
-  rejectsFrame,
-)
+test.each(SUPERVISED_TEST_INVALID_OBSERVATIONS)(SUPERVISED_TEST_CLOSE_OBSERVATION_TITLE, rejectsObservation)
+test.each(SUPERVISED_TEST_INVALID_CLOSE_FRAMES)(SUPERVISED_TEST_CLOSE_INVALID_FRAME_TITLE, rejectsFrame)

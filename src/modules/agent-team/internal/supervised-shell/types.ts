@@ -1,6 +1,6 @@
 export type ShellCleanupAction = () => Promise<void>
 export type ShellCleanupOutcome = ShellCleanupSuccess | ShellCleanupFailure
-export interface ShellCleanupSuccess {
+interface ShellCleanupSuccess {
   failed: false
 }
 export interface ShellCleanupFailure {

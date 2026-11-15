@@ -1,37 +1,17 @@
-import { execFileSync } from "node:child_process"
-import { mkdtempSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import { expect, test } from "vitest"
+import { runCompiledNative } from "./compiled-native-runner"
 import { SHELL_NATIVE_REAP_BEFORE_PIPE_TITLE, SHELL_NATIVE_TEST_MS } from "./constants"
+import { SHELL_COMPILED_EXEC_CLASSIFICATION } from "./native-fixture-constants"
+import { SHELL_TEST_EXEC_NOT_FOUND, SHELL_TEST_WINDOWS_PLATFORM } from "./native-scenario-constants"
 
 function reapedBeforeExecPipe(): void {
-  const directory = mkdtempSync(join(tmpdir(), "native-exec-order-"))
-  const executable = join(directory, "classification")
-  const source = join(__dirname, "../adapters/supervised-shell/unix/native")
-  try {
-    execFileSync("cc", [
-      "-D_POSIX_C_SOURCE=200809L",
-      "-I",
-      source,
-      join(__dirname, "native-exec-classification.c"),
-      join(source, "child.c"),
-      join(source, "control.c"),
-      join(source, "clock.c"),
-      join(source, "wire.c"),
-      "-o",
-      executable,
-    ])
-    const output = execFileSync(executable)
-    expect(output[0]).toBe(4)
-    expect(output.subarray(3, -1).toString()).toBe("No such file or directory")
-    expect(output[output.length - 1]).toBe(3)
-  } finally {
-    rmSync(directory, { recursive: true, force: true })
-  }
+  const output = runCompiledNative(SHELL_COMPILED_EXEC_CLASSIFICATION)
+  expect(output[0]).toBe(4)
+  expect(output.subarray(3, -1).toString()).toBe(SHELL_TEST_EXEC_NOT_FOUND)
+  expect(output[output.length - 1]).toBe(3)
 }
 
-test.skipIf(process.platform === "win32")(
+test.skipIf(process.platform === SHELL_TEST_WINDOWS_PLATFORM)(
   SHELL_NATIVE_REAP_BEFORE_PIPE_TITLE,
   reapedBeforeExecPipe,
   SHELL_NATIVE_TEST_MS,

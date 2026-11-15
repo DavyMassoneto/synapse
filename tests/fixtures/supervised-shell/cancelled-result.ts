@@ -4,32 +4,23 @@ import {
   type SupervisedShellService,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell"
-import { SUPERVISED_TEST_KILL_ERROR, SUPERVISED_TEST_OUTPUT_FAILURE } from "./constants"
-import { type CancelledResultCodeResolve, type CancelledResultResolve, type WindowsChannelReject } from "./types"
+import {
+  SUPERVISED_TEST_KILL_ERROR,
+  SUPERVISED_TEST_OUTPUT_FAILURE,
+  SUPERVISED_TEST_QUARANTINED_STATE,
+} from "./constants"
 
 export class CancelledResultShell implements SupervisedShellService, SupervisedShellLease {
   readonly id = SUPERVISED_TEST_KILL_ERROR
-  readonly state = "quarantined"
+  readonly state = SUPERVISED_TEST_QUARANTINED_STATE
   readonly completion: Promise<number>
   readonly stopping: Promise<void>
-  private rejectCompletion?: WindowsChannelReject
-  private signalStop?: CancelledResultResolve
-  private resolveStop?: CancelledResultResolve
-  private rejectStop?: WindowsChannelReject
-  private stopped?: Promise<void>
+  private readonly completed = Promise.withResolvers<number>()
+  private readonly stopSignal = Promise.withResolvers<void>()
+  private stopResult?: PromiseWithResolvers<void>
   constructor() {
-    this.completion = new Promise<number>(this.captureCompletion.bind(this))
-    this.stopping = new Promise<void>(this.captureStopping.bind(this))
-  }
-  private captureCompletion(_resolve: CancelledResultCodeResolve, reject: WindowsChannelReject): void {
-    this.rejectCompletion = reject
-  }
-  private captureStopping(resolve: CancelledResultResolve): void {
-    this.signalStop = resolve
-  }
-  private captureStop(resolve: CancelledResultResolve, reject: WindowsChannelReject): void {
-    this.resolveStop = resolve
-    this.rejectStop = reject
+    this.completion = this.completed.promise
+    this.stopping = this.stopSignal.promise
   }
   async create(_spec: SupervisedShellSpec, _output: SupervisedShellOutput): Promise<SupervisedShellLease> {
     return this
@@ -39,26 +30,22 @@ export class CancelledResultShell implements SupervisedShellService, SupervisedS
     this.releases++
   }
   terminate(): Promise<void> {
-    if (!this.stopped) {
-      this.stopped = new Promise<void>(this.captureStop.bind(this))
-      this.signalStop?.()
+    if (!this.stopResult) {
+      this.stopResult = Promise.withResolvers<void>()
+      this.stopSignal.resolve()
     }
-    return this.stopped
+    return this.stopResult.promise
   }
   loseOutput(): void {
-    this.rejectCompletion?.(new Error(SUPERVISED_TEST_OUTPUT_FAILURE))
+    this.completed.reject(new Error(SUPERVISED_TEST_OUTPUT_FAILURE))
   }
   finish(failed: boolean): void {
     if (failed) {
-      this.rejectStop?.(new Error(SUPERVISED_TEST_KILL_ERROR))
+      this.stopResult?.reject(new Error(SUPERVISED_TEST_KILL_ERROR))
     } else {
-      this.resolveStop?.()
+      this.stopResult?.resolve()
     }
   }
-  async stop(): Promise<void> {
-    await this.terminate()
-  }
-  async close(): Promise<void> {
-    await this.terminate()
-  }
+  readonly stop = this.terminate.bind(this)
+  readonly close = this.terminate.bind(this)
 }

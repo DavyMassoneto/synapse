@@ -1,30 +1,14 @@
-import { execFileSync } from "node:child_process"
-import { mkdtempSync, rmSync } from "node:fs"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import { expect, test } from "vitest"
+import { runCompiledNative } from "./compiled-native-runner"
 import { SHELL_NATIVE_CLOCK_FAILURE_TITLE, SHELL_NATIVE_TEST_MS } from "./constants"
+import { SHELL_COMPILED_CLOCK_FAILURE } from "./native-fixture-constants"
+import { SHELL_TEST_WINDOWS_PLATFORM } from "./native-scenario-constants"
 
 function clockFailureIsTerminal(): void {
-  const directory = mkdtempSync(join(tmpdir(), "native-clock-failure-"))
-  const executable = join(directory, "join-test")
-  const source = join(__dirname, "../adapters/supervised-shell/unix/native")
-  try {
-    execFileSync("cc", [
-      "-D_POSIX_C_SOURCE=200809L",
-      "-I",
-      source,
-      join(__dirname, "native-clock-failure.c"),
-      "-o",
-      executable,
-    ])
-    expect(execFileSync(executable).length).toBe(0)
-  } finally {
-    rmSync(directory, { recursive: true, force: true })
-  }
+  expect(runCompiledNative(SHELL_COMPILED_CLOCK_FAILURE).length).toBe(0)
 }
 
-test.skipIf(process.platform === "win32")(
+test.skipIf(process.platform === SHELL_TEST_WINDOWS_PLATFORM)(
   SHELL_NATIVE_CLOCK_FAILURE_TITLE,
   clockFailureIsTerminal,
   SHELL_NATIVE_TEST_MS,

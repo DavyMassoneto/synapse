@@ -14,7 +14,7 @@ int launcher_nonblocking(int fd) {
 int launcher_cloexec(int fd) {
     return fcntl(fd, F_SETFD, FD_CLOEXEC) == 0;
 }
-int launcher_write(struct launcher *state, int fd, const void *content, size_t length, uint64_t deadline) {
+int launcher_write(struct reservation_state *state, int fd, const void *content, size_t length, uint64_t deadline) {
     const unsigned char *bytes = content;
     size_t offset = 0;
     while (offset < length) {
@@ -50,7 +50,7 @@ int launcher_write(struct launcher *state, int fd, const void *content, size_t l
     }
     return 1;
 }
-int launcher_error(struct launcher *state, int error, uint64_t deadline) {
+int launcher_error(struct reservation_state *state, int error, uint64_t deadline) {
     const char *text = strerror(error);
     size_t length = strlen(text);
     if (length > MAX_ERROR_BYTES) {
@@ -59,7 +59,7 @@ int launcher_error(struct launcher *state, int error, uint64_t deadline) {
     unsigned char header[ERROR_HEADER_BYTES] = {ERROR_BYTE, (length >> BYTE_BITS), length};
     return launcher_write(state, STATUS_FD, header, sizeof(header), deadline) && launcher_write(state, STATUS_FD, text, length, deadline);
 }
-int launcher_exit_frame(struct launcher *state, int status, uint64_t deadline) {
+int launcher_exit_frame(struct reservation_state *state, int status, uint64_t deadline) {
     unsigned int code;
     if (WIFEXITED(status)) {
         code = WEXITSTATUS(status);
@@ -71,7 +71,7 @@ int launcher_exit_frame(struct launcher *state, int status, uint64_t deadline) {
     unsigned char frame[EXIT_FRAME_BYTES] = {EXIT_BYTE, (code >> WORD_HIGH_SHIFT), (code >> WORD_MIDDLE_SHIFT), (code >> BYTE_BITS), code, 0, 0, 0, 0};
     return launcher_write(state, STATUS_FD, frame, sizeof(frame), deadline);
 }
-int launcher_preparation_frame(struct launcher *state, int error, uint64_t deadline) {
+int launcher_preparation_frame(struct reservation_state *state, int error, uint64_t deadline) {
     const char *text = "";
     if (error) {
         text = strerror(error);

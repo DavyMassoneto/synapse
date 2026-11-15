@@ -3,6 +3,8 @@ import { expect, test } from "vitest"
 import {
   closeSupervisedReloadFixture,
   createSupervisedReloadFixture,
+  SUPERVISED_TEST_BASH_TOOL,
+  SUPERVISED_TEST_EXCLUSION_PREFIX,
   SUPERVISED_TEST_OVERRIDE_DESCRIPTION,
   SUPERVISED_TEST_RELOAD_ACTIVE_TITLE,
   SUPERVISED_TEST_RELOAD_DEFAULT_TITLE,
@@ -14,8 +16,10 @@ import {
 async function defaultActivation(): Promise<void> {
   const scenario = await createSupervisedReloadFixture(false)
   try {
-    expect(scenario.session.getActiveToolNames()).toContain("bash")
-    expect(scenario.session.getToolDefinition("bash")?.description).not.toBe(SUPERVISED_TEST_OVERRIDE_DESCRIPTION)
+    expect(scenario.session.getActiveToolNames()).toContain(SUPERVISED_TEST_BASH_TOOL)
+    expect(scenario.session.getToolDefinition(SUPERVISED_TEST_BASH_TOOL)?.description).not.toBe(
+      SUPERVISED_TEST_OVERRIDE_DESCRIPTION,
+    )
   } finally {
     await closeSupervisedReloadFixture(scenario)
   }
@@ -26,11 +30,13 @@ async function inactiveOverride(): Promise<void> {
     scenario.session.setActiveToolsByName([])
     writeFileSync(
       scenario.settingsFile,
-      JSON.stringify({ defaultTools: ["bash"], extensions: [scenario.fixture.extension] }),
+      JSON.stringify({ defaultTools: [SUPERVISED_TEST_BASH_TOOL], extensions: [scenario.fixture.extension] }),
     )
     await scenario.session.reload()
-    expect(scenario.session.getToolDefinition("bash")?.description).toBe(SUPERVISED_TEST_OVERRIDE_DESCRIPTION)
-    expect(scenario.session.getActiveToolNames()).not.toContain("bash")
+    expect(scenario.session.getToolDefinition(SUPERVISED_TEST_BASH_TOOL)?.description).toBe(
+      SUPERVISED_TEST_OVERRIDE_DESCRIPTION,
+    )
+    expect(scenario.session.getActiveToolNames()).not.toContain(SUPERVISED_TEST_BASH_TOOL)
   } finally {
     await closeSupervisedReloadFixture(scenario)
   }
@@ -38,10 +44,12 @@ async function inactiveOverride(): Promise<void> {
 async function activeOverride(): Promise<void> {
   const scenario = await createSupervisedReloadFixture(true)
   try {
-    scenario.session.setActiveToolsByName(["bash"])
+    scenario.session.setActiveToolsByName([SUPERVISED_TEST_BASH_TOOL])
     await scenario.session.reload()
-    expect(scenario.session.getToolDefinition("bash")?.description).toBe(SUPERVISED_TEST_OVERRIDE_DESCRIPTION)
-    expect(scenario.session.getActiveToolNames()).toContain("bash")
+    expect(scenario.session.getToolDefinition(SUPERVISED_TEST_BASH_TOOL)?.description).toBe(
+      SUPERVISED_TEST_OVERRIDE_DESCRIPTION,
+    )
+    expect(scenario.session.getActiveToolNames()).toContain(SUPERVISED_TEST_BASH_TOOL)
   } finally {
     await closeSupervisedReloadFixture(scenario)
   }
@@ -49,19 +57,23 @@ async function activeOverride(): Promise<void> {
 async function removeOverrideTransition(): Promise<void> {
   const scenario = await createSupervisedReloadFixture(true)
   try {
-    scenario.session.setActiveToolsByName(["bash"])
+    scenario.session.setActiveToolsByName([SUPERVISED_TEST_BASH_TOOL])
     await scenario.session.reload()
-    expect(scenario.session.getToolDefinition("bash")?.description).toBe(SUPERVISED_TEST_OVERRIDE_DESCRIPTION)
+    expect(scenario.session.getToolDefinition(SUPERVISED_TEST_BASH_TOOL)?.description).toBe(
+      SUPERVISED_TEST_OVERRIDE_DESCRIPTION,
+    )
     writeFileSync(
       scenario.settingsFile,
       JSON.stringify({
-        defaultTools: ["bash"],
-        extensions: [scenario.fixture.extension, `-${scenario.fixture.extension}`],
+        defaultTools: [SUPERVISED_TEST_BASH_TOOL],
+        extensions: [scenario.fixture.extension, `${SUPERVISED_TEST_EXCLUSION_PREFIX}${scenario.fixture.extension}`],
       }),
     )
     await scenario.session.reload()
-    expect(scenario.session.getToolDefinition("bash")?.description).not.toBe(SUPERVISED_TEST_OVERRIDE_DESCRIPTION)
-    expect(scenario.session.getActiveToolNames()).toContain("bash")
+    expect(scenario.session.getToolDefinition(SUPERVISED_TEST_BASH_TOOL)?.description).not.toBe(
+      SUPERVISED_TEST_OVERRIDE_DESCRIPTION,
+    )
+    expect(scenario.session.getActiveToolNames()).toContain(SUPERVISED_TEST_BASH_TOOL)
   } finally {
     await closeSupervisedReloadFixture(scenario)
   }

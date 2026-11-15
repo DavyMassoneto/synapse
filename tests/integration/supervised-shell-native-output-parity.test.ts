@@ -1,11 +1,19 @@
 import { createLocalBashOperations } from "@earendil-works/pi-coding-agent"
 import { expect, test } from "vitest"
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
-import { CausalOutputSink } from "./causal-output-sink"
-import { SHELL_NATIVE_OUTPUT_PARITY_TITLE, SHELL_NATIVE_TEST_MS } from "./constants"
+import {
+  CausalOutputSink,
+  SUPERVISED_TEST_NATIVE_OUTPUT_PARITY_TITLE,
+  SUPERVISED_TEST_OUTPUT_BACKGROUND_COMMAND,
+  SUPERVISED_TEST_OUTPUT_FOREGROUND_COMMAND,
+  SUPERVISED_TEST_SHELL_COMMAND_FLAG,
+  SUPERVISED_TEST_SHELL_EXECUTABLE,
+  SUPERVISED_TEST_TIMEOUT_MS,
+  SUPERVISED_TEST_WINDOWS,
+} from "../fixtures"
 
 async function slowOutputParity(background: boolean): Promise<void> {
-  const command = background ? "head -c 200000 /dev/zero; sleep 1 &" : "head -c 200000 /dev/zero"
+  const command = background ? SUPERVISED_TEST_OUTPUT_BACKGROUND_COMMAND : SUPERVISED_TEST_OUTPUT_FOREGROUND_COMMAND
   const native = createLocalBashOperations()
   const expected = new CausalOutputSink()
   const result = await native.exec(command, process.cwd(), { onData: expected.write.bind(expected) })
@@ -13,7 +21,12 @@ async function slowOutputParity(background: boolean): Promise<void> {
   const actual = new CausalOutputSink()
   try {
     const lease = await shell.create(
-      { executable: "/bin/bash", arguments: ["-c", command], cwd: process.cwd(), environment: process.env },
+      {
+        executable: SUPERVISED_TEST_SHELL_EXECUTABLE,
+        arguments: [SUPERVISED_TEST_SHELL_COMMAND_FLAG, command],
+        cwd: process.cwd(),
+        environment: process.env,
+      },
       actual,
     )
     lease.release()
@@ -25,8 +38,8 @@ async function slowOutputParity(background: boolean): Promise<void> {
   }
 }
 
-test.skipIf(process.platform === "win32").each([false, true])(
-  SHELL_NATIVE_OUTPUT_PARITY_TITLE,
+test.skipIf(process.platform === SUPERVISED_TEST_WINDOWS).each([false, true])(
+  SUPERVISED_TEST_NATIVE_OUTPUT_PARITY_TITLE,
   slowOutputParity,
-  SHELL_NATIVE_TEST_MS,
+  SUPERVISED_TEST_TIMEOUT_MS,
 )

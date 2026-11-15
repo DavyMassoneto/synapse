@@ -9,6 +9,14 @@ import {
   SHELL_PROBE_DIAGNOSTIC_SUCCESS_TITLE,
   SHELL_PROBE_DIAGNOSTIC_TEST_TITLE,
 } from "./constants"
+import {
+  SHELL_PROBE_COMPILER_ERROR,
+  SHELL_PROBE_EXPECT_CODE,
+  SHELL_PROBE_EXPECT_KILLED,
+  SHELL_PROBE_EXPECT_STDERR,
+  SHELL_PROBE_EXPECT_STDOUT,
+  SHELL_PROBE_WRONG_MARKER,
+} from "./native-scenario-constants"
 import { SHELL_PROBE_UNICODE_FIXTURES, type ShellProbeUnicodeFixture } from "./probe-diagnostic"
 
 function preservesLocalOutput(): void {
@@ -18,11 +26,11 @@ function boundsOutput(fixture: ShellProbeUnicodeFixture): void {
   expect(limitShellProbeText(fixture.input)).toBe(fixture.expected)
 }
 function preservesExecutionFacts(): void {
-  const result = formatShellProbeDiagnostic(null, "WRONG_MARKER", "Compiler rejected source")
-  expect(result).toContain("code=0")
-  expect(result).toContain("killed=false")
-  expect(result).toContain("stderr=Compiler rejected source")
-  expect(result).toContain("stdout=WRONG_MARKER")
+  const result = formatShellProbeDiagnostic(null, SHELL_PROBE_WRONG_MARKER, SHELL_PROBE_COMPILER_ERROR)
+  expect(result).toContain(SHELL_PROBE_EXPECT_CODE)
+  expect(result).toContain(SHELL_PROBE_EXPECT_KILLED)
+  expect(result).toContain(SHELL_PROBE_EXPECT_STDERR)
+  expect(result).toContain(SHELL_PROBE_EXPECT_STDOUT)
 }
 
 test(SHELL_PROBE_DIAGNOSTIC_TEST_TITLE, preservesLocalOutput)

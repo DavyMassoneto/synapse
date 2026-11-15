@@ -4,6 +4,8 @@ import { chmod, lstat, readFile } from "node:fs/promises"
 import { dirname } from "node:path"
 import { Value } from "typebox/value"
 import {
+  UNIX_LAUNCHER_ARCHITECTURE_FIELD,
+  UNIX_LAUNCHER_CLOCK_FIELD,
   UNIX_LAUNCHER_EXECUTABLE_BYTES,
   UNIX_LAUNCHER_EXECUTABLE_MODE,
   UNIX_LAUNCHER_HASH,
@@ -11,6 +13,7 @@ import {
   UNIX_LAUNCHER_IDENTITY_ARGUMENT,
   UNIX_LAUNCHER_IDENTITY_SEPARATOR,
   UNIX_LAUNCHER_INVALID,
+  UNIX_LAUNCHER_PLATFORM_FIELD,
   UNIX_LAUNCHER_PROBE_MS,
   UNIX_LAUNCHER_UTF8,
 } from "./constants"
@@ -29,6 +32,10 @@ export async function verifyUnixLauncher(
   asset: UnixLauncherAsset,
   signal?: AbortSignal,
 ): Promise<void> {
+  await verifyUnixLauncherFile(executable, asset)
+  await verifyUnixLauncherIdentity(executable, signal)
+}
+async function verifyUnixLauncherFile(executable: string, asset: UnixLauncherAsset): Promise<void> {
   const directory = await lstat(dirname(executable))
   requirePrivateLauncherDirectory(directory)
   const status = await lstat(executable)
@@ -40,14 +47,19 @@ export async function verifyUnixLauncher(
     throw new Error(UNIX_LAUNCHER_INVALID)
   }
   await chmod(executable, UNIX_LAUNCHER_EXECUTABLE_MODE)
+}
+async function verifyUnixLauncherIdentity(executable: string, signal?: AbortSignal): Promise<void> {
   const before = process.hrtime.bigint()
   const output = await new Promise<string>(probeUnixLauncher.bind(undefined, executable, signal ? { signal } : {}))
   const after = process.hrtime.bigint()
   const fields = Value.Parse(UNIX_LAUNCHER_IDENTITY_SCHEMA, output.trim().split(UNIX_LAUNCHER_IDENTITY_SEPARATOR))
-  if (fields[1] !== process.platform || fields[2] !== process.arch) {
+  if (
+    fields[UNIX_LAUNCHER_PLATFORM_FIELD] !== process.platform ||
+    fields[UNIX_LAUNCHER_ARCHITECTURE_FIELD] !== process.arch
+  ) {
     throw new Error(UNIX_LAUNCHER_INVALID)
   }
-  const clock = BigInt(fields[3])
+  const clock = BigInt(fields[UNIX_LAUNCHER_CLOCK_FIELD])
   if (clock < before || clock > after) {
     throw new Error(UNIX_LAUNCHER_INVALID)
   }

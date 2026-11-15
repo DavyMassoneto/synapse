@@ -1,12 +1,14 @@
-using System;
-using System.IO;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using Microsoft.Win32.SafeHandles;
-
 public sealed partial class SupervisedShellLauncher
 {
+    private const string KernelLibrary = "kernel32.dll";
+    private const string JobMembersActive = "Job members remain active.";
+    private const char ArgumentQuote = '"';
+    private const char ArgumentEscape = '\\';
+    private const char ArgumentSeparator = ' ';
+    private static readonly char[] ArgumentWhitespace = new char[] { ArgumentSeparator, '\t', '\n', '\v', ArgumentQuote };
+    private const int HighByteShift = 24;
+    private const int MiddleByteShift = 16;
+    private const int LowByteShift = 8;
     private const int BasicAccountingInformation = 1;
     private const int OutputPumpIdleMilliseconds = 1;
     private const int BrokenPipeError = 109;

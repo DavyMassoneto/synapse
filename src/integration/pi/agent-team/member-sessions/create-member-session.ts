@@ -1,6 +1,9 @@
 import { createAgentSession, getAgentDir, SettingsManager, type ToolDefinition } from "@earendil-works/pi-coding-agent"
-import { TeamMemberExtensionLifecycle, type TeamMemberExtensionSession } from "../extension-lifecycle"
-import { SupervisedMemberLifetime } from "../supervised-bash"
+import {
+  SupervisedMemberLifetime,
+  TeamMemberExtensionLifecycle,
+  type TeamMemberExtensionSession,
+} from "../extension-lifecycle"
 import { TeamMemberResourceLoader } from "./resource-loader"
 import { type TeamCreatedMemberSession, type TeamMemberSessionRequest } from "./types"
 

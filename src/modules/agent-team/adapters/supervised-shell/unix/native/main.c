@@ -10,7 +10,7 @@
 
 int main(int count, char **arguments) {
     if (count == 2 && strcmp(arguments[1], IDENTITY_ARGUMENT) == 0) {
-        printf("%s %s %s %" PRIu64 "\n", IDENTITY_TEXT, IDENTITY_PLATFORM, IDENTITY_ARCHITECTURE, launcher_now());
+        printf(IDENTITY_FORMAT, IDENTITY_TEXT, IDENTITY_PLATFORM, IDENTITY_ARCHITECTURE, launcher_now());
         return 0;
     }
     if (count < 3) {
@@ -18,7 +18,7 @@ int main(int count, char **arguments) {
     }
     signal(SIGPIPE, SIG_IGN);
     signal(SIGCHLD, SIG_DFL);
-    struct launcher state;
+    struct reservation_state state;
     memset(&state, 0, sizeof(state));
     state.session_group = getpgrp();
     state.join_read = -1;

@@ -1,5 +1,5 @@
 import { setTimeout } from "node:timers/promises"
-import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
+import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell"
 import { SUPERVISED_TEST_SLOW_OUTPUT_MS } from "./constants"
 
 export class SlowSupervisedOutput implements SupervisedShellOutput {

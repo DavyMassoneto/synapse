@@ -1,5 +1,6 @@
 import { type SupervisedShellSpec } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
 import { type StartMemberRequest } from "../public"
+import { type ShellTestStdioOptions } from "./native-test-types"
 
 export const TEAM_TEST_ALICE_REQUEST: StartMemberRequest = { name: "alice", description: "x", task: "x" }
 
@@ -75,14 +76,12 @@ export const SHELL_MATRIX_NORMAL_TITLE = "resultado normal drenado não depende 
 export const SHELL_MATRIX_SINK_TITLE = "sink rejeitado durante stop rejeita C sem impedir T (%s)"
 export const SHELL_MATRIX_READY_FAILURE_TITLE = "ready não revive após erro e gate recusado não escreve"
 export const SHELL_MATRIX_SYNC_TITLE = "close síncrono é observado antes do efeito de terminate"
-export const SHELL_REQUIREMENT_PS_TITLE = "recusa ps ausente com motivo claro"
 export const SHELL_REQUIREMENT_POWERSHELL_TITLE = "recusa PowerShell ausente com motivo claro"
 export const SHELL_REQUIREMENT_ADD_TYPE_TITLE = "recusa executável sem Add-Type funcional"
 export const SHELL_REQUIREMENT_PLATFORM_TITLE = "recusa plataforma não suportada antes de criar shell"
 export const SHELL_CLOSE_JOB_VALID_TITLE = "prova CloseJob valida sequência real e ausência do filho registrado"
 export const SHELL_CLOSE_JOB_VALID_FRAME = "0102000000000000001d03"
 export const SHELL_CLOSE_JOB_FRAME_TITLE = "prova CloseJob recusa frame inválido %s"
-export const SHELL_CLOSE_JOB_OBSERVATION_TITLE = "prova CloseJob recusa observação inválida %s"
 
 export const SHELL_ADMISSION_RETIRED_TITLE = "lease confirmado é retirado antes da próxima parada"
 export const SHELL_ADMISSION_BACKGROUND_TITLE = "resultado foreground não retira ownership background"
@@ -114,8 +113,6 @@ export const SHELL_REQUIREMENT_TEST_MARKER = "ADD_TYPE_AVAILABLE\n"
 export const SHELL_REQUIREMENT_TEST_EXTRA_LINE =
   "WARNING: The generated type defines no public methods or properties.\nADD_TYPE_AVAILABLE\n"
 
-export const SHELL_GROUP_MATCH_TITLE = "PGID exato aceita padding e linhas %s"
-export const SHELL_GROUP_REJECT_TITLE = "PGID não confunde prefixo ou saída vazia %s"
 export const SHELL_GROUP_INVALID_TITLE = "PGID inválido recusa antes de consultar ps %s"
 
 export const SHELL_KEEPER_BARRIER_FD = 4
@@ -178,14 +175,7 @@ export const SHELL_NATIVE_SESSION_DEATH_TITLE = "morte do keeper de sessão não
 export const SHELL_NATIVE_JOIN_KERNEL_TITLE = "kernel recusa join de outra sessão antes do exec"
 
 export const SHELL_RUNTIME_FILE = "../adapters/supervised-shell/unix/keeper.ts"
-export const SHELL_RUNTIME_STDIO: import("node:child_process").StdioOptions = [
-  "ignore",
-  "pipe",
-  "pipe",
-  "pipe",
-  "ignore",
-  "pipe",
-]
+export const SHELL_RUNTIME_STDIO: ShellTestStdioOptions = ["ignore", "pipe", "pipe", "pipe", "ignore", "pipe"]
 export const SHELL_RUNTIME_INVALID_TITLE = "keeper real preserva controle inválido e encerra com writer aberto"
 export const SHELL_RUNTIME_PARTIAL_TITLE = "keeper real limita STOP parcial ao prazo original"
 export const SHELL_RUNTIME_DUPLICATE_TITLE = "keeper real rejeita RELEASE duplicado antes do gate"
@@ -200,8 +190,6 @@ export const SHELL_RUNTIME_CAUSAL_TITLE = "lease já ativa recebe EXIT antes dos
 
 export const SHELL_RUNTIME_SINK_DELAY_MS = 150
 export const SHELL_RUNTIME_LARGE_CAUSAL_TITLE = "200 KB foreground com sink lento e background=%s"
-
-export const SHELL_NATIVE_OUTPUT_PARITY_TITLE = "saída 200 KB aceita com paridade nativa background=%s"
 
 export const SHELL_GENERATION_ISOLATION_TITLE = "filho de outra geração não herda canal de controle ou prova atual"
 export const SHELL_GENERATION_COMMAND =
@@ -222,11 +210,12 @@ export const SHELL_PHASE_DARWIN_LIBRARY_FLAG = "-dynamiclib"
 export const SHELL_PHASE_MODE_ESRCH = "esrch"
 export const SHELL_PHASE_DARWIN_LIBRARY_FILE = "injector.dylib"
 export const SHELL_PHASE_MODE_JOIN_BLOCKED = "join-blocked"
-export const SHELL_PHASE_BLOCKED_JOIN_TITLE = "JOIN bloqueado: %s não autoriza usuário"
+export const SHELL_PHASE_RESERVATION_DEATH_TITLE = "JOIN bloqueado: morte da reserva não autoriza usuário"
+export const SHELL_PHASE_SESSION_DEATH_TITLE = "JOIN bloqueado: morte da sessão não autoriza usuário"
+export const SHELL_PHASE_JOIN_EOF_TITLE = "JOIN bloqueado: EOF não autoriza usuário"
+export const SHELL_PHASE_JOIN_STOP_TITLE = "JOIN bloqueado: STOP não autoriza usuário"
 export const SHELL_PHASE_MODE_JOIN_FAILURE = "join-failure"
 export const SHELL_PHASE_JOIN_PCT_TITLE = "JOIN falho inteiro preserva P/C e adota T em estado terminal"
-export const SHELL_PHASE_MODE_JOIN_NEVER = "join-never"
-export const SHELL_PHASE_MODE_JOIN_NEVER_STOP = "join-never-stop"
 export const SHELL_PHASE_MARKER_LINE_SEPARATOR = "\n"
 export const SHELL_PHASE_MARKER_TWO_COMMITS = "10 20\n10 20\n"
 export const SHELL_PHASE_MARKER_DUPLICATE_TITLE = "duas linhas de ESRCH não equivalem a um único commit"
@@ -235,7 +224,6 @@ export const SHELL_PHASE_COMPILER_OUTPUT_FLAG = "-o"
 export const SHELL_PHASE_MODE_OBSERVE = "observe"
 export const SHELL_PHASE_USER_COMMAND = "printf FORBIDDEN"
 export const SHELL_PHASE_CLOCK_FAULT_TITLE = "relógio falha fechado em %s pelo keeper inteiro"
-export const SHELL_PHASE_MODE_RESERVATION_DEATH = "reservation-death"
 export const SHELL_PHASE_MODE_SESSION_DEATH = "session-death"
 export const SHELL_PHASE_STATUS_PRESSURE_TITLE = "status EAGAIN não bloqueia STOP e reap no keeper inteiro"
 export const SHELL_PHASE_MODE_STATUS_PRESSURE = "status-pressure"
@@ -260,4 +248,5 @@ export const UNIX_KEEPER_GROUP_PATTERN_SUFFIX = "[ \\t]*(?:\\n|$)"
 
 export const SHELL_DIRECTORY_MODES = [0o777, 0o770, 0o750, 0o700]
 export const SHELL_DIRECTORY_MODE_TITLE = "diretório de launcher aplica política 022 para modo %s"
-export const SHELL_DIRECTORY_NON_DIRECTORY_TITLE = "diretório de launcher recusa symlink e arquivo regular"
+export const SHELL_DIRECTORY_NON_DIRECTORY_TITLE = "diretório de launcher recusa %s"
+export const SHELL_DIRECTORY_NON_DIRECTORY_KINDS = ["link", "file"]

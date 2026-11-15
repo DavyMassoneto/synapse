@@ -10,18 +10,29 @@ import {
   SHELL_REQUIREMENT_TEST_EXTRA_LINE,
   SHELL_REQUIREMENT_TEST_MARKER,
 } from "./constants"
+import {
+  SHELL_REQUIREMENT_ADD_TYPE_ERROR,
+  SHELL_REQUIREMENT_GETTER,
+  SHELL_REQUIREMENT_MISSING_COMMAND,
+  SHELL_REQUIREMENT_PLATFORM_PROPERTY,
+  SHELL_REQUIREMENT_POWERSHELL,
+  SHELL_REQUIREMENT_UNSUPPORTED_ERROR,
+  SHELL_REQUIREMENT_UNSUPPORTED_PLATFORM,
+} from "./native-scenario-constants"
 import { ProbeResultScenario } from "./probe-result-support"
 
 async function missingPowerShell(): Promise<void> {
-  await expect(requireWindowsShell("synapse-powershell-not-installed")).rejects.toThrow("powershell.exe")
+  await expect(requireWindowsShell(SHELL_REQUIREMENT_MISSING_COMMAND)).rejects.toThrow(SHELL_REQUIREMENT_POWERSHELL)
 }
 async function unavailableAddType(): Promise<void> {
-  await expect(requireWindowsShell(process.execPath)).rejects.toThrow("Add-Type funcional")
+  await expect(requireWindowsShell(process.execPath)).rejects.toThrow(SHELL_REQUIREMENT_ADD_TYPE_ERROR)
 }
 function unsupportedPlatform(): void {
-  const platform = vi.spyOn(process, "platform", "get").mockReturnValue("aix")
+  const platform = vi
+    .spyOn(process, SHELL_REQUIREMENT_PLATFORM_PROPERTY, SHELL_REQUIREMENT_GETTER)
+    .mockReturnValue(SHELL_REQUIREMENT_UNSUPPORTED_PLATFORM)
   try {
-    expect(createSupervisedShell).toThrow("apenas em macOS, Linux e Windows")
+    expect(createSupervisedShell).toThrow(SHELL_REQUIREMENT_UNSUPPORTED_ERROR)
   } finally {
     platform.mockRestore()
   }
@@ -38,7 +49,7 @@ function rejectsExtraLine(): void {
   result.check(SHELL_REQUIREMENT_TEST_EXTRA_LINE)
   expect(result.accepted).toBe(false)
   expect(result.failure).toBeInstanceOf(Error)
-  expect(result.failure?.message).toContain("Add-Type funcional")
+  expect(result.failure?.message).toContain(SHELL_REQUIREMENT_ADD_TYPE_ERROR)
 }
 
 test(SHELL_REQUIREMENT_EXACT_MARKER_TITLE, exactMarker)

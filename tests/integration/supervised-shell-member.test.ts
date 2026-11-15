@@ -5,15 +5,29 @@ import { join } from "node:path"
 import { getShellConfig } from "@earendil-works/pi-coding-agent"
 import { expect, test } from "vitest"
 import { PiTeamSessionAdapter } from "#synapse/integration/pi/agent-team"
-import { SupervisedMemberLifetime } from "#synapse/integration/pi/agent-team/supervised-bash"
+import { SupervisedMemberLifetime } from "#synapse/integration/pi/agent-team/extension-lifecycle"
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import {
+  SUPERVISED_TEST_BACKGROUND_COMMAND_PREFIX,
+  SUPERVISED_TEST_BACKGROUND_COMMAND_SUFFIX,
   SUPERVISED_TEST_BACKGROUND_INTERRUPT_TITLE,
   SUPERVISED_TEST_BACKGROUND_PID_FILE,
   SUPERVISED_TEST_BACKGROUND_TEMP,
+  SUPERVISED_TEST_EXITED_STATE,
   SUPERVISED_TEST_INTERRUPT_TITLE,
+  SUPERVISED_TEST_LINE_SEPARATOR,
+  SUPERVISED_TEST_MEMBER_SLEEP_COMMAND,
+  SUPERVISED_TEST_PS_ALL_FLAG,
+  SUPERVISED_TEST_PS_EXECUTABLE,
+  SUPERVISED_TEST_PS_FORMAT_FLAG,
+  SUPERVISED_TEST_PS_PID_FLAG,
+  SUPERVISED_TEST_PS_PID_FORMAT,
+  SUPERVISED_TEST_RELEASED_STATE,
+  SUPERVISED_TEST_SHELL_COMMAND_FLAG,
+  SUPERVISED_TEST_SHELL_EXECUTABLE,
   SUPERVISED_TEST_TIMEOUT_MS,
   SUPERVISED_TEST_WINDOWS,
+  SUPERVISED_TEST_WINDOWS_ENCODING,
   SupervisedTestOutput,
   TeamSessionDouble,
 } from "../fixtures"
@@ -27,7 +41,7 @@ async function memberInterruptKillsShell(): Promise<void> {
   const lease = await shell.create(
     {
       executable: configured.shell,
-      arguments: [...configured.args, "sleep 20"],
+      arguments: [...configured.args, SUPERVISED_TEST_MEMBER_SLEEP_COMMAND],
       cwd: process.cwd(),
       environment: process.env,
     },
@@ -36,7 +50,7 @@ async function memberInterruptKillsShell(): Promise<void> {
   lease.release()
   try {
     await adapter.abort()
-    expect(lease.state).toBe("exited")
+    expect(lease.state).toBe(SUPERVISED_TEST_EXITED_STATE)
     expect(port.aborted).toBe(true)
   } finally {
     await adapter.dispose()
@@ -50,8 +64,11 @@ async function backgroundSurvivesResult(): Promise<void> {
   const output = new SupervisedTestOutput()
   const lease = await shell.create(
     {
-      executable: "/bin/bash",
-      arguments: ["-c", `sleep 30 & printf '%s' $! > '${file}'; exit 7`],
+      executable: SUPERVISED_TEST_SHELL_EXECUTABLE,
+      arguments: [
+        SUPERVISED_TEST_SHELL_COMMAND_FLAG,
+        `${SUPERVISED_TEST_BACKGROUND_COMMAND_PREFIX}${file}${SUPERVISED_TEST_BACKGROUND_COMMAND_SUFFIX}`,
+      ],
       cwd: directory,
       environment: process.env,
     },
@@ -60,15 +77,25 @@ async function backgroundSurvivesResult(): Promise<void> {
   try {
     lease.release()
     expect(await lease.completion).toBe(7)
-    const pid = Number(readFileSync(file, "utf8"))
-    const before = execFileSync("/bin/ps", ["-p", String(pid), "-o", "pid="], { encoding: "utf8" })
+    const pid = Number(readFileSync(file, SUPERVISED_TEST_WINDOWS_ENCODING))
+    const before = execFileSync(
+      SUPERVISED_TEST_PS_EXECUTABLE,
+      [SUPERVISED_TEST_PS_PID_FLAG, String(pid), SUPERVISED_TEST_PS_FORMAT_FLAG, SUPERVISED_TEST_PS_PID_FORMAT],
+      { encoding: SUPERVISED_TEST_WINDOWS_ENCODING },
+    )
     expect(before.trim()).toBe(String(pid))
-    expect(lease.state).toBe("released")
+    expect(lease.state).toBe(SUPERVISED_TEST_RELEASED_STATE)
     const port = new TeamSessionDouble()
     const adapter = new PiTeamSessionAdapter(port, new SupervisedMemberLifetime(port, shell))
     await adapter.abort()
-    expect(lease.state).toBe("exited")
-    expect(execFileSync("/bin/ps", ["-axo", "pid="], { encoding: "utf8" }).split("\n").map(Number)).not.toContain(pid)
+    expect(lease.state).toBe(SUPERVISED_TEST_EXITED_STATE)
+    expect(
+      execFileSync(SUPERVISED_TEST_PS_EXECUTABLE, [SUPERVISED_TEST_PS_ALL_FLAG, SUPERVISED_TEST_PS_PID_FORMAT], {
+        encoding: SUPERVISED_TEST_WINDOWS_ENCODING,
+      })
+        .split(SUPERVISED_TEST_LINE_SEPARATOR)
+        .map(Number),
+    ).not.toContain(pid)
   } finally {
     await shell.close()
     rmSync(directory, { recursive: true, force: true })

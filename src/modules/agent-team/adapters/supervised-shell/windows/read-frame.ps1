@@ -1,21 +1,26 @@
+function Read-ShellExact([System.IO.Stream]$stream, [byte[]]$buffer, [string]$incompleteMessage) {
+    $offset = 0
+    while ($offset -lt $buffer.Length) {
+        $count = $stream.Read($buffer, $offset, $buffer.Length - $offset)
+        if ($count -eq 0) {
+            throw $incompleteMessage
+        }
+        $offset += $count
+    }
+}
+
 function Read-ShellFrame {
-$inputStream = [Console]::OpenStandardInput()
-$header = New-Object byte[] $ShellFrameHeaderBytes
-$offset = 0
-while ($offset -lt $ShellFrameHeaderBytes) {
-    $count = $inputStream.Read($header, $offset, $ShellFrameHeaderBytes - $offset)
-    if ($count -eq 0) { throw $ShellFrameIncompleteHeader }
-    $offset += $count
-}
-if ([BitConverter]::IsLittleEndian) { [Array]::Reverse($header) }
-$length = [BitConverter]::ToUInt32($header, 0)
-if ($length -gt $ShellFrameMaxBytes) { throw $ShellFrameTooLarge }
-$body = New-Object byte[] $length
-$offset = 0
-while ($offset -lt $length) {
-    $count = $inputStream.Read($body, $offset, $length - $offset)
-    if ($count -eq 0) { throw $ShellFrameIncompleteBody }
-    $offset += $count
-}
-return ,$body
+    $inputStream = [Console]::OpenStandardInput()
+    $header = [byte[]]::new($ShellFrameHeaderBytes)
+    Read-ShellExact $inputStream $header $ShellFrameIncompleteHeader
+    if ([BitConverter]::IsLittleEndian) {
+        [Array]::Reverse($header)
+    }
+    $length = [BitConverter]::ToUInt32($header, 0)
+    if ($length -gt $ShellFrameMaxBytes) {
+        throw $ShellFrameTooLarge
+    }
+    $body = [byte[]]::new($length)
+    Read-ShellExact $inputStream $body $ShellFrameIncompleteBody
+    return ,$body
 }

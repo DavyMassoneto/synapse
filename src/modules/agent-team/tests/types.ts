@@ -23,7 +23,6 @@ export interface TeamGenerationSut extends TeamTestSut {
 }
 
 export type ShellTestResolve = () => void
-export type ShellTestReject = (error: Error) => void
 
 export interface ShellWireScenario {
   lease: SupervisedWireLease
@@ -41,3 +40,7 @@ export type NativeFixtureExitCode = number | null
 export type UnixGroupResolve = (groups: string) => void
 export type UnixGroupReject = (error: Error) => void
 export type UnixGroupReadError = Error | null
+
+export interface ParentCaptureState {
+  closed: boolean
+}

@@ -25,5 +25,3 @@ export type SupervisedBashToolList = ToolDefinition[]
 export type SupervisedBashAbort = () => void
 
 export type SupervisedBashToolIndex = Map<string, SupervisedBashToolList[number]>
-
-export type SupervisedBashResultPromises = [Promise<number>, Promise<never>]

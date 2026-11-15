@@ -8,6 +8,8 @@ import {
   SHELL_LEASE_TRANSPORT_STOP_TITLE,
 } from "./constants"
 import { createWireScenario } from "./create-wire-scenario"
+import { SHELL_TEST_EVENT_ERROR } from "./native-fixture-constants"
+import { SHELL_TEST_STATE_EXITED, SHELL_TEST_STATE_QUARANTINED } from "./native-scenario-constants"
 
 async function invalidWireStillTerminates(): Promise<void> {
   const { lease, owner, status } = await createWireScenario(false)
@@ -29,10 +31,10 @@ async function transportErrorsDuringStop(channel: number): Promise<void> {
   const { lease, owner, channels } = await createWireScenario(false)
   lease.release()
   const stopped = lease.terminate()
-  channels[channel]?.emit("error", new Error(SHELL_LEASE_TRANSPORT_FAILURE))
+  channels[channel]?.emit(SHELL_TEST_EVENT_ERROR, new Error(SHELL_LEASE_TRANSPORT_FAILURE))
   await stopped
   expect(owner.kills).toBe(1)
-  expect(lease.state).toBe("exited")
+  expect(lease.state).toBe(SHELL_TEST_STATE_EXITED)
   expect(await lease.completion).toBe(137)
 }
 
@@ -40,16 +42,16 @@ async function outputErrorDuringStop(): Promise<void> {
   const { lease, owner, output } = await createWireScenario(false)
   lease.release()
   const stopped = lease.terminate()
-  output.emit("error", new Error(SHELL_LEASE_TRANSPORT_FAILURE))
+  output.emit(SHELL_TEST_EVENT_ERROR, new Error(SHELL_LEASE_TRANSPORT_FAILURE))
   await stopped
   expect(owner.kills).toBe(1)
-  expect(lease.state).toBe("quarantined")
+  expect(lease.state).toBe(SHELL_TEST_STATE_QUARANTINED)
   await expect(lease.completion).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
 }
 
 async function transportErrorsBeforeStop(channel: number): Promise<void> {
   const { lease, owner, channels } = await createWireScenario(false)
-  channels[channel]?.emit("error", new Error(SHELL_LEASE_TRANSPORT_FAILURE))
+  channels[channel]?.emit(SHELL_TEST_EVENT_ERROR, new Error(SHELL_LEASE_TRANSPORT_FAILURE))
   await expect(lease.completion).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
   await lease.terminate()
   expect(owner.kills).toBe(1)

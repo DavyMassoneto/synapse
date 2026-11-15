@@ -6,7 +6,7 @@
 #include "constants.h"
 #include "launcher.h"
 
-int launcher_reap(struct launcher *state) {
+int launcher_reap(struct reservation_state *state) {
     if (state->reaped) {
         return 1;
     }
@@ -21,7 +21,7 @@ int launcher_reap(struct launcher *state) {
     }
     return result == 0 || (result < 0 && errno == EINTR);
 }
-static int publish_result(struct launcher *state) {
+static int publish_result(struct reservation_state *state) {
     if (state->gate_committed && state->reaped && !state->reported && state->join_read < 0) {
         state->reported = 1;
         if (state->status_broken) {
@@ -39,8 +39,7 @@ static int publish_result(struct launcher *state) {
     }
     return 1;
 }
-static int commit_empty(struct launcher *state) {
-    state->terminal = 1;
+static int await_control_frame(struct reservation_state *state) {
     while (state->control_length > 0 && !state->control_closed) {
         if (launcher_now() >= state->deadline) {
             return 0;
@@ -54,6 +53,23 @@ static int commit_empty(struct launcher *state) {
             return 0;
         }
     }
+    return launcher_now() < state->deadline;
+}
+static int await_join_result(struct reservation_state *state) {
+    while (state->join_read >= 0) {
+        if (launcher_now() >= state->deadline || !launcher_read_join(state)) {
+            return 0;
+        }
+        if (state->join_read >= 0) {
+            struct pollfd pending = {state->join_read, POLLIN, 0};
+            if (poll(&pending, 1, RECHECK_MS) < 0 && errno != EINTR) {
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+static int publish_empty(struct reservation_state *state) {
     if (launcher_now() >= state->deadline) {
         return 0;
     }
@@ -64,16 +80,8 @@ static int commit_empty(struct launcher *state) {
         return launcher_preparation_frame(state, state->preparation_error, state->deadline);
     }
     if (!state->reported) {
-        while (state->join_read >= 0) {
-            if (launcher_now() >= state->deadline || !launcher_read_join(state)) {
-                return 0;
-            }
-            if (state->join_read >= 0) {
-                struct pollfd pending = {state->join_read, POLLIN, 0};
-                if (poll(&pending, 1, RECHECK_MS) < 0 && errno != EINTR) {
-                    return 0;
-                }
-            }
+        if (!await_join_result(state)) {
+            return 0;
         }
         if (!state->reaped) {
             return 0;
@@ -90,7 +98,14 @@ static int commit_empty(struct launcher *state) {
     unsigned char empty = EMPTY_BYTE;
     return launcher_write(state, STATUS_FD, &empty, 1, state->deadline);
 }
-static int stop_iteration(struct launcher *state) {
+static int commit_empty(struct reservation_state *state) {
+    state->terminal = 1;
+    if (!await_control_frame(state)) {
+        return 0;
+    }
+    return publish_empty(state);
+}
+static int stop_iteration(struct reservation_state *state) {
     if (launcher_now() >= state->deadline) {
         return 0;
     }
@@ -110,7 +125,7 @@ static int stop_iteration(struct launcher *state) {
     }
     return 1;
 }
-static int transfer_group(struct launcher *state) {
+static int transfer_group(struct reservation_state *state) {
     if ((state->joined || state->stopping) && !state->outside) {
         if (setpgid(0, state->session_group) != 0 || getpgrp() != state->session_group) {
             return 0;
@@ -136,7 +151,7 @@ static int transfer_group(struct launcher *state) {
     }
     return 1;
 }
-static int commit_gate(struct launcher *state) {
+static int commit_gate(struct reservation_state *state) {
     if (state->release_requested && !state->stopping && !state->gate_committed) {
         unsigned char release = GATE_EXEC_BYTE;
         if (!launcher_write(state, state->gate_write, &release, 1, launcher_now() + STOP_BUDGET_NS)) {
@@ -150,7 +165,16 @@ static int commit_gate(struct launcher *state) {
     }
     return 1;
 }
-int launcher_run(struct launcher *state) {
+static void receive_events(struct reservation_state *state, short control_events, short join_events) {
+    if ((control_events & (POLLIN | POLLHUP | POLLERR)) && !launcher_read_control(state)) {
+        launcher_stop(state, launcher_now() + STOP_BUDGET_NS);
+    }
+    if (state->join_read >= 0 && join_events && !launcher_read_join(state)) {
+        state->preparation_error = EPROTO;
+        launcher_stop(state, launcher_now() + STOP_BUDGET_NS);
+    }
+}
+int launcher_run(struct reservation_state *state) {
     while (!state->terminal) {
         int control = state->control_closed ? -1 : CONTROL_FD;
         struct pollfd descriptors[2] = {{control, POLLIN, 0}, {state->join_read, POLLIN, 0}};
@@ -158,13 +182,7 @@ int launcher_run(struct launcher *state) {
         if (result < 0 && errno != EINTR) {
             return 0;
         }
-        if ((descriptors[0].revents & (POLLIN | POLLHUP | POLLERR)) && !launcher_read_control(state)) {
-            launcher_stop(state, launcher_now() + STOP_BUDGET_NS);
-        }
-        if (state->join_read >= 0 && descriptors[1].revents && !launcher_read_join(state)) {
-            state->preparation_error = EPROTO;
-            launcher_stop(state, launcher_now() + STOP_BUDGET_NS);
-        }
+        receive_events(state, descriptors[0].revents, descriptors[1].revents);
         if (!launcher_reap(state) || !transfer_group(state)) {
             return 0;
         }

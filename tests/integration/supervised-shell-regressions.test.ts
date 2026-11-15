@@ -7,11 +7,19 @@ import {
   SlowSupervisedOutput,
   SUPERVISED_TEST_CANCEL_COMMAND,
   SUPERVISED_TEST_CANCEL_CREATE_TITLE,
+  SUPERVISED_TEST_CANCEL_OUTPUT,
   SUPERVISED_TEST_DEADLINE_FAILURE_TITLE,
   SUPERVISED_TEST_DRAIN_COMMAND,
   SUPERVISED_TEST_DRAIN_TITLE,
+  SUPERVISED_TEST_FORBIDDEN_SCRIPT,
+  SUPERVISED_TEST_INVALID_TIMEOUT_ERROR,
   SUPERVISED_TEST_INVALID_TIMEOUT_TITLE,
   SUPERVISED_TEST_KILL_ERROR,
+  SUPERVISED_TEST_NODE_EVAL_FLAG,
+  SUPERVISED_TEST_SHELL_COMMAND_FLAG,
+  SUPERVISED_TEST_SHELL_EXECUTABLE,
+  SUPERVISED_TEST_SIGNAL_COMMAND,
+  SUPERVISED_TEST_SIGNAL_ID,
   SUPERVISED_TEST_SIGNAL_TITLE,
   SUPERVISED_TEST_STOP_CREATE_TITLE,
   SUPERVISED_TEST_TIMEOUT_MS,
@@ -25,8 +33,8 @@ async function foregroundDrain(): Promise<void> {
   try {
     const lease = await shell.create(
       {
-        executable: "/bin/bash",
-        arguments: ["-c", SUPERVISED_TEST_DRAIN_COMMAND],
+        executable: SUPERVISED_TEST_SHELL_EXECUTABLE,
+        arguments: [SUPERVISED_TEST_SHELL_COMMAND_FLAG, SUPERVISED_TEST_DRAIN_COMMAND],
         cwd: process.cwd(),
         environment: process.env,
       },
@@ -53,7 +61,7 @@ async function cancelCreation(): Promise<void> {
     })
     controller.abort()
     await expect(executing).rejects.toThrow()
-    expect(Buffer.concat(output).toString()).not.toContain("canceled-user-code")
+    expect(Buffer.concat(output).toString()).not.toContain(SUPERVISED_TEST_CANCEL_OUTPUT)
   } finally {
     await shell.close()
   }
@@ -64,7 +72,7 @@ async function stopCreation(): Promise<void> {
   const creating = shell.create(
     {
       executable: process.execPath,
-      arguments: ["-e", "process.stdout.write('forbidden')"],
+      arguments: [SUPERVISED_TEST_NODE_EVAL_FLAG, SUPERVISED_TEST_FORBIDDEN_SCRIPT],
       cwd: process.cwd(),
       environment: process.env,
     },
@@ -83,7 +91,12 @@ async function signalParity(): Promise<void> {
       exposeSessionEnvironment: false,
       operations: new SupervisedBashOperations(shell),
     })
-    const result = await tool.execute("signal", { command: "kill -HUP $$" }, undefined, undefined)
+    const result = await tool.execute(
+      SUPERVISED_TEST_SIGNAL_ID,
+      { command: SUPERVISED_TEST_SIGNAL_COMMAND },
+      undefined,
+      undefined,
+    )
     expect(result).toMatchObject({ structuredContent: { exit_code: 129 } })
   } finally {
     await shell.close()
@@ -98,7 +111,7 @@ async function invalidTimeout(): Promise<void> {
       env: process.env,
       onData: Buffer.byteLength,
     })
-    await expect(executing).rejects.toThrow("Invalid timeout: must be a finite number of seconds")
+    await expect(executing).rejects.toThrow(SUPERVISED_TEST_INVALID_TIMEOUT_ERROR)
   } finally {
     await shell.close()
   }

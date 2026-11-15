@@ -1,65 +1,85 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
-using System.IO;
-using Microsoft.Win32.SafeHandles;
 
 public sealed partial class SupervisedShellLauncher
 {
     private static void CleanupUnassigned(ProcessInformation child)
     {
         List<Exception> failures = new List<Exception>();
-        try { Check(TerminateProcess(child.Process, AssignmentFailedExit)); }
-        catch (Exception error) { failures.Add(error); }
+        try
+        {
+            Check(TerminateProcess(child.Process, AssignmentFailedExit));
+        }
+        catch (Exception error)
+        {
+            failures.Add(error);
+        }
         CloseCollected(child.Thread, failures);
         CloseCollected(child.Process, failures);
-        if (failures.Count > 0) { throw new AggregateException(failures); }
-    }
-    private static void WriteInput(IntPtr handle, string input)
-    {
-        using (FileStream stream = new FileStream(new SafeFileHandle(handle, true), FileAccess.Write))
+        if (failures.Count > 0)
         {
-            byte[] bytes = System.Text.Encoding.UTF8.GetBytes(input);
-            stream.Write(bytes, 0, bytes.Length);
+            throw new AggregateException(failures);
         }
     }
-    private static void ObserveInput(Task input)
-    {
-        try { input.GetAwaiter().GetResult(); }
-        catch (IOException) { }
-    }
-    private static void CleanupNativeResources(IntPtr job, ProcessInformation child, IntPtr stdinRead, IntPtr stdinWrite, IntPtr stdoutRead, IntPtr stdoutWrite, IntPtr stderrRead, IntPtr stderrWrite, IntPtr attributes, IntPtr handles, IntPtr environment)
+
+    private static void CleanupNativeResources(NativeResources resources, ProcessInformation child)
     {
         List<Exception> failures = new List<Exception>();
-        if (job != IntPtr.Zero)
+        if (resources.Job != IntPtr.Zero)
         {
-            try { Check(TerminateJobObject(job, CleanupExit)); }
-            catch (Exception error) { failures.Add(error); }
-            CloseCollected(job, failures);
+            try
+            {
+                Check(TerminateJobObject(resources.Job, CleanupExit));
+            }
+            catch (Exception error)
+            {
+                failures.Add(error);
+            }
+            CloseCollected(resources.Job, failures);
         }
         CloseCollected(child.Thread, failures);
         CloseCollected(child.Process, failures);
-        CloseCollected(stdinRead, failures);
-        CloseCollected(stdinWrite, failures);
-        CloseCollected(stdoutRead, failures);
-        CloseCollected(stdoutWrite, failures);
-        CloseCollected(stderrRead, failures);
-        CloseCollected(stderrWrite, failures);
-        try { if (attributes != IntPtr.Zero) { DeleteProcThreadAttributeList(attributes); Marshal.FreeHGlobal(attributes); } }
-        catch (Exception error) { failures.Add(error); }
-        try { if (handles != IntPtr.Zero) { Marshal.FreeHGlobal(handles); } }
-        catch (Exception error) { failures.Add(error); }
-        try { Marshal.FreeHGlobal(environment); }
-        catch (Exception error) { failures.Add(error); }
-        if (failures.Count > 0) { throw new AggregateException(failures); }
+        CloseCollected(resources.InputRead, failures);
+        CloseCollected(resources.InputWrite, failures);
+        CloseCollected(resources.OutputRead, failures);
+        CloseCollected(resources.OutputWrite, failures);
+        CloseCollected(resources.ErrorRead, failures);
+        CloseCollected(resources.ErrorWrite, failures);
+        FreeCollected(resources.Environment, failures);
+        if (failures.Count > 0)
+        {
+            throw new AggregateException(failures);
+        }
     }
+
     private static void CloseCollected(IntPtr handle, List<Exception> failures)
     {
         if (handle != IntPtr.Zero)
         {
-            try { Check(CloseHandle(handle)); }
-            catch (Exception error) { failures.Add(error); }
+            try
+            {
+                Check(CloseHandle(handle));
+            }
+            catch (Exception error)
+            {
+                failures.Add(error);
+            }
+        }
+    }
+
+    private static void FreeCollected(IntPtr memory, List<Exception> failures)
+    {
+        if (memory != IntPtr.Zero)
+        {
+            try
+            {
+                Marshal.FreeHGlobal(memory);
+            }
+            catch (Exception error)
+            {
+                failures.Add(error);
+            }
         }
     }
 }

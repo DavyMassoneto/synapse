@@ -3,10 +3,24 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { expect, test } from "vitest"
 import { requirePrivateLauncherDirectory } from "#synapse/modules/agent-team/adapters/supervised-shell/unix/provision"
-import { SHELL_DIRECTORY_MODE_TITLE, SHELL_DIRECTORY_MODES, SHELL_DIRECTORY_NON_DIRECTORY_TITLE } from "./constants"
+import {
+  SHELL_DIRECTORY_MODE_TITLE,
+  SHELL_DIRECTORY_MODES,
+  SHELL_DIRECTORY_NON_DIRECTORY_KINDS,
+  SHELL_DIRECTORY_NON_DIRECTORY_TITLE,
+} from "./constants"
+import {
+  SHELL_DIRECTORY_FILE,
+  SHELL_DIRECTORY_FILE_CONTENT,
+  SHELL_DIRECTORY_KIND_PREFIX,
+  SHELL_DIRECTORY_LINK,
+  SHELL_DIRECTORY_MODE_PREFIX,
+  SHELL_DIRECTORY_TARGET,
+  SHELL_TEST_WINDOWS_PLATFORM,
+} from "./native-scenario-constants"
 
 async function directoryMode(mode: number): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), "launcher-directory-"))
+  const directory = await mkdtemp(join(tmpdir(), SHELL_DIRECTORY_MODE_PREFIX))
   try {
     await chmod(directory, mode)
     const status = await lstat(directory)
@@ -20,21 +34,27 @@ async function directoryMode(mode: number): Promise<void> {
   }
 }
 
-async function rejectsNonDirectory(): Promise<void> {
-  const root = await mkdtemp(join(tmpdir(), "launcher-directory-kind-"))
+async function rejectsNonDirectory(kind: string): Promise<void> {
+  const root = await mkdtemp(join(tmpdir(), SHELL_DIRECTORY_KIND_PREFIX))
   try {
-    const target = join(root, "target")
+    const target = join(root, SHELL_DIRECTORY_TARGET)
     await mkdir(target)
-    const link = join(root, "link")
+    const link = join(root, SHELL_DIRECTORY_LINK)
     await symlink(target, link)
-    const file = join(root, "file")
-    await writeFile(file, "not a directory")
-    expect(requirePrivateLauncherDirectory.bind(undefined, await lstat(link))).toThrow()
-    expect(requirePrivateLauncherDirectory.bind(undefined, await lstat(file))).toThrow()
+    const file = join(root, SHELL_DIRECTORY_FILE)
+    await writeFile(file, SHELL_DIRECTORY_FILE_CONTENT)
+    const path = kind === SHELL_DIRECTORY_LINK ? link : file
+    expect(requirePrivateLauncherDirectory.bind(undefined, await lstat(path))).toThrow()
   } finally {
     await rm(root, { recursive: true, force: true })
   }
 }
 
-test.skipIf(process.platform === "win32").each(SHELL_DIRECTORY_MODES)(SHELL_DIRECTORY_MODE_TITLE, directoryMode)
-test.skipIf(process.platform === "win32")(SHELL_DIRECTORY_NON_DIRECTORY_TITLE, rejectsNonDirectory)
+test.skipIf(process.platform === SHELL_TEST_WINDOWS_PLATFORM).each(SHELL_DIRECTORY_MODES)(
+  SHELL_DIRECTORY_MODE_TITLE,
+  directoryMode,
+)
+test.skipIf(process.platform === SHELL_TEST_WINDOWS_PLATFORM).each(SHELL_DIRECTORY_NON_DIRECTORY_KINDS)(
+  SHELL_DIRECTORY_NON_DIRECTORY_TITLE,
+  rejectsNonDirectory,
+)

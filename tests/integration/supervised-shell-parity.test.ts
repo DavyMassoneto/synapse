@@ -4,13 +4,17 @@ import { SupervisedBashOperations } from "#synapse/integration/pi/agent-team/sup
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import {
   SUPERVISED_TEST_BACKGROUND_TIMEOUT,
+  SUPERVISED_TEST_CONTENT_TEXT_TYPE,
   SUPERVISED_TEST_EXIT_TIMEOUT_TITLE,
+  SUPERVISED_TEST_NATIVE_CALL_ID,
   SUPERVISED_TEST_NATIVE_PARITY,
+  SUPERVISED_TEST_OWNED_CALL_ID,
   SUPERVISED_TEST_PARITY_COMMAND,
   SUPERVISED_TEST_PARITY_EXIT_STATUS,
   SUPERVISED_TEST_PARITY_OUTPUTS,
   SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE,
   SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS,
+  SUPERVISED_TEST_RESULT_SEPARATOR,
   SUPERVISED_TEST_TIMEOUT_COMMAND,
   SUPERVISED_TEST_TIMEOUT_MS,
   SUPERVISED_TEST_TIMEOUT_TITLE,
@@ -24,8 +28,18 @@ async function nativeParity(): Promise<void> {
     exposeSessionEnvironment: false,
   })
   try {
-    const expected = await native.execute("native", { command: SUPERVISED_TEST_PARITY_COMMAND }, undefined, undefined)
-    const actual = await owned.execute("owned", { command: SUPERVISED_TEST_PARITY_COMMAND }, undefined, undefined)
+    const expected = await native.execute(
+      SUPERVISED_TEST_NATIVE_CALL_ID,
+      { command: SUPERVISED_TEST_PARITY_COMMAND },
+      undefined,
+      undefined,
+    )
+    const actual = await owned.execute(
+      SUPERVISED_TEST_OWNED_CALL_ID,
+      { command: SUPERVISED_TEST_PARITY_COMMAND },
+      undefined,
+      undefined,
+    )
     for (const result of [expected, actual]) {
       expect(result).toMatchObject({ isError: true, structuredContent: { exit_code: 7, truncated: false } })
       const structured = result.structuredContent
@@ -33,7 +47,10 @@ async function nativeParity(): Promise<void> {
       if (structured && typeof structured === "object" && "output" in structured) {
         expect(SUPERVISED_TEST_PARITY_OUTPUTS).toContain(structured.output)
         expect(result.content).toEqual([
-          { type: "text", text: `${structured.output}\n\n${SUPERVISED_TEST_PARITY_EXIT_STATUS}` },
+          {
+            type: SUPERVISED_TEST_CONTENT_TEXT_TYPE,
+            text: `${structured.output}${SUPERVISED_TEST_RESULT_SEPARATOR}${SUPERVISED_TEST_PARITY_EXIT_STATUS}`,
+          },
         ])
       }
     }
@@ -52,7 +69,7 @@ async function timeoutParity(): Promise<void> {
   try {
     await expect(
       native.execute(
-        "native",
+        SUPERVISED_TEST_NATIVE_CALL_ID,
         { command: SUPERVISED_TEST_TIMEOUT_COMMAND, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
         undefined,
         undefined,
@@ -60,7 +77,7 @@ async function timeoutParity(): Promise<void> {
     ).rejects.toThrow(SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE)
     await expect(
       owned.execute(
-        "owned",
+        SUPERVISED_TEST_OWNED_CALL_ID,
         { command: SUPERVISED_TEST_TIMEOUT_COMMAND, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
         undefined,
         undefined,
@@ -80,13 +97,13 @@ async function leaderBeforeDeadline(): Promise<void> {
   })
   try {
     const expected = await native.execute(
-      "native",
+      SUPERVISED_TEST_NATIVE_CALL_ID,
       { command: SUPERVISED_TEST_BACKGROUND_TIMEOUT, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
       undefined,
       undefined,
     )
     const actual = await owned.execute(
-      "owned",
+      SUPERVISED_TEST_OWNED_CALL_ID,
       { command: SUPERVISED_TEST_BACKGROUND_TIMEOUT, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
       undefined,
       undefined,
