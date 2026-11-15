@@ -1,0 +1,13 @@
+export const WINDOWS_PROOF_POWERSHELL = "powershell.exe"
+export const WINDOWS_PROOF_FLAGS = ["-NoLogo", "-NoProfile", "-NonInteractive", "-File"]
+export const WINDOWS_PROOF_LAUNCHER = "./launcher.ps1"
+export const WINDOWS_PROOF_READY = "CREATED_SUSPENDED_ASSIGNED"
+export const WINDOWS_PROOF_RELEASED = "RELEASED"
+export const WINDOWS_PROOF_RELEASE = "RELEASE\n"
+export const WINDOWS_PROOF_TERMINATE = "TERMINATE\n"
+export const WINDOWS_PROOF_PLATFORM = "win32"
+export const WINDOWS_PROOF_TIMEOUT_MS = 30000
+export const WINDOWS_PROOF_TITLE = "Windows cria suspenso, associa Job antes do resume e preserva sentinela"
+export const WINDOWS_PROOF_REJECT_TITLE = "Windows falha de associação não executa código do usuário"
+export const WINDOWS_PROOF_SCRIPT =
+  "process.stdout.write('original-output'); process.stderr.write('original-error'); setInterval(()=>{},1000)"
