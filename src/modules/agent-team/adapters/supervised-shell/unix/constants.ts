@@ -20,3 +20,10 @@ export const UNIX_KEEPER_GROUP_RECHECK_MS = 20
 export const UNIX_KEEPER_PS = "/bin/ps"
 export const UNIX_KEEPER_PS_ARGUMENTS = ["-axo", "pgid="]
 export const UNIX_KEEPER_PS_MAX_BYTES = 1048576
+
+export const UNIX_KEEPER_STDERR_FD = 2
+export const UNIX_KEEPER_EVENT_ERROR = "error"
+export const UNIX_KEEPER_EVENT_EXIT = "exit"
+export const UNIX_KEEPER_EVENT_END = "end"
+export const UNIX_KEEPER_LINE_SEPARATOR = "\n"
+export const UNIX_KEEPER_UTF8 = "utf8"

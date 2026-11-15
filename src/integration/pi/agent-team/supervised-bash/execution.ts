@@ -1,5 +1,6 @@
 import { type SupervisedShellLease } from "#synapse/modules/agent-team/public/supervised-shell"
-import { SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
+import { captureShellCleanup } from "../shell-cleanup"
+import { SUPERVISED_BASH_ABORT_EVENT, SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
 import { type SupervisedBashDeadline } from "./deadline"
 import { type SupervisedBashFailureReject, type SupervisedBashNeverResolve } from "./types"
 
@@ -39,39 +40,24 @@ export class SupervisedBashExecution {
   }
   private async failedResult(error: Error): Promise<never> {
     if (this.stopping) {
-      try {
-        await this.stopping
-      } catch (failure) {
-        if (failure instanceof Error && failure !== error) {
-          throw new AggregateError([error, failure], SUPERVISED_BASH_CLOSE_FAILURE)
-        }
-        if (typeof failure === "string") {
-          throw new AggregateError([error, new Error(failure)], SUPERVISED_BASH_CLOSE_FAILURE)
-        }
-        if (!(failure instanceof Error)) {
-          throw new AggregateError([error, new Error(SUPERVISED_BASH_CLOSE_FAILURE)], SUPERVISED_BASH_CLOSE_FAILURE)
-        }
+      const outcome = await captureShellCleanup(this.stopping)
+      if (outcome.failed && outcome.error !== error) {
+        throw new AggregateError([error, outcome.error], SUPERVISED_BASH_CLOSE_FAILURE)
       }
     }
     throw error
   }
   private async result(): Promise<number> {
-    try {
-      return await Promise.race([this.lease.completion, this.cancelled])
-    } catch (failure) {
-      if (failure instanceof Error) {
-        return this.failedResult(failure)
-      }
-      if (typeof failure === "string") {
-        return this.failedResult(new Error(failure))
-      }
-      return this.failedResult(new Error(SUPERVISED_BASH_CLOSE_FAILURE))
+    const result = await captureShellCleanup(Promise.race([this.lease.completion, this.cancelled]))
+    if (result.failed) {
+      return this.failedResult(result.error)
     }
+    return result.value
   }
   async run(): Promise<number> {
     const signal = this.deadline.cancellation.signal
     const cancel = this.cancel.bind(this)
-    signal.addEventListener("abort", cancel, { once: true })
+    signal.addEventListener(SUPERVISED_BASH_ABORT_EVENT, cancel, { once: true })
     try {
       if (signal.aborted) {
         this.cancel()
@@ -86,7 +72,7 @@ export class SupervisedBashExecution {
       }
       return code
     } finally {
-      signal.removeEventListener("abort", cancel)
+      signal.removeEventListener(SUPERVISED_BASH_ABORT_EVENT, cancel)
     }
   }
 }

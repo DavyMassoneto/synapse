@@ -1,9 +1,6 @@
-import {
-  captureShellCleanup,
-  finishShellCleanups,
-  type SupervisedShellService,
-} from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
+import { captureShellCleanup, finishShellCleanups } from "../shell-cleanup"
 import { SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
 
 export class SupervisedMemberLifetime implements TeamMemberExtensionLifetime {

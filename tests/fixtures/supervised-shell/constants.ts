@@ -4,6 +4,8 @@ export const SUPERVISED_TEST_NO_ACK = "printf 'must-not-run'"
 export const SUPERVISED_TEST_TIMEOUT_MS = 15000
 
 export const SUPERVISED_TEST_NATIVE_PARITY = "factory nativa e operações supervisionadas preservam saída e exit code"
+export const SUPERVISED_TEST_PARITY_OUTPUTS = ["stdout\nstderr\n", "stderr\nstdout\n"]
+export const SUPERVISED_TEST_PARITY_EXIT_STATUS = "Command exited with code 7"
 export const SUPERVISED_TEST_PARITY_COMMAND = "printf 'stdout\n'; printf 'stderr\n' >&2; exit 7"
 
 export const SUPERVISED_TEST_BACKGROUND = "(sleep 0.05; printf 'background-finished') & exit 0"
@@ -89,3 +91,16 @@ export const SUPERVISED_TEST_CANCEL_RESULT_ABORT_TITLE = "abort aguarda T após 
 export const SUPERVISED_TEST_CANCEL_RESULT_TIMEOUT_TITLE = "timeout aguarda T após C falhar e preserva falhas: Tfail=%s"
 export const SUPERVISED_TEST_IMMEDIATE_ABORT_TITLE = "abort imediato antes da admissão preserva Command aborted"
 export const SUPERVISED_TEST_CLOSED_ABORT_TITLE = "supervisor fechado não é ocultado por abort concorrente"
+
+export const SUPERVISED_TEST_CLOSE_FRAME_BYTES = 11
+export const SUPERVISED_TEST_CLOSE_CREATED_BYTE = 1
+export const SUPERVISED_TEST_CLOSE_EXIT_BYTE = 2
+export const SUPERVISED_TEST_CLOSE_EXIT_OFFSET = 2
+export const SUPERVISED_TEST_CLOSE_ACCEPTED_OFFSET = 6
+export const SUPERVISED_TEST_CLOSE_EMPTY_OFFSET = 10
+export const SUPERVISED_TEST_CLOSE_EMPTY_BYTE = 3
+export const SUPERVISED_TEST_MARKER_WAIT_MS = 10000
+export const SUPERVISED_TEST_SLOW_OUTPUT_MS = 100
+
+export const SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS = 0.25
+export const SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE = "entered\n\nCommand timed out after 0.25 seconds"

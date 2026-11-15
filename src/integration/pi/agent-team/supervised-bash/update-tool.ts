@@ -8,29 +8,27 @@ export function updateSupervisedBashTool(request: SupervisedBashMountRequest, lo
   const tools = request.tools
   const shell = request.shell
   if (tools && shell) {
-    let overridden = false
-    for (const extension of loaded.extensions) {
-      if (extension.tools.has(SUPERVISED_BASH_TOOL_NAME)) {
-        overridden = true
-      }
-    }
     const registered = new Map<string, SupervisedBashToolList[number]>()
     for (const tool of tools) {
       registered.set(tool.name, tool)
     }
     registered.delete(SUPERVISED_BASH_TOOL_NAME)
-    tools.splice(0, tools.length, ...registered.values())
-    if (!overridden) {
-      appendSupervisedBash(request, tools, shell)
-    }
+    const mounted = selectSupervisedBash(request, loaded, registered, shell)
+    tools.splice(0, tools.length, ...mounted)
   }
 }
 
-function appendSupervisedBash(
+function selectSupervisedBash(
   request: SupervisedBashMountRequest,
-  tools: SupervisedBashToolList,
+  loaded: LoadExtensionsResult,
+  registered: Map<string, SupervisedBashToolList[number]>,
   shell: SupervisedShellService,
-): void {
+): SupervisedBashToolList {
+  for (const extension of loaded.extensions) {
+    if (extension.tools.has(SUPERVISED_BASH_TOOL_NAME)) {
+      return Array.from(registered.values())
+    }
+  }
   const options: SupervisedBashToolOptions = {
     operations: new SupervisedBashOperations(shell, request.settings.getShellPath()),
   }
@@ -38,5 +36,8 @@ function appendSupervisedBash(
   if (prefix) {
     options.commandPrefix = prefix
   }
-  tools.push(defineTool({ ...createBashToolDefinition(request.cwd, options), defaultActive: false }))
+  return [
+    ...registered.values(),
+    defineTool({ ...createBashToolDefinition(request.cwd, options), defaultActive: false }),
+  ]
 }

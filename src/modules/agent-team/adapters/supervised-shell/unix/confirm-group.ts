@@ -4,9 +4,11 @@ import {
   UNIX_KEEPER_GROUP_RECHECK_MS,
   UNIX_KEEPER_GROUP_WAIT_MS,
   UNIX_KEEPER_INVALID,
+  UNIX_KEEPER_LINE_SEPARATOR,
   UNIX_KEEPER_PS,
   UNIX_KEEPER_PS_ARGUMENTS,
   UNIX_KEEPER_PS_MAX_BYTES,
+  UNIX_KEEPER_UTF8,
 } from "./constants"
 import { type UnixGroupReadError, type UnixGroupReject, type UnixGroupResolve } from "./types"
 
@@ -15,7 +17,7 @@ export async function confirmUnixGroupEmpty(group: number): Promise<void> {
   let present = true
   while (present && performance.now() < deadline) {
     const groups = await new Promise<string>(readUnixGroups)
-    present = groups.split("\n").map(Number).includes(group)
+    present = groups.split(UNIX_KEEPER_LINE_SEPARATOR).map(Number).includes(group)
     if (present) {
       await setTimeout(UNIX_KEEPER_GROUP_RECHECK_MS)
     }
@@ -29,7 +31,7 @@ function readUnixGroups(resolve: UnixGroupResolve, reject: UnixGroupReject): voi
   execFile(
     UNIX_KEEPER_PS,
     UNIX_KEEPER_PS_ARGUMENTS,
-    { encoding: "utf8", maxBuffer: UNIX_KEEPER_PS_MAX_BYTES, timeout: UNIX_KEEPER_GROUP_WAIT_MS },
+    { encoding: UNIX_KEEPER_UTF8, maxBuffer: UNIX_KEEPER_PS_MAX_BYTES, timeout: UNIX_KEEPER_GROUP_WAIT_MS },
     groupsRead.bind(undefined, resolve, reject),
   )
 }

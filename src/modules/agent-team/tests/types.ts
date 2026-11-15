@@ -1,6 +1,9 @@
+import { type PassThrough } from "node:stream"
+import { type SupervisedWireLease } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import { type TaskBoard } from "../internal"
 import { type AgentTeam, type TeamStartOutcome } from "../public"
 import { type TaskTestJournal, type TeamTestLead, type TeamTestSessions } from "./doubles"
+import { type ShellWireTestOwner } from "./shell-wire-support"
 
 export interface TaskTestSut {
   board: TaskBoard
@@ -20,3 +23,12 @@ export interface TeamGenerationSut extends TeamTestSut {
 
 export type ShellTestResolve = () => void
 export type ShellTestReject = (error: Error) => void
+
+export interface ShellWireScenario {
+  lease: SupervisedWireLease
+  owner: ShellWireTestOwner
+  status: PassThrough
+  output: PassThrough
+  input: PassThrough
+  channels: PassThrough[]
+}

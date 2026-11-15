@@ -12,3 +12,8 @@ export const SUPERVISED_BASH_TIMEOUT_MAX_MESSAGE = "Invalid timeout: maximum is 
 export const SUPERVISED_BASH_STDIN = "stdin"
 
 export const SUPERVISED_BASH_CLOSE_FAILURE = "Falha ao encerrar os recursos do membro."
+
+export const SUPERVISED_BASH_DIRECTORY_PREFIX = "Working directory does not exist: "
+export const SUPERVISED_BASH_DIRECTORY_SUFFIX = "\nCannot execute bash commands."
+
+export const SUPERVISED_BASH_ABORT_EVENT = "abort"

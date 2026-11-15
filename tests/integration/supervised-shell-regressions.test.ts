@@ -20,27 +20,23 @@ import {
 } from "../fixtures"
 
 async function foregroundDrain(): Promise<void> {
-  if (process.platform !== SUPERVISED_TEST_WINDOWS) {
-    const shell = createSupervisedShell()
-    const output = new SlowSupervisedOutput()
-    try {
-      const lease = await shell.create(
-        {
-          executable: "/bin/bash",
-          arguments: ["-c", SUPERVISED_TEST_DRAIN_COMMAND],
-          cwd: process.cwd(),
-          environment: process.env,
-        },
-        output,
-      )
-      lease.release()
-      expect(await lease.completion).toBe(0)
-      expect(output.bytes).toBe(200000)
-    } finally {
-      await shell.close()
-    }
-  } else {
-    expect(process.platform).toBe(SUPERVISED_TEST_WINDOWS)
+  const shell = createSupervisedShell()
+  const output = new SlowSupervisedOutput()
+  try {
+    const lease = await shell.create(
+      {
+        executable: "/bin/bash",
+        arguments: ["-c", SUPERVISED_TEST_DRAIN_COMMAND],
+        cwd: process.cwd(),
+        environment: process.env,
+      },
+      output,
+    )
+    lease.release()
+    expect(await lease.completion).toBe(0)
+    expect(output.bytes).toBe(200000)
+  } finally {
+    await shell.close()
   }
 }
 
@@ -81,20 +77,16 @@ async function stopCreation(): Promise<void> {
 }
 
 async function signalParity(): Promise<void> {
-  if (process.platform !== SUPERVISED_TEST_WINDOWS) {
-    const shell = createSupervisedShell()
-    try {
-      const tool = createBashTool(process.cwd(), {
-        exposeSessionEnvironment: false,
-        operations: new SupervisedBashOperations(shell),
-      })
-      const result = await tool.execute("signal", { command: "kill -HUP $$" }, undefined, undefined)
-      expect(result).toMatchObject({ structuredContent: { exit_code: 129 } })
-    } finally {
-      await shell.close()
-    }
-  } else {
-    expect(process.platform).toBe(SUPERVISED_TEST_WINDOWS)
+  const shell = createSupervisedShell()
+  try {
+    const tool = createBashTool(process.cwd(), {
+      exposeSessionEnvironment: false,
+      operations: new SupervisedBashOperations(shell),
+    })
+    const result = await tool.execute("signal", { command: "kill -HUP $$" }, undefined, undefined)
+    expect(result).toMatchObject({ structuredContent: { exit_code: 129 } })
+  } finally {
+    await shell.close()
   }
 }
 
@@ -125,10 +117,18 @@ async function deadlineFailureWinsPendingCompletion(): Promise<void> {
   expect(shell.calls).toBe(2)
 }
 
-test(SUPERVISED_TEST_DRAIN_TITLE, foregroundDrain, SUPERVISED_TEST_TIMEOUT_MS)
+test.skipIf(process.platform === SUPERVISED_TEST_WINDOWS)(
+  SUPERVISED_TEST_DRAIN_TITLE,
+  foregroundDrain,
+  SUPERVISED_TEST_TIMEOUT_MS,
+)
 test(SUPERVISED_TEST_CANCEL_CREATE_TITLE, cancelCreation, SUPERVISED_TEST_TIMEOUT_MS)
 test(SUPERVISED_TEST_STOP_CREATE_TITLE, stopCreation, SUPERVISED_TEST_TIMEOUT_MS)
-test(SUPERVISED_TEST_SIGNAL_TITLE, signalParity, SUPERVISED_TEST_TIMEOUT_MS)
+test.skipIf(process.platform === SUPERVISED_TEST_WINDOWS)(
+  SUPERVISED_TEST_SIGNAL_TITLE,
+  signalParity,
+  SUPERVISED_TEST_TIMEOUT_MS,
+)
 test(SUPERVISED_TEST_INVALID_TIMEOUT_TITLE, invalidTimeout, SUPERVISED_TEST_TIMEOUT_MS)
 
 test(SUPERVISED_TEST_DEADLINE_FAILURE_TITLE, deadlineFailureWinsPendingCompletion, SUPERVISED_TEST_TIMEOUT_MS)

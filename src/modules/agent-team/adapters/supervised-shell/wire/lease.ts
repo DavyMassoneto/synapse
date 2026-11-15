@@ -8,6 +8,11 @@ import { ShellWireCompletion } from "./completion"
 import {
   SHELL_WIRE_COMPLETED,
   SHELL_WIRE_CREATED,
+  SHELL_WIRE_EVENT_ABORT,
+  SHELL_WIRE_EVENT_CLOSE,
+  SHELL_WIRE_EVENT_DATA,
+  SHELL_WIRE_EVENT_END,
+  SHELL_WIRE_EVENT_ERROR,
   SHELL_WIRE_GATE_RELEASE,
   SHELL_WIRE_INVALID,
   SHELL_WIRE_KILLED_EXIT,
@@ -39,28 +44,24 @@ export class SupervisedWireLease implements SupervisedShellLease {
   private failure?: Error
   private ownershipConfirmed = false
   private pendingExit?: number
-  private readonly signal?: AbortSignal
 
   constructor(child: ShellWireProcess, output: SupervisedShellOutput, signal?: AbortSignal) {
     this.child = child
     this.ownership = new ShellWireOwnership(child, this.stopFailed.bind(this))
     this.preparation = new ShellWirePreparation(this.onError.bind(this))
-    if (signal) {
-      this.signal = signal
-    }
     this.output = new ShellOutputDrain(
       child.output,
       output,
       this.finishOutput.bind(this),
       this.onOutputError.bind(this),
     )
-    child.status.on("end", this.onStatusEnd.bind(this))
-    child.status.on("error", this.onTransportError.bind(this))
-    child.input.on("error", this.onTransportError.bind(this))
-    child.status.on("data", this.onStatus.bind(this))
-    child.process.on("error", this.onError.bind(this))
-    child.process.on("close", this.onClose.bind(this))
-    signal?.addEventListener("abort", this.onAbort.bind(this), { once: true })
+    child.status.on(SHELL_WIRE_EVENT_END, this.onStatusEnd.bind(this))
+    child.status.on(SHELL_WIRE_EVENT_ERROR, this.onTransportError.bind(this))
+    child.input.on(SHELL_WIRE_EVENT_ERROR, this.onTransportError.bind(this))
+    child.status.on(SHELL_WIRE_EVENT_DATA, this.onStatus.bind(this))
+    child.process.on(SHELL_WIRE_EVENT_ERROR, this.onError.bind(this))
+    child.process.on(SHELL_WIRE_EVENT_CLOSE, this.onClose.bind(this))
+    signal?.addEventListener(SHELL_WIRE_EVENT_ABORT, this.onAbort.bind(this), { once: true })
     if (signal?.aborted) {
       this.onAbort()
     }
@@ -72,7 +73,7 @@ export class SupervisedWireLease implements SupervisedShellLease {
     return this.preparation.current()
   }
   release(): void {
-    if (this.ownership.requested || this.failure || this.closed || this.signal?.aborted) {
+    if (this.ownership.requested || this.failure || this.closed) {
       throw new Error(SHELL_WIRE_INVALID)
     }
     if (!this.released) {

@@ -4,9 +4,10 @@ import {
   type SupervisedShellLauncher,
   type SupervisedShellLease,
   type SupervisedShellOutput,
+  type SupervisedShellPreparedObserver,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { encodeShellSpec, SupervisedWireLease, writeShellSpec } from "../wire"
+import { encodeShellSpec, prepareShellLease, requireUnixShell, SupervisedWireLease, writeShellSpec } from "../wire"
 import { confirmUnixGroupEmpty } from "./confirm-group"
 import {
   UNIX_KEEPER_CONTROL_FD,
@@ -16,6 +17,7 @@ import {
   UNIX_KEEPER_JITI_REGISTER,
   UNIX_KEEPER_NODE,
   UNIX_KEEPER_PIPE,
+  UNIX_KEEPER_PS,
   UNIX_KEEPER_URL,
 } from "./constants"
 import { terminateUnixKeeper } from "./terminate"
@@ -25,7 +27,10 @@ export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
     spec: SupervisedShellSpec,
     output: SupervisedShellOutput,
     signal?: AbortSignal,
+    prepared?: SupervisedShellPreparedObserver,
   ): Promise<SupervisedShellLease> {
+    await requireUnixShell(UNIX_KEEPER_PS)
+    signal?.throwIfAborted()
     const content = encodeShellSpec(spec, UNIX_KEEPER_INVALID)
     const child = spawn(
       process.execPath,
@@ -53,16 +58,8 @@ export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
       output,
       signal,
     )
+    prepared?.(lease)
     writeShellSpec(input, content)
-    try {
-      await lease.ready()
-      return lease
-    } catch (error) {
-      await lease.terminate()
-      if (signal?.aborted && signal.reason instanceof Error) {
-        throw signal.reason
-      }
-      throw error
-    }
+    return prepareShellLease(lease, signal)
   }
 }

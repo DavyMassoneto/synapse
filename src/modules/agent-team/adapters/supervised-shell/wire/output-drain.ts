@@ -1,6 +1,12 @@
 import { type Readable } from "node:stream"
 import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { SHELL_WIRE_INVALID } from "./constants"
+import {
+  SHELL_WIRE_EVENT_CLOSE,
+  SHELL_WIRE_EVENT_DATA,
+  SHELL_WIRE_EVENT_END,
+  SHELL_WIRE_EVENT_ERROR,
+  SHELL_WIRE_INVALID,
+} from "./constants"
 import { type ShellWireReadyResolve, type ShellWireReject } from "./types"
 
 export class ShellOutputDrain {
@@ -22,10 +28,10 @@ export class ShellOutputDrain {
     this.sink = sink
     this.updated = updated
     this.failed = failed
-    input.on("data", this.receive.bind(this))
-    input.on("end", this.finish.bind(this))
-    input.on("error", this.fail.bind(this))
-    input.on("close", this.closed.bind(this))
+    input.on(SHELL_WIRE_EVENT_DATA, this.receive.bind(this))
+    input.on(SHELL_WIRE_EVENT_END, this.finish.bind(this))
+    input.on(SHELL_WIRE_EVENT_ERROR, this.fail.bind(this))
+    input.on(SHELL_WIRE_EVENT_CLOSE, this.closed.bind(this))
   }
   private receive(data: Buffer): void {
     if (!this.failure) {

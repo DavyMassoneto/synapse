@@ -8,6 +8,7 @@ import {
   SHELL_WIRE_ERROR_MAX_BYTES,
   SHELL_WIRE_EXITED,
   SHELL_WIRE_FAILED,
+  SHELL_WIRE_FATAL_UTF8,
   SHELL_WIRE_INVALID,
   SHELL_WIRE_RELEASED,
   SHELL_WIRE_STATUS_BYTES,
@@ -72,7 +73,7 @@ export class ShellStatusReader {
         this.fail()
       }
       if (this.buffer.length === bytes + SHELL_WIRE_ERROR_HEADER_BYTES) {
-        const message = new TextDecoder("utf-8", { fatal: true }).decode(
+        const message = new TextDecoder(SHELL_WIRE_FATAL_UTF8, { fatal: true }).decode(
           this.buffer.subarray(SHELL_WIRE_ERROR_HEADER_BYTES),
         )
         this.state = { kind: SHELL_WIRE_FAILED }

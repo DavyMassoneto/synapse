@@ -1,6 +1,6 @@
 import { EventEmitter, once } from "node:events"
 import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell"
-import { SUPERVISED_TEST_WINDOWS_MARKER } from "./constants"
+import { SUPERVISED_TEST_MARKER_WAIT_MS, SUPERVISED_TEST_WINDOWS_MARKER } from "./constants"
 
 export class SupervisedTestOutput implements SupervisedShellOutput {
   chunks: Buffer[] = []
@@ -21,7 +21,9 @@ export class SupervisedTestOutput implements SupervisedShellOutput {
   }
   async waitForMarker(): Promise<void> {
     if (!this.found) {
-      await once(this.events, SUPERVISED_TEST_WINDOWS_MARKER, { signal: AbortSignal.timeout(10000) })
+      await once(this.events, SUPERVISED_TEST_WINDOWS_MARKER, {
+        signal: AbortSignal.timeout(SUPERVISED_TEST_MARKER_WAIT_MS),
+      })
     }
   }
   text(): string {

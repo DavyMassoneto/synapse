@@ -1,3 +1,4 @@
+import { type SupervisedShellSpec } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
 import { type StartMemberRequest } from "../public"
 
 export const TEAM_TEST_ALICE_REQUEST: StartMemberRequest = { name: "alice", description: "x", task: "x" }
@@ -74,7 +75,27 @@ export const SHELL_MATRIX_NORMAL_TITLE = "resultado normal drenado não depende 
 export const SHELL_MATRIX_SINK_TITLE = "sink rejeitado durante stop rejeita C sem impedir T (%s)"
 export const SHELL_MATRIX_READY_FAILURE_TITLE = "ready não revive após erro e gate recusado não escreve"
 export const SHELL_MATRIX_SYNC_TITLE = "close síncrono é observado antes do efeito de terminate"
+export const SHELL_REQUIREMENT_PS_TITLE = "recusa ps ausente com motivo claro"
+export const SHELL_REQUIREMENT_POWERSHELL_TITLE = "recusa PowerShell ausente com motivo claro"
+export const SHELL_REQUIREMENT_ADD_TYPE_TITLE = "recusa executável sem Add-Type funcional"
+export const SHELL_REQUIREMENT_PLATFORM_TITLE = "recusa plataforma não suportada antes de criar shell"
 export const SHELL_CLOSE_JOB_VALID_TITLE = "prova CloseJob valida sequência real e ausência do filho registrado"
 export const SHELL_CLOSE_JOB_VALID_FRAME = "0102000000000000001d03"
 export const SHELL_CLOSE_JOB_FRAME_TITLE = "prova CloseJob recusa frame inválido %s"
 export const SHELL_CLOSE_JOB_OBSERVATION_TITLE = "prova CloseJob recusa observação inválida %s"
+
+export const SHELL_ADMISSION_RETIRED_TITLE = "lease confirmado é retirado antes da próxima parada"
+export const SHELL_ADMISSION_BACKGROUND_TITLE = "resultado foreground não retira ownership background"
+export const SHELL_ADMISSION_QUARANTINE_TITLE = "quarentena permanece rastreada sem repetir sinal"
+export const SHELL_ADMISSION_TEST_SPEC: SupervisedShellSpec = {
+  executable: "node",
+  arguments: [],
+  cwd: ".",
+  environment: {},
+}
+
+export const SHELL_FAILED_CREATE_TIMEOUT_TITLE = "criação falha preserva timeout de confirmação como falha posterior"
+export const SHELL_FAILED_CREATE_TEST_WAIT_MS = 10000
+export const SHELL_FAILED_CREATE_TRACKED_TITLE = "criação falha preserva ownership incerto e falha em stops posteriores"
+export const SHELL_FAILED_CREATE_RETIRED_TITLE = "criação falha com cleanup comprovado não permanece no registro"
+export const SHELL_FAILED_CREATE_PRESPAWN_TITLE = "falha antes de spawn não deixa admissão pendente"

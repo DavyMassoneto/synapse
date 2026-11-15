@@ -3,7 +3,6 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { expect, test } from "vitest"
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
-import { verifyCloseJobObservation, verifyCloseJobStatus } from "#synapse/modules/agent-team/tests"
 import {
   runWindowsScript,
   SUPERVISED_TEST_TIMEOUT_MS,
@@ -27,6 +26,8 @@ import {
   SUPERVISED_TEST_WINDOWS_UTF8_TITLE,
   type SupervisedTestEnvironmentEntry,
   SupervisedTestOutput,
+  verifyCloseJobObservation,
+  verifyCloseJobStatus,
   WindowsRawChannel,
 } from "../fixtures"
 
@@ -103,12 +104,6 @@ async function closeOnlyJobHandle(): Promise<void> {
   if (pid) {
     observed = await runWindowsScript(SUPERVISED_TEST_WINDOWS_OBSERVE_URL, [pid])
   }
-  console.log({
-    launcherCode: code,
-    childPid: pid,
-    childObservation: observed.trim(),
-    statusHex: channel.statusBytes.toString("hex"),
-  })
   expect(code).toBe(0)
   expect(typeof pid).toBe("string")
   if (typeof pid === "string") {

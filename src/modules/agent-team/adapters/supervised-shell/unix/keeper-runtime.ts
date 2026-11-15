@@ -13,11 +13,17 @@ import {
 } from "../wire"
 import {
   UNIX_KEEPER_CONTROL_FD,
+  UNIX_KEEPER_EVENT_END,
+  UNIX_KEEPER_EVENT_ERROR,
+  UNIX_KEEPER_EVENT_EXIT,
+  UNIX_KEEPER_IGNORE,
   UNIX_KEEPER_INTERVAL_MS,
   UNIX_KEEPER_KILL,
+  UNIX_KEEPER_PIPE,
   UNIX_KEEPER_SIGHUP,
   UNIX_KEEPER_SIGNAL_OFFSET,
   UNIX_KEEPER_SIGTERM,
+  UNIX_KEEPER_STDERR_FD,
 } from "./constants"
 import { type UnixShellExitSignal, type UnixShellExitStatus } from "./types"
 
@@ -45,16 +51,20 @@ export class UnixKeeper {
       cwd: this.spec.cwd,
       env: environment,
       detached: false,
-      stdio: [this.spec.input ? "pipe" : "ignore", 2, 2],
+      stdio: [
+        typeof this.spec.input === "string" ? UNIX_KEEPER_PIPE : UNIX_KEEPER_IGNORE,
+        UNIX_KEEPER_STDERR_FD,
+        UNIX_KEEPER_STDERR_FD,
+      ],
     })
-    if (this.spec.input) {
+    if (typeof this.spec.input === "string") {
       child.stdin?.end(this.spec.input)
     }
-    child.on("error", this.failed.bind(this))
-    child.on("exit", this.shellExited.bind(this))
+    child.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
+    child.on(UNIX_KEEPER_EVENT_EXIT, this.shellExited.bind(this))
     const ownership = createReadStream("", { fd: UNIX_KEEPER_CONTROL_FD, autoClose: false })
-    ownership.on("end", this.stop.bind(this))
-    ownership.on("error", this.stop.bind(this))
+    ownership.on(UNIX_KEEPER_EVENT_END, this.stop.bind(this))
+    ownership.on(UNIX_KEEPER_EVENT_ERROR, this.stop.bind(this))
     ownership.resume()
     setInterval(this.anchor.bind(this), UNIX_KEEPER_INTERVAL_MS)
   }

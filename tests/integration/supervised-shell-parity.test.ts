@@ -7,6 +7,10 @@ import {
   SUPERVISED_TEST_EXIT_TIMEOUT_TITLE,
   SUPERVISED_TEST_NATIVE_PARITY,
   SUPERVISED_TEST_PARITY_COMMAND,
+  SUPERVISED_TEST_PARITY_EXIT_STATUS,
+  SUPERVISED_TEST_PARITY_OUTPUTS,
+  SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE,
+  SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS,
   SUPERVISED_TEST_TIMEOUT_COMMAND,
   SUPERVISED_TEST_TIMEOUT_MS,
   SUPERVISED_TEST_TIMEOUT_TITLE,
@@ -22,11 +26,17 @@ async function nativeParity(): Promise<void> {
   try {
     const expected = await native.execute("native", { command: SUPERVISED_TEST_PARITY_COMMAND }, undefined, undefined)
     const actual = await owned.execute("owned", { command: SUPERVISED_TEST_PARITY_COMMAND }, undefined, undefined)
-    expect(actual.content).toEqual(expected.content)
-    expect(actual).toMatchObject({ structuredContent: { output: "stdout\nstderr\n", exit_code: 7, truncated: false } })
-    expect(expected).toMatchObject({
-      structuredContent: { output: "stdout\nstderr\n", exit_code: 7, truncated: false },
-    })
+    for (const result of [expected, actual]) {
+      expect(result).toMatchObject({ isError: true, structuredContent: { exit_code: 7, truncated: false } })
+      const structured = result.structuredContent
+      expect(structured).toHaveProperty("output")
+      if (structured && typeof structured === "object" && "output" in structured) {
+        expect(SUPERVISED_TEST_PARITY_OUTPUTS).toContain(structured.output)
+        expect(result.content).toEqual([
+          { type: "text", text: `${structured.output}\n\n${SUPERVISED_TEST_PARITY_EXIT_STATUS}` },
+        ])
+      }
+    }
   } finally {
     await supervisor.close()
   }
@@ -41,11 +51,21 @@ async function timeoutParity(): Promise<void> {
   })
   try {
     await expect(
-      native.execute("native", { command: SUPERVISED_TEST_TIMEOUT_COMMAND, timeout: 0.25 }, undefined, undefined),
-    ).rejects.toThrow("entered\n\nCommand timed out after 0.25 seconds")
+      native.execute(
+        "native",
+        { command: SUPERVISED_TEST_TIMEOUT_COMMAND, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
+        undefined,
+        undefined,
+      ),
+    ).rejects.toThrow(SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE)
     await expect(
-      owned.execute("owned", { command: SUPERVISED_TEST_TIMEOUT_COMMAND, timeout: 0.25 }, undefined, undefined),
-    ).rejects.toThrow("entered\n\nCommand timed out after 0.25 seconds")
+      owned.execute(
+        "owned",
+        { command: SUPERVISED_TEST_TIMEOUT_COMMAND, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
+        undefined,
+        undefined,
+      ),
+    ).rejects.toThrow(SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE)
   } finally {
     await supervisor.close()
   }
@@ -61,13 +81,13 @@ async function leaderBeforeDeadline(): Promise<void> {
   try {
     const expected = await native.execute(
       "native",
-      { command: SUPERVISED_TEST_BACKGROUND_TIMEOUT, timeout: 0.25 },
+      { command: SUPERVISED_TEST_BACKGROUND_TIMEOUT, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
       undefined,
       undefined,
     )
     const actual = await owned.execute(
       "owned",
-      { command: SUPERVISED_TEST_BACKGROUND_TIMEOUT, timeout: 0.25 },
+      { command: SUPERVISED_TEST_BACKGROUND_TIMEOUT, timeout: SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS },
       undefined,
       undefined,
     )

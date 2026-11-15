@@ -1,12 +1,7 @@
-import {
-  SUPERVISED_SHELL_STOP_FAILED,
-  type SupervisedShellCleanupAction,
-  type SupervisedShellCleanupOutcome,
-} from "../contracts"
+import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
+import { type ShellCleanupAction, type ShellCleanupOutcome } from "./types"
 
-export async function captureShellCleanup(
-  action: SupervisedShellCleanupAction,
-): Promise<SupervisedShellCleanupOutcome> {
+export async function captureShellCleanup(action: ShellCleanupAction): Promise<ShellCleanupOutcome> {
   try {
     await action()
     return { failed: false }
@@ -21,10 +16,7 @@ export async function captureShellCleanup(
   }
 }
 
-export async function finishShellCleanups(
-  attempts: Promise<SupervisedShellCleanupOutcome>[],
-  message: string,
-): Promise<void> {
+export async function finishShellCleanups(attempts: Promise<ShellCleanupOutcome>[], message: string): Promise<void> {
   const failures: Error[] = []
   for (const result of await Promise.all(attempts)) {
     if (result.failed) {

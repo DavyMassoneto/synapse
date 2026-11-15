@@ -1,15 +1,15 @@
-import { captureShellCleanup, finishShellCleanups } from "#synapse/modules/agent-team/public/supervised-shell/cleanup"
 import {
   SUPERVISED_SHELL_ABORTED,
   SUPERVISED_SHELL_CLOSED,
   SUPERVISED_SHELL_STOP_FAILED,
-  type SupervisedShellCleanupOutcome,
   type SupervisedShellLauncher,
   type SupervisedShellLease,
   type SupervisedShellOutput,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
 import { ShellAdmission } from "./admission"
+import { captureShellCleanup, finishShellCleanups } from "./cleanup"
+import { type ShellCleanupOutcome } from "./types"
 
 export class SupervisedShellSupervisor {
   private readonly launcher: SupervisedShellLauncher
@@ -35,15 +35,15 @@ export class SupervisedShellSupervisor {
       }
       throw new Error(SUPERVISED_SHELL_ABORTED)
     }
-    const admission = new ShellAdmission()
+    const admission = new ShellAdmission(this.admissions)
     const epoch = this.epoch
     this.admissions.add(admission)
     try {
       const cancellation = AbortSignal.any([admission.cancellation.signal, ...(signal ? [signal] : [])])
-      const lease = await this.launcher.create(spec, output, cancellation)
+      const lease = await this.launcher.create(spec, output, cancellation, admission.publish.bind(admission))
       admission.publish(lease)
       if (this.closed || epoch !== this.epoch || admission.revoked) {
-        await lease.terminate()
+        await admission.terminate()
         throw new Error(SUPERVISED_SHELL_CLOSED)
       }
       return {
@@ -53,8 +53,11 @@ export class SupervisedShellSupervisor {
         },
         completion: lease.completion,
         release: admission.release.bind(admission),
-        terminate: lease.terminate.bind(lease),
+        terminate: admission.terminate.bind(admission),
       }
+    } catch (failure) {
+      await admission.creationFailed()
+      throw failure
     } finally {
       admission.finish()
     }
@@ -70,7 +73,7 @@ export class SupervisedShellSupervisor {
 
   async stop(): Promise<void> {
     this.epoch++
-    const attempts: Promise<SupervisedShellCleanupOutcome>[] = []
+    const attempts: Promise<ShellCleanupOutcome>[] = []
     for (const admission of this.admissions) {
       admission.revoked = true
       attempts.push(captureShellCleanup(admission.stop.bind(admission)))

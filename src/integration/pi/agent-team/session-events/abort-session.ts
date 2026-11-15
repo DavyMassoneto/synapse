@@ -1,5 +1,5 @@
-import { captureShellCleanup, finishShellCleanups } from "#synapse/modules/agent-team/public/supervised-shell"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
+import { captureShellCleanup, finishShellCleanups } from "../shell-cleanup"
 import { TEAM_PI_ABORT_FAILURE } from "./constants"
 import { type TeamMemberSessionPort } from "./types"
 
