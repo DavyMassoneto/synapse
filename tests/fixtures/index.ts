@@ -1,5 +1,6 @@
 export * from "./agent-team"
 export * from "./agent-team-distribution"
+export * from "./agent-team-tool-access"
 export * from "./composition"
 export * from "./computer-use-cancellation"
 export * from "./computer-use-mount"

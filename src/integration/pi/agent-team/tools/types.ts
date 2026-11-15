@@ -80,7 +80,6 @@ export interface TeamToolIdentity {
 }
 
 export interface TeamToolRegistration<T extends TSchema> {
-  exposure?: NonNullable<ToolDefinition<T, TeamToolDetails, never>["exposure"]>
   executionMode?: NonNullable<ToolDefinition<T, TeamToolDetails, never>["executionMode"]>
   name: TeamToolName
   description: string

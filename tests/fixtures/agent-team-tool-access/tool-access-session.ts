@@ -8,17 +8,17 @@ import {
   SettingsManager,
 } from "@earendil-works/pi-coding-agent"
 import { leadTools, TEAM_TOOL_NO_PARAMETERS } from "#synapse/integration/pi/agent-team"
+import { ToolsTeamDouble } from "../agent-team"
 import { fixtureModel } from "../context"
-import { TeamToolAccessModel } from "./tool-access-model"
-import { TeamToolAccessProbe } from "./tool-access-probe"
 import {
   TEAM_FIXTURE_ACCESS_API_KEY,
   TEAM_FIXTURE_ACCESS_CONTEXT_WINDOW,
   TEAM_FIXTURE_ACCESS_MODEL,
   TEAM_FIXTURE_ACCESS_PROVIDER,
   TEAM_FIXTURE_NESTED_TOOL,
-  ToolsTeamDouble,
-} from "./tools"
+} from "./constants"
+import { TeamToolAccessModel } from "./tool-access-model"
+import { TeamToolAccessProbe } from "./tool-access-probe"
 
 export async function createTeamToolAccessSession(directory: string, toolName: string) {
   const team = new ToolsTeamDouble()

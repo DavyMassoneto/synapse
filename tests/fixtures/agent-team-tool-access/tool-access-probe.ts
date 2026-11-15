@@ -6,7 +6,7 @@ import {
   type TeamRegisteredTool,
   type TeamToolOutput,
 } from "#synapse/integration/pi/agent-team"
-import { TEAM_FIXTURE_ACCESS_DONE, TEAM_FIXTURE_ACCESS_TEXT } from "./tools"
+import { TEAM_FIXTURE_ACCESS_DONE, TEAM_FIXTURE_ACCESS_TEXT } from "./constants"
 
 export class TeamToolAccessProbe {
   readonly errors: boolean[] = []

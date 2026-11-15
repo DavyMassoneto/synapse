@@ -10,7 +10,7 @@ import {
   TEAM_FIXTURE_ACCESS_TEXT,
   TEAM_FIXTURE_ACCESS_TOOL_CALL,
   TEAM_FIXTURE_ACCESS_TOOL_USE,
-} from "./tools"
+} from "./constants"
 
 export class TeamToolAccessModel {
   private readonly firstTool: string
