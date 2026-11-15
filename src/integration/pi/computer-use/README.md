@@ -34,7 +34,9 @@ Configuração explícita de pinagem, sempre com versão exata e motivo rastreá
 { "command": "node", "arguments": ["driver-falso.mjs"] }
 ```
 
-É configuração confiável do usuário, para dirigir um processo falso em testes ou um driver mantido pelo operador. Por selecionar o binário diretamente, esse override fica fora da política gerenciada: não exige pin, não é atualizado nem verificado pela política e desativa o provisionamento automático. `diagnose`/`status` informam essa condição; a política continua válida para quando o override for removido. O teste de distribuição usa esse arquivo no diretório isolado do agente para executar exclusivamente um processo Node falso.
+É configuração confiável do usuário, para dirigir um processo falso em testes ou um driver mantido pelo operador. Por selecionar o binário diretamente, esse override fica fora da política gerenciada: não exige pin, não é atualizado nem verificado pela política e desativa o provisionamento automático. `diagnose`/`status` informam que o provisionamento gerenciado está desativado por override explícito; a política continua válida para quando o override for removido. O teste de distribuição usa esse arquivo no diretório isolado do agente para executar exclusivamente um processo Node falso.
+
+Migração: quem já usava `computer-use-driver.json` ou `PI_CUA_DRIVER_CMD` continua com o mesmo binário, agora como override explícito e sem atualização gerenciada. Para voltar ao caminho gerenciado, remova o override e deixe a política ausente (última estável) ou configure um pin justificado. O diagnóstico da pinagem mostra a versão fixada e o motivo registrado; no caminho latest-stable ele não resolve release nem baixa nada.
 
 ## Bridge Unity
 
