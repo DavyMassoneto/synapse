@@ -17,3 +17,8 @@ export interface ComputerReleaseTestChecksumEntry {
 }
 
 export type ComputerReleaseTestDigest = string | null
+
+export interface ComputerReleaseTestStreamState {
+  cancelled: boolean
+  pulls: number
+}
