@@ -5,3 +5,5 @@ port=47823
 request_timeout_ms=3000
 max_tree_items=400
 max_texts=300
+max_connections=16
+read_timeout_ms=5000

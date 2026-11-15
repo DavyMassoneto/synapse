@@ -42,6 +42,7 @@ namespace SynapseUnityBridge
         private static readonly Queue<PendingRequest> Queue = new Queue<PendingRequest>();
         private static TcpListener listener;
         private static Thread acceptThread;
+        private static ClientRegistry clients;
         private static GameObject hostObject;
         private static bool dontDestroyApplied;
         private static bool firstTickHandled;
@@ -90,6 +91,7 @@ namespace SynapseUnityBridge
             {
                 listener = new TcpListener(IPAddress.Loopback, Config.Port);
                 listener.Start();
+                clients = new ClientRegistry(Config.MaxConnections);
                 Running = true;
                 acceptThread = new Thread(AcceptLoop);
                 acceptThread.IsBackground = true;
@@ -105,7 +107,6 @@ namespace SynapseUnityBridge
             }
         }
 
-        /// <summary>Cria o MonoBehaviour. Chamado na thread da injeção; Update roda na thread principal.</summary>
         internal static bool CreateGameObject()
         {
             try
@@ -143,7 +144,6 @@ namespace SynapseUnityBridge
             }
         }
 
-        /// <summary>Chamado no Update (thread principal). Consome a fila e atualiza estado.</summary>
         internal static void Pump()
         {
             long ticks = Interlocked.Increment(ref mainThreadTicks);
@@ -530,7 +530,6 @@ namespace SynapseUnityBridge
             MainThreadStopRequested = true;
         }
 
-        /// <summary>Roda na thread principal (Update). Destroi GameObject/listener e restaura runInBackground.</summary>
         internal static void Shutdown(string reason)
         {
             if (!Running && !MainThreadInfo.GameObjectCreated) return;
@@ -539,6 +538,15 @@ namespace SynapseUnityBridge
             try
             {
                 if (listener != null) listener.Stop();
+            }
+            catch
+            {
+            }
+            FailPendingRequests("bridge-stopped");
+            if (clients != null) clients.CloseAll(1000);
+            try
+            {
+                if (acceptThread != null) acceptThread.Join(500);
             }
             catch
             {
@@ -585,52 +593,56 @@ namespace SynapseUnityBridge
                 {
                     return;
                 }
-                Thread worker = new Thread(delegate() { Serve(client); });
-                worker.IsBackground = true;
-                worker.Name = "synapse-bridge-client";
-                worker.Start();
-            }
-        }
-
-        private static void Serve(TcpClient client)
-        {
-            try
-            {
-                using (client)
+                if (!Running)
                 {
-                    NetworkStream stream = client.GetStream();
-                    StreamReader reader = new StreamReader(stream, Encoding.UTF8);
-                    StreamWriter writer = new StreamWriter(stream, new UTF8Encoding(false));
-                    writer.AutoFlush = false;
-                    string line;
-                    while ((line = reader.ReadLine()) != null)
-                    {
-                        string response;
-                        try
-                        {
-                            response = HandleLine(line);
-                        }
-                        catch (Exception exception)
-                        {
-                            BridgeLog.WriteException("SERVE_FAIL", exception);
-                            response = ErrorJson("request-failed", exception.GetType().Name + ": " + exception.Message);
-                        }
-                        writer.Write(response);
-                        writer.Write('\n');
-                        writer.Flush();
-                    }
+                    client.Close();
+                    return;
+                }
+                ClientSession session = new ClientSession(client, Config.ReadTimeoutMs, clients.Remove);
+                if (clients == null || !clients.TryAdd(session))
+                {
+                    session.Close();
+                    BridgeLog.Write("CONNECTION_REJECTED max=" + Config.MaxConnections);
+                    continue;
+                }
+                try
+                {
+                    session.Start();
+                }
+                catch (Exception exception)
+                {
+                    clients.Remove(session);
+                    session.Close();
+                    BridgeLog.WriteException("CLIENT_START_FAIL", exception);
                 }
             }
-            catch (Exception exception)
+        }
+
+        private static void FailPendingRequests(string reason)
+        {
+            PendingRequest[] pending;
+            lock (QueueGate)
             {
-                BridgeLog.WriteException("SERVE_LOOP_FAIL", exception);
+                pending = Queue.ToArray();
+                Queue.Clear();
+            }
+            for (int index = 0; index < pending.Length; index++)
+            {
+                PendingRequest request = pending[index];
+                lock (request)
+                {
+                    if (request.Executed) continue;
+                    request.Cancelled = true;
+                    request.Response = ErrorJson(reason, "bridge stopped before execution");
+                }
+                request.Done.Set();
             }
         }
 
-        private static string HandleLine(string line)
+        internal static string HandleLine(string line)
         {
             if (line == null) return ErrorJson("empty", null);
-            if (line.Length > 8192) return ErrorJson("request-too-large", null);
+            if (line.Length > ClientSession.MaxRequestBytes) return ErrorJson("request-too-large", null);
             Dictionary<string, string> fields = FlatJson.Parse(line);
             string op = FlatJson.GetString(fields, "op");
             if (op == null) return ErrorJson("missing-op", null);
@@ -678,7 +690,7 @@ namespace SynapseUnityBridge
             return responseText != null ? responseText : ErrorJson("empty-response", null);
         }
 
-        private static string ErrorJson(string reason, string detail)
+        internal static string ErrorJson(string reason, string detail)
         {
             JsonObject response = new JsonObject();
             response.Str("status", "error");

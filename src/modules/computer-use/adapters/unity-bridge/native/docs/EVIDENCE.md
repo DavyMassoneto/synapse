@@ -74,14 +74,26 @@ cursor externo se moveu (usuario ativo em outro programa); a bridge nao chama AP
 - Reinjecao apos stop usa nome de assembly unico por build (carimbo do launcher); o novo build
   respondeu `ping` com protocolo 2 e generation reiniciada.
 
+## Hardening de recursos
+
+Build `20261115-024154` (instance `1c0060f6194446f4a80a1f910515e911`), testado com o jogo em
+segundo plano pelo script `tests/connection-limits.ps1`:
+
+- Admissao limitada a 16 conexoes: 17 sockets abertos, 16 aceitos e 1 fechado.
+- Request acima de 8192 bytes recusado com `request-too-large` e conexao fechada, com e sem
+  delimitador, incluindo payload multibyte; linha CRLF no teto foi aceita.
+- Cliente ocioso fechado em ~5 s por `read_timeout_ms`.
+- `stop` com cliente conectado: cliente ocioso fechado, pedidos pendentes concluidos com erro e
+  threads encerradas no prazo; nova injecao confirmou `ping` com protocolo 2.
+
 ## Limitacoes registradas
 
 - `dispatched` significa eventos UGUI executados; o efeito precisa ser confirmado por `tree`/OCR.
 - Timeout apos envio e `outcome-unknown`; o consumidor nao deve repetir a acao.
 - O harness e diagnostico interno, nao faz parte do contrato v2 nem do adaptador.
 - Estado final do corte: bridge v2 canonica `listening` em 47823 (instance
-  `384a8f67eaf54e35a31000258d1917e5`), tree final com 40 itens da tela de Historico dos Pneus,
-  harness ausente, captura/OCR `canonical-final3.png` com o jogo em segundo plano.
+  `1c0060f6194446f4a80a1f910515e911`, build `20261115-024154`), tree final com 43 itens da tela
+  de resumo de evento, harness ausente, com o jogo em segundo plano.
 - Hook de foreground passou a contar eventos do proprio processo MM (`game_foreground_events`
   incrementa quando o jogo volta ao foreground); ainda assim, o sampler externo
   `desktop-state.ps1`/fg2 e a prova recomendada para independencia do processo.

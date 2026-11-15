@@ -66,7 +66,14 @@ port=47823
 request_timeout_ms=3000
 max_tree_items=400
 max_texts=300
+max_connections=16
+read_timeout_ms=5000
 ```
+
+`max_connections` limita sockets e threads de cliente (1..64); `read_timeout_ms` encerra clientes
+ociosos (100..60000). Requests sao lidos incrementalmente com teto de 8192 bytes; acima disso a conexao e
+fechada sem acumular a linha. `stop` fecha todos os clientes, conclui pedidos pendentes sem executar
+acoes e encerra as threads em prazo limitado.
 
 Handshake e logs ficam em `run/handshake.json` e `logs/bridge.log`. O token e gerado por instancia e
 so aparece no handshake local. A configuracao do host (`~/.pi/agent/computer-use-unity-bridge.json`)
@@ -126,6 +133,15 @@ Ha dois diagnosticos internos, fora do contrato do adaptador:
 - `{"op":"harness"}` cria uma lista UGUI visivel e temporaria (20 linhas, `ScrollRect`) com ponto
   central na resposta; `{"op":"harness-clear"}` remove. Sem limpeza explicita, some em 30 s. Use
   apenas com o jogo em segundo plano e capture OCR antes/depois para provar scroll/drag.
+
+O teste de recursos abre conexoes reais contra a bridge carregada: valida admissao limitada,
+request grande com/sem delimitador e multibyte, linha CRLF no teto, timeout ocioso e, com `-Shutdown`,
+o fechamento de cliente conectado no stop. O teste de shutdown derruba a bridge; reinjete depois.
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File tests/connection-limits.ps1 `
+  -Handshake run/handshake.json
+```
 
 O launcher tambem e o cliente de manutencao do protocolo: `ping`, `state`, `tree`, `stop` e `raw`.
 `raw` envia um objeto JSON e injeta o token do handshake quando ausente, entao qualquer payload v2
