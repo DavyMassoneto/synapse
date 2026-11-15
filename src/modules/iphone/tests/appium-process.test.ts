@@ -13,7 +13,6 @@ import {
   runIphoneAppiumCommand,
 } from "#synapse/modules/iphone/adapters/appium-process"
 import {
-  IPHONE_APPIUM_TEST_ARGUMENT_FILE,
   IPHONE_APPIUM_TEST_BIN_DIRECTORY,
   IPHONE_APPIUM_TEST_CRASH_SCRIPT,
   IPHONE_APPIUM_TEST_EXIT_GRACE_MS,
@@ -132,7 +131,7 @@ async function passesSpacedArgumentAsSingleToken(): Promise<void> {
     windowsVerbatimArguments: sut.host === IPHONE_APPIUM_WINDOWS,
   })
   try {
-    await waitForMarker(join(directory, IPHONE_APPIUM_TEST_ARGUMENT_FILE))
+    await waitForPort(`http://127.0.0.1:${port}`)
     expect(readIphoneAppiumArguments(directory).slice(2)).toStrictEqual([
       "--port",
       String(port),
