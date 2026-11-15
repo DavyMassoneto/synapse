@@ -32,6 +32,7 @@ export function leadTools(team: AgentTeam): TeamRegisteredTool[] {
       execute: tasks.clean.bind(tasks),
     }),
     registeredTeamTool({
+      executionMode: TEAM_TOOL_SEQUENTIAL,
       name: TEAM_TOOL_SUBAGENT,
       description: TEAM_TOOL_SUBAGENT_DESCRIPTION,
       parameters: TEAM_TOOL_SUBAGENT_PARAMETERS,
