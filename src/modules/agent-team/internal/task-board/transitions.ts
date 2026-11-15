@@ -17,7 +17,6 @@ import {
 import { taskBoardEnsureAcyclic, taskBoardResolveBlockers } from "./blockers"
 import {
   TASK_BOARD_ALREADY_CLAIMED,
-  TASK_BOARD_BLOCKED,
   TASK_BOARD_DEPENDENCIES_REQUIRED,
   TASK_BOARD_EDIT_WITHOUT_FIELDS,
   TASK_BOARD_EMPTY_TEXT,
@@ -126,14 +125,11 @@ function reopen(transition: TaskTransition): TaskSnapshot {
 }
 
 function assignTo(transition: TaskTransition, owner: string): TaskSnapshot {
-  const { current, directory, tasks } = transition
-  if (!isTaskBoardTaskReady(taskBoardStatuses(tasks), current)) {
-    throw new TaskRefusal(TASK_BOARD_BLOCKED)
-  }
+  const { current, directory } = transition
   if (!directory.hasAgent(owner)) {
     throw new TaskRefusal(`${TASK_BOARD_UNKNOWN_OWNER}${owner}`)
   }
-  return { ...current, status: TASK_IN_PROGRESS, owner }
+  return { ...current, status: TASK_PENDING, owner }
 }
 
 function reassign(transition: TaskTransition): TaskSnapshot {

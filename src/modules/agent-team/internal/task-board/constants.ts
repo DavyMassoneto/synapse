@@ -39,8 +39,6 @@ export const TASK_BOARD_NOT_COMPLETED = "Só uma tarefa concluída pode ser reab
 
 export const TASK_BOARD_NOT_REASSIGNABLE = "Só uma tarefa pendente ou em andamento pode ser reatribuída"
 
-export const TASK_BOARD_BLOCKED = "A tarefa ainda tem bloqueios não concluídos"
-
 export const TASK_BOARD_UNKNOWN_OWNER = "O agente não existe nesta equipe: "
 
 export const TASK_BOARD_EDIT_WITHOUT_FIELDS = "edit exige subject, description ou write_scopes"

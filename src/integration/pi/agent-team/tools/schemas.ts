@@ -104,7 +104,7 @@ export const TEAM_TOOL_UPDATE_TASK_PARAMETERS = Type.Object({
     Type.String({
       minLength: 1,
       description:
-        "Nome do agente que recebe a tarefa em reassign (só o lead reatribui); omita para deixar sem responsável.",
+        "Agente reservado por reassign (só o lead): a tarefa fica pendente, mesmo bloqueada, sem iniciar execução. Omita para deixar sem responsável.",
     }),
   ),
 })
