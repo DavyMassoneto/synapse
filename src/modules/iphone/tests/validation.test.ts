@@ -48,7 +48,7 @@ function rejectsSimulatorId(): void {
       {
         serverUrl: "http://localhost:4723",
         target: { kind: "simulator", deviceName: "sim", wdaInstalled: false },
-        capabilities: { wdaLocalPort: 54321, useNewWDA: true },
+        capabilities: { wdaLocalPort: 54321, mjpegServerPort: 54322, useNewWDA: true },
       },
       "darwin",
     ).kind,

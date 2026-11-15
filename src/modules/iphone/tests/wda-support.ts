@@ -1,11 +1,11 @@
 import { createServer, type Server } from "node:net"
 import { type IphoneConfiguration, type IphoneSimulatorCommandOutput } from "#synapse/modules/iphone/public/contracts"
 
-export function simulatorWdaConfig(serverUrl: string, port: number): IphoneConfiguration {
+export function simulatorWdaConfig(serverUrl: string, port: number, mjpegPort: number): IphoneConfiguration {
   return {
     serverUrl,
     target: { kind: "simulator", udid: "fake-simulator", deviceName: "Fake", wdaInstalled: false },
-    capabilities: { wdaLocalPort: port, useNewWDA: true },
+    capabilities: { wdaLocalPort: port, mjpegServerPort: mjpegPort, useNewWDA: true },
   }
 }
 

@@ -22,7 +22,7 @@ import { freeWdaTestPort, simulatorWdaConfig } from "./wda-support"
 
 async function retainsRuntimeBindings(): Promise<void> {
   const owners: IphoneWdaAdmissions = new Set()
-  const admission = new IphoneWdaAdmission(await freeWdaTestPort(), owners)
+  const admission = new IphoneWdaAdmission([await freeWdaTestPort()], owners)
   const signal = new AbortController().signal
   const bind = vi.spyOn(IphoneWdaSocket.prototype, IPHONE_TEST_WDA_BIND_METHOD)
   const close = vi.spyOn(IphoneWdaSocket.prototype, IPHONE_TEST_WDA_CLOSE_METHOD)
@@ -47,15 +47,17 @@ async function retainsRuntimeBindings(): Promise<void> {
 async function factoryUsesRuntimePlatform(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort()))
+  const config = simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort())
+  const scenario = new WdaFactoryScenario(config)
   const bind = vi.spyOn(IphoneWdaSocket.prototype, IPHONE_TEST_WDA_BIND_METHOD)
   try {
     server.responses = [...IPHONE_TEST_WDA_BIND_PLAN_RESPONSES]
     const session = await scenario.factory.create(new AbortController().signal)
     const hosts = process.platform === IPHONE_WDA_LINUX ? IPHONE_WDA_LINUX_BIND_HOSTS : IPHONE_WDA_DEFAULT_BIND_HOSTS
-    expect(bind).toHaveBeenCalledTimes(hosts.length)
+    expect(bind).toHaveBeenCalledTimes(hosts.length * 2)
     for (const [index, host] of hosts.entries()) {
-      expect(bind).toHaveBeenNthCalledWith(index + 1, host, expect.any(Number))
+      expect(bind).toHaveBeenNthCalledWith(index + 1, host, config.capabilities?.wdaLocalPort)
+      expect(bind).toHaveBeenNthCalledWith(hosts.length + index + 1, host, config.capabilities?.mjpegServerPort)
     }
     server.response = IPHONE_TEST_WDA_BIND_PLAN_DISPOSE_RESPONSE
     await session.dispose(new AbortController().signal)

@@ -30,7 +30,7 @@ async function rejectsRestartOptIn(useNewWDA?: boolean): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
   const port = await freeWdaTestPort()
-  const config = simulatorWdaConfig(base, port)
+  const config = simulatorWdaConfig(base, port, await freeWdaTestPort())
   config.capabilities = { wdaLocalPort: port }
   if (typeof useNewWDA === "boolean") {
     config.capabilities.useNewWDA = useNewWDA
@@ -56,7 +56,7 @@ async function rejectsFalseOptIn(): Promise<void> {
 }
 
 function rejectsIpv6MissingOptIn(): void {
-  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_IPV6_URL, 54321)
+  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_IPV6_URL, 54321, 54322)
   config.capabilities = { wdaLocalPort: 54321 }
   expect(validateIphoneConfiguration(config, "darwin")).toEqual({
     kind: IPHONE_REFUSED,
@@ -65,13 +65,13 @@ function rejectsIpv6MissingOptIn(): void {
 }
 
 function acceptsExplicitTrue(): void {
-  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_LOCAL_URL, 54321)
+  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_LOCAL_URL, 54321, 54322)
   expect(validateIphoneConfiguration(config, "darwin").kind).toBe(IPHONE_ACCEPTED)
   expect(buildIphoneCapabilities(config, "darwin")["appium:useNewWDA"]).toBe(true)
 }
 
 function preservesRemoteFalse(): void {
-  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_REMOTE_URL, 54321)
+  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_REMOTE_URL, 54321, 54322)
   config.capabilities = { useNewWDA: false }
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(true)
   expect(validateIphoneConfiguration(config, "darwin").kind).toBe(IPHONE_ACCEPTED)
@@ -79,7 +79,7 @@ function preservesRemoteFalse(): void {
 }
 
 function preservesDeviceFalse(): void {
-  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_LOCAL_URL, 54321)
+  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_LOCAL_URL, 54321, 54322)
   config.target = {
     kind: IPHONE_DEVICE,
     udid: IPHONE_TEST_WDA_RESTART_DEVICE_UDID,
@@ -92,7 +92,7 @@ function preservesDeviceFalse(): void {
 }
 
 function preservesExplicitWdaFalse(): void {
-  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_LOCAL_URL, 54321)
+  const config = simulatorWdaConfig(IPHONE_TEST_WDA_RESTART_LOCAL_URL, 54321, 54322)
   config.target.wdaUrl = IPHONE_TEST_WDA_RESTART_EXTERNAL_URL
   config.capabilities = { useNewWDA: false }
   expect(validateIphoneConfiguration(config, "darwin").kind).toBe(IPHONE_ACCEPTED)

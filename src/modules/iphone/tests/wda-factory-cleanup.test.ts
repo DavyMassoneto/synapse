@@ -6,7 +6,7 @@ import { freeWdaTestPort, simulatorWdaConfig } from "./wda-support"
 async function releasesOnStop(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const config = simulatorWdaConfig(base, await freeWdaTestPort())
+  const config = simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort())
   const first = new WdaFactoryScenario(config)
   const second = new WdaFactoryScenario(config)
   const signal = new AbortController().signal
@@ -28,7 +28,7 @@ async function releasesOnStop(): Promise<void> {
 async function abortBeforeCreation(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort()))
+  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort()))
   const controller = new AbortController()
   controller.abort()
   try {
@@ -45,7 +45,7 @@ async function abortBeforeCreation(): Promise<void> {
 async function rejectsMissingPort(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const config = simulatorWdaConfig(base, await freeWdaTestPort())
+  const config = simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort())
   delete config.capabilities
   const scenario = new WdaFactoryScenario(config)
   try {
@@ -60,7 +60,7 @@ async function rejectsMissingPort(): Promise<void> {
 async function stopsPendingStatus(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const config = simulatorWdaConfig(base, await freeWdaTestPort())
+  const config = simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort())
   const first = new WdaFactoryScenario(config)
   const second = new WdaFactoryScenario(config)
   const signal = new AbortController().signal
@@ -88,7 +88,7 @@ async function stopsPendingStatus(): Promise<void> {
 async function stopsBeforeReservation(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort()))
+  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort()))
   try {
     const creating = scenario.factory.create(new AbortController().signal)
     const rejected = expect(creating).rejects.toThrow()

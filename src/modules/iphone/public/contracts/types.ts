@@ -38,6 +38,7 @@ export interface IphoneExtraCapabilities {
   wdaLaunchTimeout?: number
   wdaConnectionTimeout?: number
   wdaLocalPort?: number
+  mjpegServerPort?: number
   useNewWDA?: boolean
 }
 

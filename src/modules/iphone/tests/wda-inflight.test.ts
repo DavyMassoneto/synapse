@@ -6,7 +6,7 @@ import { freeWdaTestPort, simulatorWdaConfig } from "./wda-support"
 async function stopsPostedCreation(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort()))
+  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, await freeWdaTestPort(), await freeWdaTestPort()))
   server.sessionPath.hold = true
   server.responses = ['{"value":{"ready":true}}', '{"value":{"sessionId":"late"}}']
   try {
