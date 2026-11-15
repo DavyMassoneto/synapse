@@ -5,7 +5,6 @@ import {
   TEAM_TOOL_INTERRUPT_AGENT_DESCRIPTION,
   TEAM_TOOL_LIST_MODELS,
   TEAM_TOOL_LIST_MODELS_DESCRIPTION,
-  TEAM_TOOL_MODEL_ONLY,
   TEAM_TOOL_SEQUENTIAL,
   TEAM_TOOL_SUBAGENT,
   TEAM_TOOL_SUBAGENT_DESCRIPTION,
@@ -24,7 +23,6 @@ export function leadTools(team: AgentTeam): TeamRegisteredTool[] {
   const tasks = new TeamTaskHandlers(team, TEAM_LEAD_NAME)
   return [
     registeredTeamTool({
-      exposure: TEAM_TOOL_MODEL_ONLY,
       executionMode: TEAM_TOOL_SEQUENTIAL,
       name: TEAM_TOOL_TASK_CLEAN,
       description: TEAM_TOOL_TASK_CLEAN_DESCRIPTION,
@@ -32,6 +30,7 @@ export function leadTools(team: AgentTeam): TeamRegisteredTool[] {
       execute: tasks.clean.bind(tasks),
     }),
     registeredTeamTool({
+      executionMode: TEAM_TOOL_SEQUENTIAL,
       name: TEAM_TOOL_SUBAGENT,
       description: TEAM_TOOL_SUBAGENT_DESCRIPTION,
       parameters: TEAM_TOOL_SUBAGENT_PARAMETERS,

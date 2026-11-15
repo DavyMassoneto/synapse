@@ -1,5 +1,6 @@
 import { type AgentTeam } from "#synapse/modules/agent-team"
 import {
+  TEAM_TOOL_SEQUENTIAL,
   TEAM_TOOL_TASK_CREATE,
   TEAM_TOOL_TASK_CREATE_DESCRIPTION,
   TEAM_TOOL_TASK_GET,
@@ -22,12 +23,14 @@ import { type TeamRegisteredTool } from "./types"
 function taskMutationTools(handlers: TeamTaskHandlers): TeamRegisteredTool[] {
   return [
     registeredTeamTool({
+      executionMode: TEAM_TOOL_SEQUENTIAL,
       name: TEAM_TOOL_TASK_CREATE,
       description: TEAM_TOOL_TASK_CREATE_DESCRIPTION,
       parameters: TEAM_TOOL_CREATE_TASK_PARAMETERS,
       execute: handlers.create.bind(handlers),
     }),
     registeredTeamTool({
+      executionMode: TEAM_TOOL_SEQUENTIAL,
       name: TEAM_TOOL_TASK_UPDATE,
       description: TEAM_TOOL_TASK_UPDATE_DESCRIPTION,
       parameters: TEAM_TOOL_UPDATE_TASK_PARAMETERS,
