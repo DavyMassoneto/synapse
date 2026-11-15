@@ -1,3 +1,4 @@
+import { Buffer } from "node:buffer"
 import { createConnection, type Socket } from "node:net"
 import { type ComputerUnityBridgeRequest } from "./action"
 import {
@@ -17,6 +18,7 @@ export class ComputerUnityBridgeConnection {
   private readonly request: ComputerUnityBridgeRequest
   private readonly socket: Socket
   private buffer = COMPUTER_UNITY_BRIDGE_STRING_EMPTY
+  private receivedBytes = 0
   private settlement?: ComputerUnityBridgeSettlement
   private settled = false
 
@@ -49,12 +51,30 @@ export class ComputerUnityBridgeConnection {
   }
 
   private read(chunk: string): void {
-    this.buffer += chunk
-    const end = this.buffer.indexOf(COMPUTER_UNITY_BRIDGE_RESPONSE_END)
+    const end = chunk.indexOf(COMPUTER_UNITY_BRIDGE_RESPONSE_END)
     if (end >= 0) {
-      this.finish({ kind: "transport-response", body: this.buffer.slice(0, end) })
-    } else if (this.buffer.length > COMPUTER_UNITY_BRIDGE_MAX_RESPONSE_BYTES) {
+      this.readLine(chunk.slice(0, end))
+    } else {
+      this.readPartial(chunk)
+    }
+  }
+
+  private readLine(body: string): void {
+    const bodyBytes = this.receivedBytes + Buffer.byteLength(body, COMPUTER_UNITY_BRIDGE_UTF8)
+    if (bodyBytes > COMPUTER_UNITY_BRIDGE_MAX_RESPONSE_BYTES) {
       this.finish({ kind: "transport-failure", message: COMPUTER_UNITY_BRIDGE_RESPONSE_TOO_LARGE_TEXT })
+    } else {
+      this.buffer += body
+      this.finish({ kind: "transport-response", body: this.buffer })
+    }
+  }
+
+  private readPartial(chunk: string): void {
+    this.receivedBytes += Buffer.byteLength(chunk, COMPUTER_UNITY_BRIDGE_UTF8)
+    if (this.receivedBytes > COMPUTER_UNITY_BRIDGE_MAX_RESPONSE_BYTES) {
+      this.finish({ kind: "transport-failure", message: COMPUTER_UNITY_BRIDGE_RESPONSE_TOO_LARGE_TEXT })
+    } else {
+      this.buffer += chunk
     }
   }
 
