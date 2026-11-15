@@ -4,7 +4,12 @@ import {
   type SupervisedShellLeaseState,
   type SupervisedShellOutput,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
+import { ShellWireAuthorization } from "./authorization"
 import {
+  SHELL_WIRE_AUTH_AUTHORIZED,
+  SHELL_WIRE_AUTH_CANCELLED,
+  SHELL_WIRE_AUTH_FAILED,
+  SHELL_WIRE_AUTH_FORBIDDEN,
   SHELL_WIRE_COMPLETED,
   SHELL_WIRE_CREATED,
   SHELL_WIRE_EVENT_ABORT,
@@ -14,6 +19,7 @@ import {
   SHELL_WIRE_EVENT_ERROR,
   SHELL_WIRE_GATE_RELEASE,
   SHELL_WIRE_INVALID,
+  SHELL_WIRE_PREPARATION_EMPTY,
   SHELL_WIRE_STATE_ACKNOWLEDGED,
   SHELL_WIRE_STATE_CREATED,
   SHELL_WIRE_STATE_EXITED,
@@ -24,7 +30,7 @@ import { ShellWireOwnership } from "./ownership"
 import { ShellWirePreparation } from "./preparation"
 import { ShellWireResult } from "./result"
 import { ShellStatusReader } from "./status"
-import { type ShellWireProcess } from "./types"
+import { type ShellWirePreparationEmpty, type ShellWireProcess } from "./types"
 
 export class SupervisedWireLease implements SupervisedShellLease {
   readonly id = randomUUID()
@@ -34,7 +40,7 @@ export class SupervisedWireLease implements SupervisedShellLease {
   private readonly preparation: ShellWirePreparation
   private readonly child: ShellWireProcess
   private readonly status = new ShellStatusReader()
-  private released = false
+  private readonly authorization = new ShellWireAuthorization()
   private closed = false
   private readonly ownership: ShellWireOwnership
   private stopping?: Promise<void>
@@ -66,15 +72,16 @@ export class SupervisedWireLease implements SupervisedShellLease {
     if (this.ownership.requested || this.result.failure || this.closed) {
       throw new Error(SHELL_WIRE_INVALID)
     }
-    if (!this.released) {
+    if (this.authorization.user === SHELL_WIRE_AUTH_FORBIDDEN) {
+      this.authorization.authorize()
       this.status.release()
       this.state = SHELL_WIRE_STATE_RELEASED
-      this.released = true
       this.child.input.write(Buffer.from([SHELL_WIRE_GATE_RELEASE]))
     }
   }
   terminate(): Promise<void> {
     if (!this.stopping) {
+      this.authorization.revoke()
       this.preparation.fail(new Error(SHELL_WIRE_INVALID))
       if (this.status.state.kind === SHELL_WIRE_CREATED) {
         this.status.release()
@@ -91,7 +98,7 @@ export class SupervisedWireLease implements SupervisedShellLease {
       this.stopFailed(error)
       throw error
     }
-    if (!this.result.failure) {
+    if (!this.result.failure || this.status.state.kind === SHELL_WIRE_PREPARATION_EMPTY) {
       this.state = SHELL_WIRE_STATE_EXITED
     }
     this.result.confirmed()
@@ -105,26 +112,58 @@ export class SupervisedWireLease implements SupervisedShellLease {
     try {
       if (chunk) {
         this.status.receive(chunk)
-      } else if (!this.ownership.requested) {
+      } else {
         this.status.eof()
       }
       const state = this.status.state
       if (state.kind === SHELL_WIRE_CREATED) {
-        if (!this.ownership.requested && !this.result.failure) {
-          this.state = SHELL_WIRE_STATE_ACKNOWLEDGED
-          this.preparation.ready()
-        } else if (this.ownership.requested) {
-          this.status.release()
-        }
+        this.onCreated()
+      } else if (state.kind === SHELL_WIRE_PREPARATION_EMPTY && chunk) {
+        this.onPreparationEmpty(state)
       } else if (state.kind === SHELL_WIRE_COMPLETED) {
+        if (this.authorization.user === SHELL_WIRE_AUTH_AUTHORIZED) {
+          this.authorization.execution()
+        }
         this.result.exited(state.exitCode, state.acceptedBytes)
       }
+      this.acceptProof()
     } catch (error) {
       if (error instanceof Error) {
         this.onError(error)
       } else {
         throw error
       }
+    }
+  }
+  private acceptProof(): void {
+    if (this.status.empty && this.child.preparationTerminal) {
+      this.ownership.acknowledgeEmpty()
+      const state = this.status.state
+      if (state.kind === SHELL_WIRE_PREPARATION_EMPTY && state.reason === SHELL_WIRE_AUTH_FAILED) {
+        this.terminate().catch(this.observeFailure.bind(this))
+      }
+    }
+  }
+  private onPreparationEmpty(state: ShellWirePreparationEmpty): void {
+    if (!this.child.preparationTerminal) {
+      throw new Error(SHELL_WIRE_INVALID)
+    }
+    this.authorization.preparationEmpty(state.reason === SHELL_WIRE_AUTH_CANCELLED, this.ownership.requested)
+    let message = SHELL_WIRE_INVALID
+    if (state.reason === SHELL_WIRE_AUTH_FAILED) {
+      message = state.error
+    }
+    this.preparation.fail(new Error(message))
+    if (state.reason === SHELL_WIRE_AUTH_FAILED) {
+      this.result.fail(new Error(state.error))
+    }
+  }
+  private onCreated(): void {
+    if (!this.ownership.requested && !this.result.failure) {
+      this.state = SHELL_WIRE_STATE_ACKNOWLEDGED
+      this.preparation.ready()
+    } else if (this.ownership.requested) {
+      this.status.release()
     }
   }
   private onTransportError(error: Error): void {
@@ -154,7 +193,7 @@ export class SupervisedWireLease implements SupervisedShellLease {
   }
   private onClose(): void {
     this.closed = true
-    if (!this.ownership.requested) {
+    if (!this.ownership.requested && !(this.child.preparationTerminal && this.status.empty)) {
       this.onError(new Error(SHELL_WIRE_INVALID))
     }
     this.ownership.close()

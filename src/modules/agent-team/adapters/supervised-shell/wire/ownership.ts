@@ -1,4 +1,4 @@
-import { SHELL_WIRE_INVALID, SHELL_WIRE_STOP_WAIT_MS } from "./constants"
+import { SHELL_WIRE_INVALID, SHELL_WIRE_NANOSECONDS_PER_MS, SHELL_WIRE_STOP_WAIT_MS } from "./constants"
 import { type ShellWireProcess, type ShellWireReject } from "./types"
 
 export class ShellWireOwnership {
@@ -9,6 +9,8 @@ export class ShellWireOwnership {
   private failure?: Error
   private closed = false
   private stopping?: Promise<void>
+  private deadline?: bigint
+  private terminalProved = false
   constructor(child: ShellWireProcess, failed: ShellWireReject) {
     this.child = child
     this.failed = failed
@@ -16,26 +18,38 @@ export class ShellWireOwnership {
   get requested(): boolean {
     return Boolean(this.stopping)
   }
+  acknowledgeEmpty(): void {
+    if (this.failure || (this.deadline && process.hrtime.bigint() >= this.deadline)) {
+      throw new Error(SHELL_WIRE_INVALID)
+    }
+    this.terminalProved = true
+  }
   close(): void {
     this.closed = true
     this.closure.resolve()
   }
   stop(): Promise<void> {
     if (!this.stopping) {
+      this.deadline = process.hrtime.bigint() + BigInt(SHELL_WIRE_STOP_WAIT_MS) * SHELL_WIRE_NANOSECONDS_PER_MS
       this.stopping = this.termination.promise
       this.run().then(this.finish.bind(this), this.fail.bind(this))
     }
     return this.stopping
   }
   private async run(): Promise<void> {
-    if (this.closed) {
+    if (this.closed && !this.terminalProved) {
       throw new Error(SHELL_WIRE_INVALID)
     }
     const timer = setTimeout(this.expired.bind(this), SHELL_WIRE_STOP_WAIT_MS)
     try {
-      this.child.terminate()
+      if (!this.terminalProved) {
+        this.child.terminate(this.deadline)
+      }
       await this.closure.promise
       await this.child.confirmEmpty()
+      if (this.deadline && process.hrtime.bigint() >= this.deadline) {
+        throw new Error(SHELL_WIRE_INVALID)
+      }
       if (this.failure) {
         throw this.failure
       }

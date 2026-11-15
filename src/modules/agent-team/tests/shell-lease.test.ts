@@ -1,6 +1,7 @@
 import { expect, test } from "vitest"
 import {
   SHELL_LEASE_INVALID_STOP_TITLE,
+  SHELL_LEASE_OUTPUT_DURING_STOP_TITLE,
   SHELL_LEASE_OUTPUT_STOP_TITLE,
   SHELL_LEASE_TRANSPORT_ACTIVE_TITLE,
   SHELL_LEASE_TRANSPORT_FAILURE,
@@ -31,13 +32,19 @@ async function transportErrorsDuringStop(channel: number): Promise<void> {
   channels[channel]?.emit("error", new Error(SHELL_LEASE_TRANSPORT_FAILURE))
   await stopped
   expect(owner.kills).toBe(1)
-  if (channel === 1) {
-    expect(lease.state).toBe("quarantined")
-    await expect(lease.completion).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
-  } else {
-    expect(lease.state).toBe("exited")
-    expect(await lease.completion).toBe(137)
-  }
+  expect(lease.state).toBe("exited")
+  expect(await lease.completion).toBe(137)
+}
+
+async function outputErrorDuringStop(): Promise<void> {
+  const { lease, owner, output } = await createWireScenario(false)
+  lease.release()
+  const stopped = lease.terminate()
+  output.emit("error", new Error(SHELL_LEASE_TRANSPORT_FAILURE))
+  await stopped
+  expect(owner.kills).toBe(1)
+  expect(lease.state).toBe("quarantined")
+  await expect(lease.completion).rejects.toThrow(SHELL_LEASE_TRANSPORT_FAILURE)
 }
 
 async function transportErrorsBeforeStop(channel: number): Promise<void> {
@@ -48,7 +55,8 @@ async function transportErrorsBeforeStop(channel: number): Promise<void> {
   expect(owner.kills).toBe(1)
 }
 
-test.each([0, 1, 2])(SHELL_LEASE_TRANSPORT_STOP_TITLE, transportErrorsDuringStop)
+test.each([0, 2])(SHELL_LEASE_TRANSPORT_STOP_TITLE, transportErrorsDuringStop)
+test(SHELL_LEASE_OUTPUT_DURING_STOP_TITLE, outputErrorDuringStop)
 test.each([0, 1, 2])(SHELL_LEASE_TRANSPORT_ACTIVE_TITLE, transportErrorsBeforeStop)
 test(SHELL_LEASE_INVALID_STOP_TITLE, invalidWireStillTerminates)
 test(SHELL_LEASE_OUTPUT_STOP_TITLE, failedOutputStillTerminates)

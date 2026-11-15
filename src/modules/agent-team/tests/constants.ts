@@ -101,7 +101,9 @@ export const SHELL_FAILED_CREATE_RETIRED_TITLE = "criação falha com cleanup co
 export const SHELL_FAILED_CREATE_PRESPAWN_TITLE = "falha antes de spawn não deixa admissão pendente"
 
 export const SHELL_PROBE_DIAGNOSTIC_TEST_TITLE = "diagnóstico preserva saída local sem promessa de redação"
-export const SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE = "diagnóstico limita bytes UTF-8 sem quebrar caracteres"
+export const SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE = "diagnóstico limita bytes UTF-8 sem quebrar caracteres: $name"
+export const SHELL_LEASE_OUTPUT_DURING_STOP_TITLE =
+  "erro de saída durante parada rejeita resultado e preserva quarentena"
 export const SHELL_PROBE_DIAGNOSTIC_SUCCESS_TITLE = "diagnóstico preserva código e stderr inclusive marcador inválido"
 export const SHELL_PROBE_DIAGNOSTIC_PRIVATE_TEXT =
   "Add-Type failed C:\\Users\\Person\\secret.ps1 /home/person/secret.ps1 user@example.invalid token=private-token \u001b[31m"
@@ -115,3 +117,134 @@ export const SHELL_REQUIREMENT_TEST_EXTRA_LINE =
 export const SHELL_GROUP_MATCH_TITLE = "PGID exato aceita padding e linhas %s"
 export const SHELL_GROUP_REJECT_TITLE = "PGID não confunde prefixo ou saída vazia %s"
 export const SHELL_GROUP_INVALID_TITLE = "PGID inválido recusa antes de consultar ps %s"
+
+export const SHELL_KEEPER_BARRIER_FD = 4
+export const SHELL_KEEPER_BARRIER_FILE = "./keeper-barrier.ts"
+export const SHELL_KEEPER_BARRIER_ERROR = "Keeper barrier transport unavailable"
+export const SHELL_KEEPER_BARRIER_TEST_TITLE = "revogação espera barreira de spawn antes do kill do grupo"
+
+export const SHELL_KEEPER_OLD_KILL_TITLE = "kill antigo não confunde zombie com barreira viva"
+
+export const SHELL_NATIVE_FIXTURE_EXECUTABLE_ARGUMENT = 2
+export const SHELL_NATIVE_FIXTURE_DIRECTORY_ARGUMENT = 3
+export const SHELL_NATIVE_FIXTURE_COMMAND_ARGUMENT = 4
+
+export const SHELL_NATIVE_FIXTURE_FILE = "./native-keeper-fixture.ts"
+
+export const SHELL_NATIVE_DEATH_TITLE = "morte do reservador não produz ACK de vazio"
+export const SHELL_NATIVE_EXPIRED_TITLE = "deadline já vencido rejeita sem ACK"
+export const SHELL_NATIVE_FROZEN_TITLE = "reservador suspenso não reinicia deadline após retomar"
+export const SHELL_NATIVE_TEST_MS = 15000
+
+export const SHELL_NATIVE_EOF_TITLE = "EOF antes do release confirma cleanup sem código do usuário"
+export const SHELL_NATIVE_INVALID_TITLE = "controle inválido antes do release preserva erro e prova de vazio"
+
+export const SHELL_NATIVE_PAUSED_OUTPUT_TITLE = "saída direta permanece legível quando EXIT chega com reader pausado"
+
+export const SHELL_NATIVE_LEASE_PAUSED_TITLE =
+  "completion aguarda pipe direto mesmo com EXIT antes do listener de dados"
+
+export const SHELL_NATIVE_ZOMBIE_TITLE = "EPERM de grupo só com zombie não confirma vazio e expira em cinco segundos"
+
+export const SHELL_NATIVE_PREPARATION_VALID_TITLE = "cleanup de preparação vazio é terminal tipado"
+export const SHELL_NATIVE_PREPARATION_INVALID_TITLE = "cleanup de preparação rejeita frame inválido %s"
+
+export const SHELL_NATIVE_STOP_PRIORITY_TITLE = "STOP vence release já enfileirado na mesma passada de poll"
+
+export const SHELL_NATIVE_BAD_CACHE_TITLE = "cache corrompido é recusado antes do exec"
+export const SHELL_NATIVE_SYMLINK_TITLE = "cache symlink não é executado mesmo com hash do alvo"
+
+export const SHELL_NATIVE_ARTIFACT_ERROR = "Native artifact test server unavailable"
+export const SHELL_NATIVE_DOWNLOAD_BAD_HASH_TITLE = "download com hash inválido não publica launcher"
+
+export const SHELL_NATIVE_DOWNLOAD_CONCURRENT_TITLE = "downloads concorrentes publicam somente o launcher verificado"
+
+export const SHELL_NATIVE_REAP_BEFORE_PIPE_TITLE = "reap anterior ao pipe de exec não publica exit 126 nem perde errno"
+
+export const SHELL_NATIVE_JOIN_FAILURE_TITLE = "falha de JOIN mantém gate revogado e errno original"
+
+export const SHELL_NATIVE_COMMIT_TITLE = "ESRCH com ACK perdido faz commit e não repete sinal"
+
+export const SHELL_NATIVE_CONTROL_DEADLINE_TITLE = "deadline local é único e prazo posterior só reduz"
+
+export const SHELL_NATIVE_DOWNLOAD_ABORT_TITLE = "provisionamento cancelado preserva motivo e não publica"
+
+export const SHELL_NATIVE_LATE_ACK_TITLE = "ACK após prazo é rejeitado antes do callback do timer"
+
+export const SHELL_NATIVE_STATUS_LOSS_TITLE = "canal de status perdido não fabrica ACK de cleanup"
+
+export const SHELL_NATIVE_SESSION_DEATH_TITLE = "morte do keeper de sessão não produz sucesso de ownership"
+
+export const SHELL_NATIVE_JOIN_KERNEL_TITLE = "kernel recusa join de outra sessão antes do exec"
+
+export const SHELL_RUNTIME_FILE = "../adapters/supervised-shell/unix/keeper.ts"
+export const SHELL_RUNTIME_STDIO: import("node:child_process").StdioOptions = [
+  "ignore",
+  "pipe",
+  "pipe",
+  "pipe",
+  "ignore",
+  "pipe",
+]
+export const SHELL_RUNTIME_INVALID_TITLE = "keeper real preserva controle inválido e encerra com writer aberto"
+export const SHELL_RUNTIME_PARTIAL_TITLE = "keeper real limita STOP parcial ao prazo original"
+export const SHELL_RUNTIME_DUPLICATE_TITLE = "keeper real rejeita RELEASE duplicado antes do gate"
+
+export const SHELL_NATIVE_MIXED_STATUS_TITLE = "prefixo parcial %s nunca é descartado por preparação terminal"
+
+export const SHELL_NATIVE_IDENTITY_NEGATIVE_TITLE = "identidade, alvo, relógio ou diretório inseguro são rejeitados %s"
+
+export const SHELL_NATIVE_CLOCK_FAILURE_TITLE = "falha nativa do relógio termina sem timestamp ou ACK falso"
+
+export const SHELL_RUNTIME_CAUSAL_TITLE = "lease já ativa recebe EXIT antes dos dados foreground com background=%s"
+
+export const SHELL_RUNTIME_SINK_DELAY_MS = 150
+export const SHELL_RUNTIME_LARGE_CAUSAL_TITLE = "200 KB foreground com sink lento e background=%s"
+
+export const SHELL_NATIVE_OUTPUT_PARITY_TITLE = "saída 200 KB aceita com paridade nativa background=%s"
+
+export const SHELL_GENERATION_ISOLATION_TITLE = "filho de outra geração não herda canal de controle ou prova atual"
+export const SHELL_GENERATION_COMMAND =
+  "if (printf '\\005\\000\\000\\000' >&3) 2>/dev/null || (printf '\\005\\000\\000\\000' >&4) 2>/dev/null; then printf CHANNEL_LEAK; else printf ISOLATED; fi"
+
+export const SHELL_PHASE_INJECTOR_SOURCE = "native-phase-injector.c"
+export const SHELL_PHASE_WAIT_MS = 5000
+export const SHELL_PHASE_JOIN_FAILED_TITLE = "keeper inteiro preserva JOIN recusado antes de usuário"
+
+export const SHELL_SCENARIO_ = " "
+export const SHELL_SCENARIO_ACK_PERDIDO_DEPOIS_DO_ESRCH_N_O_VIRA_SUCESSO_DO_KEEPER =
+  "ACK perdido depois do ESRCH não vira sucesso do keeper"
+export const SHELL_SCENARIO_CC = "cc"
+export const SHELL_SCENARIO_CLOCK_ACK = "clock-ack"
+export const SHELL_SCENARIO_CLOCK_FAILED = "clock-failed"
+export const SHELL_SCENARIO_CLOCK_RUNNING = "clock-running"
+export const SHELL_SCENARIO_CLOCK_STOP = "clock-stop"
+export const SHELL_SCENARIO_DYNAMICLIB = "-dynamiclib"
+export const SHELL_SCENARIO_ESRCH = "esrch"
+export const SHELL_SCENARIO_INJECTOR_DYLIB = "injector.dylib"
+export const SHELL_SCENARIO_JOIN_BLOCKED = "join-blocked"
+export const SHELL_SCENARIO_JOIN_BLOQUEADO_S_N_O_AUTORIZA_USU_RIO = "JOIN bloqueado: %s não autoriza usuário"
+export const SHELL_SCENARIO_JOIN_FAILURE = "join-failure"
+export const SHELL_SCENARIO_JOIN_FALHO_INTEIRO_PRESERVA_P_C_E_ADOTA_T_EM_ESTADO_TERMINAL =
+  "JOIN falho inteiro preserva P/C e adota T em estado terminal"
+export const SHELL_SCENARIO_JOIN_NEVER = "join-never"
+export const SHELL_SCENARIO_JOIN_NEVER_STOP = "join-never-stop"
+export const SHELL_PHASE_MARKER_LINE_SEPARATOR = "\n"
+export const SHELL_PHASE_MARKER_TWO_COMMITS = "10 20\n10 20\n"
+export const SHELL_PHASE_MARKER_DUPLICATE_TITLE = "duas linhas de ESRCH não equivalem a um único commit"
+export const SHELL_SCENARIO_NATIVE_PHASES = "native-phases-"
+export const SHELL_SCENARIO_O = "-o"
+export const SHELL_SCENARIO_OBSERVE = "observe"
+export const SHELL_SCENARIO_PRINTF_FORBIDDEN = "printf FORBIDDEN"
+export const SHELL_SCENARIO_REL_GIO_FALHA_FECHADO_EM_S_PELO_KEEPER_INTEIRO =
+  "relógio falha fechado em %s pelo keeper inteiro"
+export const SHELL_SCENARIO_RESERVATION_DEATH = "reservation-death"
+export const SHELL_SCENARIO_SESSION_DEATH = "session-death"
+export const SHELL_SCENARIO_STATUS_EAGAIN_N_O_BLOQUEIA_STOP_E_REAP_NO_KEEPER_INTEIRO =
+  "status EAGAIN não bloqueia STOP e reap no keeper inteiro"
+export const SHELL_SCENARIO_STATUS_PRESSURE = "status-pressure"
+export const SHELL_SCENARIO_STOP_V_LIDO_FRAGMENTADO_NA_FRONTEIRA_S_PRESERVA_CANCELAMENTO =
+  "STOP válido fragmentado na fronteira %s preserva cancelamento"
+
+export const SHELL_SCENARIO_INCOMPLETE_DEADLINE =
+  "STOP parcial sem EOF aguarda apenas o prazo original e não publica tipo prematuro"

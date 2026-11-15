@@ -5,6 +5,7 @@ import {
   SHELL_WIRE_EVENT_DATA,
   SHELL_WIRE_EVENT_END,
   SHELL_WIRE_EVENT_ERROR,
+  SHELL_WIRE_EXIT_STDIO_GRACE_MS,
   SHELL_WIRE_INVALID,
 } from "./constants"
 import { type ShellWireReadyResolve, type ShellWireReject } from "./types"
@@ -17,6 +18,8 @@ export class ShellOutputDrain {
   private minimum = 0
   private fencing = false
   private pending = 0
+  private idle = false
+  private timer?: ReturnType<typeof setTimeout>
   private failure?: Error
   private chain = Promise.resolve()
   private readonly input: Readable
@@ -35,6 +38,8 @@ export class ShellOutputDrain {
   }
   private receive(data: Buffer): void {
     if (!this.failure) {
+      this.idle = false
+      this.armIdle()
       this.accepted += data.length
       this.pending++
       this.input.pause()
@@ -56,17 +61,35 @@ export class ShellOutputDrain {
     this.minimum = minimum
     this.fencing = true
     this.input.resume()
-    setImmediate(this.checkFence.bind(this))
+    this.armIdle()
+    this.checkFence()
   }
   private checkFence(): void {
     if (!this.failure && this.fencing && !this.fenced && this.pending === 0) {
-      if (this.bytes >= this.minimum && this.bytes >= this.accepted && this.input.readableLength === 0) {
+      if (
+        (this.ended || this.idle) &&
+        this.bytes >= this.minimum &&
+        this.bytes >= this.accepted &&
+        this.input.readableLength === 0
+      ) {
         this.fenced = true
         this.updated()
       } else if (this.ended) {
         this.fail(new Error(SHELL_WIRE_INVALID))
       }
     }
+  }
+  private armIdle(): void {
+    if (this.timer) {
+      clearTimeout(this.timer)
+    }
+    if (this.fencing && !this.failure && !this.fenced) {
+      this.timer = setTimeout(this.onIdle.bind(this), SHELL_WIRE_EXIT_STDIO_GRACE_MS)
+    }
+  }
+  private onIdle(): void {
+    this.idle = true
+    this.checkFence()
   }
   private resume(): void {
     if (!this.failure) {
@@ -75,6 +98,9 @@ export class ShellOutputDrain {
   }
   private finish(): void {
     this.ended = true
+    if (this.timer) {
+      clearTimeout(this.timer)
+    }
     this.checkFence()
   }
   private closed(): void {
@@ -85,6 +111,9 @@ export class ShellOutputDrain {
   fail(error: Error): void {
     if (!this.failure && !this.fenced) {
       this.failure = error
+      if (this.timer) {
+        clearTimeout(this.timer)
+      }
       this.failed(error)
     }
   }

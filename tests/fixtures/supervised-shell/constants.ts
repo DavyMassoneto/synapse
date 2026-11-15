@@ -116,3 +116,11 @@ export const SUPERVISED_TEST_RELOAD_DEFAULT_TITLE = "bash supervisionado nasce a
 export const SUPERVISED_TEST_RELOAD_INACTIVE_TITLE = "reload com override preserva inativação explícita"
 export const SUPERVISED_TEST_RELOAD_ACTIVE_TITLE = "reload com override preserva ativação explícita"
 export const SUPERVISED_TEST_RELOAD_REMOVAL_TITLE = "remoção do override em reload restaura bash supervisionado ativo"
+
+export const SUPERVISED_TEST_NATIVE_BURST_TITLE = "trinta shells em fork simultâneo terminam somente com ESRCH"
+export const SUPERVISED_TEST_NATIVE_BURST_COMMAND = "printf WINDOWS_READY; for i in {1..20}; do sleep 8 & done; wait"
+
+export const SUPERVISED_TEST_NATIVE_INPUT_TITLE = "stdin Unix de 600KB sem leitor não bloqueia STOP"
+
+export const SUPERVISED_TEST_NATIVE_EXEC_FAILURE_TITLE =
+  "exec nativo falho preserva errno e confirma cleanup sem exit falso"

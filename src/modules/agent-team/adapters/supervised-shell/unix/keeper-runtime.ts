@@ -1,105 +1,153 @@
-import { spawn } from "node:child_process"
-import { createReadStream } from "node:fs"
-import { constants as osConstants } from "node:os"
-import {
-  SHELL_WIRE_CREATED_BYTE,
-  SHELL_WIRE_ERROR_BYTE,
-  SHELL_WIRE_ERROR_HEADER_BYTES,
-  SHELL_WIRE_ERROR_MAX_BYTES,
-  SHELL_WIRE_EXITED,
-  SHELL_WIRE_STATUS_BYTES,
-  type ShellWireSpec,
-  WIRE_BYTE_COUNT_OFFSET,
-} from "../wire"
+import { type ChildProcess, spawn } from "node:child_process"
+import { closeSync } from "node:fs"
+import { Socket } from "node:net"
+import { type Readable, type Writable } from "node:stream"
+import { SHELL_WIRE_GATE_RELEASE, type ShellWireSpec } from "../wire"
 import {
   UNIX_KEEPER_CONTROL_FD,
+  UNIX_KEEPER_EVENT_CLOSE,
+  UNIX_KEEPER_EVENT_DATA,
   UNIX_KEEPER_EVENT_END,
   UNIX_KEEPER_EVENT_ERROR,
-  UNIX_KEEPER_EVENT_EXIT,
-  UNIX_KEEPER_IGNORE,
-  UNIX_KEEPER_INTERVAL_MS,
-  UNIX_KEEPER_KILL,
-  UNIX_KEEPER_PIPE,
-  UNIX_KEEPER_SIGHUP,
-  UNIX_KEEPER_SIGNAL_OFFSET,
-  UNIX_KEEPER_SIGTERM,
+  UNIX_KEEPER_INVALID,
   UNIX_KEEPER_STDERR_FD,
+  UNIX_NATIVE_CONTROL_FD,
+  UNIX_NATIVE_FAILURE_EXIT,
+  UNIX_NATIVE_RECHECK_MS,
+  UNIX_NATIVE_STATUS_FD,
+  UNIX_NATIVE_STDIO,
+  UNIX_NATIVE_STOP,
+  UNIX_NATIVE_STOP_BUDGET_NS,
+  UNIX_NATIVE_STOP_BYTES,
+  UNIX_PARENT_STDIN_FD,
 } from "./constants"
-import { type UnixShellExitSignal, type UnixShellExitStatus } from "./types"
+import { type UnixKeeperChunk, type UnixNativeDeadlineTimer, type UnixShellExitStatus } from "./types"
 
 export class UnixKeeper {
   private readonly spec: ShellWireSpec
-  private exitCode = 1
-  private reported = false
-
-  constructor(spec: ShellWireSpec) {
+  private readonly executable: string
+  private readonly control = new Socket({ fd: UNIX_KEEPER_CONTROL_FD, readable: true, writable: false })
+  private native?: ChildProcess
+  private input?: Writable
+  private statusInput?: Readable
+  private pending = Buffer.alloc(0)
+  private deadline?: bigint
+  private timer?: UnixNativeDeadlineTimer
+  private failure = false
+  constructor(spec: ShellWireSpec, executable: string) {
     this.spec = spec
+    this.executable = executable
   }
-
-  announce(): void {
-    process.stdout.write(Buffer.from([SHELL_WIRE_CREATED_BYTE]))
-    process.on(UNIX_KEEPER_SIGTERM, this.stop.bind(this))
-    process.on(UNIX_KEEPER_SIGHUP, this.stop.bind(this))
-  }
-
-  release(): void {
+  run(): void {
     const environment: NodeJS.ProcessEnv = {}
     for (const entry of this.spec.environment) {
       environment[entry.name] = entry.value
     }
-    const child = spawn(this.spec.executable, this.spec.arguments, {
-      cwd: this.spec.cwd,
+    this.native = spawn(this.executable, [this.spec.cwd, this.spec.executable, ...this.spec.arguments], {
       env: environment,
-      detached: false,
-      stdio: [
-        typeof this.spec.input === "string" ? UNIX_KEEPER_PIPE : UNIX_KEEPER_IGNORE,
-        UNIX_KEEPER_STDERR_FD,
-        UNIX_KEEPER_STDERR_FD,
-      ],
+      stdio: UNIX_NATIVE_STDIO,
     })
-    if (typeof this.spec.input === "string") {
-      child.stdin?.end(this.spec.input)
+    const input = this.native.stdio[UNIX_NATIVE_CONTROL_FD]
+    const status = this.native.stdio[UNIX_NATIVE_STATUS_FD]
+    if (!input || !("write" in input) || !status || !("read" in status)) {
+      throw new Error(UNIX_KEEPER_INVALID)
     }
-    child.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
-    child.on(UNIX_KEEPER_EVENT_EXIT, this.shellExited.bind(this))
-    const ownership = createReadStream("", { fd: UNIX_KEEPER_CONTROL_FD, autoClose: false })
-    ownership.on(UNIX_KEEPER_EVENT_END, this.stop.bind(this))
-    ownership.on(UNIX_KEEPER_EVENT_ERROR, this.stop.bind(this))
-    ownership.resume()
-    setInterval(this.anchor.bind(this), UNIX_KEEPER_INTERVAL_MS)
+    closeSync(UNIX_KEEPER_STDERR_FD)
+    closeSync(UNIX_PARENT_STDIN_FD)
+    this.input = input
+    this.statusInput = status
+    input.on(UNIX_KEEPER_EVENT_ERROR, this.eof.bind(this))
+    status.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
+    status.on(UNIX_KEEPER_EVENT_DATA, this.status.bind(this))
+    this.native.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
+    this.native.on(UNIX_KEEPER_EVENT_CLOSE, this.closed.bind(this))
+    process.stdout.on(UNIX_KEEPER_EVENT_ERROR, this.failed.bind(this))
+    this.control.on(UNIX_KEEPER_EVENT_DATA, this.receive.bind(this))
+    this.control.on(UNIX_KEEPER_EVENT_END, this.eof.bind(this))
+    this.control.on(UNIX_KEEPER_EVENT_ERROR, this.eof.bind(this))
+    this.control.resume()
   }
-
-  private anchor(): void {
-    process.stdin.read(0)
-  }
-  private stop(): void {
-    process.kill(-process.pid, UNIX_KEEPER_KILL)
-  }
-  private shellExited(code: UnixShellExitStatus, signal: UnixShellExitSignal): void {
-    if (typeof code === "number") {
-      this.exitCode = code
+  private status(bytes: Buffer): void {
+    if (this.deadline && process.hrtime.bigint() >= this.deadline) {
+      this.failed()
     } else {
-      this.exitCode = signal ? UNIX_KEEPER_SIGNAL_OFFSET + osConstants.signals[signal] : 1
+      if (!process.stdout.write(bytes)) {
+        this.statusInput?.pause()
+        process.stdout.once("drain", this.resumeStatus.bind(this))
+      }
     }
-    this.reportExit()
   }
-  private failed(error: Error): void {
-    const text = Buffer.from(error.message)
-    const bytes = text.subarray(0, SHELL_WIRE_ERROR_MAX_BYTES)
-    const header = Buffer.alloc(SHELL_WIRE_ERROR_HEADER_BYTES)
-    header[0] = SHELL_WIRE_ERROR_BYTE
-    header.writeUInt16BE(bytes.length, 1)
-    process.stdout.write(header)
-    process.stdout.write(bytes)
-  }
-  private reportExit(): void {
-    if (!this.reported) {
-      this.reported = true
-      const status = Buffer.alloc(SHELL_WIRE_STATUS_BYTES)
-      status[0] = SHELL_WIRE_EXITED
-      status.writeInt32BE(this.exitCode, 1)
-      status.writeUInt32BE(0, WIRE_BYTE_COUNT_OFFSET)
-      process.stdout.write(status)
+  private resumeStatus(): void {
+    if (!this.deadline || process.hrtime.bigint() < this.deadline) {
+      this.statusInput?.resume()
+    } else {
+      this.failed()
     }
+  }
+  private receive(chunk: UnixKeeperChunk): void {
+    const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
+    this.input?.write(bytes)
+    this.pending = Buffer.concat([this.pending, bytes])
+    while (this.pending.length > 0) {
+      if (this.pending[0] === SHELL_WIRE_GATE_RELEASE) {
+        this.pending = this.pending.subarray(1)
+      } else {
+        this.stop(process.hrtime.bigint() + UNIX_NATIVE_STOP_BUDGET_NS)
+        if (this.pending[0] !== UNIX_NATIVE_STOP) {
+          this.input?.end()
+          this.pending = Buffer.alloc(0)
+        } else if (this.pending.length >= UNIX_NATIVE_STOP_BYTES) {
+          this.stop(this.pending.readBigUInt64BE(1))
+          this.pending = this.pending.subarray(UNIX_NATIVE_STOP_BYTES)
+        } else {
+          break
+        }
+      }
+    }
+  }
+  private stop(deadline: bigint): void {
+    if (!this.deadline || deadline < this.deadline) {
+      const maximum = process.hrtime.bigint() + UNIX_NATIVE_STOP_BUDGET_NS
+      this.deadline = deadline < maximum ? deadline : maximum
+      if (this.timer) {
+        clearInterval(this.timer)
+      }
+      this.timer = setInterval(this.checkDeadline.bind(this), UNIX_NATIVE_RECHECK_MS)
+    }
+  }
+  private checkDeadline(): void {
+    if (this.deadline && process.hrtime.bigint() >= this.deadline) {
+      this.failed()
+    }
+  }
+  private eof(): void {
+    if (!this.deadline) {
+      this.stop(process.hrtime.bigint() + UNIX_NATIVE_STOP_BUDGET_NS)
+    }
+    this.input?.end()
+  }
+  private failed(): void {
+    this.failure = true
+    process.exitCode = UNIX_NATIVE_FAILURE_EXIT
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
+    this.input?.destroy()
+    this.control.destroy()
+    process.stdout.end()
+  }
+  private closed(code: UnixShellExitStatus): void {
+    if (this.timer) {
+      clearInterval(this.timer)
+    }
+    if (this.failure || (this.deadline && process.hrtime.bigint() >= this.deadline)) {
+      process.exitCode = UNIX_NATIVE_FAILURE_EXIT
+    } else if (typeof code === "number") {
+      process.exitCode = code
+    } else {
+      process.exitCode = UNIX_NATIVE_FAILURE_EXIT
+    }
+    this.control.destroy()
+    process.stdout.end()
   }
 }

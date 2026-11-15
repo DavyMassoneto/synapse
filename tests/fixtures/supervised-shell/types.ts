@@ -23,3 +23,5 @@ export interface SupervisedReloadFixture {
   session: AgentSession
   settingsFile: string
 }
+
+export type SupervisedBurstResolve = () => void

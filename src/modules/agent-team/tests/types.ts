@@ -1,3 +1,4 @@
+import { type ChildProcess } from "node:child_process"
 import { type PassThrough } from "node:stream"
 import { type SupervisedWireLease } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
 import { type TaskBoard } from "../internal"
@@ -32,3 +33,7 @@ export interface ShellWireScenario {
   input: PassThrough
   channels: PassThrough[]
 }
+
+export type NativeTransportProcess = ChildProcess
+
+export type NativeFixtureExitCode = number | null

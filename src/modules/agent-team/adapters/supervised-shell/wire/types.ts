@@ -7,8 +7,9 @@ export interface ShellWireProcess {
   output: Readable
   input: Writable
   requiresEmptyAck: boolean
+  preparationTerminal?: boolean
   confirmEmpty(): Promise<void>
-  terminate(): void
+  terminate(deadline?: bigint): void
 }
 export type ShellWireReject = (error: Error) => void
 export type ShellWireReadyResolve = () => void
@@ -42,7 +43,23 @@ export interface ShellWireCompleted {
 export interface ShellWireFailed {
   kind: "failed"
 }
+export interface ShellWirePreparationCancelled {
+  kind: "preparation-empty"
+  reason: "cancelled"
+}
+export interface ShellWirePreparationFailed {
+  kind: "preparation-empty"
+  reason: "failed"
+  error: string
+}
+export type ShellWirePreparationEmpty = ShellWirePreparationCancelled | ShellWirePreparationFailed
+export type ShellUserAuthorization = "forbidden" | "authorized"
+export type ShellReleaseRequest = "absent" | "sent" | "revoked"
+export type ShellGateCommit = "closed" | "revoked" | "execution"
+export type ShellReservationProof = "absent" | "empty" | "uncertain"
+
 export type ShellWireStatus =
+  | ShellWirePreparationEmpty
   | ShellWireWaiting
   | ShellWireCreated
   | ShellWireReleased

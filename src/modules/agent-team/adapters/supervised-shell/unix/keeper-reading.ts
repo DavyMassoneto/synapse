@@ -3,7 +3,6 @@ import { Value } from "typebox/value"
 import {
   SHELL_WIRE_FATAL_UTF8,
   SHELL_WIRE_FRAME_LENGTH_BYTES,
-  SHELL_WIRE_GATE_RELEASE,
   SHELL_WIRE_MAX_SPEC_BYTES,
   type ShellWireSpec,
 } from "../wire"
@@ -23,14 +22,6 @@ export function readKeeperSpec(): ShellWireSpec {
     UNIX_KEEPER_SPEC_SCHEMA,
     JSON.parse(new TextDecoder(SHELL_WIRE_FATAL_UTF8, { fatal: true }).decode(body)),
   )
-}
-
-export function awaitKeeperRelease(): void {
-  const gate = Buffer.alloc(1)
-  readKeeperBytes(gate)
-  if (gate[0] !== SHELL_WIRE_GATE_RELEASE) {
-    throw new Error(UNIX_KEEPER_INCOMPLETE_FRAME)
-  }
 }
 
 function readKeeperBytes(buffer: Buffer): void {

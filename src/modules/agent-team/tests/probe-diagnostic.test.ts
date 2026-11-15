@@ -9,15 +9,13 @@ import {
   SHELL_PROBE_DIAGNOSTIC_SUCCESS_TITLE,
   SHELL_PROBE_DIAGNOSTIC_TEST_TITLE,
 } from "./constants"
+import { SHELL_PROBE_UNICODE_FIXTURES, type ShellProbeUnicodeFixture } from "./probe-diagnostic"
 
 function preservesLocalOutput(): void {
   expect(limitShellProbeText(SHELL_PROBE_DIAGNOSTIC_PRIVATE_TEXT)).toBe(SHELL_PROBE_DIAGNOSTIC_PRIVATE_TEXT)
 }
-function boundsOutput(): void {
-  const prefix = "x".repeat(2047)
-  expect(limitShellProbeText(`${prefix}😀tail`)).toBe(prefix)
-  expect(Buffer.byteLength(limitShellProbeText("é".repeat(3000)))).toBe(2048)
-  expect(Buffer.byteLength(limitShellProbeText("😀".repeat(3000)))).toBe(2048)
+function boundsOutput(fixture: ShellProbeUnicodeFixture): void {
+  expect(limitShellProbeText(fixture.input)).toBe(fixture.expected)
 }
 function preservesExecutionFacts(): void {
   const result = formatShellProbeDiagnostic(null, "WRONG_MARKER", "Compiler rejected source")
@@ -28,5 +26,5 @@ function preservesExecutionFacts(): void {
 }
 
 test(SHELL_PROBE_DIAGNOSTIC_TEST_TITLE, preservesLocalOutput)
-test(SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE, boundsOutput)
+test.each(SHELL_PROBE_UNICODE_FIXTURES)(SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE, boundsOutput)
 test(SHELL_PROBE_DIAGNOSTIC_SUCCESS_TITLE, preservesExecutionFacts)

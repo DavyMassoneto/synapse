@@ -7,21 +7,19 @@ import {
   type SupervisedShellPreparedObserver,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { encodeShellSpec, prepareShellLease, SupervisedWireLease, writeShellSpec } from "../wire"
-import { confirmUnixGroupEmpty } from "./confirm-group"
+import { encodeShellSpec, prepareShellLease, writeShellSpec } from "../wire"
 import {
-  UNIX_KEEPER_CONTROL_FD,
   UNIX_KEEPER_IGNORE,
   UNIX_KEEPER_IMPORT,
   UNIX_KEEPER_INVALID,
   UNIX_KEEPER_JITI_REGISTER,
   UNIX_KEEPER_NODE,
   UNIX_KEEPER_PIPE,
-  UNIX_KEEPER_PS,
   UNIX_KEEPER_URL,
 } from "./constants"
-import { requireUnixShell } from "./requirements"
-import { terminateUnixKeeper } from "./terminate"
+import { feedUnixShellInput } from "./input"
+import { ownUnixProcess } from "./owned-process"
+import { provisionUnixLauncher } from "./provision"
 
 export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
   async create(
@@ -30,36 +28,27 @@ export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {
     signal?: AbortSignal,
     prepared?: SupervisedShellPreparedObserver,
   ): Promise<SupervisedShellLease> {
-    await requireUnixShell(UNIX_KEEPER_PS)
     signal?.throwIfAborted()
+    const executable = await provisionUnixLauncher(signal)
     const content = encodeShellSpec(spec, UNIX_KEEPER_INVALID)
     const child = spawn(
       process.execPath,
-      [UNIX_KEEPER_NODE, UNIX_KEEPER_IMPORT, UNIX_KEEPER_JITI_REGISTER, join(__dirname, UNIX_KEEPER_URL)],
-      { detached: true, stdio: [UNIX_KEEPER_IGNORE, UNIX_KEEPER_PIPE, UNIX_KEEPER_PIPE, UNIX_KEEPER_PIPE] },
-    )
-    if (!child.pid) {
-      throw new Error(UNIX_KEEPER_INVALID)
-    }
-    const input = child.stdio[UNIX_KEEPER_CONTROL_FD]
-    if (!child.stdout || !child.stderr || !input || !("write" in input)) {
-      child.kill()
-      throw new Error(UNIX_KEEPER_INVALID)
-    }
-    const lease = new SupervisedWireLease(
+      [UNIX_KEEPER_NODE, UNIX_KEEPER_IMPORT, UNIX_KEEPER_JITI_REGISTER, join(__dirname, UNIX_KEEPER_URL), executable],
       {
-        process: child,
-        requiresEmptyAck: false,
-        confirmEmpty: confirmUnixGroupEmpty.bind(undefined, child.pid),
-        status: child.stdout,
-        output: child.stderr,
-        input,
-        terminate: terminateUnixKeeper.bind(undefined, child),
+        detached: true,
+        stdio: [
+          UNIX_KEEPER_IGNORE,
+          UNIX_KEEPER_PIPE,
+          UNIX_KEEPER_PIPE,
+          UNIX_KEEPER_PIPE,
+          UNIX_KEEPER_IGNORE,
+          UNIX_KEEPER_PIPE,
+        ],
       },
-      output,
-      signal,
     )
+    const { lease, input } = ownUnixProcess(child, output, signal)
     prepared?.(lease)
+    feedUnixShellInput(child, spec.input)
     writeShellSpec(input, content)
     return prepareShellLease(lease, signal)
   }

@@ -26,7 +26,9 @@ export class ShellWireTestOwner {
 
 export class ShellWireTestSink implements SupervisedShellOutput {
   fail = false
-  async write(_data: Buffer): Promise<void> {
+  bytes = 0
+  async write(data: Buffer): Promise<void> {
+    this.bytes += data.length
     if (this.fail) {
       throw new Error(SHELL_LEASE_TEST_OUTPUT_FAILURE)
     }

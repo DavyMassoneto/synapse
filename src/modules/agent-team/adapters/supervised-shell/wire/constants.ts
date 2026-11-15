@@ -38,3 +38,24 @@ export const SHELL_WIRE_EVENT_ERROR = "error"
 export const SHELL_WIRE_EVENT_CLOSE = "close"
 export const SHELL_WIRE_EVENT_ABORT = "abort"
 export const SHELL_WIRE_FATAL_UTF8 = "utf-8"
+
+export const SHELL_WIRE_PREPARATION_EMPTY_BYTE = 5
+export const SHELL_WIRE_PREPARATION_EMPTY = "preparation-empty"
+export const SHELL_WIRE_PREPARATION_HEADER_BYTES = 4
+export const SHELL_WIRE_PREPARATION_CANCELLED = 0
+export const SHELL_WIRE_PREPARATION_FAILED = 1
+
+export const SHELL_WIRE_NANOSECONDS_PER_MS = 1000000n
+
+export const SHELL_WIRE_AUTH_FORBIDDEN = "forbidden"
+export const SHELL_WIRE_AUTH_AUTHORIZED = "authorized"
+export const SHELL_WIRE_AUTH_ABSENT = "absent"
+export const SHELL_WIRE_AUTH_CLOSED = "closed"
+export const SHELL_WIRE_AUTH_REVOKED = "revoked"
+export const SHELL_WIRE_AUTH_SENT = "sent"
+export const SHELL_WIRE_AUTH_EXECUTION = "execution"
+export const SHELL_WIRE_AUTH_EMPTY = "empty"
+export const SHELL_WIRE_AUTH_CANCELLED = "cancelled"
+export const SHELL_WIRE_AUTH_FAILED = "failed"
+
+export const SHELL_WIRE_EXIT_STDIO_GRACE_MS = 100
