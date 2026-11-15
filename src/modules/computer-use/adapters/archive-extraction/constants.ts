@@ -1,5 +1,20 @@
 export const COMPUTER_ARCHIVE_TAR_EXECUTABLE = "tar"
 
+export const COMPUTER_ARCHIVE_TAR_RESOLVED = "tar-resolved"
+
+export const COMPUTER_ARCHIVE_TAR_MISSING = "tar-missing"
+
+export const COMPUTER_ARCHIVE_WIN32_SYSTEM_ROOT_VARIABLE = "SystemRoot"
+
+export const COMPUTER_ARCHIVE_WIN32_TAR_DIRECTORY = "System32"
+
+export const COMPUTER_ARCHIVE_WIN32_TAR_EXECUTABLE = "tar.exe"
+
+export const COMPUTER_ARCHIVE_WIN32_SYSTEM_ROOT_MISSING =
+  "A variável SystemRoot não está definida; não é possível localizar o tar.exe do sistema."
+
+export const COMPUTER_ARCHIVE_WIN32_TAR_MISSING = "O tar.exe do sistema não foi encontrado em"
+
 export const COMPUTER_ARCHIVE_EXTRACT_FLAG = "-xf"
 
 export const COMPUTER_ARCHIVE_DIRECTORY_FLAG = "-C"

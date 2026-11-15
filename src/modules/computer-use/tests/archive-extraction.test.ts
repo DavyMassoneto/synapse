@@ -15,8 +15,13 @@ import {
   COMPUTER_COMMAND_ARCHIVE_TIMEOUT_MILLISECONDS,
   computerRunCommand,
 } from "#synapse/modules/computer-use/adapters/command-execution"
+import { COMPUTER_LINUX } from "#synapse/modules/computer-use/public/contracts"
 import { COMPUTER_ARCHIVE_TEST_CREATE_FLAG, COMPUTER_ARCHIVE_TEST_PREFIX } from "./archive-extraction-constants"
-import { ComputerArchiveCommandDouble } from "./archive-extraction-support"
+import {
+  ComputerArchiveCommandDouble,
+  computerArchiveTestPlatform,
+  computerArchiveTestTarCommand,
+} from "./archive-extraction-support"
 import { type ComputerArchiveExtractionSut } from "./archive-extraction-types"
 
 const CONTENT = "conteudo do pacote"
@@ -42,7 +47,7 @@ async function createArchive(): Promise<void> {
   mkdirSync(sut.source, { recursive: true })
   writeFileSync(join(sut.source, FILE_NAME), CONTENT)
   await computerRunCommand(
-    COMPUTER_ARCHIVE_TAR_EXECUTABLE,
+    computerArchiveTestTarCommand(),
     [COMPUTER_ARCHIVE_TEST_CREATE_FLAG, sut.archive, COMPUTER_ARCHIVE_DIRECTORY_FLAG, sut.source, FILE_NAME],
     { timeout: COMPUTER_COMMAND_ARCHIVE_TIMEOUT_MILLISECONDS },
   )
@@ -51,21 +56,37 @@ async function createArchive(): Promise<void> {
 async function extractedArchive(): Promise<void> {
   await createArchive()
   mkdirSync(sut.destination, { recursive: true })
-  const result = await computerExtractArchive({ archive: sut.archive, directory: sut.destination }, computerRunCommand)
+  const result = await computerExtractArchive(
+    {
+      archive: sut.archive,
+      directory: sut.destination,
+      platform: computerArchiveTestPlatform(),
+      environment: process.env,
+    },
+    computerRunCommand,
+  )
   expect(result).toStrictEqual({ kind: COMPUTER_ARCHIVE_EXTRACTED })
   expect(readFileSync(join(sut.destination, FILE_NAME), "utf8")).toBe(CONTENT)
 }
 
 async function missingArchiveRefused(): Promise<void> {
   mkdirSync(sut.destination, { recursive: true })
-  const result = await computerExtractArchive({ archive: sut.archive, directory: sut.destination }, computerRunCommand)
+  const result = await computerExtractArchive(
+    {
+      archive: sut.archive,
+      directory: sut.destination,
+      platform: computerArchiveTestPlatform(),
+      environment: process.env,
+    },
+    computerRunCommand,
+  )
   expect(result.kind).toBe(COMPUTER_ARCHIVE_REFUSED)
 }
 
 async function missingExecutableRefused(): Promise<void> {
   const executor = new ComputerArchiveCommandDouble()
   const result = await computerExtractArchive(
-    { archive: sut.archive, directory: sut.destination },
+    { archive: sut.archive, directory: sut.destination, platform: COMPUTER_LINUX, environment: process.env },
     executor.execute.bind(executor),
   )
   expect(result).toStrictEqual({ kind: COMPUTER_ARCHIVE_REFUSED, message: COMPUTER_ARCHIVE_EXECUTABLE_MISSING })

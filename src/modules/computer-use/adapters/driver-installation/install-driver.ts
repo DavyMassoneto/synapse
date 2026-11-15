@@ -99,7 +99,12 @@ async function computerPrepareArtifact(stage: string, request: ComputerDriverIns
   const extractionDirectory = join(stage, COMPUTER_INSTALL_EXTRACTION_DIRECTORY)
   mkdirSync(extractionDirectory)
   const extraction = await computerExtractArchive(
-    { archive: download.archive, directory: extractionDirectory },
+    {
+      archive: download.archive,
+      directory: extractionDirectory,
+      platform: request.selection.platform,
+      environment: process.env,
+    },
     computerRunCommand,
   )
   if (extraction.kind !== COMPUTER_ARCHIVE_EXTRACTED) {
