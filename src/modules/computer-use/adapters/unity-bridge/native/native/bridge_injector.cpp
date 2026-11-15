@@ -1,9 +1,3 @@
-// Native injector payload for the Synapse Unity bridge PoC.
-// Lives inside the game process after LoadLibraryA injection and calls the Mono embedding API
-// directly (GetProcAddress(mono.dll)) to load/invoke a managed static method.
-//
-// Build: see scripts/build.ps1 (MSVC x64, /LD).
-// Safety: does not touch Win32 input APIs, does not change focus, does not patch the game.
 
 #include <windows.h>
 #include <stdio.h>
@@ -131,7 +125,6 @@ extern "C" __declspec(dllexport) int __stdcall SynapseModuleVersion()
     return 10000;
 }
 
-// Returns 0 on success. See the result_code mapping documented in README.md.
 extern "C" __declspec(dllexport) int __stdcall SynapseInvoke(SynapseInvokeRequest* request)
 {
     if (request == NULL)
@@ -187,8 +180,6 @@ extern "C" __declspec(dllexport) int __stdcall SynapseInvoke(SynapseInvokeReques
     }
     threadAttach(root);
 
-    // Load from bytes with a unique image name so an updated build can be injected again
-    // without restarting the game (Mono keeps previously loaded images cached by name).
     unsigned char* rawData = NULL;
     unsigned int rawSize = 0;
     if (!ReadWholeFile(request->assembly_path, &rawData, &rawSize))

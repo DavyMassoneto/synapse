@@ -6,11 +6,6 @@ using System.Threading;
 
 namespace SynapseUnityBridge
 {
-    /// <summary>
-    /// Sonda minima de injeção. Nao toca em UnityEngine: apenas prova que o assembly
-    /// carregou no processo do jogo e que a thread remota executa codigo gerenciado.
-    /// Usada como primeiro passo (antes de criar GameObject/listener) para reduzir risco.
-    /// </summary>
     public static class Probe
     {
         public static void Run()

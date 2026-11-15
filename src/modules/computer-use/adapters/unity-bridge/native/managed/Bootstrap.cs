@@ -6,10 +6,6 @@ using UnityEngine;
 
 namespace SynapseUnityBridge
 {
-    /// <summary>
-    /// Ponto de entrada chamado pelo injetor (static void, sem parametros, como o SharpMonoInjector exige).
-    /// Toda a API do Unity e usada na thread principal pelo Update de <see cref="BridgeBehaviour"/>.
-    /// </summary>
     public static class Bootstrap
     {
         public static void Load()
@@ -49,7 +45,6 @@ namespace SynapseUnityBridge
             }
         }
 
-        /// <summary>Usado por um injetor que precise derrubar a bridge sem TCP (roda na thread principal no proximo Update).</summary>
         public static void Stop()
         {
             BridgeLog.Write("STOP_REQUESTED");

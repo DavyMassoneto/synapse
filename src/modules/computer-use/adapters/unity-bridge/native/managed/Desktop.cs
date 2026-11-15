@@ -6,10 +6,6 @@ using System.Threading;
 
 namespace SynapseUnityBridge
 {
-    /// <summary>
-    /// Somente leitura de estado do desktop: geometria da janela, foreground e cursor.
-    /// Nenhuma chamada desta classe injeta entrada ou altera foco; apenas le estado do desktop.
-    /// </summary>
     internal static class Desktop
     {
         [StructLayout(LayoutKind.Sequential)]
@@ -275,7 +271,6 @@ namespace SynapseUnityBridge
             return GameWindow != IntPtr.Zero && GetForegroundWindow() == GameWindow;
         }
 
-        /// <summary>Added to every response: proves foreground/cursor state while the action ran.</summary>
         internal static string SnapshotJson()
         {
             JsonObject snapshot = new JsonObject();

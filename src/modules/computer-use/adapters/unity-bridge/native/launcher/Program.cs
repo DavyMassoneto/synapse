@@ -11,11 +11,6 @@ using System.Text.Json.Nodes;
 
 namespace SynapseBridgeLauncher;
 
-/// <summary>
-/// Injects the managed Synapse unity bridge into a running Unity/Mono process without restarting it.
-/// Loads a small native DLL (LoadLibraryA) and calls its exported SynapseInvoke, which uses the
-/// Mono embedding API inside the target process. No global input APIs are used anywhere.
-/// </summary>
 internal static class Program
 {
     private const uint ProcessAll = 0x001F0FFF;
@@ -215,7 +210,6 @@ internal static class Program
 
         Console.WriteLine("target pid=" + pid + " process=" + process.ProcessName + " mono=0x" + mono.ToInt64().ToString("x"));
 
-        // 1. LoadLibraryA(nativeDll) in the target process.
         IntPtr nativePathRemote = handle.WriteAnsi(native);
         IntPtr loader = handle.FindModuleThread("kernel32.dll", "LoadLibraryA");
         ThreadResult loadResult = handle.RunThread(loader, nativePathRemote, 15000);
@@ -227,7 +221,6 @@ internal static class Program
 
         try
         {
-            // 2. Bridge strings + request struct inside the target process.
             IntPtr assemblyRemote = handle.WriteAnsi(assembly);
             IntPtr namespaceRemote = handle.WriteAnsi(nameSpace);
             IntPtr typeRemote = handle.WriteAnsi(typeName);
@@ -249,7 +242,6 @@ internal static class Program
             byte[] requestBytes = StructToBytes(request);
             handle.Write(requestRemote, requestBytes);
 
-            // 3. SynapseInvoke exported by the native DLL.
             uint invokeRva = PeExports.FindExportRva(native, "SynapseInvoke");
             IntPtr invokeAddress = new IntPtr(nativeModule.ToInt64() + invokeRva);
             ThreadResult invokeResult = handle.RunThread(invokeAddress, requestRemote, 20000);
@@ -431,11 +423,6 @@ internal static class Program
 
     private sealed record BridgeHandshake(string Token, int Port);
 
-    /// <summary>
-    /// Mono deduplica assemblies pela identidade (nome+versao). Para permitir reinjecao apos stop no mesmo
-    /// processo, copiamos o assembly e trocamos o nome interno por um sufixo unico mantendo o MESMO comprimento
-    /// (patch in-place de bytes UTF-8 na metadata). O nome de arquivo e irrelevante para o Mono.
-    /// </summary>
     private static string StampAssembly(string assembly, out string originalName, out string stampedName)
     {
         originalName = ReadAssemblyName(assembly);
@@ -716,7 +703,6 @@ internal static class Program
     }
 }
 
-/// <summary>Reads an export RVA (not RVA+base) from a PE file on disk, matching the image loaded in the target.</summary>
 internal static class PeExports
 {
     public static uint FindExportRva(string path, string exportName)
