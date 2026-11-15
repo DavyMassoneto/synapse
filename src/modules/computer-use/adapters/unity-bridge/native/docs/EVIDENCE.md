@@ -4,6 +4,10 @@ Ambiente das provas: Motorsport Manager x64 (Unity 5.3.8f2, Mono 2.0), janela cl
 bridge v2 carregada no processo do jogo. Arquivos brutos (PNGs, OCR, respostas JSON) ficam no
 diretorio de pesquisa, fora deste repositorio; esta pagina registra os resultados verificaveis.
 
+Estas provas sao da bridge nativa e do adaptador no jogo. Elas nao substituem a verificacao do
+fluxo Pi depois do rebase da integracao TypeScript, que tem registro proprio e nao altera o
+payload nativo.
+
 ## v1 — clique em segundo plano
 
 - Clique por `ExecuteEvents` abriu Fofocas/Caixa de entrada sem trazer o jogo para o primeiro plano.
