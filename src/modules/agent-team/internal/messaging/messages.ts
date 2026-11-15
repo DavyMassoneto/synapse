@@ -1,15 +1,12 @@
 import {
-  TEAM_CANCELLED,
   TEAM_DONE,
   TEAM_INTERRUPT_REQUESTED,
   TEAM_LEAD_NAME,
   type TeamInterruptOutcome,
   type TeamLead,
   type TeamOutcome,
-  type TeamWaitOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
-import { Inbox } from "../inbox"
-import { TeamRuleError, teamClassifyError, teamOperationResult } from "../operation-results"
+import { TeamRuleError, teamOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { TEAM_UNKNOWN_AGENT, type TeamRoster } from "../roster"
 import {
@@ -23,8 +20,6 @@ import {
 import { type TeamRefreshPort } from "./types"
 
 export class TeamMessages {
-  readonly inbox = new Inbox()
-
   private readonly lead: TeamLead
 
   private readonly roster: TeamRoster
@@ -44,12 +39,10 @@ export class TeamMessages {
 
   close(): void {
     this.closed = true
-    this.inbox.close()
   }
 
   reopen(): void {
     this.closed = false
-    this.inbox.close()
   }
 
   send(sender: string, target: string, message: string): TeamOutcome {
@@ -85,38 +78,6 @@ export class TeamMessages {
     return { kind: TEAM_INTERRUPT_REQUESTED }
   }
 
-  async wait(name: string, timeoutMs: number, signal?: AbortSignal): Promise<TeamWaitOutcome> {
-    if (signal?.aborted) {
-      return { kind: TEAM_CANCELLED }
-    }
-    try {
-      const inbox = this.inboxFor(name)
-      const result = await inbox.wait(timeoutMs, signal)
-      if (signal?.aborted) {
-        return { kind: TEAM_CANCELLED }
-      }
-      return result
-    } catch (error) {
-      if (signal?.aborted) {
-        return { kind: TEAM_CANCELLED }
-      }
-      if (error instanceof Error) {
-        return teamClassifyError(error)
-      }
-      throw error
-    }
-  }
-
-  private inboxFor(name: string): Inbox {
-    if (this.closed) {
-      throw new TeamRuleError(TEAM_CLOSED)
-    }
-    if (name === TEAM_LEAD_NAME) {
-      return this.inbox
-    }
-    return this.roster.find(name).inbox
-  }
-
   private ensureCanSend(sender: string, target: string): void {
     if (this.closed) {
       throw new TeamRuleError(TEAM_CLOSED)
@@ -131,7 +92,6 @@ export class TeamMessages {
 
   deliverLead(text: string): void {
     if (!this.closed) {
-      this.inbox.arrive()
       this.lead.deliver(text)
     }
   }

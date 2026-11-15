@@ -1,11 +1,4 @@
-import {
-  TEAM_FAILED,
-  TEAM_FINISHED,
-  TEAM_IDLE,
-  TEAM_INTERRUPTED,
-  TEAM_WAITING,
-  TEAM_WORKING,
-} from "#synapse/modules/agent-team"
+import { TEAM_FAILED, TEAM_FINISHED, TEAM_IDLE, TEAM_INTERRUPTED, TEAM_WORKING } from "#synapse/modules/agent-team"
 import { type TeamPanelStateLabels, type TeamPanelToneColors } from "./types"
 
 export const TEAM_PANEL_TITLE = "title"
@@ -48,7 +41,6 @@ export const TEAM_PANEL_PADDING_Y = 0
 
 export const TEAM_PANEL_STATE_LABELS: TeamPanelStateLabels = {
   [TEAM_WORKING]: "● trabalhando",
-  [TEAM_WAITING]: "◌ aguardando mensagem",
   [TEAM_IDLE]: "○ parado",
   [TEAM_FINISHED]: "✓ terminou o turno",
   [TEAM_INTERRUPTED]: "■ interrompido",

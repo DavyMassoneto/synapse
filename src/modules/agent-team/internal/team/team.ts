@@ -42,8 +42,6 @@ export class Team implements AgentTeam {
 
   readonly interrupt: AgentTeam["interrupt"]
 
-  readonly wait: AgentTeam["wait"]
-
   readonly getTask: AgentTeam["getTask"]
 
   readonly listTasks: AgentTeam["listTasks"]
@@ -57,7 +55,6 @@ export class Team implements AgentTeam {
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.interrupt = this.messages.interrupt.bind(this.messages)
-    this.wait = this.messages.wait.bind(this.messages)
     this.getTask = this.board.get.bind(this.board)
     this.listTasks = this.board.list.bind(this.board)
   }
@@ -73,12 +70,8 @@ export class Team implements AgentTeam {
     return this.admission.restore(records)
   }
 
-  markLeadSeen(): void {
-    this.messages.inbox.markSeen()
-  }
-
   overview(): TeamOverview {
-    const agents = [teamLeadRow(this.lead, this.messages.inbox.hasWaiter)]
+    const agents = [teamLeadRow(this.lead)]
     for (const member of this.roster.all()) {
       agents.push(member.row())
     }

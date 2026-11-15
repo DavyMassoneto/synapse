@@ -1,13 +1,6 @@
-import { type AgentTeam, TEAM_CANCELLED } from "#synapse/modules/agent-team"
-import { TEAM_TOOL_ABORT_NAME, TEAM_TOOL_CANCELLED_MESSAGE } from "./constants"
+import { type AgentTeam } from "#synapse/modules/agent-team"
 import { teamAcceptedOrRefusedOutput, teamTextOutput } from "./tool-output"
-import {
-  type TeamInterruptInput,
-  type TeamSendInput,
-  type TeamSubagentInput,
-  type TeamToolOutput,
-  type TeamWaitInput,
-} from "./types"
+import { type TeamInterruptInput, type TeamSendInput, type TeamSubagentInput, type TeamToolOutput } from "./types"
 
 export class TeamAgentHandlers {
   private readonly team: AgentTeam
@@ -33,13 +26,5 @@ export class TeamAgentHandlers {
 
   async list(): Promise<TeamToolOutput> {
     return teamTextOutput(JSON.stringify(this.team.overview().agents), false)
-  }
-
-  async wait(_id: string, input: TeamWaitInput, signal?: AbortSignal): Promise<TeamToolOutput> {
-    const result = await this.team.wait(this.caller, input.timeout_ms, signal)
-    if (result.kind === TEAM_CANCELLED) {
-      throw new DOMException(TEAM_TOOL_CANCELLED_MESSAGE, TEAM_TOOL_ABORT_NAME)
-    }
-    return teamAcceptedOrRefusedOutput(result)
   }
 }

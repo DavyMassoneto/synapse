@@ -25,7 +25,6 @@ export interface TeamMemberRowInput {
   opened: OpenedMember
   lastState: TeamAgentState
   busy: boolean
-  waiting: boolean
   unconfirmed: number
   tools: TeamActiveTools
   effectiveModel: TeamModelReference

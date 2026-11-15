@@ -11,7 +11,6 @@ import {
   type TeamOutcome,
   type TeamOverview,
   type TeamStartOutcome,
-  type TeamWaitOutcome,
   type UpdateTaskInput,
 } from "#synapse/modules/agent-team"
 import { TEAM_FIXTURE_REFUSAL, TEAM_FIXTURE_TASK } from "./constants"
@@ -54,17 +53,6 @@ export class ToolsTeamDouble implements AgentTeam {
     }
     return { kind: "interrupt_requested" }
   }
-
-  async wait(name: string, _timeout: number, signal?: AbortSignal): Promise<TeamWaitOutcome> {
-    this.sender = name
-    signal?.throwIfAborted()
-    if (this.refused) {
-      return TEAM_FIXTURE_REFUSAL
-    }
-    return { kind: "wait_completed", timedOut: false }
-  }
-
-  markLeadSeen(): void {}
 
   overview(): TeamOverview {
     return { agents: [], tasks: [], events: [] }

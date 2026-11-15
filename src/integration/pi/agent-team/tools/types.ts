@@ -10,7 +10,6 @@ import {
   type TEAM_TOOL_SEND_MESSAGE_PARAMETERS,
   type TEAM_TOOL_SUBAGENT_PARAMETERS,
   type TEAM_TOOL_UPDATE_TASK_PARAMETERS,
-  type TEAM_TOOL_WAIT_AGENT_PARAMETERS,
 } from "./schemas"
 
 export type TeamModelToolSignal = Parameters<
@@ -28,8 +27,6 @@ export type TeamSubagentInput = Static<typeof TEAM_TOOL_SUBAGENT_PARAMETERS>
 export type TeamSendInput = Static<typeof TEAM_TOOL_SEND_MESSAGE_PARAMETERS>
 
 export type TeamInterruptInput = Static<typeof TEAM_TOOL_INTERRUPT_AGENT_PARAMETERS>
-
-export type TeamWaitInput = Static<typeof TEAM_TOOL_WAIT_AGENT_PARAMETERS>
 
 export type TeamCreateTaskInput = Static<typeof TEAM_TOOL_CREATE_TASK_PARAMETERS>
 
@@ -58,14 +55,12 @@ export type TeamToolOutcome =
   | Awaited<ReturnType<AgentTeam["start"]>>
   | ReturnType<AgentTeam["getTask"]>
   | ReturnType<AgentTeam["send"]>
-  | Awaited<ReturnType<AgentTeam["wait"]>>
   | ReturnType<AgentTeam["interrupt"]>
 
 export type TeamToolName =
   | "subagent"
   | "send_message"
   | "list_agents"
-  | "wait_agent"
   | "interrupt_agent"
   | "list_models"
   | "team_task_create"

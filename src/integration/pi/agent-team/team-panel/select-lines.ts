@@ -2,7 +2,6 @@ import {
   TASK_IN_PROGRESS,
   TASK_PENDING,
   type TaskView,
-  TEAM_WAITING,
   TEAM_WORKING,
   type TeamAgentRow,
 } from "#synapse/modules/agent-team"
@@ -30,7 +29,7 @@ function agentLine(agent: TeamAgentRow): TeamPanelLine {
   if (agent.effectiveModel && agent.effectiveModel !== agent.model) {
     parts.push(agent.effectiveModel)
   }
-  if (agent.activity && agent.state !== TEAM_WAITING) {
+  if (agent.activity) {
     parts.push(agent.activity)
   }
   return panelLine(
@@ -47,7 +46,7 @@ export function selectAgentLines(agents: TeamAgentRow[]): TeamPanelLine[] {
   const active: TeamPanelLine[] = []
   const settled: TeamPanelLine[] = []
   for (const agent of agents) {
-    if (agent.state === TEAM_WORKING || agent.state === TEAM_WAITING) {
+    if (agent.state === TEAM_WORKING) {
       if (active.length < TEAM_PANEL_MAX_AGENTS) {
         active.push(agentLine(agent))
       }

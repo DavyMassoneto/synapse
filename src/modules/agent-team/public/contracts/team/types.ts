@@ -40,7 +40,7 @@ export type TeamModelReference = TeamKnownModelReference | TeamUnavailableModelR
 
 export type TeamAgentStatus = "running" | "inactive"
 
-export type TeamAgentState = "working" | "waiting" | "idle" | "finished" | "interrupted" | "failed"
+export type TeamAgentState = "working" | "idle" | "finished" | "interrupted" | "failed"
 
 export interface TeamAgentRow {
   name: string
@@ -111,13 +111,6 @@ export interface TeamInterruptRequested {
 
 export type TeamInterruptOutcome = TeamInterruptRequested | TeamRefused | TeamFailed
 
-export type TeamWaitOutcome = TeamWaitResult | TeamRefused | TeamFailed | TeamCancelled
-
-export interface TeamWaitResult {
-  kind: "wait_completed"
-  timedOut: boolean
-}
-
 export type TeamClock = () => string
 
 export interface AgentTeam {
@@ -125,8 +118,6 @@ export interface AgentTeam {
   restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void>
   send(sender: string, target: string, message: string): TeamOutcome
   interrupt(target: string): TeamInterruptOutcome
-  wait(name: string, timeoutMs: number, signal?: AbortSignal): Promise<TeamWaitOutcome>
-  markLeadSeen(): void
   overview(): TeamOverview
   refresh(): void
   createTask(input: CreateTaskInput): TaskOutcome
@@ -139,8 +130,4 @@ export interface AgentTeam {
 export interface TeamFailed {
   kind: "failed"
   message: string
-}
-
-export interface TeamCancelled {
-  kind: "cancelled"
 }

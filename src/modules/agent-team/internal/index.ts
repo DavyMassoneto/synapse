@@ -1,4 +1,3 @@
-export * from "./inbox"
 export * from "./member"
 export * from "./membership"
 export * from "./messaging"
