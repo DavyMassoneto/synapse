@@ -1,7 +1,7 @@
 import { writeFileSync } from "node:fs"
 import { type ContextEvent } from "@earendil-works/pi-coding-agent"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { registerResponseRules } from "#synapse/integration"
+import { registerResponseRules } from "#synapse/integration/pi/response-rules"
 import {
   cleanupResponseRulesScenario,
   expectedResponseRulesResult,

@@ -1,4 +1,4 @@
-import { type IphoneImageOutput, type IphoneTextOutput, type IphoneTreeOutput } from "#synapse/modules"
+import { type IphoneImageOutput, type IphoneTextOutput, type IphoneTreeOutput } from "#synapse/modules/iphone"
 import { type IphoneFixtureRoutes } from "./types"
 
 export const IPHONE_FIXTURE_UNEXPECTED_CALL = "Operação inesperada no double."

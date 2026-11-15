@@ -1,4 +1,4 @@
-import { type IphoneModule } from "#synapse/modules"
+import { type IphoneModule } from "#synapse/modules/iphone"
 
 export interface IphoneIntegrationSut {
   iphone: IphoneModule

@@ -1,4 +1,4 @@
-import { PiTeamSessionAdapter } from "#synapse/integration"
+import { PiTeamSessionAdapter } from "#synapse/integration/pi/agent-team"
 import { TeamSessionDouble } from "./session-double"
 
 export function subscribedTeamSession(): TeamSessionDouble {

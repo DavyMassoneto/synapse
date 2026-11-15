@@ -1,6 +1,8 @@
 import { Type } from "typebox"
 
-export const PI_PROCESS_MANIFEST_SCHEMA = Type.Object({ pi: Type.Object({ extensions: Type.Tuple([Type.String()]) }) })
+export const PI_PROCESS_MANIFEST_SCHEMA = Type.Object({
+  pi: Type.Object({ extensions: Type.Array(Type.String(), { minItems: 1 }) }),
+})
 
 export const PI_PROCESS_SDK_SCHEMA = Type.Object({ bin: Type.Object({ pi: Type.String() }) })
 

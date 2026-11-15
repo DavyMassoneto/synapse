@@ -13,7 +13,7 @@ import {
   type TeamStartOutcome,
   type TeamWaitOutcome,
   type UpdateTaskInput,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import { TEAM_FIXTURE_REFUSAL, TEAM_FIXTURE_TASK } from "./constants"
 
 export class ToolsTeamDouble implements AgentTeam {

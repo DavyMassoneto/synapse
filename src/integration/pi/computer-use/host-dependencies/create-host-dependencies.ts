@@ -7,7 +7,7 @@ import {
   COMPUTER_WIN32,
   type ComputerPlatform,
   type ComputerUseDependencies,
-} from "#synapse/modules"
+} from "#synapse/modules/computer-use"
 import {
   PI_COMPUTER_CAPTURE_DIRECTORY,
   PI_COMPUTER_DRIVER_PATH_VARIABLE,

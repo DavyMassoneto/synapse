@@ -1,11 +1,11 @@
 import { type MessageEndEvent } from "@earendil-works/pi-coding-agent"
+import { REFERENCE_SEPARATOR } from "#synapse/modules/advisor"
 import {
-  REFERENCE_SEPARATOR,
   TEAM_MODEL_KNOWN,
   TEAM_MODEL_UNAVAILABLE,
   type TeamModelReference,
   type TeamModelUse,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import { TEAM_PI_ASSISTANT_ROLE, TEAM_PI_CONTEXT_ATTACHED, TEAM_PI_THINKING_SEPARATOR } from "./constants"
 import { type PiTeamLeadContext } from "./lead-context"
 

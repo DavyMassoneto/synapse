@@ -1,6 +1,6 @@
 import { type Api, getSupportedThinkingLevels, type Model } from "@earendil-works/pi-ai"
 import { type ModelRouteRequest } from "@earendil-works/pi-coding-agent"
-import { type RouteRequest, type RouterCandidate, type RouterPrevious } from "#synapse/modules"
+import { type RouteRequest, type RouterCandidate, type RouterPrevious } from "#synapse/modules/model-router"
 import { convertRouterMessage } from "./messages"
 import { type PiRouterContext, type PiRouterPhysicalPair, type PiRouterState } from "./types"
 

@@ -1,4 +1,4 @@
-import { type IphoneModuleDependencies } from "#synapse/modules"
+import { type IphoneModuleDependencies } from "#synapse/modules/iphone"
 import { iphoneHostDependencies } from "./dependencies"
 import { PiIphoneSimulatorExecutor } from "./simulator-executor"
 import { type PiIphoneExecutionHost } from "./types"

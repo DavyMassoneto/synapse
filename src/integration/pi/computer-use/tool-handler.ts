@@ -1,5 +1,5 @@
 import { Value } from "typebox/value"
-import { type ComputerUse } from "#synapse/modules"
+import { type ComputerUse } from "#synapse/modules/computer-use"
 import { translateComputerAction } from "./action-translation"
 import { PI_COMPUTER_CANCELLED_MESSAGE, PI_COMPUTER_IMAGE_CONTENT } from "./constants"
 import { computerToolError, computerToolOutput } from "./render-output"

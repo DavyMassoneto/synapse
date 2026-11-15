@@ -1,13 +1,12 @@
 import {
   type BeforeAgentStartEvent,
   type ExtensionAPI,
-  type ExtensionFactory,
   type MessageEndEvent,
   type SessionShutdownEvent,
   type SessionStartEvent,
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam, type MemberSessions, type TeamClock, type TeamLead } from "#synapse/modules"
+import { type AgentTeam, type MemberSessions, type TeamClock, type TeamLead } from "#synapse/modules/agent-team"
 import { type AgentTeamContext } from "./lead-session"
 
 import { type TeamRegisteredTool } from "./tools"
@@ -38,8 +37,6 @@ export type AgentTeamMessageHandler = (event: MessageEndEvent) => void
 export type AgentTeamSettledHandler = () => void
 
 export type AgentTeamMount = (lead: TeamLead, sessions: MemberSessions, clock: TeamClock) => AgentTeam
-
-export type AgentTeamMemberExtension = ExtensionFactory
 
 export interface AgentTeamToolHost {
   registerTool(tool: AgentTeamToolDefinition): void

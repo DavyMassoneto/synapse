@@ -1,4 +1,4 @@
-import { type ModelRouterHost, type PiRouterVirtualModel } from "#synapse/integration"
+import { type ModelRouterHost, type PiRouterVirtualModel } from "#synapse/integration/pi/model-router"
 import { ROUTER_FIXTURE_HOST_MISSING } from "./constants"
 
 export class RouterFixtureHost implements ModelRouterHost {

@@ -1,6 +1,6 @@
 import { type Api, type Model, type ModelThinkingLevel } from "@earendil-works/pi-ai"
 import { type ExtensionContext, type ModelRoute, type ModelRouteRequest } from "@earendil-works/pi-coding-agent"
-import { type RouteKept, type RouteReserve, type RouteSelected } from "#synapse/modules"
+import { type RouteKept, type RouteReserve, type RouteSelected } from "#synapse/modules/model-router"
 import { type PiRouterClassificationLookup, type PiRouterClassificationRegistry } from "./classifier"
 
 export interface PiRouterState {

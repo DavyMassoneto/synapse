@@ -5,7 +5,7 @@ import {
   TEAM_TOOL_SUBAGENT,
   TEAM_TOOL_TASK_CREATE,
   TEAM_TOOL_TASK_LIST,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/agent-team"
 import {
   configureMemberScenario,
   PI_PROCESS_TIMEOUT_MS,

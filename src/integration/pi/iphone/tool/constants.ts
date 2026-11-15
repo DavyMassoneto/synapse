@@ -1,4 +1,4 @@
-import { type IphonePoint } from "#synapse/modules"
+import { type IphonePoint } from "#synapse/modules/iphone"
 
 export const PI_IPHONE_SCREEN_LABEL = "\nscreen: "
 

@@ -14,7 +14,7 @@ import {
   IPHONE_ACTION_URL,
   IPHONE_ACTION_WAIT,
   type IphoneDeviceAction,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import {
   PI_IPHONE_DEFAULT_BROWSER,
   PI_IPHONE_DEFAULT_MAX,

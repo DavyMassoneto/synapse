@@ -1,5 +1,5 @@
 import { type Api, type Model } from "@earendil-works/pi-ai"
-import { type MemberModelRegistryContext } from "#synapse/integration"
+import { type MemberModelRegistryContext } from "#synapse/integration/pi/agent-team"
 import { type ToolsModelRegistryPort } from "./types"
 
 export class ToolsModelRegistry implements ToolsModelRegistryPort {

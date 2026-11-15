@@ -1,4 +1,4 @@
-import { IPHONE_REFUSED, type IphoneModule } from "#synapse/modules"
+import { IPHONE_REFUSED, type IphoneModule } from "#synapse/modules/iphone"
 import { iphoneConfigurationChanges } from "./configuration-input"
 import {
   PI_IPHONE_COMMAND_CLOSED,

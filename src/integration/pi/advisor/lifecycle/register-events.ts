@@ -1,4 +1,4 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor"
 import { BEFORE_AGENT_START, SESSION_SHUTDOWN, SESSION_START, TURN_END } from "./constants"
 import { ReminderEvents } from "./reminder-events"
 import { SessionSync } from "./session-sync"

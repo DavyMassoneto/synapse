@@ -1,4 +1,4 @@
-import { type AgentTeam, TEAM_CANCELLED } from "#synapse/modules"
+import { type AgentTeam, TEAM_CANCELLED } from "#synapse/modules/agent-team"
 import { TEAM_TOOL_ABORT_NAME, TEAM_TOOL_CANCELLED_MESSAGE } from "./constants"
 import { teamAcceptedOrRefusedOutput, teamTextOutput } from "./tool-output"
 import {

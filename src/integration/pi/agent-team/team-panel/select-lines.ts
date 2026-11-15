@@ -5,7 +5,7 @@ import {
   TEAM_WAITING,
   TEAM_WORKING,
   type TeamAgentRow,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import {
   TEAM_PANEL_DESCRIPTION_SEPARATOR,
   TEAM_PANEL_EVENT,

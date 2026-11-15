@@ -1,5 +1,5 @@
 import { type SessionEntry } from "@earendil-works/pi-coding-agent"
-import { type TeamHistorySessionManager } from "#synapse/integration"
+import { type TeamHistorySessionManager } from "#synapse/integration/pi/agent-team"
 
 export class TeamHistoryTestSession implements TeamHistorySessionManager {
   private readonly entries: SessionEntry[]

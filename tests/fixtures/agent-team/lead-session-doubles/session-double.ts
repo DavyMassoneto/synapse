@@ -1,6 +1,6 @@
 import { type AgentSessionEvent, type AgentSessionEventListener } from "@earendil-works/pi-coding-agent"
-import { type TeamMemberSessionPort } from "#synapse/integration"
-import { type MemberSessionEvent, type MemberUnsubscribe } from "#synapse/modules"
+import { type TeamMemberSessionPort } from "#synapse/integration/pi/agent-team"
+import { type MemberSessionEvent, type MemberUnsubscribe } from "#synapse/modules/agent-team"
 import {
   TEAM_EXTENSION_FIXTURE_FAILURE,
   TEAM_SESSION_FIXTURE_QUEUED,

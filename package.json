@@ -33,7 +33,13 @@
   },
   "pi": {
     "extensions": [
-      "./src/entry.ts"
+      "./src/extensions/advisor.ts",
+      "./src/extensions/cooldown-retry.ts",
+      "./src/extensions/response-rules.ts",
+      "./src/extensions/model-router.ts",
+      "./src/extensions/agent-team.ts",
+      "./src/extensions/iphone.ts",
+      "./src/extensions/computer-use.ts"
     ]
   }
 }

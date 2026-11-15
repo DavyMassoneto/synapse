@@ -1,4 +1,4 @@
-import { TEAM_PI_MEMBER_IDENTITY_PREFIX } from "#synapse/integration"
+import { TEAM_PI_MEMBER_IDENTITY_PREFIX } from "#synapse/integration/pi/agent-team"
 import { SCRIPTED_PROVIDER_TEXT_KIND, type ScriptedProviderStep } from "../scripted-provider"
 
 export const TEAM_DISTRIBUTION_DONE_STEP: ScriptedProviderStep = {
@@ -53,3 +53,5 @@ export const TEAM_DISTRIBUTION_TOOL_END_EVENT = "tool_execution_end"
 export const TEAM_DISTRIBUTION_EMPTY_ARGUMENTS = "{}"
 
 export const TEAM_DISTRIBUTION_WAIT_MILLISECONDS = 1000
+
+export const TEAM_DISTRIBUTION_PI_SETTINGS = "settings.json"

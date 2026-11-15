@@ -5,7 +5,7 @@ import {
   type CooldownMessageEndHandler,
   type CooldownRetryHost,
   type CooldownUnsubscribe,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/cooldown-retry"
 
 export class CooldownRetryHostDouble implements CooldownRetryHost {
   private handler?: CooldownMessageEndHandler

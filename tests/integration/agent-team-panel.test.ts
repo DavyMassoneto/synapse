@@ -1,6 +1,6 @@
 import { describe, expect, test } from "vitest"
-import { teamPanelLines } from "#synapse/integration"
-import { type TaskView, type TeamAgentRow } from "#synapse/modules"
+import { teamPanelLines } from "#synapse/integration/pi/agent-team"
+import { type TaskView, type TeamAgentRow } from "#synapse/modules/agent-team"
 import { TEAM_PANEL_TEST_AGENT, TEAM_PANEL_TEST_EMPTY, TEAM_PANEL_TEST_TASK } from "../fixtures"
 
 function emptyTeam(): void {

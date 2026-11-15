@@ -1,4 +1,4 @@
-import { type ActiveModel, type Advisor } from "#synapse/modules"
+import { type ActiveModel, type Advisor } from "#synapse/modules/advisor"
 import { ADVISOR_NAME } from "../tool"
 import { STATUS_PREFIX } from "./constants"
 import { type AdvisorToolActivation, type SessionContext } from "./types"

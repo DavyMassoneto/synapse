@@ -7,7 +7,7 @@ import {
   type ClassifierResult,
   type Model,
 } from "@earendil-works/pi-ai"
-import { type PiRouterClassifierModel, type PiRouterRegistry } from "#synapse/integration"
+import { type PiRouterClassifierModel, type PiRouterRegistry } from "#synapse/integration/pi/model-router"
 import {
   ROUTER_FIXTURE_CLASSIFIER,
   ROUTER_TEST_CHOICE,

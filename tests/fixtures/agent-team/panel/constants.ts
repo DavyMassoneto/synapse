@@ -1,4 +1,4 @@
-import { type TaskView, type TeamAgentRow, type TeamOverview } from "#synapse/modules"
+import { type TaskView, type TeamAgentRow, type TeamOverview } from "#synapse/modules/agent-team"
 
 export const TEAM_PANEL_TEST_AGENT: TeamAgentRow = {
   name: "lead",

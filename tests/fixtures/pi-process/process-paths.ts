@@ -9,10 +9,9 @@ import {
 } from "./constants"
 import { PI_PROCESS_MANIFEST_SCHEMA, PI_PROCESS_SDK_SCHEMA } from "./schemas"
 
-export function resolvePiProcessEntrypoint(): string {
+export function resolvePiProcessEntrypoint(): string[] {
   const manifest = readJsonFile(fileURLToPath(PI_PROCESS_PACKAGE_URL), PI_PROCESS_MANIFEST_SCHEMA)
-  const [entrypoint] = manifest.pi.extensions
-  return resolve(fileURLToPath(PI_PROCESS_ROOT_URL), entrypoint)
+  return manifest.pi.extensions.map(resolvePiProcessExtensionPath)
 }
 
 export function resolvePiProcessExecutable(): string {
@@ -20,4 +19,8 @@ export function resolvePiProcessExecutable(): string {
   const manifestPath = join(dirname(dirname(entrypoint)), PI_PROCESS_MANIFEST_FILE)
   const manifest = readJsonFile(manifestPath, PI_PROCESS_SDK_SCHEMA)
   return resolve(dirname(manifestPath), manifest.bin.pi)
+}
+
+function resolvePiProcessExtensionPath(entrypoint: string): string {
+  return resolve(fileURLToPath(PI_PROCESS_ROOT_URL), entrypoint)
 }

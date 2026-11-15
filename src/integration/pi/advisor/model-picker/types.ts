@@ -1,5 +1,5 @@
 import { type ExtensionContext, type ExtensionUIContext, type ModelRegistry } from "@earendil-works/pi-coding-agent"
-import { type Cancelled } from "#synapse/modules"
+import { type Cancelled } from "#synapse/modules/advisor"
 
 export interface ModelSelected {
   kind: "selected"

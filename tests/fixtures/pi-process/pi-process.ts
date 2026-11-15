@@ -35,6 +35,7 @@ import {
   type PiProcessCloseResolver,
   type PiProcessCommand,
   type PiProcessCommands,
+  type PiProcessEntrypoints,
   type PiProcessExitCode,
   type PiProcessLastAssistantText,
   type PiProcessQuery,
@@ -80,7 +81,7 @@ export class PiProcess {
     this.session = session
   }
 
-  start(entrypoint: string): void {
+  start(entrypoint: PiProcessEntrypoints): void {
     if (this.child) {
       throw new Error(PI_PROCESS_ALREADY_STARTED)
     }

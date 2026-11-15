@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { ADVISOR_CONFIG_FILE } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE } from "#synapse/integration/pi/advisor"
 import { HOST_CONFIG, HOST_DIRECTORY_PREFIX } from "./constants"
 
 export function prepareHostDirectory(): string {

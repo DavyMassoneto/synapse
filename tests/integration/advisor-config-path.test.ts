@@ -1,6 +1,6 @@
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { ADVISOR_CONFIG_FILE, advisorConfigPath } from "#synapse/integration"
+import { ADVISOR_CONFIG_FILE, advisorConfigPath } from "#synapse/integration/pi/advisor"
 import {
   AGENT_DIRECTORY_VARIABLE,
   DISTRIBUTION_AGENT_DIRECTORY,

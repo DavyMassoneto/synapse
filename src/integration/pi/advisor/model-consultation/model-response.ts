@@ -1,5 +1,5 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
-import { type ModelResponse, type Usage } from "#synapse/modules"
+import { type ModelResponse, type Usage } from "#synapse/modules/advisor"
 import { extractText } from "../content-text"
 import { ABORTED_STOP, EMPTY_RESPONSE, ERROR_STOP, PROVIDER_FAILED } from "./constants"
 

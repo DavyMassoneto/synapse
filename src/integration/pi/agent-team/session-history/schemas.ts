@@ -1,5 +1,5 @@
 import { Type } from "typebox"
-import { TASK_COMPLETED, TASK_DELETED, TASK_IN_PROGRESS, TASK_PENDING } from "#synapse/modules"
+import { TASK_COMPLETED, TASK_DELETED, TASK_IN_PROGRESS, TASK_PENDING } from "#synapse/modules/agent-team"
 
 export const TeamHistoryTaskSchema = Type.Object({
   id: Type.String(),

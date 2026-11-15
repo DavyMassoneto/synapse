@@ -5,7 +5,7 @@ import {
   MEMBER_TOOL_STARTED,
   MEMBER_TURN_STARTED,
   type MemberSessionListener,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { teamMemberActivity } from "./activity-text"
 import {

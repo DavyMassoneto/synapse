@@ -1,4 +1,4 @@
-import { type AgentTeam, TEAM_LEAD_NAME } from "#synapse/modules"
+import { type AgentTeam, TEAM_LEAD_NAME } from "#synapse/modules/agent-team"
 import { TeamAgentHandlers } from "./agent-handlers"
 import {
   TEAM_TOOL_INTERRUPT_AGENT,

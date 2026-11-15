@@ -1,5 +1,5 @@
 import { type ModelRouteRequest } from "@earendil-works/pi-coding-agent"
-import { type PiRouterContext, type PiRouterState } from "#synapse/integration"
+import { type PiRouterContext, type PiRouterState } from "#synapse/integration/pi/model-router"
 import { type RouterFixtureHost } from "./host"
 import { type RouterFixtureRegistry } from "./registry"
 

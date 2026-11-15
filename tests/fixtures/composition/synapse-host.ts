@@ -1,10 +1,13 @@
-import { type SynapseHost } from "#synapse/composition"
+import { createEventBus } from "@earendil-works/pi-coding-agent"
 import {
   type AdvisorBeforeStartHandler,
   type AdvisorCommandDefinition,
   type AdvisorSessionStartHandler,
   type AdvisorShutdownHandler,
   type AdvisorTurnEndHandler,
+  type Unsubscribe,
+} from "#synapse/integration/pi/advisor"
+import {
   type AgentTeamBeforeStartHandler,
   type AgentTeamLeadHost,
   type AgentTeamMessageHandler,
@@ -12,12 +15,11 @@ import {
   type AgentTeamShutdownHandler,
   type AgentTeamStartHandler,
   type AgentTeamTurnHandler,
-  type CooldownMessageEndHandler,
-  type PiIphoneShutdownHandler,
-  type PiRouterVirtualModel,
-  type ResponseRulesContextHandler,
-  type Unsubscribe,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/agent-team"
+import { type CooldownMessageEndHandler } from "#synapse/integration/pi/cooldown-retry"
+import { type PiIphoneShutdownHandler } from "#synapse/integration/pi/iphone"
+import { type PiRouterVirtualModel } from "#synapse/integration/pi/model-router"
+import { type ResponseRulesContextHandler } from "#synapse/integration/pi/response-rules"
 import { AdvisorHostCollector, HostSessionEvents } from "../host"
 import {
   COMPOSITION_ADVISOR_NAME,
@@ -38,19 +40,22 @@ import {
   type CompositionToolsByName,
   type SynapseCollectedRegistration,
   type SynapseCollectedTool,
+  type SynapseHost,
   type SynapseMessageHandler,
 } from "./types"
 
 export class SynapseHostCollector implements SynapseHost {
-  private readonly events = new HostSessionEvents<CompositionContext>()
+  readonly events = createEventBus()
 
-  readonly starts = this.events.starts
+  private readonly sessionEvents = new HostSessionEvents<CompositionContext>()
 
-  readonly shutdowns = this.events.shutdowns
+  readonly starts = this.sessionEvents.starts
 
-  readonly beforeStarts = this.events.beforeStarts
+  readonly shutdowns = this.sessionEvents.shutdowns
 
-  readonly turns = this.events.turns
+  readonly beforeStarts = this.sessionEvents.beforeStarts
+
+  readonly turns = this.sessionEvents.turns
 
   readonly messageEnds: SynapseMessageHandler[] = []
 
@@ -91,7 +96,7 @@ export class SynapseHostCollector implements SynapseHost {
       case COMPOSITION_SESSION_SHUTDOWN:
       case COMPOSITION_BEFORE_AGENT_START:
       case COMPOSITION_TURN_END:
-        this.events.collect(registration)
+        this.sessionEvents.collect(registration)
         return this.unsubscribe
       default:
         return this.unsubscribe
@@ -115,9 +120,9 @@ export class SynapseHostCollector implements SynapseHost {
 
   unsubscribe(): void {}
 
-  readonly emitSessionStart = this.events.emitSessionStart.bind(this.events)
+  readonly emitSessionStart = this.sessionEvents.emitSessionStart.bind(this.sessionEvents)
 
-  readonly emitShutdown = this.events.emitShutdown.bind(this.events)
+  readonly emitShutdown = this.sessionEvents.emitShutdown.bind(this.sessionEvents)
 
   readonly requireTool = this.advisor.requireTool.bind(this.advisor)
 

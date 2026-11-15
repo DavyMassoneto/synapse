@@ -22,7 +22,7 @@ import {
   IPHONE_ACTION_TYPE,
   IPHONE_ACTION_URL,
   IPHONE_ACTION_WAIT,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import { PI_IPHONE_VALUE_HOMESCREEN } from "../constants"
 
 export const PI_IPHONE_PARAMETERS = Type.Object({

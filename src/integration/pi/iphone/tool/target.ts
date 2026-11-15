@@ -5,7 +5,7 @@ import {
   type IphoneDeviceAction,
   type IphonePoint,
   type IphoneTargetedAction,
-} from "#synapse/modules"
+} from "#synapse/modules/iphone"
 import {
   PI_IPHONE_DESTINATION_FOUND,
   PI_IPHONE_DESTINATION_MISSING,

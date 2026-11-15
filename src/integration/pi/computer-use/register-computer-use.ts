@@ -1,4 +1,4 @@
-import { type ComputerUse } from "#synapse/modules"
+import { type ComputerUse } from "#synapse/modules/computer-use"
 import { PiComputerCommandHandler } from "./command-handler"
 import {
   PI_COMPUTER_COMMAND_DESCRIPTION,

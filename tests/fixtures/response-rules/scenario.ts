@@ -1,7 +1,7 @@
 import { mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
-import { registerResponseRules } from "#synapse/integration"
+import { registerResponseRules } from "#synapse/integration/pi/response-rules"
 import { RESPONSE_RULES_TEST_DIRECTORY_PREFIX, RESPONSE_RULES_TEST_FILE } from "./constants"
 import { ResponseRulesTestHost } from "./host"
 import { type ResponseRulesIntegrationSut } from "./types"

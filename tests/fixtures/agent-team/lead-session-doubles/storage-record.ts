@@ -1,5 +1,5 @@
 import { join } from "node:path"
-import { type MemberRecord } from "#synapse/modules"
+import { type MemberRecord } from "#synapse/modules/agent-team"
 import { TEAM_SESSION_FIXTURE_TEST_RECORD } from "./constants"
 import { type TeamStorageFixture } from "./storage-fixture"
 

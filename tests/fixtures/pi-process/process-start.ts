@@ -25,18 +25,22 @@ import {
   PI_PROCESS_WINDOWS_VARIABLE,
 } from "./constants"
 import { resolvePiProcessExecutable } from "./process-paths"
+import { type PiProcessEntrypoints } from "./types"
 
 export function piProcessArguments(
-  entrypoint: string,
+  entrypoint: PiProcessEntrypoints,
   selection: PiProcessModelSelection,
   persistence: string[],
 ): string[] {
+  const paths: string[] = []
+  for (const path of typeof entrypoint === "string" ? [entrypoint] : entrypoint) {
+    paths.push(PI_PROCESS_EXTENSION_FLAG, path)
+  }
   return [
     resolvePiProcessExecutable(),
     ...PI_PROCESS_FLAGS,
     ...persistence,
-    PI_PROCESS_EXTENSION_FLAG,
-    entrypoint,
+    ...paths,
     PI_PROCESS_EXTENSION_FLAG,
     fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL),
     PI_PROCESS_MODEL_FLAG,

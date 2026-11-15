@@ -1,4 +1,4 @@
-import { type Advisor } from "#synapse/modules"
+import { type Advisor } from "#synapse/modules/advisor"
 import { SESSION_START } from "../lifecycle"
 import { ADVISOR_NAME } from "../tool"
 import { CompletionCatalog } from "./catalog"

@@ -1,4 +1,8 @@
-import { COMPUTER_IMAGE_PRESENT, type ComputerExecuteResult, type ComputerRenderedScreenshot } from "#synapse/modules"
+import {
+  COMPUTER_IMAGE_PRESENT,
+  type ComputerExecuteResult,
+  type ComputerRenderedScreenshot,
+} from "#synapse/modules/computer-use"
 import { PI_COMPUTER_IMAGE_CONTENT, PI_COMPUTER_TEXT_CONTENT } from "./constants"
 import { isComputerToolError } from "./predicates"
 import { type PiComputerCaptureText, type PiComputerToolOutput } from "./types"

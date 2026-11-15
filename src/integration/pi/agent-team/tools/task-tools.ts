@@ -1,4 +1,4 @@
-import { type AgentTeam } from "#synapse/modules"
+import { type AgentTeam } from "#synapse/modules/agent-team"
 import {
   TEAM_TOOL_TASK_CREATE,
   TEAM_TOOL_TASK_CREATE_DESCRIPTION,

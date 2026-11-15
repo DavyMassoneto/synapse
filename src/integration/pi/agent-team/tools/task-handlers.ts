@@ -1,4 +1,4 @@
-import { type AgentTeam, type CreateTaskInput, type TaskFilter } from "#synapse/modules"
+import { type AgentTeam, type CreateTaskInput, type TaskFilter } from "#synapse/modules/agent-team"
 import { translateTeamTaskUpdate } from "./task-input"
 import { teamAcceptedOrRefusedOutput, teamTextOutput } from "./tool-output"
 import {

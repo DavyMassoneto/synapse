@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { startCreatedTeamMemberSession, TeamMemberExtensionLifecycle } from "#synapse/integration"
+import { startCreatedTeamMemberSession, TeamMemberExtensionLifecycle } from "#synapse/integration/pi/agent-team"
 import {
   TEAM_EXTENSION_FIXTURE_AGGREGATE_TEST,
   TEAM_EXTENSION_FIXTURE_BIND_FAILURE_TEST,

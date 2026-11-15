@@ -1,4 +1,4 @@
-import { type AdvisorContext } from "#synapse/integration"
+import { type AdvisorContext } from "#synapse/integration/pi/advisor"
 import { TestRegistry } from "./test-registry"
 import { TestSession } from "./test-session"
 import { TestUI } from "./test-ui"

@@ -11,7 +11,7 @@ import {
   type AdvisorSessionStartHandler,
   type AdvisorShutdownHandler,
   type AdvisorTurnEndHandler,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/advisor"
 
 export type TurnEndResult = Awaited<ReturnType<AdvisorTurnEndHandler>>
 

@@ -1,11 +1,11 @@
 import { type AssistantMessage } from "@earendil-works/pi-ai"
+import { REFERENCE_SEPARATOR } from "#synapse/modules/advisor"
 import {
   MEMBER_ASSISTANT_RESPONSE,
   MEMBER_EXECUTION_SETTLED,
   type MemberAssistantResponse,
   type MemberExecutionSettled,
-  REFERENCE_SEPARATOR,
-} from "#synapse/modules"
+} from "#synapse/modules/agent-team"
 import { TEAM_PI_MEMBER_ERROR_REASON, TEAM_PI_MEMBER_RESPONSE_FAILURE } from "./constants"
 
 export function teamMemberAssistantResponse(message: AssistantMessage): MemberAssistantResponse {

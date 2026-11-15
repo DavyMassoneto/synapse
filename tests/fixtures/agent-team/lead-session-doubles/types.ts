@@ -1,5 +1,5 @@
 import { type ExtensionContext } from "@earendil-works/pi-coding-agent"
-import { type AgentTeamLeadHost } from "#synapse/integration"
+import { type AgentTeamLeadHost } from "#synapse/integration/pi/agent-team"
 
 export type TeamWidgetOptions = Parameters<ExtensionContext["ui"]["setWidget"]>[2]
 

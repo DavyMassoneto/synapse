@@ -1,5 +1,5 @@
 import { type Api, getSupportedThinkingLevels, type Model, type ModelThinkingLevel } from "@earendil-works/pi-ai"
-import { MODEL_REFERENCE_VALID, parseModelReference, REFERENCE_SEPARATOR } from "#synapse/modules"
+import { MODEL_REFERENCE_VALID, parseModelReference, REFERENCE_SEPARATOR } from "#synapse/modules/advisor"
 import {
   TEAM_AVAILABLE_MODELS,
   TEAM_MODEL_LIST_SEPARATOR,

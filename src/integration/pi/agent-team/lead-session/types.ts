@@ -1,5 +1,5 @@
 import { type ExtensionAPI, type ExtensionContext, type MessageEndEvent } from "@earendil-works/pi-coding-agent"
-import { type TeamLead } from "#synapse/modules"
+import { type TeamLead } from "#synapse/modules/agent-team"
 import { type MemberModelContext } from "../model-selection"
 
 export interface TeamLeadContextAttached {
@@ -13,7 +13,10 @@ export interface TeamLeadContextDetached {
 
 export type TeamLeadContextState = TeamLeadContextAttached | TeamLeadContextDetached
 
-export type AgentTeamContext = Pick<ExtensionContext, "cwd" | "mode" | "hasUI" | "model" | "thinkingLevel" | "isIdle"> &
+export type AgentTeamContext = Pick<
+  ExtensionContext,
+  "cwd" | "mode" | "hasUI" | "model" | "thinkingLevel" | "isIdle" | "isProjectTrusted"
+> &
   AgentTeamContextPorts
 
 export interface AgentTeamContextPorts extends Pick<MemberModelContext, "modelRegistry"> {

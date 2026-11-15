@@ -1,4 +1,4 @@
-import { type MemberSession, type MemberSessionListener, type MemberUnsubscribe } from "#synapse/modules"
+import { type MemberSession, type MemberSessionListener, type MemberUnsubscribe } from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { PiTeamEventConnection } from "./event-connection"
 import { type TeamMemberSessionPort } from "./types"

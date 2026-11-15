@@ -1,4 +1,4 @@
-import { type MemberExecutionSettled } from "#synapse/modules"
+import { type MemberExecutionSettled } from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 
 export function applyTeamMemberExtensionFailure(

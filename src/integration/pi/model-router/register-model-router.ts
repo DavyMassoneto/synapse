@@ -1,4 +1,4 @@
-import { type ModelRouterFactory } from "#synapse/modules"
+import { type ModelRouterFactory } from "#synapse/modules/model-router"
 import {
   PI_ROUTER_HIGH_EFFORT,
   PI_ROUTER_IMAGE_INPUT,

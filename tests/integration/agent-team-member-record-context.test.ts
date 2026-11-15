@@ -1,8 +1,7 @@
 import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
-import { type ExtensionAPI } from "@earendil-works/pi-coding-agent"
 import { describe, expect, test } from "vitest"
-import { createPiTeamLeadSession, memberTools, PiTeamMemberSessions } from "#synapse/integration"
+import { createPiTeamLeadSession, memberTools, PiTeamMemberSessions } from "#synapse/integration/pi/agent-team"
 import {
   fixtureModel,
   TEAM_SESSION_FIXTURE_CONTEXT_WINDOW,
@@ -25,8 +24,6 @@ import {
   ToolsTeamDouble,
 } from "../fixtures"
 
-function memberExtension(_pi: ExtensionAPI): void {}
-
 function makeSut(): PiTeamMemberSessions {
   const lead = createPiTeamLeadSession(new TeamLeadHost())
   lead.attach(
@@ -34,7 +31,10 @@ function makeSut(): PiTeamMemberSessions {
       fixtureModel(TEAM_SESSION_FIXTURE_PROVIDER, TEAM_SESSION_FIXTURE_MODEL, TEAM_SESSION_FIXTURE_CONTEXT_WINDOW),
     ),
   )
-  return new PiTeamMemberSessions({ context: lead.context.bind(lead), extension: memberExtension, tools: memberTools })
+  return new PiTeamMemberSessions({
+    context: lead.context.bind(lead),
+    tools: memberTools,
+  })
 }
 
 async function refusesOtherLeadBeforeReadingSession(): Promise<void> {

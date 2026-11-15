@@ -14,7 +14,7 @@ import {
   COMPUTER_SET_VALUE,
   COMPUTER_TYPE,
   COMPUTER_WAIT,
-} from "#synapse/modules"
+} from "#synapse/modules/computer-use"
 
 export const PI_COMPUTER_COORDINATE_SCHEMA = Type.Tuple([Type.Integer(), Type.Integer()])
 

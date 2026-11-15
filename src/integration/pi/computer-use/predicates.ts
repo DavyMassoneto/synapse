@@ -4,7 +4,7 @@ import {
   COMPUTER_FAILED,
   COMPUTER_REFUSED,
   type ComputerExecuteResult,
-} from "#synapse/modules"
+} from "#synapse/modules/computer-use"
 
 export function isComputerToolError(result: ComputerExecuteResult): boolean {
   return (

@@ -3,7 +3,7 @@ import {
   type TeamAgentHandlers,
   type TeamRegisteredTool,
   type TeamTaskHandlers,
-} from "#synapse/integration"
+} from "#synapse/integration/pi/agent-team"
 import { type ToolsTeamDouble } from "./team-double"
 
 export interface TeamToolsSut {
