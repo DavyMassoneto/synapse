@@ -58,6 +58,8 @@ sao versionados; binarios nao.
 Crie `run/bridge.ini` a partir de `config/bridge.ini.example` (o diretorio `run/` e criado no
 primeiro uso). O payload descobre a raiz deste diretorio pela localizacao do assembly carregado
 (`managed/` como marcador); `SYNAPSE_BRIDGE_DIR` tem precedencia quando definido no processo do jogo.
+Sem a variavel e sem assembly localizavel, a raiz e `%TEMP%\synapse-unity-bridge`. O `Probe.cs`, que
+roda sozinho para diagnostico de injecao, segue a mesma regra e grava `logs/probe.log` nessa raiz.
 
 ```ini
 enabled=1
@@ -123,7 +125,11 @@ Ha dois diagnosticos internos, fora do contrato do adaptador:
   central na resposta; `{"op":"harness-clear"}` remove. Sem limpeza explicita, some em 30 s. Use
   apenas com o jogo em segundo plano e capture OCR antes/depois para provar scroll/drag.
 
-O CLI permite provar cada operacao sem ferramenta externa:
+O CLI permite provar cada operacao sem ferramenta externa. Ele e uma ferramenta operacional
+independente: roda direto com `node`, nao e importado pelo pacote Pi, nao entra no build CommonJS e
+nao depende de transpilacao. Por isso permanece como `.mjs` e e o unico caminho excluido em
+`biome.json`; essa excecao e limitada a este arquivo e nao autoriza novo JavaScript no restante do
+repositorio, cujo codigo de produto continua TypeScript.
 
 ```powershell
 node client/client.mjs ping

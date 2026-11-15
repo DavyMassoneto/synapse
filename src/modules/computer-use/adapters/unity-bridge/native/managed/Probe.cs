@@ -34,9 +34,7 @@ namespace SynapseUnityBridge
                 {
                     sb.AppendLine("asm[" + i + "]=" + assemblies[i].GetName().Name + " " + assemblies[i].GetName().Version);
                 }
-                string dir = Environment.GetEnvironmentVariable("SYNAPSE_BRIDGE_DIR");
-                if (dir == null || dir.Length == 0) dir = @"C:\Users\Administrator\research\unity-bridge";
-                string logDir = Path.Combine(dir, "logs");
+                string logDir = LogDirectory();
                 Directory.CreateDirectory(logDir);
                 File.WriteAllText(Path.Combine(logDir, "probe.log"), sb.ToString(), new UTF8Encoding(false));
             }
@@ -44,12 +42,23 @@ namespace SynapseUnityBridge
             {
                 try
                 {
-                    File.WriteAllText(@"C:\Users\Administrator\research\unity-bridge\logs\probe-error.log", exception.ToString());
+                    string logDir = LogDirectory();
+                    Directory.CreateDirectory(logDir);
+                    File.WriteAllText(Path.Combine(logDir, "probe-error.log"), exception.ToString());
                 }
                 catch
                 {
                 }
             }
+        }
+
+        private static string LogDirectory()
+        {
+            string fromEnv = Environment.GetEnvironmentVariable("SYNAPSE_BRIDGE_DIR");
+            string root = fromEnv == null || fromEnv.Length == 0
+                ? Path.Combine(Path.GetTempPath(), "synapse-unity-bridge")
+                : fromEnv;
+            return Path.Combine(root, "logs");
         }
 
         private static string DescribeMono()

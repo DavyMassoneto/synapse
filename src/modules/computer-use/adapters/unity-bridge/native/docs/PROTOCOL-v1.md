@@ -1,5 +1,9 @@
 # Synapse Unity Bridge — protocolo (PoC, v1)
 
+Amostras ilustrativas e higienizadas: PID, token, handles de janela, coordenadas de desktop e
+caminhos não correspondem a uma sessão real. O protocolo v2 é o contrato vigente em `PROTOCOL.md`;
+este documento permanece apenas como histórico.
+
 Bridge in-process carregada por injeção em um jogo Unity/Mono **já em execução** (sem reiniciar).
 Executa apenas eventos UGUI na thread principal do jogo e responde por TCP loopback.
 Nenhuma API de entrada global do Windows é usada (`SetCursorPos`, `mouse_event`, `SendInput`,
@@ -7,14 +11,14 @@ Nenhuma API de entrada global do Windows é usada (`SetCursorPos`, `mouse_event`
 
 - Implementação: `managed/*.cs` (assembly injetado), `native/bridge_injector.cpp` (loader Mono in-process),
   `launcher/` (injetor externo), `client/client.mjs` (cliente de referência).
-- Alvo validado: Motorsport Manager, Unity **5.3.8f2**, x64, Mono CLR 3.0.40818, PID 28096.
+- Alvo validado: Motorsport Manager, Unity **5.3.8f2**, x64, Mono CLR 3.0.40818.
 
 ---
 
 ## 1. Descoberta (discovery)
 
-A bridge escreve arquivos em `run/` (raiz configurável por `SYNAPSE_BRIDGE_DIR`, padrão
-`C:\Users\Administrator\research\unity-bridge`).
+A bridge escreve arquivos em `run/` (raiz configurável por `SYNAPSE_BRIDGE_DIR`; sem a variável, o
+payload usa o diretório temporário do processo, `%TEMP%\synapse-unity-bridge`).
 
 ### `run/handshake.json`
 
@@ -26,14 +30,14 @@ da thread principal e a cada 300 ticks, com `"state":"listening"`; (c) no shutdo
 {
   "protocol": 1,
   "state": "listening",
-  "pid": 28096,
+  "pid": 4242,
   "process_name": "MM.exe",
-  "process_start_utc": "2026-11-14T19:49:34.6598944Z",
-  "instance": "522d360369624746a86a9f83e4959989",
-  "token": "dd57f08d19c641daba1e7c2c5923e40f",
+  "process_start_utc": "2026-01-01T00:00:00.0000000Z",
+  "instance": "example-instance",
+  "token": "<token-da-instancia>",
   "port": 47823,
   "endpoint": "tcp://127.0.0.1:47823",
-  "started_utc": "2026-11-14T22:54:04.8696667Z",
+  "started_utc": "2026-01-01T00:00:00.0000000Z",
   "main_thread_ticks": 2100,
   "main_thread_captured": true,
   "gameobject_created": true,
@@ -46,19 +50,19 @@ da thread principal e a cada 300 ticks, com `"state":"listening"`; (c) no shutdo
   "run_in_background_before_known": true,
   "run_in_background_before": true,
   "geometry": {
-    "window": { "x": 2580, "y": 370, "w": 1800, "h": 1000 },
-    "client": { "x": 2583, "y": 396, "w": 1794, "h": 971 },
+    "window": { "x": 100, "y": 100, "w": 1800, "h": 1000 },
+    "client": { "x": 103, "y": 126, "w": 1794, "h": 971 },
     "caption_offset": 26,
     "window_class": "UnityWndClass",
-    "hwnd": 4459650
+    "hwnd": 1001
   },
   "capabilities": { "tree": true, "hit": true, "click": true, "key": false, "text": false },
-  "bridge_log": "C:\\Users\\Administrator\\research\\unity-bridge\\logs\\bridge.log",
+  "bridge_log": "<bridge-root>\\logs\\bridge.log",
   "desktop": {
-    "foreground": 197664,
-    "game_window": 4459650,
+    "foreground": 1002,
+    "game_window": 1001,
     "game_is_foreground": false,
-    "cursor": { "x": 1326, "y": 628 },
+    "cursor": { "x": 100, "y": 200 },
     "watch": { "foreground_events": 4, "game_foreground_events": 0, "recent": [] }
   }
 }
@@ -121,26 +125,26 @@ Toda resposta de operação enfileirada é decorada com:
 ```json
 {
   "seq": 12,
-  "pid": 28096,
-  "instance": "522d...",
+  "pid": 4242,
+  "instance": "example-instance",
   "op": "click",
-  "main_thread_ticks": 3606,
-  "desktop": { "foreground": 197664, "game_window": 4459650, "game_is_foreground": false,
-               "cursor": { "x": 1219, "y": 720 },
+  "main_thread_ticks": 900,
+  "desktop": { "foreground": 1002, "game_window": 1001, "game_is_foreground": false,
+               "cursor": { "x": 100, "y": 200 },
                "watch": { "foreground_events": 3, "game_foreground_events": 0, "recent": [] } },
   "action_desktop": {
-    "cursor_before": { "x": 1219, "y": 720 },
-    "cursor_after":  { "x": 1219, "y": 720 },
+    "cursor_before": { "x": 100, "y": 200 },
+    "cursor_after":  { "x": 100, "y": 200 },
     "cursor_moved": false,
-    "foreground_before": 197664,
-    "foreground_after": 197664,
+    "foreground_before": 1002,
+    "foreground_after": 1002,
     "foreground_changed": false,
     "game_foreground_before": false,
     "game_foreground_after": false
   },
-  "cursor_watch": { "samples": 3627, "x": 1219, "y": 720,
-                    "min_x": 1029, "max_x": 1496, "min_y": 684, "max_y": 1439,
-                    "range_x": 467, "range_y": 755 },
+  "cursor_watch": { "samples": 900, "x": 100, "y": 200,
+                    "min_x": 90, "max_x": 110, "min_y": 190, "max_y": 210,
+                    "range_x": 20, "range_y": 20 },
   "...": "campos da operação"
 }
 ```
@@ -165,7 +169,7 @@ Toda resposta de operação enfileirada é decorada com:
 ```json
 {"op":"hello"}
 ```
-→ `{"status":"ok","protocol":1,"pid":28096,"instance":"...","running":true}`
+→ `{"status":"ok","protocol":1,"pid":4242,"instance":"...","running":true}`
 
 ### `ping`
 

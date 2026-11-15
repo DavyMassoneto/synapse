@@ -1,4 +1,4 @@
-param([string]$TargetPid = '28096')
+param([Parameter(Mandatory = $true)][int]$TargetPid)
 $ErrorActionPreference = 'Stop'
 Add-Type @'
 using System;
@@ -19,7 +19,7 @@ public static class SynapseDesktopState {
 }
 '@
 
-$process = Get-Process -Id ([int]$TargetPid) -ErrorAction SilentlyContinue
+$process = Get-Process -Id $TargetPid -ErrorAction SilentlyContinue
 if (-not $process) { throw "processo $TargetPid nao encontrado" }
 $windowHandle = $process.MainWindowHandle
 $foreground = [SynapseDesktopState]::GetForegroundWindow()

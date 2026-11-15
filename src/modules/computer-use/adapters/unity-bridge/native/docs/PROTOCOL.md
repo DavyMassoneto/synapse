@@ -74,7 +74,7 @@ Resposta (campos v1 preservados + novos):
   "count": 57,
   "returned": 57,
   "screen": { "width": 1794, "height": 971 },
-  "geometry": { "window": {...}, "client": {...}, "caption_offset": 26, "hwnd": 4459650 },
+  "geometry": { "window": {...}, "client": {...}, "caption_offset": 26, "hwnd": 1001 },
   "event_system": true,
   "selected_id": "3f2a1b7c-0a1d",
   "items": [
