@@ -67,6 +67,7 @@ namespace SynapseUnityBridge
         internal static bool Initialize()
         {
             if (Running) return true;
+            FailPendingRequests("bridge-restarted");
             MainThreadStopRequested = false;
             Config = BridgeConfig.Load();
             Instance = Guid.NewGuid().ToString("N");
@@ -186,7 +187,7 @@ namespace SynapseUnityBridge
                 previousCursorY = cursorY;
 
                 int processed = 0;
-                while (processed < 16)
+                while (Running && processed < 16)
                 {
                     PendingRequest request;
                     lock (QueueGate)
@@ -668,6 +669,7 @@ namespace SynapseUnityBridge
             request.Op = op;
             lock (QueueGate)
             {
+                if (!Running) return ErrorJson("bridge-stopped", "bridge is stopping");
                 if (Queue.Count >= Config.MaxQueue) return ErrorJson("queue-full", "bridge busy; nothing was dispatched");
                 Queue.Enqueue(request);
             }
