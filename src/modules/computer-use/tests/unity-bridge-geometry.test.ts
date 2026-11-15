@@ -15,13 +15,16 @@ import {
   COMPUTER_UNITY_BRIDGE_TEST_CLIENT_WIDTH,
   COMPUTER_UNITY_BRIDGE_TEST_CLIENT_X,
   COMPUTER_UNITY_BRIDGE_TEST_CLIENT_Y,
+  COMPUTER_UNITY_BRIDGE_TEST_EXIT_SCRIPT,
   COMPUTER_UNITY_BRIDGE_TEST_FOFOCAS_PIXEL_X,
   COMPUTER_UNITY_BRIDGE_TEST_FOFOCAS_PIXEL_Y,
   COMPUTER_UNITY_BRIDGE_TEST_INSTANCE,
+  COMPUTER_UNITY_BRIDGE_TEST_NODE_EVAL_FLAG,
   COMPUTER_UNITY_BRIDGE_TEST_OTHER_INSTANCE,
   COMPUTER_UNITY_BRIDGE_TEST_PID,
   COMPUTER_UNITY_BRIDGE_TEST_PORT,
   COMPUTER_UNITY_BRIDGE_TEST_TOKEN,
+  COMPUTER_UNITY_BRIDGE_TEST_UNITY_PROBE_EXIT,
   COMPUTER_UNITY_BRIDGE_TEST_WINDOW_ID,
 } from "./unity-bridge-constants"
 import { computerUnityBridgeTestDomainGeometry, computerUnityBridgeTestFacts } from "./unity-bridge-helpers"
@@ -119,8 +122,15 @@ function substitutesCommandPlaceholders(): void {
 }
 
 async function reportsCommandExitCode(): Promise<void> {
-  const result = await computerRunUnityBridgeCommand({ command: "cmd", arguments: ["/c", "exit 20"] }, targetRecord())
-  expect(result.kind).toBe("command-exited")
+  const argumentsValue = [COMPUTER_UNITY_BRIDGE_TEST_NODE_EVAL_FLAG, COMPUTER_UNITY_BRIDGE_TEST_EXIT_SCRIPT]
+  const result = await computerRunUnityBridgeCommand(
+    { command: process.execPath, arguments: argumentsValue },
+    targetRecord(),
+  )
+  expect(result).toMatchObject({
+    kind: "command-exited",
+    exitCode: COMPUTER_UNITY_BRIDGE_TEST_UNITY_PROBE_EXIT,
+  })
 }
 
 async function reportsUnavailableCommand(): Promise<void> {
