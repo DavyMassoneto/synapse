@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Reflection;
-using System.Text;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,45 +14,8 @@ namespace SynapseUnityBridge
         {
             List<UiEntry> entries = CollectSelectables(includeOffscreen);
             SortEntries(entries);
-            GameObject selected = UiGeometry.SelectedGameObject();
-
-            JsonObject response = new JsonObject();
-            response.Str("status", "ok");
-            response.Num("protocol", 2);
-            response.Num("count", entries.Count);
-            response.Num("returned", Math.Min(entries.Count, maxItems));
-            response.Raw("screen", UiJson.ScreenJson().ToString());
-            response.Raw("geometry", BridgeHost.GeometrySnapshot());
-            response.Bool("event_system", EventSystem.current != null);
-            response.Str("selected_id", selected != null ? UiPaths.MakeId(UiPaths.BuildPath(selected.transform), selected.GetInstanceID()) : null);
-
-            StringBuilder items = new StringBuilder("[");
-            int returned = 0;
-            for (int index = 0; index < entries.Count && returned < maxItems; index++)
-            {
-                UiEntry entry = entries[index];
-                if (returned > 0) items.Append(',');
-                items.Append(UiJson.EntryJson(entry).ToString());
-                returned++;
-            }
-            items.Append(']');
-            response.Raw("items", items.ToString());
-
-            if (includeTexts)
-            {
-                List<UiTextEntry> texts = CollectTexts(entries, includeOffscreen, maxTexts);
-                StringBuilder textJson = new StringBuilder("[");
-                for (int index = 0; index < texts.Count; index++)
-                {
-                    if (index > 0) textJson.Append(',');
-                    textJson.Append(UiJson.TextEntryJson(texts[index]).ToString());
-                }
-                textJson.Append(']');
-                response.Raw("texts", textJson.ToString());
-                response.Num("text_count", texts.Count);
-            }
-
-            return response.ToString();
+            List<UiTextEntry> texts = includeTexts ? CollectTexts(entries, includeOffscreen, maxTexts) : null;
+            return UiTreeJson.Render(entries, texts, includeTexts, maxItems);
         }
 
         internal static List<UiEntry> CollectSelectables(bool includeOffscreen)
