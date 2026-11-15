@@ -70,3 +70,5 @@ export const TASK_BOARD_FIRST_NUMBER = 1
 export const TASK_BOARD_BACKSLASHES = /\\/g
 
 export const TASK_BOARD_DRIVE_PREFIX = /^[a-zA-Z]:/
+
+export const TASK_BOARD_CLEAN_LEAD_ONLY = "Somente o lead pode limpar tarefas concluídas."

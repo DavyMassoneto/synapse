@@ -1,5 +1,5 @@
 import { type MemberRecord, type TaskSnapshot } from "#synapse/modules/agent-team"
-import { TEAM_HISTORY_MEMBER_ENTRY, TEAM_HISTORY_TASK_ENTRY } from "../session-history"
+import { TEAM_HISTORY_BOARD_CLEAN_ENTRY, TEAM_HISTORY_MEMBER_ENTRY, TEAM_HISTORY_TASK_ENTRY } from "../session-history"
 import { TEAM_PI_NOTICE_TYPE, TEAM_PI_STEER } from "./constants"
 import { type AgentTeamLeadHost } from "./types"
 
@@ -15,6 +15,10 @@ export class PiTeamLeadOutput {
       { customType: TEAM_PI_NOTICE_TYPE, content: text, display: true },
       { triggerTurn: true, deliverAs: TEAM_PI_STEER },
     )
+  }
+
+  recordTaskCleanup(tasks: TaskSnapshot[]): void {
+    this.pi.appendEntry(TEAM_HISTORY_BOARD_CLEAN_ENTRY, { tasks })
   }
 
   recordTask(task: TaskSnapshot): void {

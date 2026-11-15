@@ -27,3 +27,8 @@ export const TeamHistoryMemberSchema = Type.Object({
   sessionId: Type.String({ minLength: 1 }),
   sessionFile: Type.String({ minLength: 1 }),
 })
+
+export const TeamHistoryBoardCleanSchema = Type.Object(
+  { tasks: Type.Array(TeamHistoryTaskSchema) },
+  { additionalProperties: false },
+)

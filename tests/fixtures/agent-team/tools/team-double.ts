@@ -3,6 +3,7 @@ import {
   type CreateTaskInput,
   type MemberRecord,
   type StartMemberRequest,
+  type TaskCleanOutcome,
   type TaskFilter,
   type TaskOutcome,
   type TaskSnapshot,
@@ -29,6 +30,10 @@ export class ToolsTeamDouble implements AgentTeam {
   createInput?: CreateTaskInput
 
   filter?: TaskFilter
+
+  cleanTasks(_caller: string): TaskCleanOutcome {
+    return { kind: "cleaned", count: 0 }
+  }
 
   async start(request: StartMemberRequest): Promise<TeamStartOutcome> {
     this.startInput = request

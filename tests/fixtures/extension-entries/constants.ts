@@ -28,6 +28,7 @@ export const ENTRIES_REGISTRATIONS: EntryRegistrationExpectation[] = [
   { tools: [], commands: [], events: [], eventCounts: [] },
   {
     tools: [
+      "team_task_clean",
       "subagent",
       "interrupt_agent",
       "list_models",
@@ -47,4 +48,4 @@ export const ENTRIES_REGISTRATIONS: EntryRegistrationExpectation[] = [
 ]
 export const ENTRIES_VIRTUAL_MODEL: EntryVirtualModelExpectation = { provider: "jev", id: "auto" }
 
-export const ENTRIES_TOOL_COUNTS = [1, 0, 0, 0, 9, 1, 1]
+export const ENTRIES_TOOL_COUNTS = [1, 0, 0, 0, 10, 1, 1]

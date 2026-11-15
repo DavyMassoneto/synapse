@@ -41,6 +41,12 @@ export class TeamTestLead implements TeamLead {
     }
   }
 
+  recordTaskCleanup(tasks: TaskSnapshot[]): void {
+    for (const task of tasks) {
+      this.recordTask(task)
+    }
+  }
+
   recordTask(task: TaskSnapshot): void {
     this.tasks.push(task)
   }
