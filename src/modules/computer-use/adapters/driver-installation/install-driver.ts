@@ -1,87 +1,96 @@
 import { randomUUID } from "node:crypto"
 import { accessSync, constants, existsSync, mkdirSync, readdirSync, renameSync, rmSync, statSync } from "node:fs"
 import { join } from "node:path"
-import { COMPUTER_DARWIN, type ComputerPlatform } from "#synapse/modules/computer-use/public/contracts"
+import {
+  COMPUTER_DARWIN,
+  COMPUTER_DRIVER_POLICY_MODE_PINNED,
+  type ComputerDriverPolicy,
+  type ComputerPlatform,
+} from "#synapse/modules/computer-use/public/contracts"
 import { COMPUTER_ARCHIVE_EXTRACTED, computerExtractArchive } from "../archive-extraction"
 import {
-  COMPUTER_ARTIFACT_ABSENT,
   COMPUTER_DRIVER_ARTIFACT_MAX_BYTES,
   COMPUTER_DRIVER_ARTIFACT_REFUSED,
-  COMPUTER_DRIVER_ARTIFACT_VERSION,
-  COMPUTER_DRIVER_RELEASE_BASE_URL,
-  type ComputerPinnedArtifact,
   computerDownloadDriverArtifact,
-  computerPinnedArtifact,
 } from "../artifact-download"
 import { computerRunCommand } from "../command-execution"
+import { ComputerDriverCli } from "../driver-cli"
 import {
   COMPUTER_DRIVER_BINARY_FOLDERS,
-  computerDriverBinaryPath,
+  COMPUTER_DRIVER_INSTALLATION_ABSENT,
+  COMPUTER_DRIVER_INSTALLATION_CONFLICT,
+  COMPUTER_DRIVER_INSTALLATION_CORRUPT,
+  COMPUTER_DRIVER_INSTALLATION_REUSABLE,
+  type ComputerDriverReceipt,
+  computerDriverExecutablePath,
+  computerExecutableDigest,
+  computerVerifyDriverInstallation,
   computerWriteCurrentVersion,
+  computerWriteDriverReceipt,
 } from "../driver-location"
 import { COMPUTER_APP_REGISTERED, computerRegisterMacosApp } from "../macos-app-registration"
 import {
   COMPUTER_INSTALL_APP_DIRECTORY,
-  COMPUTER_INSTALL_DESTINATION_CONFLICT,
-  COMPUTER_INSTALL_DRIVER_UNSUPPORTED,
   COMPUTER_INSTALL_EXTRACTION_DIRECTORY,
   COMPUTER_INSTALL_INVALID_BINARY,
+  COMPUTER_INSTALL_MANIFEST_TIMEOUT_MILLISECONDS,
+  COMPUTER_INSTALL_PUBLISH_MISSING,
+  COMPUTER_INSTALL_REPORTED_VERSION_DIVERGENCE,
   COMPUTER_INSTALL_SDK_DIRECTORY,
   COMPUTER_INSTALL_SINGLE_ENTRY,
   COMPUTER_INSTALL_STAGE_PREFIX,
 } from "./constants"
+import { type ComputerDriverInstallationRequest, type ComputerDriverReceiptPolicy } from "./types"
 
-export async function computerInstallDriver(
-  directory: string,
-  platform: ComputerPlatform,
-  architecture: string,
-): Promise<string> {
-  const lookup = computerPinnedArtifact(platform, architecture)
-  if (lookup.kind === COMPUTER_ARTIFACT_ABSENT) {
-    throw new Error(`${COMPUTER_INSTALL_DRIVER_UNSUPPORTED} ${platform}-${architecture}.`)
+export async function computerInstallDriver(request: ComputerDriverInstallationRequest): Promise<string> {
+  const existing = computerVerifyDriverInstallation(request.directory, request.selection)
+  if (existing.kind === COMPUTER_DRIVER_INSTALLATION_REUSABLE) {
+    return existing.binary
   }
-  const binary = computerDriverBinaryPath(directory, platform, COMPUTER_DRIVER_ARTIFACT_VERSION)
-  if (!existsSync(binary)) {
-    const versionDirectory = join(directory, COMPUTER_DRIVER_ARTIFACT_VERSION)
-    if (existsSync(versionDirectory)) {
-      computerRequirePublishedBinary(directory, platform)
-    }
-    await computerInstallArtifact(directory, platform, lookup.artifact)
+  if (existing.kind !== COMPUTER_DRIVER_INSTALLATION_ABSENT) {
+    throw new Error(existing.message)
   }
-  computerRequireBinary(binary)
-  if (platform === COMPUTER_DARWIN) {
-    await computerRegisterApp(join(directory, COMPUTER_DRIVER_ARTIFACT_VERSION, COMPUTER_INSTALL_APP_DIRECTORY))
+  await computerInstallArtifact(request)
+  const published = computerVerifyDriverInstallation(request.directory, request.selection)
+  if (
+    published.kind === COMPUTER_DRIVER_INSTALLATION_CONFLICT ||
+    published.kind === COMPUTER_DRIVER_INSTALLATION_CORRUPT
+  ) {
+    throw new Error(published.message)
   }
-  computerWriteCurrentVersion(directory, COMPUTER_DRIVER_ARTIFACT_VERSION)
-  return binary
+  if (published.kind === COMPUTER_DRIVER_INSTALLATION_ABSENT) {
+    throw new Error(COMPUTER_INSTALL_PUBLISH_MISSING)
+  }
+  if (request.selection.platform === COMPUTER_DARWIN) {
+    await computerRegisterApp(join(request.directory, request.selection.version, COMPUTER_INSTALL_APP_DIRECTORY))
+  }
+  computerWriteCurrentVersion(request.directory, request.selection.version)
+  return published.binary
 }
 
-async function computerInstallArtifact(
-  directory: string,
-  platform: ComputerPlatform,
-  artifact: ComputerPinnedArtifact,
-): Promise<void> {
-  const stage = join(directory, `${COMPUTER_INSTALL_STAGE_PREFIX}${randomUUID()}`)
+async function computerInstallArtifact(request: ComputerDriverInstallationRequest): Promise<void> {
+  const stage = join(request.directory, `${COMPUTER_INSTALL_STAGE_PREFIX}${randomUUID()}`)
   mkdirSync(stage, { recursive: true })
   try {
-    const extracted = await computerPrepareArtifact(stage, platform, artifact)
-    computerRequireBinary(join(extracted, ...COMPUTER_DRIVER_BINARY_FOLDERS[platform]))
+    const extracted = await computerPrepareArtifact(stage, request)
+    const binary = join(extracted, ...COMPUTER_DRIVER_BINARY_FOLDERS[request.selection.platform])
+    computerRequireBinary(binary)
+    await computerRequireReportedVersion(binary, request.selection.version)
     rmSync(join(extracted, COMPUTER_INSTALL_SDK_DIRECTORY), { recursive: true, force: true })
-    computerPublishVersion(extracted, directory, platform)
+    computerWriteDriverReceipt(extracted, computerInstallationReceipt(request, binary))
+    computerPublishVersion(extracted, request.directory, request.selection.version)
   } finally {
     rmSync(stage, { recursive: true, force: true })
   }
 }
 
-async function computerPrepareArtifact(
-  stage: string,
-  platform: ComputerPlatform,
-  artifact: ComputerPinnedArtifact,
-): Promise<string> {
+async function computerPrepareArtifact(stage: string, request: ComputerDriverInstallationRequest): Promise<string> {
+  const selection = request.selection
   const download = await computerDownloadDriverArtifact({
-    baseUrl: COMPUTER_DRIVER_RELEASE_BASE_URL,
+    url: selection.assetUrl,
     directory: stage,
-    artifact,
+    fileName: selection.assetName,
+    sha256: selection.expectedSha256,
     maxBytes: COMPUTER_DRIVER_ARTIFACT_MAX_BYTES,
   })
   if (download.kind === COMPUTER_DRIVER_ARTIFACT_REFUSED) {
@@ -96,44 +105,78 @@ async function computerPrepareArtifact(
   if (extraction.kind !== COMPUTER_ARCHIVE_EXTRACTED) {
     throw new Error(extraction.message)
   }
-  return computerExtractedRoot(extractionDirectory, platform)
+  return computerExtractedRoot(extractionDirectory, request.selection.platform)
 }
 
-function computerExtractedRoot(stage: string, platform: ComputerPlatform): string {
-  if (existsSync(join(stage, ...COMPUTER_DRIVER_BINARY_FOLDERS[platform]))) {
-    return stage
+function computerExtractedRoot(extractionDirectory: string, platform: ComputerPlatform): string {
+  if (existsSync(join(extractionDirectory, ...COMPUTER_DRIVER_BINARY_FOLDERS[platform]))) {
+    return extractionDirectory
   }
-  const entries = readdirSync(stage)
+  const entries = readdirSync(extractionDirectory)
   const [single] = entries
-  if (entries.length === COMPUTER_INSTALL_SINGLE_ENTRY && single && statSync(join(stage, single)).isDirectory()) {
-    return join(stage, single)
+  if (
+    entries.length === COMPUTER_INSTALL_SINGLE_ENTRY &&
+    single &&
+    statSync(join(extractionDirectory, single)).isDirectory()
+  ) {
+    return join(extractionDirectory, single)
   }
-  return stage
+  return extractionDirectory
 }
 
-function computerPublishVersion(extracted: string, directory: string, platform: ComputerPlatform): void {
-  const versionDirectory = join(directory, COMPUTER_DRIVER_ARTIFACT_VERSION)
-  if (existsSync(versionDirectory)) {
-    computerRequirePublishedBinary(directory, platform)
-  } else {
+function computerPublishVersion(extracted: string, directory: string, version: string): void {
+  const versionDirectory = join(directory, version)
+  if (!existsSync(versionDirectory)) {
     try {
       renameSync(extracted, versionDirectory)
     } catch (error) {
-      if (existsSync(versionDirectory)) {
-        computerRequirePublishedBinary(directory, platform)
-      } else {
+      if (!existsSync(versionDirectory)) {
         throw error
       }
     }
   }
 }
 
-function computerRequirePublishedBinary(directory: string, platform: ComputerPlatform): void {
-  const binary = computerDriverBinaryPath(directory, platform, COMPUTER_DRIVER_ARTIFACT_VERSION)
-  if (!existsSync(binary)) {
-    throw new Error(COMPUTER_INSTALL_DESTINATION_CONFLICT)
+function computerInstallationReceipt(
+  request: ComputerDriverInstallationRequest,
+  binary: string,
+): ComputerDriverReceipt {
+  const selection = request.selection
+  return {
+    version: selection.version,
+    tag: selection.tag,
+    releaseId: selection.releaseId,
+    assetName: selection.assetName,
+    expectedSha256: selection.expectedSha256,
+    checksumSource: selection.checksumSource,
+    platform: selection.platform,
+    architecture: selection.architecture,
+    executable: computerDriverExecutablePath(selection.platform),
+    executableSha256: computerExecutableDigest(binary),
+    policy: computerReceiptPolicy(request.policy),
   }
-  computerRequireBinary(binary)
+}
+
+export function computerReceiptPolicy(policy: ComputerDriverPolicy): ComputerDriverReceiptPolicy {
+  if (policy.mode === COMPUTER_DRIVER_POLICY_MODE_PINNED) {
+    return { mode: policy.mode, reason: policy.reason }
+  }
+  return { mode: policy.mode }
+}
+
+async function computerRequireReportedVersion(binary: string, version: string): Promise<void> {
+  const manifest = await new ComputerDriverCli({
+    command: binary,
+    arguments: [],
+    environment: process.env,
+    timeoutMilliseconds: COMPUTER_INSTALL_MANIFEST_TIMEOUT_MILLISECONDS,
+    windowsHide: true,
+  }).manifest()
+  if (manifest.binary_version !== version) {
+    throw new Error(
+      `${COMPUTER_INSTALL_REPORTED_VERSION_DIVERGENCE} reportada ${manifest.binary_version}, selecionada ${version}.`,
+    )
+  }
 }
 
 function computerRequireBinary(binary: string): void {

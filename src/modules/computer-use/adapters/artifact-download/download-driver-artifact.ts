@@ -5,36 +5,31 @@ import {
   COMPUTER_DRIVER_ARTIFACT_CHECKSUM_VALID,
   COMPUTER_DRIVER_ARTIFACT_DOWNLOADED,
   COMPUTER_DRIVER_ARTIFACT_FILE_MODE,
-  COMPUTER_DRIVER_ARTIFACT_NAME_PREFIX,
+  COMPUTER_DRIVER_ARTIFACT_INVALID_NAME,
   COMPUTER_DRIVER_ARTIFACT_REFUSED,
-  COMPUTER_DRIVER_ARTIFACT_VERSION,
-  COMPUTER_DRIVER_TAG_PREFIX,
 } from "./constants"
 import { computerDownloadArtifactBody } from "./download"
-import { type ComputerPinnedArtifact } from "./targets"
+import { isComputerArtifactFileNameSafe } from "./predicates"
 import { type ComputerArtifactDownloadResult, type ComputerArtifactRequest } from "./types"
 
 export async function computerDownloadDriverArtifact(
   request: ComputerArtifactRequest,
 ): Promise<ComputerArtifactDownloadResult> {
-  const url = computerArtifactUrl(request.baseUrl, request.artifact)
-  const body = await computerDownloadArtifactBody(url, request.maxBytes)
+  if (!isComputerArtifactFileNameSafe(request.fileName)) {
+    return { kind: COMPUTER_DRIVER_ARTIFACT_REFUSED, message: COMPUTER_DRIVER_ARTIFACT_INVALID_NAME }
+  }
+  const body = await computerDownloadArtifactBody(request.url, request.maxBytes)
   if (body.kind === COMPUTER_DRIVER_ARTIFACT_REFUSED) {
     return body
   }
-  const checksum = computerVerifyArtifactChecksum(body.bytes, request.artifact.sha256)
+  const checksum = computerVerifyArtifactChecksum(body.bytes, request.sha256)
   if (checksum.kind !== COMPUTER_DRIVER_ARTIFACT_CHECKSUM_VALID) {
     return checksum
   }
-  const archive = computerWriteArtifactFile(request.directory, request.artifact.fileName, body.bytes)
+  const archive = computerWriteArtifactFile(request.directory, request.fileName, body.bytes)
   return { kind: COMPUTER_DRIVER_ARTIFACT_DOWNLOADED, archive }
 }
 
-function computerArtifactUrl(baseUrl: string, artifact: ComputerPinnedArtifact): string {
-  const release = `${COMPUTER_DRIVER_TAG_PREFIX}${COMPUTER_DRIVER_ARTIFACT_VERSION}`
-  const file = `${COMPUTER_DRIVER_ARTIFACT_NAME_PREFIX}${COMPUTER_DRIVER_ARTIFACT_VERSION}-${artifact.fileName}`
-  return `${baseUrl}/${release}/${file}`
-}
 function computerWriteArtifactFile(directory: string, fileName: string, bytes: Uint8Array): string {
   const archive = join(directory, fileName)
   mkdirSync(directory, { recursive: true })

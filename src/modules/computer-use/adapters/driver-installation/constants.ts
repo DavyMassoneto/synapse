@@ -4,12 +4,15 @@ export const COMPUTER_INSTALL_EXTRACTION_DIRECTORY = "extracted"
 
 export const COMPUTER_INSTALL_INVALID_BINARY = "O pacote do cua-driver não contém o executável esperado."
 
-export const COMPUTER_INSTALL_DESTINATION_CONFLICT = "O destino do cua-driver existe sem um executável válido."
-
 export const COMPUTER_INSTALL_SDK_DIRECTORY = "sdk"
 
 export const COMPUTER_INSTALL_APP_DIRECTORY = "CuaDriver.app"
 
 export const COMPUTER_INSTALL_SINGLE_ENTRY = 1
 
-export const COMPUTER_INSTALL_DRIVER_UNSUPPORTED = "Não há build do cua-driver fixado para"
+export const COMPUTER_INSTALL_PUBLISH_MISSING = "A instalação gerenciada do cua-driver não foi publicada."
+
+export const COMPUTER_INSTALL_REPORTED_VERSION_DIVERGENCE =
+  "A versão reportada pelo cua-driver extraído difere da release selecionada; a instalação foi recusada."
+
+export const COMPUTER_INSTALL_MANIFEST_TIMEOUT_MILLISECONDS = 30000
