@@ -7,6 +7,7 @@ import {
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type MemberSessions, type TeamClock, type TeamLead } from "#synapse/modules/agent-team"
+import { type SupervisedShellFactory } from "#synapse/modules/agent-team/public/supervised-shell"
 import { type AgentTeamContext } from "./lead-session"
 
 import { type TeamRegisteredTool } from "./tools"
@@ -43,3 +44,5 @@ export interface AgentTeamToolHost {
 }
 
 export type AgentTeamToolDefinition = Omit<TeamRegisteredTool, "renderCall" | "renderResult">
+
+export type AgentTeamShellFactory = SupervisedShellFactory

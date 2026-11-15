@@ -3,6 +3,7 @@ import { join } from "node:path"
 import { SessionManager } from "@earendil-works/pi-coding-agent"
 import { vi } from "vitest"
 import { type TeamMemberSessionRequest } from "#synapse/integration/pi/agent-team"
+import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import { fixtureModel } from "../context"
 import {
   MEMBER_CONFIG_CONTEXT_WINDOW,
@@ -16,6 +17,7 @@ import { type MemberConfigFixture } from "./types"
 export function memberConfigSessionRequest(fixture: MemberConfigFixture): TeamMemberSessionRequest {
   const model = fixtureModel(MEMBER_CONFIG_MODEL_PROVIDER, MEMBER_CONFIG_MODEL_ID, MEMBER_CONFIG_CONTEXT_WINDOW)
   return {
+    shell: createSupervisedShell(),
     cwd: fixture.cwd,
     projectTrusted: false,
     instructions: "",

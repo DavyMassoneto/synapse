@@ -1,0 +1,15 @@
+$ShellLauncherSources = @('constants.cs', 'native.cs', 'streaming.cs', 'command-line.cs', 'launcher.cs', 'cleanup.cs', 'process-launch.cs', 'process-execution.cs') | ForEach-Object { Join-Path $PSScriptRoot $_ }
+$ShellFrameHeaderBytes = 4
+$ShellFrameMaxBytes = 1048576
+$ShellFrameIncompleteHeader = 'Incomplete shell frame header.'
+$ShellFrameTooLarge = 'Shell frame exceeds byte limit.'
+$ShellFrameIncompleteBody = 'Incomplete shell frame body.'
+$ShellFieldsRequired = 'arguments,cwd,environment,executable'
+$ShellFieldsWithInput = 'arguments,cwd,environment,executable,input'
+$ShellInvalidFields = 'Invalid shell specification fields.'
+$ShellInvalidTypes = 'Invalid shell specification types.'
+$ShellInvalidArgument = 'Invalid shell argument.'
+$ShellEnvironmentFields = 'name,value'
+$ShellEnvironmentInvalidFields = 'Invalid environment fields.'
+$ShellEnvironmentInvalidTypes = 'Invalid environment types.'
+$ShellInvalidInput = 'Invalid shell stdin.'

@@ -50,3 +50,12 @@ export const TEAM_TEST_REASSIGN_REMOVE_RESERVATION = "lead remove reserva sem in
 export const TEAM_TEST_REASSIGN_MEMBER_MESSAGE = "Só o lead pode reatribuir tarefas"
 
 export const TEAM_TEST_REASSIGN_OWNER_MESSAGE = "O agente não existe nesta equipe: absent"
+
+export const SHELL_WIRE_TEST_CREATED = "status recusa created duplicado"
+export const SHELL_WIRE_TEST_RELEASE = "status recusa exit antes do release"
+export const SHELL_WIRE_TEST_INVALID = "status recusa byte inválido"
+export const SHELL_WIRE_TEST_EOF = "status recusa EOF em frame parcial"
+
+export const SHELL_LEASE_INVALID_STOP_TITLE = "wire inválido não impede kill e finalização"
+export const SHELL_LEASE_OUTPUT_STOP_TITLE = "erro de saída não impede kill e finalização"
+export const SHELL_LEASE_TEST_OUTPUT_FAILURE = "output failed"

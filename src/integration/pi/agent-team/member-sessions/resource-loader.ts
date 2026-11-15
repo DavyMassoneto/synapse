@@ -1,5 +1,6 @@
 import { DefaultResourceLoader } from "@earendil-works/pi-coding-agent"
 import { TEAM_PI_MEMBER_EXTENSION_FAILURE } from "../extension-lifecycle"
+import { updateSupervisedBashTool } from "../supervised-bash"
 import { readCanonicalMemberExclusions } from "./read-exclusions"
 import { resolveMemberResources } from "./resolve-resources"
 import { selectMemberExtensionPaths } from "./select-paths"
@@ -30,6 +31,9 @@ export class TeamMemberResourceLoader extends DefaultResourceLoader {
     this.getExtensions().runtime.invalidate()
     this.paths.splice(0, this.paths.length, ...paths)
     await super.reload()
+    if (this.request.tools && this.request.shell) {
+      updateSupervisedBashTool(this.request, this.getExtensions())
+    }
     const errors = this.getExtensions().errors
     if (errors.length > 0) {
       this.getExtensions().runtime.invalidate()

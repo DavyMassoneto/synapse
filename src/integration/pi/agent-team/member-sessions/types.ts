@@ -3,14 +3,20 @@ import {
   type DefaultPackageManager,
   type SessionManager,
   type SettingsManager,
+  type ToolDefinition,
 } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules/agent-team"
+import {
+  type SupervisedShellFactory,
+  type SupervisedShellService,
+} from "#synapse/modules/agent-team/public/supervised-shell"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { type AgentTeamContext } from "../lead-session"
 import { type SelectedMemberModel } from "../model-selection"
 import { type TeamRegisteredTool } from "../tools"
 
 export interface TeamMemberSessionDependencies {
+  shell: SupervisedShellFactory
   context(): AgentTeamContext
   tools(team: AgentTeam, caller: string): TeamRegisteredTool[]
 }
@@ -22,6 +28,7 @@ export interface TeamMemberSessionRequest {
   instructions: string
   tools: TeamRegisteredTool[]
   projectTrusted: boolean
+  shell: SupervisedShellService
 }
 
 export interface TeamCreatedMemberSession {
@@ -53,6 +60,8 @@ export interface TeamRecordSource {
 }
 
 export interface TeamMemberResourceRequest {
+  tools?: ToolDefinition[]
+  shell?: SupervisedShellService
   cwd: string
   agentDirectory: string
   instructions: string

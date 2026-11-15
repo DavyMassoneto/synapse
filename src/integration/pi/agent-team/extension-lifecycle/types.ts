@@ -11,6 +11,7 @@ export interface TeamMemberShutdownEmitter {
 }
 
 export interface TeamMemberExtensionLifetime {
+  stopShells?(): Promise<void>
   ensureHealthy(): void
   close(): Promise<void>
 }

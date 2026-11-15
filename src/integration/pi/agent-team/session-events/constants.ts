@@ -19,3 +19,7 @@ export const TEAM_PI_MEMBER_SETTLED = "agent_settled"
 export const TEAM_PI_MEMBER_ACTIVITY_SEPARATOR = ": "
 
 export const TEAM_PI_MEMBER_DETAIL_SEPARATOR = " "
+
+export const TEAM_PI_ABORT_SUCCEEDED = "succeeded"
+export const TEAM_PI_ABORT_FAILED = "failed"
+export const TEAM_PI_ABORT_FAILURE = "Falha ao interromper a sessão do membro."
