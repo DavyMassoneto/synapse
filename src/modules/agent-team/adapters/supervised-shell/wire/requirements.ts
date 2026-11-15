@@ -2,6 +2,7 @@ import { execFile } from "node:child_process"
 import { constants } from "node:fs"
 import { access } from "node:fs/promises"
 import {
+  SHELL_PROBE_DIAGNOSTIC_PREFIX,
   SHELL_REQUIREMENT_ADD_TYPE,
   SHELL_REQUIREMENT_ADD_TYPE_MARKER,
   SHELL_REQUIREMENT_POWERSHELL,
@@ -11,6 +12,7 @@ import {
   SHELL_REQUIREMENT_PS,
   SHELL_WIRE_UTF8,
 } from "./constants"
+import { formatShellProbeDiagnostic } from "./probe-diagnostic"
 import {
   type ShellRequirementError,
   type ShellRequirementOptions,
@@ -57,11 +59,16 @@ function checkedWindowsShell(
   reject: ShellRequirementReject,
   error: ShellRequirementError,
   stdout: string,
+  stderr: string,
 ): void {
   if (error && "code" in error && (error.code === "ENOENT" || error.code === "EACCES")) {
     reject(new Error(SHELL_REQUIREMENT_POWERSHELL))
   } else if (error || stdout.trim() !== SHELL_REQUIREMENT_ADD_TYPE_MARKER) {
-    reject(new Error(SHELL_REQUIREMENT_ADD_TYPE))
+    reject(
+      new Error(
+        `${SHELL_REQUIREMENT_ADD_TYPE}${SHELL_PROBE_DIAGNOSTIC_PREFIX}${formatShellProbeDiagnostic(error, stdout, stderr)}`,
+      ),
+    )
   } else {
     resolve()
   }

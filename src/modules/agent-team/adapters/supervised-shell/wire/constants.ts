@@ -49,3 +49,6 @@ export const SHELL_WIRE_EVENT_CLOSE = "close"
 export const SHELL_WIRE_EVENT_ABORT = "abort"
 export const SHELL_WIRE_UTF8 = "utf8"
 export const SHELL_WIRE_FATAL_UTF8 = "utf-8"
+
+export const SHELL_PROBE_DIAGNOSTIC_BYTES = 2048
+export const SHELL_PROBE_DIAGNOSTIC_PREFIX = " Diagnóstico do probe: "

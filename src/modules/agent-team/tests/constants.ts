@@ -99,3 +99,9 @@ export const SHELL_FAILED_CREATE_TEST_WAIT_MS = 10000
 export const SHELL_FAILED_CREATE_TRACKED_TITLE = "criação falha preserva ownership incerto e falha em stops posteriores"
 export const SHELL_FAILED_CREATE_RETIRED_TITLE = "criação falha com cleanup comprovado não permanece no registro"
 export const SHELL_FAILED_CREATE_PRESPAWN_TITLE = "falha antes de spawn não deixa admissão pendente"
+
+export const SHELL_PROBE_DIAGNOSTIC_TEST_TITLE = "diagnóstico preserva saída local sem promessa de redação"
+export const SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE = "diagnóstico limita bytes UTF-8 sem quebrar caracteres"
+export const SHELL_PROBE_DIAGNOSTIC_SUCCESS_TITLE = "diagnóstico preserva código e stderr inclusive marcador inválido"
+export const SHELL_PROBE_DIAGNOSTIC_PRIVATE_TEXT =
+  "Add-Type failed C:\\Users\\Person\\secret.ps1 /home/person/secret.ps1 user@example.invalid token=private-token \u001b[31m"
