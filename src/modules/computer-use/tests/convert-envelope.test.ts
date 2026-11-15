@@ -77,4 +77,50 @@ describe("computerConvertEnvelope", () => {
 
     expect(envelope.message).toBe("")
   })
+
+  test("mantém envelope antigo sem campos modernos", () => {
+    const input: ComputerRawEnvelope = {
+      content: [],
+      structuredContent: {
+        windows: [{ app_name: "Editor", pid: 10, window_id: 20, is_on_screen: true, title: "Documento", z_index: 1 }],
+        elements: [{ element_index: 0, role: "AXWindow", element_token: "snapshot-0" }],
+        tree_markdown: 'AXWindow "Documento"',
+      },
+    }
+
+    const envelope = computerConvertEnvelope(input)
+
+    expect(envelope.message).toBe("")
+    expect(envelope.isError).toBe(false)
+    expect(envelope.tree).toBe('AXWindow "Documento"')
+    expect(envelope.elements).toEqual([
+      { index: 0, role: "AXWindow", token: "snapshot-0", app: "Editor", bounds: { kind: "bounds-absent" } },
+    ])
+  })
+
+  test("junta mensagens de múltiplas partes de texto", () => {
+    const input: ComputerRawEnvelope = {
+      content: [
+        { type: "text", text: "primeira mensagem" },
+        { type: "text", text: "segunda mensagem" },
+      ],
+      structuredContent: { verified: false, effect: "unverifiable" },
+    }
+
+    const envelope = computerConvertEnvelope(input)
+
+    expect(envelope.message).toBe("primeira mensagem\nsegunda mensagem")
+  })
+
+  test("reconhece recusa estruturada sem effect", () => {
+    const input: ComputerRawEnvelope = {
+      content: [],
+      structuredContent: { refusal: { code: "not_supported", message: "recusado pelo driver" } },
+    }
+
+    const envelope = computerConvertEnvelope(input)
+
+    expect(envelope.isError).toBe(true)
+    expect(envelope.message).toBe("recusado pelo driver")
+  })
 })
