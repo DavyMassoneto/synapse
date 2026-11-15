@@ -98,13 +98,17 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
     signal?: AbortSignal,
   ): Promise<ComputerDriverCallResult> {
     const lookup = computerUnityBridgeTargetLookup(argumentsValue)
+    if (!lookup.target) {
+      this.captures.clear()
+      return result
+    }
+    const discovery = await computerUnityBridgeEnsureBridge(this.configuration, this.attachment, lookup.target, signal)
     const measurement = computerUnityBridgeCaptureMeasurement(result)
-    if (!lookup.target || !measurement.image) {
+    if (!measurement.image) {
       this.captures.clear()
       return result
     }
     const room = computerUnityBridgeRoom(name, argumentsValue, result)
-    const discovery = await computerUnityBridgeEnsureBridge(this.configuration, this.attachment, lookup.target, signal)
     const captured = await computerUnityBridgeCapturedWindow(
       lookup.target,
       measurement.image,
