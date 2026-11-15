@@ -64,5 +64,13 @@ export interface TaskRefused {
 export type TaskOutcome = TaskAccepted | TaskRefused
 
 export interface TaskJournal {
+  recordTaskCleanup(tasks: TaskSnapshot[]): void
   recordTask(task: TaskSnapshot): void
 }
+
+export interface TaskCleaned {
+  kind: "cleaned"
+  count: number
+}
+
+export type TaskCleanOutcome = TaskCleaned | TaskRefused

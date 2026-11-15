@@ -17,6 +17,7 @@ export function createPiTeamLeadSession(pi: AgentTeamLeadHost): PiTeamLeadSessio
     modelUse: model.modelUse.bind(model),
     recordMessage: model.recordMessage.bind(model),
     deliver: output.deliver.bind(output),
+    recordTaskCleanup: output.recordTaskCleanup.bind(output),
     recordTask: output.recordTask.bind(output),
     recordMember: output.recordMember.bind(output),
   }

@@ -1,18 +1,24 @@
 import {
   type CreateTaskInput,
   TASK_ACCEPTED,
+  TASK_CLEANED,
+  TASK_COMPLETED,
   TASK_DELETED,
   TASK_PENDING,
   TASK_REFUSED,
+  type TaskCleanOutcome,
   type TaskFilter,
   type TaskJournal,
   type TaskOutcome,
   type TaskSnapshot,
   type TaskView,
+  TEAM_LEAD_NAME,
   type UpdateTaskInput,
 } from "#synapse/modules/agent-team/public/contracts"
 import { taskBoardResolveBlockers } from "./blockers"
+import { taskBoardCleanPlan } from "./clean-plan"
 import {
+  TASK_BOARD_CLEAN_LEAD_ONLY,
   TASK_BOARD_DELETED_MESSAGE,
   TASK_BOARD_FIRST_NUMBER,
   TASK_BOARD_ID_PREFIX,
@@ -92,6 +98,26 @@ export class TaskBoard {
 
   update(caller: string, input: UpdateTaskInput): TaskOutcome {
     return this.execute(this.updateView.bind(this, caller, input))
+  }
+
+  clean(caller: string): TaskCleanOutcome {
+    if (caller !== TEAM_LEAD_NAME) {
+      return { kind: TASK_REFUSED, message: TASK_BOARD_CLEAN_LEAD_ONLY }
+    }
+    let count = 0
+    for (const task of this.tasks) {
+      if (task.status === TASK_COMPLETED) {
+        count++
+      }
+    }
+    if (count > 0) {
+      const updates = taskBoardCleanPlan(this.tasks)
+      this.journal.recordTaskCleanup(updates.map(taskBoardCopySnapshot))
+      for (const task of updates) {
+        this.store(task)
+      }
+    }
+    return { kind: TASK_CLEANED, count }
   }
 
   private execute(action: TaskBoardAction): TaskOutcome {

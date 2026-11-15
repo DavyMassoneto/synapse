@@ -63,3 +63,36 @@ export const TEAM_HISTORY_INVALID_ENTRIES: SessionEntry[] = [
     data: { id: "t" },
   },
 ]
+
+export const TEAM_HISTORY_CLEAN_ENTRIES: SessionEntry[] = [
+  {
+    type: "custom",
+    id: "clean",
+    parentId: null,
+    timestamp: "2025-01-01",
+    customType: "agent-team-board-clean",
+    data: {
+      tasks: [
+        {
+          id: "task-1",
+          revision: 4,
+          subject: "completed",
+          description: "done",
+          status: "deleted",
+          blockedBy: [],
+          writeScopes: [],
+        },
+        {
+          id: "task-2",
+          revision: 2,
+          subject: "open",
+          description: "pending",
+          status: "pending",
+          blockedBy: [],
+          writeScopes: [],
+        },
+      ],
+    },
+  },
+]
+export const TEAM_HISTORY_CLEAN_TEST = "lê lote único de limpeza com tombstone e revisão aberta"

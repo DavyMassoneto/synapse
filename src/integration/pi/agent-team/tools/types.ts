@@ -67,6 +67,7 @@ export type TeamToolName =
   | "team_task_list"
   | "team_task_get"
   | "team_task_update"
+  | "team_task_clean"
 
 export type TeamRegisteredTool = Omit<
   ToolDefinition<TSchema, TeamToolDetails, never>,
@@ -79,6 +80,8 @@ export interface TeamToolIdentity {
 }
 
 export interface TeamToolRegistration<T extends TSchema> {
+  exposure?: NonNullable<ToolDefinition<T, TeamToolDetails, never>["exposure"]>
+  executionMode?: NonNullable<ToolDefinition<T, TeamToolDetails, never>["executionMode"]>
   name: TeamToolName
   description: string
   parameters: T

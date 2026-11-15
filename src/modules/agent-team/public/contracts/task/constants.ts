@@ -25,3 +25,5 @@ export const TASK_DELETE = "delete"
 export const TASK_ACCEPTED = "accepted"
 
 export const TASK_REFUSED = "refused"
+
+export const TASK_CLEANED = "cleaned"

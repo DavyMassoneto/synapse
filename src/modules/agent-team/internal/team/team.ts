@@ -4,6 +4,7 @@ import {
   type MemberRecord,
   type MemberSessions,
   TASK_ACCEPTED,
+  type TaskCleanOutcome,
   type TaskOutcome,
   type TaskSnapshot,
   type TeamClock,
@@ -83,6 +84,12 @@ export class Team implements AgentTeam {
     if (!this.closed) {
       this.lead.show(this.overview())
     }
+  }
+
+  cleanTasks(caller: string): TaskCleanOutcome {
+    const result = this.board.clean(caller)
+    this.refresh()
+    return result
   }
 
   createTask(input: CreateTaskInput): TaskOutcome {

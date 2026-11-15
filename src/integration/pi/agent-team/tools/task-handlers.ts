@@ -1,4 +1,4 @@
-import { type AgentTeam, type CreateTaskInput, type TaskFilter } from "#synapse/modules/agent-team"
+import { type AgentTeam, type CreateTaskInput, TASK_REFUSED, type TaskFilter } from "#synapse/modules/agent-team"
 import { translateTeamTaskUpdate } from "./task-input"
 import { teamAcceptedOrRefusedOutput, teamTextOutput } from "./tool-output"
 import {
@@ -17,6 +17,11 @@ export class TeamTaskHandlers {
   constructor(team: AgentTeam, caller: string) {
     this.team = team
     this.caller = caller
+  }
+
+  async clean(): Promise<TeamToolOutput> {
+    const result = this.team.cleanTasks(this.caller)
+    return teamTextOutput(JSON.stringify(result), result.kind === TASK_REFUSED)
   }
 
   async create(_id: string, input: TeamCreateTaskInput): Promise<TeamToolOutput> {

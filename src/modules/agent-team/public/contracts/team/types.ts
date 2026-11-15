@@ -1,6 +1,7 @@
 import { type MemberRecord, type OpenedMember, type OpenMemberRequest } from "../member"
 import {
   type CreateTaskInput,
+  type TaskCleanOutcome,
   type TaskFilter,
   type TaskJournal,
   type TaskOutcome,
@@ -114,6 +115,7 @@ export type TeamInterruptOutcome = TeamInterruptRequested | TeamRefused | TeamFa
 export type TeamClock = () => string
 
 export interface AgentTeam {
+  cleanTasks(caller: string): TaskCleanOutcome
   start(request: StartMemberRequest): Promise<TeamStartOutcome>
   restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void>
   send(sender: string, target: string, message: string): TeamOutcome

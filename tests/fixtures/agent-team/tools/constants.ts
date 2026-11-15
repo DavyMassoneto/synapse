@@ -14,5 +14,11 @@ export const TEAM_FIXTURE_TASK: TaskView = {
   writeScopeWarnings: [],
 }
 
-export const TEAM_FIXTURE_NINE_TOOLS_TITLE = "registra as nove ferramentas do lead"
 export const TEAM_FIXTURE_REMOVED_WAIT_NAME = "wait_agent"
+
+export const TEAM_FIXTURE_CLEAN_TOOL = "team_task_clean"
+export const TEAM_FIXTURE_CLEAN_EXPOSURE = "model-only"
+export const TEAM_FIXTURE_CLEAN_EXECUTION = "sequential"
+export const TEAM_FIXTURE_CLEAN_POLICY_TEST = "limpeza exclusiva do lead é model-only e sequencial"
+
+export const TEAM_FIXTURE_TEN_TOOLS_TITLE = "registra as dez ferramentas do lead"

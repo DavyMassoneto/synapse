@@ -50,3 +50,10 @@ export const TEAM_TOOL_SUBJECT_FIELD = "subject"
 export const TEAM_TOOL_DESCRIPTION_FIELD = "description"
 
 export const TEAM_TOOL_OWNER_FIELD = "owner"
+
+export const TEAM_TOOL_TASK_CLEAN = "team_task_clean"
+export const TEAM_TOOL_TASK_CLEAN_DESCRIPTION =
+  "Remove do quadro somente tarefas concluídas e preserva dependências satisfeitas. Exclusiva do lead."
+
+export const TEAM_TOOL_MODEL_ONLY = "model-only"
+export const TEAM_TOOL_SEQUENTIAL = "sequential"

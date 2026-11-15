@@ -1,8 +1,8 @@
 import { describe, expect, test } from "vitest"
 import { leadTools, memberTools, TeamAgentHandlers, TeamTaskHandlers } from "#synapse/integration/pi/agent-team"
 import {
-  TEAM_FIXTURE_NINE_TOOLS_TITLE,
   TEAM_FIXTURE_REMOVED_WAIT_NAME,
+  TEAM_FIXTURE_TEN_TOOLS_TITLE,
   type TeamToolsSut,
   ToolsTeamDouble,
 } from "../fixtures"
@@ -143,12 +143,14 @@ function rejectLeadOnly(): void {
   const tools = memberTools(sut.team, "worker")
   expect(tools.map((tool) => tool.name)).not.toContain(TEAM_FIXTURE_REMOVED_WAIT_NAME)
   expect(tools.map((tool) => tool.name)).not.toContain("subagent")
+  expect(tools.map((tool) => tool.name)).not.toContain("team_task_clean")
   expect(tools.map((tool) => tool.name)).not.toContain("interrupt_agent")
 }
 
 function registeredTools(): void {
   const sut = makeSut()
   expect(sut.tools.map((tool) => tool.name)).toEqual([
+    "team_task_clean",
     "subagent",
     "interrupt_agent",
     "list_models",
@@ -162,7 +164,7 @@ function registeredTools(): void {
 }
 
 function registerTests(): void {
-  test(TEAM_FIXTURE_NINE_TOOLS_TITLE, registeredTools)
+  test(TEAM_FIXTURE_TEN_TOOLS_TITLE, registeredTools)
   test("inicia membro", startMember)
   test("recusa início como erro", refuseStart)
   test("mensagem usa remetente da ferramenta", sendMember)
