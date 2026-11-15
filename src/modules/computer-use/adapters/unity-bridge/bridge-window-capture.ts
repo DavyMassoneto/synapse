@@ -1,4 +1,3 @@
-import { type ComputerUnityBridgeConfiguration } from "#synapse/modules/computer-use/public/contracts"
 import {
   type ComputerUnityBridgeCapture,
   type ComputerUnityBridgeCapturedWindow,
@@ -12,18 +11,16 @@ import {
   COMPUTER_UNITY_BRIDGE_TREE_MAX_TEXTS,
   COMPUTER_UNITY_BRIDGE_TREE_TIMEOUT_MILLISECONDS,
 } from "./constants"
-import { computerDiscoverUnityBridge } from "./discovery"
-import { type ComputerUnityBridgeReady } from "./handshake"
+import { type ComputerUnityBridgeDiscovery, type ComputerUnityBridgeReady } from "./handshake"
 import { type ComputerUnityBridgeSize, type ComputerUnityBridgeTarget } from "./types"
 
 export async function computerUnityBridgeCapturedWindow(
-  configuration: ComputerUnityBridgeConfiguration,
   target: ComputerUnityBridgeTarget,
   image: ComputerUnityBridgeSize,
   room: number,
   offset: number,
+  discovery: ComputerUnityBridgeDiscovery,
 ): Promise<ComputerUnityBridgeCapturedWindow> {
-  const discovery = await computerDiscoverUnityBridge(configuration, target)
   const capture: ComputerUnityBridgeCapture = { target, image, elements: [], generation: 0 }
   if (discovery.kind !== "bridge-ready") {
     return { capture, elements: [] }

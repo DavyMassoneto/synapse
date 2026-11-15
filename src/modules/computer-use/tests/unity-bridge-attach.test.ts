@@ -1,5 +1,6 @@
 import { setTimeout } from "node:timers/promises"
 import { expect, test } from "vitest"
+import { COMPUTER_UNITY_BRIDGE_PROTOCOL_V2 } from "#synapse/modules/computer-use/adapters/unity-bridge"
 import { COMPUTER_DRIVER_DISCONNECTED } from "#synapse/modules/computer-use/public/contracts"
 import {
   computerUnityBridgeTestAttachFailed,
@@ -14,6 +15,7 @@ import {
   computerUnityBridgeTestFofocasArguments,
 } from "./unity-bridge-helpers"
 import { computerUnityBridgeTestOptions, computerUnityBridgeTestRefusedClick } from "./unity-bridge-support"
+import { computerUnityBridgeTestTree } from "./unity-bridge-tree-support"
 
 const CAPTURE_TOOL = "get_window_state"
 
@@ -86,6 +88,30 @@ async function refusesUnityTargetWhenAttachFails(): Promise<void> {
   }
 }
 
+async function capturesAfterAttachPublishesHandshake(): Promise<void> {
+  const options = optionsWithoutBridge()
+  options.protocol = COMPUTER_UNITY_BRIDGE_PROTOCOL_V2
+  options.tree = computerUnityBridgeTestTree()
+  options.attachCommand = true
+  options.commands = [computerUnityBridgeTestSucceeded(), computerUnityBridgeTestSucceeded()]
+  const harness = await ComputerUnityBridgeTestHarness.create(options)
+  try {
+    const pending = harness.driver.call(CAPTURE_TOOL, computerUnityBridgeTestCaptureArguments())
+    await setTimeout(ATTACH_DELAY_MILLISECONDS)
+    harness.publishHandshake()
+    const envelope = computerUnityBridgeTestEnvelope(await pending)
+    expect(envelope.elements).toHaveLength(3)
+    expect(harness.commands.calls).toHaveLength(2)
+    const again = computerUnityBridgeTestEnvelope(
+      await harness.driver.call(CAPTURE_TOOL, computerUnityBridgeTestCaptureArguments()),
+    )
+    expect(again.elements).toHaveLength(3)
+    expect(harness.commands.calls).toHaveLength(2)
+  } finally {
+    await harness.dispose()
+  }
+}
+
 async function routesAfterAttachPublishesHandshake(): Promise<void> {
   const options = optionsWithoutBridge()
   options.attachCommand = true
@@ -148,6 +174,8 @@ test("alvo que não é Unity mantém a rota nativa", keepsNativeRouteForTargetTh
 test("alvo Unity sem bridge e sem anexo gera limitação", refusesUnityTargetWithoutBridge)
 
 test("falha do anexo gera limitação", refusesUnityTargetWhenAttachFails)
+
+test("captura anexa a bridge e mescla elementos após o handshake", capturesAfterAttachPublishesHandshake)
 
 test("anexo publicado roteia pela bridge depois de nova captura", routesAfterAttachPublishesHandshake)
 

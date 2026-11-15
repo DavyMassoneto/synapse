@@ -15,6 +15,7 @@ import {
   computerUnityBridgeRoom,
 } from "./bridge-capture-merge"
 import { ComputerUnityBridgeConnection } from "./bridge-connection"
+import { computerUnityBridgeAwaitBridge, computerUnityBridgeEnsureBridge } from "./bridge-discovery-flow"
 import { computerUnityBridgeInputPlan } from "./bridge-input"
 import {
   computerUnityBridgeActionTransportResult,
@@ -25,18 +26,15 @@ import { computerUnityBridgeTargetKey, computerUnityBridgeTargetLookup } from ".
 import { computerUnityBridgeCapturedWindow } from "./bridge-window-capture"
 import {
   COMPUTER_UNITY_BRIDGE_ATTACH_ATTEMPTED,
-  COMPUTER_UNITY_BRIDGE_ATTACH_ATTEMPTS,
   COMPUTER_UNITY_BRIDGE_ATTACH_FAILED,
   COMPUTER_UNITY_BRIDGE_ATTACH_FAILED_TEXT,
   COMPUTER_UNITY_BRIDGE_ATTACH_INCOMPLETE_TEXT,
-  COMPUTER_UNITY_BRIDGE_ATTACH_POLL_MILLISECONDS,
   COMPUTER_UNITY_BRIDGE_ATTACH_UNCONFIGURED_TEXT,
   COMPUTER_UNITY_BRIDGE_ATTACH_UNITY_ONLY,
   COMPUTER_UNITY_BRIDGE_CLICK_TIMEOUT_MILLISECONDS,
 } from "./constants"
-import { computerUnityBridgeDelay } from "./delay"
 import { computerDiscoverUnityBridge } from "./discovery"
-import { type ComputerUnityBridgeDiscovery, type ComputerUnityBridgeReady } from "./handshake"
+import { type ComputerUnityBridgeReady } from "./handshake"
 import { isComputerUnityBridgeCaptureTool, isComputerUnityBridgeInputTool } from "./predicates"
 import { type ComputerUnityBridgeCommandRunner, type ComputerUnityBridgeTarget } from "./types"
 
@@ -90,13 +88,14 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
     signal?: AbortSignal,
   ): Promise<ComputerDriverCallResult> {
     const result = await this.driver.call(name, argumentsValue, signal)
-    return this.recordCapture(name, argumentsValue, result)
+    return this.recordCapture(name, argumentsValue, result, signal)
   }
 
   private async recordCapture(
     name: string,
     argumentsValue: ComputerDriverArguments,
     result: ComputerDriverCallResult,
+    signal?: AbortSignal,
   ): Promise<ComputerDriverCallResult> {
     const lookup = computerUnityBridgeTargetLookup(argumentsValue)
     const measurement = computerUnityBridgeCaptureMeasurement(result)
@@ -105,12 +104,13 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
       return result
     }
     const room = computerUnityBridgeRoom(name, argumentsValue, result)
+    const discovery = await computerUnityBridgeEnsureBridge(this.configuration, this.attachment, lookup.target, signal)
     const captured = await computerUnityBridgeCapturedWindow(
-      this.configuration,
       lookup.target,
       measurement.image,
       room,
       computerUnityBridgeNativeCount(result),
+      discovery,
     )
     this.captures.set(computerUnityBridgeTargetKey(lookup.target), captured.capture)
     return computerUnityBridgeMerged(name, result, captured)
@@ -155,23 +155,11 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
     target: ComputerUnityBridgeTarget,
     signal?: AbortSignal,
   ): Promise<ComputerDriverCallResult> {
-    const discovery = await this.awaitBridge(target)
+    const discovery = await computerUnityBridgeAwaitBridge(this.configuration, target)
     if (discovery.kind === "bridge-ready") {
       return this.inputThroughBridge(name, argumentsValue, target, discovery, signal)
     }
     return computerUnityBridgeUnavailable(target, COMPUTER_UNITY_BRIDGE_ATTACH_INCOMPLETE_TEXT)
-  }
-
-  private async awaitBridge(target: ComputerUnityBridgeTarget): Promise<ComputerUnityBridgeDiscovery> {
-    let discovery = await computerDiscoverUnityBridge(this.configuration, target)
-    for (let attempt = 0; attempt < COMPUTER_UNITY_BRIDGE_ATTACH_ATTEMPTS; attempt += 1) {
-      if (discovery.kind === "bridge-ready") {
-        return discovery
-      }
-      await computerUnityBridgeDelay(COMPUTER_UNITY_BRIDGE_ATTACH_POLL_MILLISECONDS)
-      discovery = await computerDiscoverUnityBridge(this.configuration, target)
-    }
-    return discovery
   }
 
   private async inputThroughBridge(
