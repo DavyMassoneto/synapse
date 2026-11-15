@@ -81,7 +81,7 @@ segundo plano pelo script `tests/connection-limits.ps1`:
 
 - Admissao limitada a 16 conexoes: 17 sockets abertos, 16 aceitos e 1 fechado.
 - Request acima de 8192 bytes recusado com `request-too-large` e conexao fechada, com e sem
-  delimitador, incluindo payload multibyte; linha CRLF no teto foi aceita.
+  delimitador, incluindo payload multibyte; linha CRLF no teto exato foi aceita e um byte acima recusado.
 - Cliente ocioso fechado em ~5 s por `read_timeout_ms`.
 - `stop` com cliente conectado: cliente ocioso fechado, pedidos pendentes concluidos com erro e
   threads encerradas no prazo; nova injecao confirmou `ping` com protocolo 2.

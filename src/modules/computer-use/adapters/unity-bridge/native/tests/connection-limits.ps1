@@ -81,19 +81,25 @@ $results.oversizedWithDelimiter = Assert-RequestRejected ('{"op":"hello","pad":"
 $results.oversizedWithoutDelimiter = Assert-RequestRejected ('a' * 9000)
 $results.oversizedMultibyte = Assert-RequestRejected ('{"op":"hello","pad":"' + ('é' * 5000) + '"}')
 
-$results.crlfWithinLimit = $false
+$prefix = '{"op":"hello","pad":"'
+$suffix = '"}'
+$paddingAtCap = 8192 - [System.Text.Encoding]::UTF8.GetByteCount($prefix + $suffix)
+
+$results.crlfAtCap = $false
 $crlf = Open-BridgeSocket
 try {
-    $line = '{"op":"hello","pad":"' + ('a' * 8160) + '"}'
+    $line = $prefix + ('a' * $paddingAtCap) + $suffix
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($line + "`r`n")
     $crlf.Stream.Write($bytes, 0, $bytes.Length)
     $crlf.Stream.Flush()
     $response = Read-Line $crlf.Stream
-    $results.crlfWithinLimit = ($null -ne $response -and $response -match '"status":"ok"')
-    if (-not $results.crlfWithinLimit) { throw 'linha CRLF dentro do teto foi recusada' }
+    $results.crlfAtCap = ($null -ne $response -and $response -match '"status":"ok"')
+    if (-not $results.crlfAtCap) { throw 'linha CRLF no teto exato foi recusada' }
 } finally {
     Close-BridgeSocket $crlf
 }
+
+$results.crlfOverCap = Assert-RequestRejected ($prefix + ('a' * ($paddingAtCap + 1)) + $suffix)
 
 if (-not $SkipIdle) {
     $idle = Open-BridgeSocket
