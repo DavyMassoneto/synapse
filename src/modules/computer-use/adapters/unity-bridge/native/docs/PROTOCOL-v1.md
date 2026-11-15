@@ -10,7 +10,7 @@ Nenhuma API de entrada global do Windows é usada (`SetCursorPos`, `mouse_event`
 `SetForegroundWindow`, `PostMessage` de input, UIA) em nenhum ponto deste protocolo.
 
 - Implementação: `managed/*.cs` (assembly injetado), `native/bridge_injector.cpp` (loader Mono in-process),
-  `launcher/` (injetor externo), `client/client.mjs` (cliente de referência).
+  `launcher/` (injetor externo e cliente de manutenção do protocolo).
 - Alvo validado: Motorsport Manager, Unity **5.3.8f2**, x64, Mono CLR 3.0.40818.
 
 ---

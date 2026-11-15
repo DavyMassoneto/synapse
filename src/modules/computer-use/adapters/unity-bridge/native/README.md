@@ -26,8 +26,7 @@ mover o cursor e sem trazer o jogo para o primeiro plano.
 | --- | --- |
 | `managed/` | Payload C# (`UnityBridge_*.dll`): listener TCP, fila na thread principal, comandos UGUI |
 | `native/bridge_injector.cpp` | DLL x64 que chama `mono_thread_attach` e invoca `Bootstrap.Load` |
-| `launcher/` | Utilitario .NET 8: `info`, `inject`, `stop`; carimba o nome do assembly a cada inject |
-| `client/client.mjs` | CLI Node do protocolo (ping/state/tree/hit/click/scroll/drag/text/key/stop) |
+| `launcher/` | Utilitario .NET 8: injecao (`info`, `inject`) e cliente do protocolo (`ping`, `state`, `tree`, `stop`, `raw`); carimba o nome do assembly a cada inject |
 | `scripts/build.ps1` | Build reproduzivel de todos os artefatos |
 | `scripts/desktop-state.ps1` | Diagnostico somente leitura de foreground/cursor/geometria |
 | `config/bridge.ini.example` | Configuracao canonica de runtime |
@@ -77,8 +76,9 @@ aponta `handshakeDirectory` para este diretorio e o comando de attach para o lau
 
 ```powershell
 $native = 'C:\caminho\para\...\unity-bridge\native'
+$launcher = "$native\launcher\bin\Release\net8.0\synapse-bridge-launcher.exe"
 $pid = (Get-Process MM).Id   # confira o nome real do processo
-& "$native\launcher\bin\Release\net8.0\synapse-bridge-launcher.exe" inject `
+& $launcher inject `
   --pid $pid `
   --assembly "$native\bin\current\UnityBridge.dll" `
   --native "$native\bin\current\bridge_injector.dll" `
@@ -91,11 +91,13 @@ por identidade; sem o carimbo, reinjetar depois de `stop` falha porque a identid
 carregada. Use `--no-stamp` apenas para diagnostico. Para parar:
 
 ```powershell
-node client/client.mjs --handshake run/handshake.json stop
+& $launcher stop --root $native
 ```
 
-`stop` para o listener, remove o GameObject, restaura `runInBackground` e grava `run/stopped.json`.
-O processo do jogo continua rodando; a bridge pode ser reinjetada com um novo carimbo.
+O comando resolve a raiz por `--root`, por `SYNAPSE_BRIDGE_DIR` ou pelo marcador `managed/` acima do
+executavel; `--handshake <path>` escolhe o handshake explicitamente. `stop` para o listener, remove o
+GameObject, restaura `runInBackground` e grava `run/stopped.json`. O processo do jogo continua rodando;
+a bridge pode ser reinjetada com um novo carimbo.
 
 ## Operacoes v2
 
@@ -125,22 +127,28 @@ Ha dois diagnosticos internos, fora do contrato do adaptador:
   central na resposta; `{"op":"harness-clear"}` remove. Sem limpeza explicita, some em 30 s. Use
   apenas com o jogo em segundo plano e capture OCR antes/depois para provar scroll/drag.
 
-O CLI permite provar cada operacao sem ferramenta externa. Ele e uma ferramenta operacional
-independente: roda direto com `node`, nao e importado pelo pacote Pi, nao entra no build CommonJS e
-nao depende de transpilacao. Por isso permanece como `.mjs` e e o unico caminho excluido em
-`biome.json`; essa excecao e limitada a este arquivo e nao autoriza novo JavaScript no restante do
-repositorio, cujo codigo de produto continua TypeScript.
+O launcher tambem e o cliente de manutencao do protocolo: `ping`, `state`, `tree`, `stop` e `raw`.
+`raw` envia um objeto JSON e injeta o token do handshake quando ausente, entao qualquer payload v2
+(inclusive `selftest`, `harness` e acoes) continua testavel. O repositorio nao versiona JavaScript: o
+cliente anterior em `.mjs` foi consolidado neste launcher C# e a excecao do Biome foi removida.
 
 ```powershell
-node client/client.mjs ping
-node client/client.mjs tree --max 300 --max-texts 300 > tree.json
-node client/client.mjs click --id <id> --generation <n>
-node client/client.mjs scroll 900 500 --dy -3
-node client/client.mjs drag 900 700 900 300 --steps 8
-node client/client.mjs raw '{"op":"selftest"}'
-node client/client.mjs raw '{"op":"harness"}'
-node client/client.mjs raw '{"op":"harness-clear"}'
+$launcher = "$native\launcher\bin\Release\net8.0\synapse-bridge-launcher.exe"
+& $launcher ping --root $native
+& $launcher state --root $native
+& $launcher tree --root $native > tree.json
+& $launcher stop --root $native
+& $launcher raw --json '{"op":"selftest"}' --root $native
+& $launcher raw --json '{"op":"harness"}' --root $native
+& $launcher raw --json '{"op":"harness-clear"}' --root $native
+& $launcher raw --json '{"op":"click","id":"<id>","generation":3}' --root $native
+& $launcher raw --json '{"op":"scroll","x":900,"y":500,"dy":-3}' --root $native
 ```
+
+A resposta e uma linha JSON. Codigos de saida: `0` sucesso, `2` recusa/erro do protocolo, `3`
+timeout (`outcome-unknown`) e `4` falha de transporte/handshake. Para operacoes de leitura
+(`ping`/`state`/`tree`) o launcher relê o handshake e tenta uma vez mais apos 400 ms;
+acoes (`stop`/`raw`) nunca sao repetidas.
 
 Provas de aceitacao (OCR antes/depois, `action_desktop` sem mudanca de foreground/cursor, dez ciclos
 de clique, recusas e unload) estao registradas em `docs/EVIDENCE.md`; os arquivos brutos ficam fora

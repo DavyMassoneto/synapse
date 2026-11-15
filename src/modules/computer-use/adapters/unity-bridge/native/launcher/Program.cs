@@ -1,9 +1,13 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Net;
+using System.Net.Sockets;
 using System.Reflection.Metadata;
 using System.Reflection.PortableExecutable;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Nodes;
 
 namespace SynapseBridgeLauncher;
 
@@ -21,6 +25,10 @@ internal static class Program
     private const uint PageReadWrite = 0x04;
     private const uint Infinite = 0xFFFFFFFF;
     private const uint ListModulesAll = 0x03;
+    private const int BridgeTimeoutMilliseconds = 8000;
+    private const int BridgeRetryDelayMilliseconds = 400;
+    private const int DefaultTreeMax = 400;
+    private const int DefaultTreeMaxTexts = 300;
 
     [DllImport("kernel32.dll", SetLastError = true)]
     private static extern IntPtr OpenProcess(uint access, bool inherit, int processId);
@@ -94,6 +102,11 @@ internal static class Program
             Dictionary<string, string> options = ParseOptions(args, 1);
             if (command == "info") return Info(options);
             if (command == "inject") return Inject(options);
+            if (command == "ping") return Protocol(options, "ping");
+            if (command == "state") return Protocol(options, "state");
+            if (command == "tree") return Protocol(options, "tree");
+            if (command == "stop") return Protocol(options, "stop");
+            if (command == "raw") return Protocol(options, "raw");
             return Usage();
         }
         catch (Exception exception)
@@ -109,6 +122,8 @@ internal static class Program
         Console.WriteLine("synapse-bridge-launcher inject --pid <pid> --assembly <managed.dll> --native <bridge_injector.dll>");
         Console.WriteLine("         [--ns SynapseUnityBridge] [--type Bootstrap] [--method Load] [--log <bridge.log>] [--keep-native] [--no-stamp]");
         Console.WriteLine("         default: gera copia do assembly com nome interno unico (Mono deduplica por identidade)");
+        Console.WriteLine("synapse-bridge-launcher ping|state|tree|stop [--root <dir>] [--handshake <run/handshake.json>]");
+        Console.WriteLine("synapse-bridge-launcher raw --json '{\"op\":\"selftest\"}' [--root <dir>] [--handshake <path>]");
         return 2;
     }
 
@@ -268,6 +283,153 @@ internal static class Program
             }
         }
     }
+
+    private static int Protocol(Dictionary<string, string> options, string operation)
+    {
+        string handshakePath = HandshakePath(options);
+        int attempts = IsRetryable(operation) ? 2 : 1;
+        for (int attempt = 1; attempt <= attempts; attempt++)
+        {
+            try
+            {
+                string response = RequestProtocol(handshakePath, options, operation);
+                Console.WriteLine(response);
+                return ResponseStatus(response);
+            }
+            catch (Exception exception)
+            {
+                if (attempt == attempts) return ProtocolFailure(exception);
+                Thread.Sleep(BridgeRetryDelayMilliseconds);
+            }
+        }
+        return 4;
+    }
+
+    private static string RequestProtocol(string handshakePath, Dictionary<string, string> options, string operation)
+    {
+        BridgeHandshake handshake = ReadHandshake(handshakePath);
+        string payload = ProtocolPayload(options, operation, handshake.Token);
+        using TcpClient client = new();
+        try
+        {
+            client.Connect(IPAddress.Loopback, handshake.Port);
+            client.ReceiveTimeout = BridgeTimeoutMilliseconds;
+            using NetworkStream stream = client.GetStream();
+            byte[] request = Encoding.UTF8.GetBytes(payload + "\n");
+            stream.Write(request, 0, request.Length);
+            StringBuilder response = new();
+            byte[] buffer = new byte[4096];
+            while (!response.ToString().Contains('\n'))
+            {
+                int read = stream.Read(buffer, 0, buffer.Length);
+                if (read == 0) throw new IOException("connection-closed sem resposta");
+                response.Append(Encoding.UTF8.GetString(buffer, 0, read));
+            }
+            return response.ToString().Split('\n')[0];
+        }
+        catch (Exception exception) when (IsTimeout(exception))
+        {
+            throw new TimeoutException("client-timeout", exception);
+        }
+    }
+
+    private static BridgeHandshake ReadHandshake(string path)
+    {
+        if (!File.Exists(path)) throw new FileNotFoundException("handshake ausente", path);
+        using JsonDocument document = JsonDocument.Parse(File.ReadAllText(path));
+        JsonElement root = document.RootElement;
+        string token = root.GetProperty("token").GetString() ?? throw new InvalidDataException("handshake sem token");
+        int port = root.GetProperty("port").GetInt32();
+        string state = root.TryGetProperty("state", out JsonElement stateElement) ? stateElement.GetString() ?? "" : "";
+        if (state == "stopped") throw new InvalidDataException("bridge parada segundo o handshake");
+        return new BridgeHandshake(token, port);
+    }
+
+    private static string HandshakePath(Dictionary<string, string> options)
+    {
+        if (options.TryGetValue("handshake", out string? explicitPath)) return Path.GetFullPath(explicitPath);
+        string? environmentPath = Environment.GetEnvironmentVariable("SYNAPSE_BRIDGE_HANDSHAKE");
+        if (!string.IsNullOrEmpty(environmentPath)) return Path.GetFullPath(environmentPath);
+        return Path.Combine(ProtocolRoot(options), "run", "handshake.json");
+    }
+
+    private static string ProtocolRoot(Dictionary<string, string> options)
+    {
+        if (options.TryGetValue("root", out string? explicitRoot)) return Path.GetFullPath(explicitRoot);
+        string? environmentRoot = Environment.GetEnvironmentVariable("SYNAPSE_BRIDGE_DIR");
+        if (!string.IsNullOrEmpty(environmentRoot)) return Path.GetFullPath(environmentRoot);
+        string? directory = Path.GetDirectoryName(typeof(Program).Assembly.Location);
+        for (int depth = 0; depth < 6 && directory != null; depth++)
+        {
+            if (Directory.Exists(Path.Combine(directory, "managed"))) return directory;
+            directory = Path.GetDirectoryName(directory);
+        }
+        throw new InvalidOperationException("bridge root nao encontrado; use --root <dir> ou --handshake <path>.");
+    }
+
+    private static string ProtocolPayload(Dictionary<string, string> options, string operation, string token)
+    {
+        if (operation == "raw") return RawPayload(options, token);
+        JsonObject payload = new() { ["op"] = operation, ["token"] = token };
+        if (operation == "tree")
+        {
+            payload["max"] = DefaultTreeMax;
+            payload["max_texts"] = DefaultTreeMaxTexts;
+        }
+        return payload.ToJsonString();
+    }
+
+    private static string RawPayload(Dictionary<string, string> options, string token)
+    {
+        JsonObject payload = JsonNode.Parse(Require(options, "json")) as JsonObject
+            ?? throw new InvalidDataException("raw exige um objeto JSON");
+        if (!payload.ContainsKey("op")) throw new InvalidDataException("raw exige op");
+        if (!payload.ContainsKey("token")) payload["token"] = token;
+        return payload.ToJsonString();
+    }
+
+    private static int ResponseStatus(string response)
+    {
+        try
+        {
+            using JsonDocument document = JsonDocument.Parse(response);
+            if (!document.RootElement.TryGetProperty("status", out JsonElement status)) return 0;
+            string text = status.GetString() ?? "";
+            if (text == "refused" || text == "error") return 2;
+            if (text == "outcome-unknown") return 3;
+            return 0;
+        }
+        catch (JsonException)
+        {
+            return 2;
+        }
+    }
+
+    private static int ProtocolFailure(Exception exception)
+    {
+        if (IsTimeout(exception))
+        {
+            Console.Error.WriteLine("outcome-unknown: sem resposta da bridge em " + BridgeTimeoutMilliseconds + " ms");
+            return 3;
+        }
+        Console.Error.WriteLine("transport-error: " + exception.Message);
+        return 4;
+    }
+
+    private static bool IsTimeout(Exception exception)
+    {
+        if (exception is TimeoutException) return true;
+        if (exception is SocketException socket) return socket.SocketErrorCode == SocketError.TimedOut;
+        if (exception is IOException io && io.InnerException is SocketException inner) return inner.SocketErrorCode == SocketError.TimedOut;
+        return false;
+    }
+
+    private static bool IsRetryable(string operation)
+    {
+        return operation == "ping" || operation == "state" || operation == "tree";
+    }
+
+    private sealed record BridgeHandshake(string Token, int Port);
 
     /// <summary>
     /// Mono deduplica assemblies pela identidade (nome+versao). Para permitir reinjecao apos stop no mesmo
