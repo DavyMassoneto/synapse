@@ -1,1 +1,1 @@
-export type ComputerProvisioningDownload = () => Promise<Response>
+export type ComputerProvisioningDownload = (url: string) => Promise<Response>
