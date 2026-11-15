@@ -45,6 +45,7 @@ import { type ComputerDriverInstallationRequest, type ComputerDriverReceiptPolic
 export async function computerInstallDriver(request: ComputerDriverInstallationRequest): Promise<string> {
   const existing = computerVerifyDriverInstallation(request.directory, request.selection)
   if (existing.kind === COMPUTER_DRIVER_INSTALLATION_REUSABLE) {
+    computerWriteCurrentVersion(request.directory, request.selection.version)
     return existing.binary
   }
   if (existing.kind !== COMPUTER_DRIVER_INSTALLATION_ABSENT) {
