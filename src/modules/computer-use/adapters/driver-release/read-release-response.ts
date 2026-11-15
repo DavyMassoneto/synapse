@@ -108,18 +108,41 @@ export async function computerReadReleaseResponseText(
   response: Response,
   maxBytes: number,
 ): Promise<ComputerDriverReleaseTextResult> {
-  try {
-    const text = await response.text()
-    if (new TextEncoder().encode(text).byteLength > maxBytes) {
-      return {
-        kind: COMPUTER_DRIVER_RELEASE_FAILED,
-        message: `${COMPUTER_DRIVER_RELEASE_RESPONSE_TOO_LARGE} ${maxBytes} bytes.`,
-      }
-    }
-    return { kind: COMPUTER_DRIVER_RELEASE_TEXT_READ, text }
-  } catch {
-    return { kind: COMPUTER_DRIVER_RELEASE_FAILED, message: COMPUTER_DRIVER_RELEASE_QUERY_FAILED }
+  const body = response.body
+  if (!body) {
+    return { kind: COMPUTER_DRIVER_RELEASE_TEXT_READ, text: "" }
   }
+  const reader = body.getReader()
+  const decoder = new TextDecoder()
+  const parts: string[] = []
+  let totalBytes = 0
+  try {
+    while (true) {
+      const chunk = await reader.read()
+      if (chunk.done) {
+        parts.push(decoder.decode())
+        return { kind: COMPUTER_DRIVER_RELEASE_TEXT_READ, text: parts.join("") }
+      }
+      totalBytes += chunk.value.byteLength
+      if (totalBytes > maxBytes) {
+        await computerCancelReleaseResponse(reader)
+        return {
+          kind: COMPUTER_DRIVER_RELEASE_FAILED,
+          message: `${COMPUTER_DRIVER_RELEASE_RESPONSE_TOO_LARGE} ${maxBytes} bytes.`,
+        }
+      }
+      parts.push(decoder.decode(chunk.value, { stream: true }))
+    }
+  } catch {
+    await computerCancelReleaseResponse(reader)
+    return { kind: COMPUTER_DRIVER_RELEASE_FAILED, message: COMPUTER_DRIVER_RELEASE_QUERY_FAILED }
+  } finally {
+    reader.releaseLock()
+  }
+}
+
+async function computerCancelReleaseResponse(reader: ReadableStreamDefaultReader<Uint8Array>): Promise<void> {
+  await reader.cancel().catch(() => undefined)
 }
 
 function computerDriverReleaseResponseFailure(response: Response): ComputerDriverReleaseFailed {
