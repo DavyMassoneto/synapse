@@ -74,6 +74,9 @@ function applyIphoneCapabilityOverrides(caps: IphoneCapabilities, config: Iphone
     if (overrides.wdaLocalPort) {
       caps["appium:wdaLocalPort"] = overrides.wdaLocalPort
     }
+    if (overrides.mjpegServerPort) {
+      caps["appium:mjpegServerPort"] = overrides.mjpegServerPort
+    }
     if (typeof overrides.useNewWDA === "boolean") {
       caps["appium:useNewWDA"] = overrides.useNewWDA
     }

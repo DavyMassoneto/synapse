@@ -6,7 +6,7 @@ import { buildIphoneCapabilities } from "#synapse/modules/iphone/internal/sessio
 import { simulatorWdaConfig } from "./wda-support"
 
 function propagatesPort(): void {
-  const config = simulatorWdaConfig("http://localhost:1234", 54321)
+  const config = simulatorWdaConfig("http://localhost:1234", 54321, 54322)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(true)
   expect(validateIphoneConfiguration(config, "darwin").kind).toBe("accepted")
   expect(buildIphoneCapabilities(config, "darwin")).toMatchObject({
@@ -17,17 +17,17 @@ function propagatesPort(): void {
 }
 
 function rejectsZero(): void {
-  const config = simulatorWdaConfig("http://localhost:1234", 0)
+  const config = simulatorWdaConfig("http://localhost:1234", 0, 54322)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(false)
 }
 
 function rejectsExceededPort(): void {
-  const config = simulatorWdaConfig("http://localhost:1234", 65536)
+  const config = simulatorWdaConfig("http://localhost:1234", 65536, 54322)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(false)
 }
 
 function rejectsFraction(): void {
-  const config = simulatorWdaConfig("http://localhost:1234", 1.5)
+  const config = simulatorWdaConfig("http://localhost:1234", 1.5, 54322)
   expect(Value.Check(IPHONE_CONFIG_CAPABILITIES_SCHEMA, config.capabilities)).toBe(false)
 }
 
@@ -40,14 +40,14 @@ function rejectsNegative(): void {
 }
 
 function preservesRemote(): void {
-  const config = simulatorWdaConfig("http://remote.example:1234", 54321)
+  const config = simulatorWdaConfig("http://remote.example:1234", 54321, 54322)
   delete config.capabilities
   expect(validateIphoneConfiguration(config, "darwin").kind).toBe("accepted")
   expect(buildIphoneCapabilities(config, "darwin")["appium:wdaBindingIP"]).toBeUndefined()
 }
 
 function preservesExplicitWda(): void {
-  const config = simulatorWdaConfig("http://localhost:1234", 54321)
+  const config = simulatorWdaConfig("http://localhost:1234", 54321, 54322)
   delete config.capabilities
   config.target.wdaUrl = "http://remote.example:2345"
   expect(validateIphoneConfiguration(config, "darwin").kind).toBe("accepted")

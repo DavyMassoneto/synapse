@@ -104,8 +104,9 @@ export class IphoneConcreteSessionFactory implements IphoneSessionFactory<Iphone
 
   private admit(config: IphoneConfiguration): IphoneWdaSelection {
     const port = config.capabilities?.wdaLocalPort
-    if (isIphoneLocalSimulatorWda(config) && port) {
-      return { kind: IPHONE_WDA_REQUIRED, admission: new IphoneWdaAdmission(port, this.admissions) }
+    const mjpegPort = config.capabilities?.mjpegServerPort
+    if (isIphoneLocalSimulatorWda(config) && port && mjpegPort) {
+      return { kind: IPHONE_WDA_REQUIRED, admission: new IphoneWdaAdmission([port, mjpegPort], this.admissions) }
     }
     return { kind: IPHONE_WDA_EXTERNAL }
   }

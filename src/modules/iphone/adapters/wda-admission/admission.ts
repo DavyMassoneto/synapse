@@ -10,7 +10,7 @@ import { type IphoneWdaAdmissions } from "./types"
 export class IphoneWdaAdmission {
   private static readonly ports = new Set<number>()
 
-  private readonly port: number
+  private readonly requestedPorts: number[]
 
   private owned = false
 
@@ -22,8 +22,8 @@ export class IphoneWdaAdmission {
 
   private closing?: Promise<void>
 
-  constructor(port: number, admissions: IphoneWdaAdmissions) {
-    this.port = port
+  constructor(ports: number[], admissions: IphoneWdaAdmissions) {
+    this.requestedPorts = ports
     this.admissions = admissions
   }
 
@@ -34,16 +34,23 @@ export class IphoneWdaAdmission {
   async reserve(signal: AbortSignal): Promise<void> {
     signal.throwIfAborted()
     this.abort.signal.throwIfAborted()
-    if (this.owned || IphoneWdaAdmission.ports.has(this.port)) {
+    if (this.owned) {
       throw new Error(IPHONE_WDA_ENDPOINT_BUSY)
     }
-    IphoneWdaAdmission.ports.add(this.port)
+    if (this.requestedPorts.some(IphoneWdaAdmission.ports.has, IphoneWdaAdmission.ports)) {
+      throw new Error(IPHONE_WDA_ENDPOINT_BUSY)
+    }
+    for (const port of this.requestedPorts) {
+      IphoneWdaAdmission.ports.add(port)
+    }
     this.owned = true
     this.admissions.add(this)
     try {
       const hosts = process.platform === IPHONE_WDA_LINUX ? IPHONE_WDA_LINUX_BIND_HOSTS : IPHONE_WDA_DEFAULT_BIND_HOSTS
-      for (const host of hosts) {
-        await this.bind(host, signal)
+      for (const port of this.requestedPorts) {
+        for (const host of hosts) {
+          await this.bind(host, port, signal)
+        }
       }
     } catch (error) {
       await this.release()
@@ -51,12 +58,12 @@ export class IphoneWdaAdmission {
     }
   }
 
-  private async bind(host: string, signal: AbortSignal): Promise<void> {
+  private async bind(host: string, port: number, signal: AbortSignal): Promise<void> {
     signal.throwIfAborted()
     this.abort.signal.throwIfAborted()
     const socket = new IphoneWdaSocket()
     this.sockets.push(socket)
-    await socket.bind(host, this.port)
+    await socket.bind(host, port)
     signal.throwIfAborted()
     this.abort.signal.throwIfAborted()
   }
@@ -85,7 +92,9 @@ export class IphoneWdaAdmission {
   private async finishRelease(): Promise<void> {
     await this.closeSockets()
     if (this.owned) {
-      IphoneWdaAdmission.ports.delete(this.port)
+      for (const port of this.requestedPorts) {
+        IphoneWdaAdmission.ports.delete(port)
+      }
       this.owned = false
       this.admissions.delete(this)
     }

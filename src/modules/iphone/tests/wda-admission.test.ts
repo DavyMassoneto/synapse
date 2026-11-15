@@ -7,9 +7,9 @@ import { closeWdaTest, freeWdaTestPort, listenWdaTest } from "./wda-support"
 async function ownsPortUntilRelease(): Promise<void> {
   const port = await freeWdaTestPort()
   const owners: IphoneWdaAdmissions = new Set()
-  const first = new IphoneWdaAdmission(port, owners)
-  const second = new IphoneWdaAdmission(port, owners)
-  const next = new IphoneWdaAdmission(port, owners)
+  const first = new IphoneWdaAdmission([port], owners)
+  const second = new IphoneWdaAdmission([port], owners)
+  const next = new IphoneWdaAdmission([port], owners)
   const signal = new AbortController().signal
   try {
     await first.reserve(signal)
@@ -20,7 +20,7 @@ async function ownsPortUntilRelease(): Promise<void> {
     await first.release()
     await next.reserve(signal)
     await first.release()
-    await expect(new IphoneWdaAdmission(port, owners).reserve(signal)).rejects.toThrow()
+    await expect(new IphoneWdaAdmission([port], owners).reserve(signal)).rejects.toThrow()
     expect(owners.size).toBe(1)
   } finally {
     await first.release()
@@ -33,7 +33,7 @@ async function releasesPartialBind(): Promise<void> {
   const foreign = createServer()
   const port = await listenWdaTest(foreign, "::1", 0)
   const owners: IphoneWdaAdmissions = new Set()
-  const admission = new IphoneWdaAdmission(port, owners)
+  const admission = new IphoneWdaAdmission([port], owners)
   const check = createServer()
   try {
     await expect(admission.reserve(new AbortController().signal)).rejects.toThrow()
@@ -49,14 +49,14 @@ async function releasesPartialBind(): Promise<void> {
 async function releasesAfterAbort(): Promise<void> {
   const port = await freeWdaTestPort()
   const owners: IphoneWdaAdmissions = new Set()
-  const admission = new IphoneWdaAdmission(port, owners)
+  const admission = new IphoneWdaAdmission([port], owners)
   const controller = new AbortController()
   try {
     const pending = admission.reserve(controller.signal)
     controller.abort()
     await expect(pending).rejects.toThrow()
     expect(owners.size).toBe(0)
-    const next = new IphoneWdaAdmission(port, owners)
+    const next = new IphoneWdaAdmission([port], owners)
     await next.reserve(new AbortController().signal)
     await next.release()
   } finally {
@@ -67,13 +67,13 @@ async function releasesAfterAbort(): Promise<void> {
 async function releasesPendingBind(): Promise<void> {
   const port = await freeWdaTestPort()
   const owners: IphoneWdaAdmissions = new Set()
-  const admission = new IphoneWdaAdmission(port, owners)
+  const admission = new IphoneWdaAdmission([port], owners)
   const reserving = admission.reserve(new AbortController().signal)
   const rejected = expect(reserving).rejects.toThrow()
   await admission.release()
   await rejected
   expect(owners.size).toBe(0)
-  const next = new IphoneWdaAdmission(port, owners)
+  const next = new IphoneWdaAdmission([port], owners)
   await next.reserve(new AbortController().signal)
   await next.release()
 }
@@ -85,7 +85,7 @@ function observesReset(error: Error): void {
 async function destroysIdleConnection(): Promise<void> {
   const port = await freeWdaTestPort()
   const owners: IphoneWdaAdmissions = new Set()
-  const admission = new IphoneWdaAdmission(port, owners)
+  const admission = new IphoneWdaAdmission([port], owners)
   const signal = new AbortController().signal
   await admission.reserve(signal)
   const client = createConnection({ host: "127.0.0.1", port })
@@ -103,14 +103,14 @@ async function destroysIdleConnection(): Promise<void> {
 async function cancelsAfterHandoff(): Promise<void> {
   const port = await freeWdaTestPort()
   const owners: IphoneWdaAdmissions = new Set()
-  const admission = new IphoneWdaAdmission(port, owners)
+  const admission = new IphoneWdaAdmission([port], owners)
   const signal = new AbortController().signal
   await admission.reserve(signal)
   await admission.handoff(signal)
   await admission.release()
   expect(admission.signal.aborted).toBe(true)
   await expect(admission.handoff(signal)).rejects.toThrow()
-  const next = new IphoneWdaAdmission(port, owners)
+  const next = new IphoneWdaAdmission([port], owners)
   await next.reserve(signal)
   await admission.release()
   expect(owners.size).toBe(1)
