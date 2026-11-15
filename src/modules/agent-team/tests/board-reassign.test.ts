@@ -1,5 +1,21 @@
 import { describe, expect, test } from "vitest"
 import { createTestTask, makeTaskBoardSut, updateTestTask } from "./board-scenario"
+import {
+  TEAM_TEST_REASSIGN_ACTIVE_TO_PENDING,
+  TEAM_TEST_REASSIGN_BLOCKED,
+  TEAM_TEST_REASSIGN_BLOCKED_CLAIM_REFUSED,
+  TEAM_TEST_REASSIGN_MEMBER_MESSAGE,
+  TEAM_TEST_REASSIGN_MEMBER_REFUSED,
+  TEAM_TEST_REASSIGN_NOT_STARTED,
+  TEAM_TEST_REASSIGN_OTHER_CLAIM_REFUSED,
+  TEAM_TEST_REASSIGN_OWNER_CLAIMS,
+  TEAM_TEST_REASSIGN_OWNER_MESSAGE,
+  TEAM_TEST_REASSIGN_OWNER_MISSING,
+  TEAM_TEST_REASSIGN_PENDING,
+  TEAM_TEST_REASSIGN_REMOVE_RESERVATION,
+  TEAM_TEST_REASSIGN_STALE_REVISION,
+  TEAM_TEST_REASSIGN_SUITE,
+} from "./constants"
 
 function reservesPendingTask(): void {
   const { board } = makeTaskBoardSut()
@@ -64,7 +80,7 @@ function refusesMemberReassignment(): void {
     board.update("alice", { taskId: "task-1", expectedRevision: 1, action: "reassign", owner: "bob" }),
   ).toMatchObject({
     kind: "refused",
-    message: "Só o lead pode reatribuir tarefas",
+    message: TEAM_TEST_REASSIGN_MEMBER_MESSAGE,
   })
   expect(board.get("task-1")).toMatchObject({ kind: "accepted", task: { status: "pending", revision: 1 } })
 }
@@ -76,7 +92,7 @@ function refusesMissingOwner(): void {
     board.update("lead", { taskId: "task-1", expectedRevision: 1, action: "reassign", owner: "absent" }),
   ).toMatchObject({
     kind: "refused",
-    message: "O agente não existe nesta equipe: absent",
+    message: TEAM_TEST_REASSIGN_OWNER_MESSAGE,
   })
   expect(board.get("task-1")).toMatchObject({ kind: "accepted", task: { status: "pending", revision: 1 } })
 }
@@ -126,17 +142,17 @@ function removesReservation(): void {
 }
 
 function register(): void {
-  test("reserva responsável mantendo tarefa pendente", reservesPendingTask)
-  test("reserva responsável de tarefa bloqueada", reservesBlockedTask)
-  test("não inicia tarefa reservada", doesNotStartReservedTask)
-  test("reatribuição de tarefa em andamento volta a pendente", returnsActiveTaskToPending)
-  test("recusa revisão antiga sem mudar reserva", refusesStaleReassignment)
-  test("recusa reatribuição por membro", refusesMemberReassignment)
-  test("recusa responsável inexistente", refusesMissingOwner)
-  test("claim posterior do responsável inicia tarefa", reservedOwnerClaimsTask)
-  test("reserva impede claim de outro membro", refusesClaimByOtherMember)
-  test("responsável reservado não assume enquanto bloqueada", refusesClaimWhileBlocked)
-  test("lead remove reserva sem iniciar tarefa", removesReservation)
+  test(TEAM_TEST_REASSIGN_PENDING, reservesPendingTask)
+  test(TEAM_TEST_REASSIGN_BLOCKED, reservesBlockedTask)
+  test(TEAM_TEST_REASSIGN_NOT_STARTED, doesNotStartReservedTask)
+  test(TEAM_TEST_REASSIGN_ACTIVE_TO_PENDING, returnsActiveTaskToPending)
+  test(TEAM_TEST_REASSIGN_STALE_REVISION, refusesStaleReassignment)
+  test(TEAM_TEST_REASSIGN_MEMBER_REFUSED, refusesMemberReassignment)
+  test(TEAM_TEST_REASSIGN_OWNER_MISSING, refusesMissingOwner)
+  test(TEAM_TEST_REASSIGN_OWNER_CLAIMS, reservedOwnerClaimsTask)
+  test(TEAM_TEST_REASSIGN_OTHER_CLAIM_REFUSED, refusesClaimByOtherMember)
+  test(TEAM_TEST_REASSIGN_BLOCKED_CLAIM_REFUSED, refusesClaimWhileBlocked)
+  test(TEAM_TEST_REASSIGN_REMOVE_RESERVATION, removesReservation)
 }
 
-describe("reserva de responsável no quadro", register)
+describe(TEAM_TEST_REASSIGN_SUITE, register)
