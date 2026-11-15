@@ -76,7 +76,7 @@ cursor externo se moveu (usuario ativo em outro programa); a bridge nao chama AP
 
 ## Hardening de recursos
 
-Build `20261115-025536` (instance `40f9131699b24011b08ea5d0d86b8391`), testado com o jogo em
+Build `20261115-025649` (instance `87f4c51271d34bcdacd1a7ca970455b8`), testado com o jogo em
 segundo plano pelo script `tests/connection-limits.ps1`:
 
 - Admissao limitada a 16 conexoes: 17 sockets abertos, 16 aceitos e 1 fechado.
@@ -92,7 +92,7 @@ segundo plano pelo script `tests/connection-limits.ps1`:
 - Timeout apos envio e `outcome-unknown`; o consumidor nao deve repetir a acao.
 - O harness e diagnostico interno, nao faz parte do contrato v2 nem do adaptador.
 - Estado final do corte: bridge v2 canonica `listening` em 47823 (instance
-  `40f9131699b24011b08ea5d0d86b8391`, build `20261115-025536`), tree final com 43 itens da tela
+  `87f4c51271d34bcdacd1a7ca970455b8`, build `20261115-025649`), tree final com 43 itens da tela
   de resumo de evento, harness ausente, com o jogo em segundo plano.
 - Hook de foreground passou a contar eventos do proprio processo MM (`game_foreground_events`
   incrementa quando o jogo volta ao foreground); ainda assim, o sampler externo

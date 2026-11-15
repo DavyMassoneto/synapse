@@ -577,6 +577,7 @@ namespace SynapseUnityBridge
             }
             MainThreadInfo.GameObjectCreated = false;
             firstTickHandled = false;
+            dontDestroyApplied = false;
             WriteStopped(reason);
             WriteHandshake("stopped");
         }
