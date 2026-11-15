@@ -27,4 +27,11 @@
 #define PHASE_OLD_ORDER "old-order"
 #define PHASE_ORPHAN_CAPTURED "orphan-captured"
 #define PHASE_RELEASE_FILE "release-orphan"
+#define PHASE_SESSION_LOSS "join-session-loss"
+#define PHASE_TERMINAL "terminal"
+#define PHASE_MOVE_ERROR "move-error"
+#define PHASE_OUTCOME_FORMAT "%d %d\n"
+#define PHASE_MOVE_WAIT_MS 5000
+#define PHASE_MOVE_TIMEOUT "move-observation-timeout"
+#define PHASE_MILLISECOND_US 1000
 #endif

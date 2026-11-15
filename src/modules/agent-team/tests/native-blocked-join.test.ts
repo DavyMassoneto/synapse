@@ -4,11 +4,13 @@ import {
   SHELL_PHASE_IDENTITY_FIELD_SEPARATOR,
   SHELL_PHASE_JOIN_EOF_TITLE,
   SHELL_PHASE_JOIN_STOP_TITLE,
-  SHELL_PHASE_MODE_ESRCH,
   SHELL_PHASE_MODE_JOIN_BLOCKED,
   SHELL_PHASE_MODE_SESSION_DEATH,
+  SHELL_PHASE_MODE_SESSION_LOSS,
+  SHELL_PHASE_MOVE_ERROR_MARKER,
   SHELL_PHASE_RESERVATION_DEATH_TITLE,
   SHELL_PHASE_SESSION_DEATH_TITLE,
+  SHELL_PHASE_TERMINAL_MARKER,
 } from "./constants"
 import { SHELL_TEST_SIGNAL_KILL } from "./native-fixture-constants"
 import { NativePhaseScenario } from "./native-phase-scenario"
@@ -34,7 +36,7 @@ async function blockedJoinReservationDeath(): Promise<void> {
 async function blockedJoinSessionDeath(): Promise<void> {
   const scenario = await NativePhaseScenario.create()
   try {
-    const keeper = await scenario.start(SHELL_PHASE_MODE_JOIN_BLOCKED)
+    const keeper = await scenario.start(SHELL_PHASE_MODE_SESSION_LOSS)
     await scenario.marker(SHELL_PHASE_MODE_JOIN_BLOCKED)
     const began = Date.now()
     const closed = keeper.terminal
@@ -43,7 +45,14 @@ async function blockedJoinSessionDeath(): Promise<void> {
     }
     process.kill(keeper.process.pid, SHELL_TEST_SIGNAL_KILL)
     await expect(closed).rejects.toThrow()
-    await scenario.marker(SHELL_PHASE_MODE_ESRCH)
+    const terminal = (await scenario.marker(SHELL_PHASE_TERMINAL_MARKER))
+      .trim()
+      .split(SHELL_PHASE_IDENTITY_FIELD_SEPARATOR)
+    expect(Number(terminal[1])).toBe(94)
+    const move = (await scenario.marker(SHELL_PHASE_MOVE_ERROR_MARKER))
+      .trim()
+      .split(SHELL_PHASE_IDENTITY_FIELD_SEPARATOR)
+    expect(Number(move[1])).toBe(1)
     expect(Date.now() - began).toBeLessThan(5500)
     expect(keeper.output.readableLength).toBe(0)
   } finally {

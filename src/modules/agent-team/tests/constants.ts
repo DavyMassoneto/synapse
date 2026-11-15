@@ -250,3 +250,7 @@ export const SHELL_DIRECTORY_MODES = [0o777, 0o770, 0o750, 0o700]
 export const SHELL_DIRECTORY_MODE_TITLE = "diretório de launcher aplica política 022 para modo %s"
 export const SHELL_DIRECTORY_NON_DIRECTORY_TITLE = "diretório de launcher recusa %s"
 export const SHELL_DIRECTORY_NON_DIRECTORY_KINDS = ["link", "file"]
+
+export const SHELL_PHASE_MODE_SESSION_LOSS = "join-session-loss"
+export const SHELL_PHASE_TERMINAL_MARKER = "terminal"
+export const SHELL_PHASE_MOVE_ERROR_MARKER = "move-error"

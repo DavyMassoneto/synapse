@@ -40,6 +40,8 @@ int __real_clock_gettime(clockid_t clock, struct timespec *value);
 #define PHASE_LINKAGE static
 #endif
 
+static pid_t session_group;
+static int move_error;
 static int clock_failed;
 static int stop_received;
 
@@ -61,8 +63,41 @@ static int phase_marker(const char *phase) {
     return 0;
 }
 
+static int phase_outcome(const char *phase, int value) {
+    const char *directory = getenv(PHASE_DIRECTORY_VARIABLE);
+    if (!directory) {
+        return 0;
+    }
+    char path[PHASE_PATH_CAPACITY];
+    snprintf(path, sizeof(path), PHASE_PATH_FORMAT, directory, phase);
+    int file = open(path, O_CREAT | O_WRONLY | O_APPEND, PHASE_MARKER_PERMISSIONS);
+    if (file < 0) {
+        return 0;
+    }
+    char content[PHASE_IDENTITY_CAPACITY];
+    int size = snprintf(content, sizeof(content), PHASE_OUTCOME_FORMAT, getpid(), value);
+    write(file, content, size);
+    close(file);
+    return 1;
+}
+
+static void record_terminal(void) {
+    const char *mode = getenv(PHASE_MODE_VARIABLE);
+    if (mode && strcmp(mode, PHASE_SESSION_LOSS) == 0) {
+        int code = move_error ? PHASE_ORPHAN_EXIT : 0;
+        phase_outcome(PHASE_TERMINAL, code);
+    }
+}
+
+__attribute__((constructor)) static void observe_terminal(void) {
+    atexit(record_terminal);
+}
+
 PHASE_LINKAGE int injected_setpgid(pid_t pid, pid_t group) {
     const char *mode = getenv(PHASE_MODE_VARIABLE);
+    if (pid == 0 && group == 0) {
+        session_group = getpgrp();
+    }
     if (mode && pid == 0 && group == getppid() && getpgrp() != getpid()) {
         if (strcmp(mode, PHASE_JOIN_FAILURE) == 0) {
             phase_marker(PHASE_JOIN_FAILURE);
@@ -84,7 +119,7 @@ PHASE_LINKAGE int injected_setpgid(pid_t pid, pid_t group) {
             }
             _exit(PHASE_ORPHAN_EXIT);
         }
-        if (strcmp(mode, PHASE_JOIN_BLOCKED) == 0) {
+        if (strcmp(mode, PHASE_JOIN_BLOCKED) == 0 || strcmp(mode, PHASE_SESSION_LOSS) == 0) {
             pid_t reservation = getppid();
             phase_marker(PHASE_JOIN_BLOCKED);
             while (getppid() == reservation) {
@@ -93,7 +128,28 @@ PHASE_LINKAGE int injected_setpgid(pid_t pid, pid_t group) {
             _exit(PHASE_ORPHAN_EXIT);
         }
     }
+    if (mode && strcmp(mode, PHASE_SESSION_LOSS) == 0 && pid == 0 && group == session_group && getpgrp() == getpid()) {
+        int elapsed = 0;
+        int absent = 0;
+        while (!absent && elapsed < PHASE_MOVE_WAIT_MS) {
+            absent = kill(-group, 0) < 0 && errno == ESRCH;
+            if (!absent) {
+                usleep(PHASE_MILLISECOND_US);
+                elapsed++;
+            }
+        }
+        if (!absent) {
+            phase_marker(PHASE_MOVE_TIMEOUT);
+            exit(PHASE_ORPHAN_EXIT);
+        }
+    }
     int result = setpgid(pid, group);
+    int error = errno;
+    if (mode && strcmp(mode, PHASE_SESSION_LOSS) == 0 && pid == 0 && group == session_group && result < 0) {
+        move_error = error;
+        phase_outcome(PHASE_MOVE_ERROR, error);
+    }
+    errno = error;
     if (mode && result == 0 && group == getppid() && getpgrp() == group && getpid() != group && strcmp(mode, PHASE_CLOCK_RUNNING) == 0) {
         clock_failed = 1;
     }
