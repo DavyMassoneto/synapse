@@ -3,11 +3,14 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { expect, test } from "vitest"
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
+import { verifyCloseJobObservation, verifyCloseJobStatus } from "#synapse/modules/agent-team/tests"
 import {
   runWindowsScript,
   SUPERVISED_TEST_TIMEOUT_MS,
   SUPERVISED_TEST_WINDOWS,
   SUPERVISED_TEST_WINDOWS_ARGUMENT,
+  SUPERVISED_TEST_WINDOWS_CHILD_LIFETIME_MS,
+  SUPERVISED_TEST_WINDOWS_CLOSE_DEADLINE_MS,
   SUPERVISED_TEST_WINDOWS_CLOSE_TITLE,
   SUPERVISED_TEST_WINDOWS_EFFECT_SCRIPT,
   SUPERVISED_TEST_WINDOWS_FAULTS_URL,
@@ -106,8 +109,20 @@ async function closeOnlyJobHandle(): Promise<void> {
     childObservation: observed.trim(),
     statusHex: channel.statusBytes.toString("hex"),
   })
-  expect(code).not.toBe(0)
+  expect(code).toBe(0)
+  expect(typeof pid).toBe("string")
+  if (typeof pid === "string") {
+    verifyCloseJobObservation(pid, observed)
+  }
   expect(channel.error).toContain("WINDOWS_READY")
+  expect(typeof channel.closeStarted).toBe("number")
+  expect(typeof channel.closeFinished).toBe("number")
+  if (typeof channel.closeStarted === "number" && typeof channel.closeFinished === "number") {
+    const elapsed = channel.closeFinished - channel.closeStarted
+    expect(elapsed).toBeLessThan(SUPERVISED_TEST_WINDOWS_CLOSE_DEADLINE_MS)
+    expect(elapsed).toBeLessThan(SUPERVISED_TEST_WINDOWS_CHILD_LIFETIME_MS)
+  }
+  verifyCloseJobStatus(channel.statusBytes)
 }
 
 async function rejectsMalformedJson(): Promise<void> {

@@ -1,4 +1,5 @@
 export * from "./board-scenario"
+export * from "./close-job-proof"
 export * from "./constants"
 export * from "./doubles"
 export * from "./restore-record"

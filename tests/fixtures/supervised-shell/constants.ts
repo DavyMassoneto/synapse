@@ -79,8 +79,10 @@ export const SUPERVISED_TEST_MARKER_SPLIT_TITLE = "marcador reconhece cada ponto
 export const SUPERVISED_TEST_MARKER_ABSENT_TITLE = "texto sem marcador não altera ordem dos chunks"
 export const SUPERVISED_TEST_WINDOWS_FAULT_BUFFER_BYTES = 65536
 export const SUPERVISED_TEST_WINDOWS_OBSERVE_URL = "./windows-observe.ps1"
+export const SUPERVISED_TEST_WINDOWS_CHILD_LIFETIME_MS = 60000
+export const SUPERVISED_TEST_WINDOWS_CLOSE_DEADLINE_MS = 15000
 export const SUPERVISED_TEST_WINDOWS_PID_SCRIPT =
-  "process.stderr.write('CHILD_PID:'+process.pid+'\\nWINDOWS_READY\\n');setInterval(()=>{},1000)"
+  "process.stderr.write('CHILD_PID:'+process.pid+'\\nWINDOWS_READY\\n');setTimeout(()=>{},60000)"
 
 export const SUPERVISED_TEST_OUTPUT_FAILURE = "foreground lost"
 export const SUPERVISED_TEST_CANCEL_RESULT_ABORT_TITLE = "abort aguarda T após C falhar e preserva falhas: Tfail=%s"

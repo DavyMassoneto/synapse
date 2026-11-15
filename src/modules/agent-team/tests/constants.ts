@@ -74,3 +74,7 @@ export const SHELL_MATRIX_NORMAL_TITLE = "resultado normal drenado não depende 
 export const SHELL_MATRIX_SINK_TITLE = "sink rejeitado durante stop rejeita C sem impedir T (%s)"
 export const SHELL_MATRIX_READY_FAILURE_TITLE = "ready não revive após erro e gate recusado não escreve"
 export const SHELL_MATRIX_SYNC_TITLE = "close síncrono é observado antes do efeito de terminate"
+export const SHELL_CLOSE_JOB_VALID_TITLE = "prova CloseJob valida sequência real e ausência do filho registrado"
+export const SHELL_CLOSE_JOB_VALID_FRAME = "0102000000000000001d03"
+export const SHELL_CLOSE_JOB_FRAME_TITLE = "prova CloseJob recusa frame inválido %s"
+export const SHELL_CLOSE_JOB_OBSERVATION_TITLE = "prova CloseJob recusa observação inválida %s"

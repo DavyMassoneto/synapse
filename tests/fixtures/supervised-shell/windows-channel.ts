@@ -8,6 +8,8 @@ export class WindowsRawChannel {
   output = ""
   error = ""
   statusBytes = Buffer.alloc(0)
+  closeStarted?: number
+  closeFinished?: number
   private readonly child: ChildProcessWithoutNullStreams
   private resolve?: WindowsChannelResolve
   private reject?: WindowsChannelReject
@@ -53,11 +55,13 @@ export class WindowsRawChannel {
   private receive(chunk: Buffer): void {
     this.error += chunk.toString()
     if (this.closingHandle && this.error.includes("WINDOWS_READY")) {
+      this.closeStarted = performance.now()
       this.child.stdin.end(Buffer.from([3]))
       this.closingHandle = false
     }
   }
   private closed(code: WindowsChannelExitCode): void {
+    this.closeFinished = performance.now()
     if (typeof code === "number") {
       this.resolve?.(code)
     } else {
