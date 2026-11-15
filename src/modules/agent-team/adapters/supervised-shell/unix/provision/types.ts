@@ -15,3 +15,12 @@ export type UnixLauncherProbeReject = (error: Error) => void
 export interface UnixLauncherProbeOptions {
   signal?: AbortSignal
 }
+
+export interface UnixLauncherArchitectures {
+  arm64: UnixLauncherAsset
+  x64: UnixLauncherAsset
+}
+export interface UnixLauncherPlatforms {
+  darwin: UnixLauncherArchitectures
+  linux: UnixLauncherArchitectures
+}

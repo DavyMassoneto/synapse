@@ -1,4 +1,4 @@
-import { type UnixLauncherTargets } from "./types"
+import { type UnixLauncherPlatforms, type UnixLauncherTargets } from "./types"
 
 export const UNIX_LAUNCHER_VERSION = "v2"
 export const UNIX_LAUNCHER_RELEASE_URL = "https://github.com/DavyMassoneto/synapse/releases/download/unix-launcher-v2/"
@@ -56,3 +56,8 @@ export const UNIX_LAUNCHER_UNSAFE_MODE = 0o022
 export const UNIX_LAUNCHER_PLATFORM_FIELD = 1
 export const UNIX_LAUNCHER_ARCHITECTURE_FIELD = 2
 export const UNIX_LAUNCHER_CLOCK_FIELD = 3
+
+export const UNIX_LAUNCHER_PLATFORM_ASSETS: UnixLauncherPlatforms = {
+  darwin: { arm64: UNIX_LAUNCHER_ASSETS.darwin, x64: UNIX_LAUNCHER_ASSETS.darwin },
+  linux: { arm64: UNIX_LAUNCHER_ASSETS.linuxArm64, x64: UNIX_LAUNCHER_ASSETS.linuxX64 },
+}

@@ -1,4 +1,5 @@
 import { expect, test } from "vitest"
+import { verifyCloseJobObservation, verifyCloseJobStatus } from "./close-job-proof"
 import {
   SUPERVISED_TEST_CLOSE_INVALID_FRAME_TITLE,
   SUPERVISED_TEST_CLOSE_OBSERVATION_TITLE,
@@ -6,9 +7,7 @@ import {
   SUPERVISED_TEST_HEX_ENCODING,
   SUPERVISED_TEST_INVALID_CLOSE_FRAMES,
   SUPERVISED_TEST_INVALID_OBSERVATIONS,
-  verifyCloseJobObservation,
-  verifyCloseJobStatus,
-} from "../fixtures"
+} from "./constants"
 
 function rejectsObservation(observed: string): void {
   expect(verifyCloseJobObservation.bind(undefined, SUPERVISED_TEST_CLOSE_PID, observed)).toThrow()

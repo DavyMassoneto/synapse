@@ -10,8 +10,8 @@ import {
   SUPERVISED_TEST_WINDOWS_TRUNCATED_ERROR,
   SUPERVISED_TEST_WINDOWS_TRUNCATED_TITLE,
   SUPERVISED_TEST_WINDOWS_UTF8_TITLE,
-  WindowsRawChannel,
-} from "../fixtures"
+} from "./constants"
+import { WindowsRawChannel } from "./windows-channel"
 
 async function rejectsMalformedJson(): Promise<void> {
   const channel = new WindowsRawChannel(Buffer.from(SUPERVISED_TEST_INCOMPLETE_JSON), false)

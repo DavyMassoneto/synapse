@@ -5,7 +5,6 @@ import { dirname, join } from "node:path"
 import { gunzipSync } from "node:zlib"
 import {
   UNIX_LAUNCHER_ARM64,
-  UNIX_LAUNCHER_ASSETS,
   UNIX_LAUNCHER_CACHE,
   UNIX_LAUNCHER_CACHE_PARENT,
   UNIX_LAUNCHER_DARWIN,
@@ -16,6 +15,7 @@ import {
   UNIX_LAUNCHER_LINUX,
   UNIX_LAUNCHER_MISSING,
   UNIX_LAUNCHER_NOT_EMPTY,
+  UNIX_LAUNCHER_PLATFORM_ASSETS,
   UNIX_LAUNCHER_RELEASE_URL,
   UNIX_LAUNCHER_UNSUPPORTED,
   UNIX_LAUNCHER_VERSION,
@@ -45,17 +45,13 @@ export async function provisionUnixLauncher(signal?: AbortSignal): Promise<strin
   return executable
 }
 function selectUnixLauncherAsset(): UnixLauncherAsset {
+  const platform = process.platform
+  const architecture = process.arch
   if (
-    process.platform === UNIX_LAUNCHER_DARWIN &&
-    (process.arch === UNIX_LAUNCHER_ARM64 || process.arch === UNIX_LAUNCHER_X64)
+    (platform === UNIX_LAUNCHER_DARWIN || platform === UNIX_LAUNCHER_LINUX) &&
+    (architecture === UNIX_LAUNCHER_ARM64 || architecture === UNIX_LAUNCHER_X64)
   ) {
-    return UNIX_LAUNCHER_ASSETS.darwin
-  }
-  if (process.platform === UNIX_LAUNCHER_LINUX && process.arch === UNIX_LAUNCHER_X64) {
-    return UNIX_LAUNCHER_ASSETS.linuxX64
-  }
-  if (process.platform === UNIX_LAUNCHER_LINUX && process.arch === UNIX_LAUNCHER_ARM64) {
-    return UNIX_LAUNCHER_ASSETS.linuxArm64
+    return UNIX_LAUNCHER_PLATFORM_ASSETS[platform][architecture]
   }
   throw new Error(UNIX_LAUNCHER_UNSUPPORTED)
 }
@@ -70,9 +66,7 @@ export async function installUnixLauncher(
   const stage = await createUnixLauncherStage(root)
   try {
     const bytes = await downloadUnixLauncher(asset, baseUrl, cancellation)
-    const binary = gunzipSync(bytes, { maxOutputLength: UNIX_LAUNCHER_EXECUTABLE_BYTES })
-    const executable = join(stage, asset.name)
-    await writeFile(executable, binary, { mode: UNIX_LAUNCHER_EXECUTABLE_MODE, flag: UNIX_LAUNCHER_WRITE_FLAG })
+    const executable = await stageUnixLauncher(bytes, stage, asset)
     cancellation.throwIfAborted()
     await verifyUnixLauncher(executable, asset, cancellation)
     cancellation.throwIfAborted()
@@ -111,4 +105,11 @@ async function publishUnixLauncher(
     }
     await verifyUnixLauncher(join(root, asset.name), asset, signal)
   }
+}
+
+async function stageUnixLauncher(bytes: Buffer, stage: string, asset: UnixLauncherAsset): Promise<string> {
+  const binary = gunzipSync(bytes, { maxOutputLength: UNIX_LAUNCHER_EXECUTABLE_BYTES })
+  const executable = join(stage, asset.name)
+  await writeFile(executable, binary, { mode: UNIX_LAUNCHER_EXECUTABLE_MODE, flag: UNIX_LAUNCHER_WRITE_FLAG })
+  return executable
 }

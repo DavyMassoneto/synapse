@@ -1,6 +1,6 @@
 param([string]$Target)
 $ErrorActionPreference = 'Stop'
-$production = Join-Path $PSScriptRoot '../../../src/modules/agent-team/adapters/supervised-shell/windows'
+$production = Join-Path $PSScriptRoot '../../adapters/supervised-shell/windows'
 . (Join-Path $production 'constants.ps1')
 Add-Type -Path $ShellLauncherSources
 $type = [SupervisedShellLauncher]
