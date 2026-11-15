@@ -2,8 +2,11 @@ import { type ChildProcess, spawn } from "node:child_process"
 import { closeSync } from "node:fs"
 import { Socket } from "node:net"
 import { type Readable, type Writable } from "node:stream"
-import { SHELL_WIRE_GATE_RELEASE, type ShellWireSpec } from "../wire"
+import { type ShellWireSpec } from "../wire"
 import {
+  UNIX_CONTROL_INVALID,
+  UNIX_CONTROL_RELEASE,
+  UNIX_CONTROL_STOP,
   UNIX_KEEPER_CONTROL_FD,
   UNIX_KEEPER_EVENT_CLOSE,
   UNIX_KEEPER_EVENT_DATA,
@@ -16,11 +19,10 @@ import {
   UNIX_NATIVE_RECHECK_MS,
   UNIX_NATIVE_STATUS_FD,
   UNIX_NATIVE_STDIO,
-  UNIX_NATIVE_STOP,
   UNIX_NATIVE_STOP_BUDGET_NS,
-  UNIX_NATIVE_STOP_BYTES,
   UNIX_PARENT_STDIN_FD,
 } from "./constants"
+import { UnixControlDecoder } from "./control-decoder"
 import { type UnixKeeperChunk, type UnixNativeDeadlineTimer, type UnixShellExitStatus } from "./types"
 
 export class UnixKeeper {
@@ -30,7 +32,7 @@ export class UnixKeeper {
   private native?: ChildProcess
   private input?: Writable
   private statusInput?: Readable
-  private pending = Buffer.alloc(0)
+  private readonly decoder = new UnixControlDecoder()
   private deadline?: bigint
   private timer?: UnixNativeDeadlineTimer
   private failure = false
@@ -87,24 +89,18 @@ export class UnixKeeper {
   private receive(chunk: UnixKeeperChunk): void {
     const bytes = Buffer.isBuffer(chunk) ? chunk : Buffer.from(chunk)
     this.input?.write(bytes)
-    this.pending = Buffer.concat([this.pending, bytes])
-    while (this.pending.length > 0) {
-      if (this.pending[0] === SHELL_WIRE_GATE_RELEASE) {
-        this.pending = this.pending.subarray(1)
-      } else {
+    for (const instruction of this.decoder.receive(bytes)) {
+      if (instruction.kind !== UNIX_CONTROL_RELEASE) {
         this.stop(process.hrtime.bigint() + UNIX_NATIVE_STOP_BUDGET_NS)
-        if (this.pending[0] !== UNIX_NATIVE_STOP) {
+        if (instruction.kind === UNIX_CONTROL_INVALID) {
           this.input?.end()
-          this.pending = Buffer.alloc(0)
-        } else if (this.pending.length >= UNIX_NATIVE_STOP_BYTES) {
-          this.stop(this.pending.readBigUInt64BE(1))
-          this.pending = this.pending.subarray(UNIX_NATIVE_STOP_BYTES)
-        } else {
-          break
+        } else if (instruction.kind === UNIX_CONTROL_STOP) {
+          this.stop(instruction.deadline)
         }
       }
     }
   }
+
   private stop(deadline: bigint): void {
     if (!this.deadline || deadline < this.deadline) {
       const maximum = process.hrtime.bigint() + UNIX_NATIVE_STOP_BUDGET_NS

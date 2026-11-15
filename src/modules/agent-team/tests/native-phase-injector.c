@@ -1,6 +1,10 @@
 #include <errno.h>
 #include <fcntl.h>
+#ifdef __APPLE__
 #include <mach/mach_time.h>
+#else
+#include <time.h>
+#endif
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -11,9 +15,30 @@
 #include "native-phase-constants.h"
 #include "native-phase-types.h"
 
+#ifdef __APPLE__
 #define INTERPOSE(replacement, original) \
     __attribute__((used)) static struct phase_interposition \
     interpose_##original __attribute__((section(PHASE_INTERPOSE_SECTION))) = { replacement, original };
+
+#else
+#define injected_setpgid __wrap_setpgid
+#define injected_read __wrap_read
+#define injected_write __wrap_write
+#define injected_kill __wrap_kill
+int __real_setpgid(pid_t pid, pid_t group);
+ssize_t __real_read(int fd, void *bytes, size_t length);
+ssize_t __real_write(int fd, const void *bytes, size_t length);
+int __real_kill(pid_t pid, int signal);
+int __real_clock_gettime(clockid_t clock, struct timespec *value);
+#define setpgid __real_setpgid
+#define read __real_read
+#define write __real_write
+#define kill __real_kill
+#define PHASE_LINKAGE
+#endif
+#ifdef __APPLE__
+#define PHASE_LINKAGE static
+#endif
 
 static int clock_failed;
 static int stop_received;
@@ -36,7 +61,7 @@ static int phase_marker(const char *phase) {
     return 0;
 }
 
-static int injected_setpgid(pid_t pid, pid_t group) {
+PHASE_LINKAGE int injected_setpgid(pid_t pid, pid_t group) {
     const char *mode = getenv(PHASE_MODE_VARIABLE);
     if (mode && pid == 0 && group == getppid() && getpgrp() != getpid()) {
         if (strcmp(mode, PHASE_JOIN_FAILURE) == 0) {
@@ -60,7 +85,7 @@ static int injected_setpgid(pid_t pid, pid_t group) {
     return result;
 }
 
-static ssize_t injected_read(int fd, void *bytes, size_t length) {
+PHASE_LINKAGE ssize_t injected_read(int fd, void *bytes, size_t length) {
     ssize_t result = read(fd, bytes, length);
     const char *mode = getenv(PHASE_MODE_VARIABLE);
     const unsigned char *content = bytes;
@@ -73,7 +98,7 @@ static ssize_t injected_read(int fd, void *bytes, size_t length) {
     return result;
 }
 
-static ssize_t injected_write(int fd, const void *bytes, size_t length) {
+PHASE_LINKAGE ssize_t injected_write(int fd, const void *bytes, size_t length) {
     const char *mode = getenv(PHASE_MODE_VARIABLE);
     if (mode && fd == 4 && strcmp(mode, PHASE_STATUS_PRESSURE) == 0 && !stop_received) {
         phase_marker(PHASE_STATUS_PRESSURE);
@@ -83,7 +108,7 @@ static ssize_t injected_write(int fd, const void *bytes, size_t length) {
     return write(fd, bytes, length);
 }
 
-static int injected_kill(pid_t pid, int signal) {
+PHASE_LINKAGE int injected_kill(pid_t pid, int signal) {
     int result = kill(pid, signal);
     int error = errno;
     const char *mode = getenv(PHASE_MODE_VARIABLE);
@@ -100,6 +125,7 @@ static int injected_kill(pid_t pid, int signal) {
     return result;
 }
 
+#ifdef __APPLE__
 static kern_return_t injected_timebase(mach_timebase_info_t info) {
     if (clock_failed) {
         phase_marker(PHASE_CLOCK_FAILED);
@@ -113,3 +139,14 @@ INTERPOSE(injected_read, read)
 INTERPOSE(injected_write, write)
 INTERPOSE(injected_kill, kill)
 INTERPOSE(injected_timebase, mach_timebase_info)
+
+#else
+int __wrap_clock_gettime(clockid_t clock, struct timespec *value) {
+    if (clock_failed) {
+        phase_marker(PHASE_CLOCK_FAILED);
+        errno = EIO;
+        return -1;
+    }
+    return __real_clock_gettime(clock, value);
+}
+#endif

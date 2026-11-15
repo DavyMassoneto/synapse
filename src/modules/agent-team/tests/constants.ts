@@ -211,40 +211,53 @@ export const SHELL_PHASE_INJECTOR_SOURCE = "native-phase-injector.c"
 export const SHELL_PHASE_WAIT_MS = 5000
 export const SHELL_PHASE_JOIN_FAILED_TITLE = "keeper inteiro preserva JOIN recusado antes de usuário"
 
-export const SHELL_SCENARIO_ = " "
-export const SHELL_SCENARIO_ACK_PERDIDO_DEPOIS_DO_ESRCH_N_O_VIRA_SUCESSO_DO_KEEPER =
-  "ACK perdido depois do ESRCH não vira sucesso do keeper"
-export const SHELL_SCENARIO_CC = "cc"
-export const SHELL_SCENARIO_CLOCK_ACK = "clock-ack"
-export const SHELL_SCENARIO_CLOCK_FAILED = "clock-failed"
-export const SHELL_SCENARIO_CLOCK_RUNNING = "clock-running"
-export const SHELL_SCENARIO_CLOCK_STOP = "clock-stop"
-export const SHELL_SCENARIO_DYNAMICLIB = "-dynamiclib"
-export const SHELL_SCENARIO_ESRCH = "esrch"
-export const SHELL_SCENARIO_INJECTOR_DYLIB = "injector.dylib"
-export const SHELL_SCENARIO_JOIN_BLOCKED = "join-blocked"
-export const SHELL_SCENARIO_JOIN_BLOQUEADO_S_N_O_AUTORIZA_USU_RIO = "JOIN bloqueado: %s não autoriza usuário"
-export const SHELL_SCENARIO_JOIN_FAILURE = "join-failure"
-export const SHELL_SCENARIO_JOIN_FALHO_INTEIRO_PRESERVA_P_C_E_ADOTA_T_EM_ESTADO_TERMINAL =
-  "JOIN falho inteiro preserva P/C e adota T em estado terminal"
-export const SHELL_SCENARIO_JOIN_NEVER = "join-never"
-export const SHELL_SCENARIO_JOIN_NEVER_STOP = "join-never-stop"
+export const SHELL_PHASE_IDENTITY_FIELD_SEPARATOR = " "
+export const SHELL_PHASE_LOST_ACK_TITLE = "ACK perdido depois do ESRCH não vira sucesso do keeper"
+export const SHELL_PHASE_COMPILER_COMMAND = "cc"
+export const SHELL_PHASE_MODE_CLOCK_ACK = "clock-ack"
+export const SHELL_PHASE_MODE_CLOCK_FAILED = "clock-failed"
+export const SHELL_PHASE_MODE_CLOCK_RUNNING = "clock-running"
+export const SHELL_PHASE_MODE_CLOCK_STOP = "clock-stop"
+export const SHELL_PHASE_DARWIN_LIBRARY_FLAG = "-dynamiclib"
+export const SHELL_PHASE_MODE_ESRCH = "esrch"
+export const SHELL_PHASE_DARWIN_LIBRARY_FILE = "injector.dylib"
+export const SHELL_PHASE_MODE_JOIN_BLOCKED = "join-blocked"
+export const SHELL_PHASE_BLOCKED_JOIN_TITLE = "JOIN bloqueado: %s não autoriza usuário"
+export const SHELL_PHASE_MODE_JOIN_FAILURE = "join-failure"
+export const SHELL_PHASE_JOIN_PCT_TITLE = "JOIN falho inteiro preserva P/C e adota T em estado terminal"
+export const SHELL_PHASE_MODE_JOIN_NEVER = "join-never"
+export const SHELL_PHASE_MODE_JOIN_NEVER_STOP = "join-never-stop"
 export const SHELL_PHASE_MARKER_LINE_SEPARATOR = "\n"
 export const SHELL_PHASE_MARKER_TWO_COMMITS = "10 20\n10 20\n"
 export const SHELL_PHASE_MARKER_DUPLICATE_TITLE = "duas linhas de ESRCH não equivalem a um único commit"
-export const SHELL_SCENARIO_NATIVE_PHASES = "native-phases-"
-export const SHELL_SCENARIO_O = "-o"
-export const SHELL_SCENARIO_OBSERVE = "observe"
-export const SHELL_SCENARIO_PRINTF_FORBIDDEN = "printf FORBIDDEN"
-export const SHELL_SCENARIO_REL_GIO_FALHA_FECHADO_EM_S_PELO_KEEPER_INTEIRO =
-  "relógio falha fechado em %s pelo keeper inteiro"
-export const SHELL_SCENARIO_RESERVATION_DEATH = "reservation-death"
-export const SHELL_SCENARIO_SESSION_DEATH = "session-death"
-export const SHELL_SCENARIO_STATUS_EAGAIN_N_O_BLOQUEIA_STOP_E_REAP_NO_KEEPER_INTEIRO =
-  "status EAGAIN não bloqueia STOP e reap no keeper inteiro"
-export const SHELL_SCENARIO_STATUS_PRESSURE = "status-pressure"
-export const SHELL_SCENARIO_STOP_V_LIDO_FRAGMENTADO_NA_FRONTEIRA_S_PRESERVA_CANCELAMENTO =
-  "STOP válido fragmentado na fronteira %s preserva cancelamento"
+export const SHELL_PHASE_TEMPORARY_PREFIX = "native-phases-"
+export const SHELL_PHASE_COMPILER_OUTPUT_FLAG = "-o"
+export const SHELL_PHASE_MODE_OBSERVE = "observe"
+export const SHELL_PHASE_USER_COMMAND = "printf FORBIDDEN"
+export const SHELL_PHASE_CLOCK_FAULT_TITLE = "relógio falha fechado em %s pelo keeper inteiro"
+export const SHELL_PHASE_MODE_RESERVATION_DEATH = "reservation-death"
+export const SHELL_PHASE_MODE_SESSION_DEATH = "session-death"
+export const SHELL_PHASE_STATUS_PRESSURE_TITLE = "status EAGAIN não bloqueia STOP e reap no keeper inteiro"
+export const SHELL_PHASE_MODE_STATUS_PRESSURE = "status-pressure"
+export const SHELL_PHASE_FRAGMENTED_STOP_TITLE = "STOP válido fragmentado na fronteira %s preserva cancelamento"
 
-export const SHELL_SCENARIO_INCOMPLETE_DEADLINE =
+export const SHELL_PHASE_INCOMPLETE_DEADLINE_TITLE =
   "STOP parcial sem EOF aguarda apenas o prazo original e não publica tipo prematuro"
+
+export const SHELL_PHASE_LINUX_BINARY = "launcher"
+export const SHELL_PHASE_NATIVE_DIRECTORY = "../adapters/supervised-shell/unix/native"
+export const SHELL_PHASE_NATIVE_SOURCES = ["main.c", "clock.c", "wire.c", "control.c", "child.c", "reservation.c"]
+export const SHELL_PHASE_LINUX_COMPILE_FLAGS = ["-D_DEFAULT_SOURCE", "-D_POSIX_C_SOURCE=200809L", "-I"]
+export const SHELL_PHASE_LINUX_WRAP = "-Wl,--wrap=setpgid,--wrap=read,--wrap=write,--wrap=kill,--wrap=clock_gettime"
+
+export const UNIX_KEEPER_GROUP_WAIT_MS = 5000
+export const UNIX_KEEPER_GROUP_RECHECK_MS = 20
+export const UNIX_KEEPER_PS = "/bin/ps"
+export const UNIX_KEEPER_PS_ARGUMENTS = ["-axo", "pgid="]
+export const UNIX_KEEPER_PS_MAX_BYTES = 1048576
+export const UNIX_KEEPER_GROUP_PATTERN_PREFIX = "(?:^|\\n)[ \\t]*"
+export const UNIX_KEEPER_GROUP_PATTERN_SUFFIX = "[ \\t]*(?:\\n|$)"
+
+export const SHELL_DIRECTORY_MODES = [0o777, 0o770, 0o750, 0o700]
+export const SHELL_DIRECTORY_MODE_TITLE = "diretório de launcher aplica política 022 para modo %s"
+export const SHELL_DIRECTORY_NON_DIRECTORY_TITLE = "diretório de launcher recusa symlink e arquivo regular"

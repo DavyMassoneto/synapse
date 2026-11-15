@@ -1,5 +1,4 @@
 import { expect, test, vi } from "vitest"
-import { requireUnixShell } from "#synapse/modules/agent-team/adapters/supervised-shell/unix"
 import { requireWindowsShell } from "#synapse/modules/agent-team/adapters/supervised-shell/windows"
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import {
@@ -8,15 +7,11 @@ import {
   SHELL_REQUIREMENT_EXTRA_LINE_TITLE,
   SHELL_REQUIREMENT_PLATFORM_TITLE,
   SHELL_REQUIREMENT_POWERSHELL_TITLE,
-  SHELL_REQUIREMENT_PS_TITLE,
   SHELL_REQUIREMENT_TEST_EXTRA_LINE,
   SHELL_REQUIREMENT_TEST_MARKER,
 } from "./constants"
 import { ProbeResultScenario } from "./probe-result-support"
 
-async function missingPs(): Promise<void> {
-  await expect(requireUnixShell("/nonexistent/synapse-ps")).rejects.toThrow("requer /bin/ps executável")
-}
 async function missingPowerShell(): Promise<void> {
   await expect(requireWindowsShell("synapse-powershell-not-installed")).rejects.toThrow("powershell.exe")
 }
@@ -48,7 +43,6 @@ function rejectsExtraLine(): void {
 
 test(SHELL_REQUIREMENT_EXACT_MARKER_TITLE, exactMarker)
 test(SHELL_REQUIREMENT_EXTRA_LINE_TITLE, rejectsExtraLine)
-test(SHELL_REQUIREMENT_PS_TITLE, missingPs)
 test(SHELL_REQUIREMENT_POWERSHELL_TITLE, missingPowerShell)
 test(SHELL_REQUIREMENT_ADD_TYPE_TITLE, unavailableAddType)
 test(SHELL_REQUIREMENT_PLATFORM_TITLE, unsupportedPlatform)

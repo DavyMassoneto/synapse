@@ -3,17 +3,17 @@ import { setTimeout } from "node:timers/promises"
 import { expect, test } from "vitest"
 import {
   SHELL_NATIVE_TEST_MS,
+  SHELL_PHASE_FRAGMENTED_STOP_TITLE,
+  SHELL_PHASE_INCOMPLETE_DEADLINE_TITLE,
+  SHELL_PHASE_USER_COMMAND,
   SHELL_RUNTIME_DUPLICATE_TITLE,
   SHELL_RUNTIME_INVALID_TITLE,
   SHELL_RUNTIME_PARTIAL_TITLE,
-  SHELL_SCENARIO_INCOMPLETE_DEADLINE,
-  SHELL_SCENARIO_PRINTF_FORBIDDEN,
-  SHELL_SCENARIO_STOP_V_LIDO_FRAGMENTADO_NA_FRONTEIRA_S_PRESERVA_CANCELAMENTO,
 } from "./constants"
 import { KeeperRuntimeScenario } from "./keeper-runtime-scenario"
 
 async function invalidControl(): Promise<void> {
-  const scenario = await KeeperRuntimeScenario.create(SHELL_SCENARIO_PRINTF_FORBIDDEN)
+  const scenario = await KeeperRuntimeScenario.create(SHELL_PHASE_USER_COMMAND)
   await once(scenario.status, "data")
   scenario.control.write(Buffer.from([99]))
   expect(await scenario.terminal).toBe(0)
@@ -22,7 +22,7 @@ async function invalidControl(): Promise<void> {
 }
 
 async function partialStop(): Promise<void> {
-  const scenario = await KeeperRuntimeScenario.create(SHELL_SCENARIO_PRINTF_FORBIDDEN)
+  const scenario = await KeeperRuntimeScenario.create(SHELL_PHASE_USER_COMMAND)
   await once(scenario.status, "data")
   const began = Date.now()
   scenario.control.end(Buffer.from([2]))
@@ -33,7 +33,7 @@ async function partialStop(): Promise<void> {
 }
 
 async function incompleteWithoutEof(): Promise<void> {
-  const scenario = await KeeperRuntimeScenario.create(SHELL_SCENARIO_PRINTF_FORBIDDEN)
+  const scenario = await KeeperRuntimeScenario.create(SHELL_PHASE_USER_COMMAND)
   await once(scenario.status, "data")
   const began = Date.now()
   scenario.control.write(Buffer.from([2]))
@@ -45,13 +45,13 @@ async function incompleteWithoutEof(): Promise<void> {
 }
 
 test.skipIf(process.platform === "win32")(
-  SHELL_SCENARIO_INCOMPLETE_DEADLINE,
+  SHELL_PHASE_INCOMPLETE_DEADLINE_TITLE,
   incompleteWithoutEof,
   SHELL_NATIVE_TEST_MS,
 )
 
 async function duplicateRelease(): Promise<void> {
-  const scenario = await KeeperRuntimeScenario.create(SHELL_SCENARIO_PRINTF_FORBIDDEN)
+  const scenario = await KeeperRuntimeScenario.create(SHELL_PHASE_USER_COMMAND)
   await once(scenario.status, "data")
   scenario.control.write(Buffer.from([1, 1]))
   expect(await scenario.terminal).toBe(0)
@@ -60,7 +60,7 @@ async function duplicateRelease(): Promise<void> {
 }
 
 async function fragmentedStop(boundary: number): Promise<void> {
-  const scenario = await KeeperRuntimeScenario.create(SHELL_SCENARIO_PRINTF_FORBIDDEN)
+  const scenario = await KeeperRuntimeScenario.create(SHELL_PHASE_USER_COMMAND)
   await once(scenario.status, "data")
   const frame = Buffer.alloc(9)
   frame[0] = 2
@@ -74,7 +74,7 @@ async function fragmentedStop(boundary: number): Promise<void> {
 }
 
 test.skipIf(process.platform === "win32").each([1, 2, 3, 4, 5, 6, 7, 8, 9])(
-  SHELL_SCENARIO_STOP_V_LIDO_FRAGMENTADO_NA_FRONTEIRA_S_PRESERVA_CANCELAMENTO,
+  SHELL_PHASE_FRAGMENTED_STOP_TITLE,
   fragmentedStop,
   SHELL_NATIVE_TEST_MS,
 )

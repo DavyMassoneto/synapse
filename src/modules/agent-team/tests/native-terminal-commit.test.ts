@@ -28,4 +28,4 @@ function esrchCommitsBeforeFailedAck(): void {
   }
 }
 
-test.skipIf(process.platform !== "darwin")(SHELL_NATIVE_COMMIT_TITLE, esrchCommitsBeforeFailedAck, SHELL_NATIVE_TEST_MS)
+test.skipIf(process.platform === "win32")(SHELL_NATIVE_COMMIT_TITLE, esrchCommitsBeforeFailedAck, SHELL_NATIVE_TEST_MS)

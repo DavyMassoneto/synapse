@@ -1,5 +1,5 @@
 import { test } from "vitest"
-import { SHELL_KEEPER_BARRIER_TEST_TITLE, SHELL_KEEPER_OLD_KILL_TITLE } from "./constants"
+import { SHELL_KEEPER_BARRIER_TEST_TITLE, SHELL_KEEPER_OLD_KILL_TITLE, SHELL_NATIVE_TEST_MS } from "./constants"
 import { KeeperBarrierScenario } from "./keeper-barrier-support"
 
 async function heldBarrierIsLive(): Promise<void> {
@@ -23,5 +23,5 @@ async function oldKillIsNotLive(): Promise<void> {
   }
 }
 
-test.skipIf(process.platform === "win32")(SHELL_KEEPER_BARRIER_TEST_TITLE, heldBarrierIsLive, 15000)
-test.skipIf(process.platform === "win32")(SHELL_KEEPER_OLD_KILL_TITLE, oldKillIsNotLive, 15000)
+test.skipIf(process.platform === "win32")(SHELL_KEEPER_BARRIER_TEST_TITLE, heldBarrierIsLive, SHELL_NATIVE_TEST_MS)
+test.skipIf(process.platform === "win32")(SHELL_KEEPER_OLD_KILL_TITLE, oldKillIsNotLive, SHELL_NATIVE_TEST_MS)

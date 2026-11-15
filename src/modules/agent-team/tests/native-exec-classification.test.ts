@@ -31,7 +31,7 @@ function reapedBeforeExecPipe(): void {
   }
 }
 
-test.skipIf(process.platform !== "darwin")(
+test.skipIf(process.platform === "win32")(
   SHELL_NATIVE_REAP_BEFORE_PIPE_TITLE,
   reapedBeforeExecPipe,
   SHELL_NATIVE_TEST_MS,

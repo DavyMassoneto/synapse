@@ -26,7 +26,7 @@ function localDeadlineCannotExtend(): void {
   }
 }
 
-test.skipIf(process.platform !== "darwin")(
+test.skipIf(process.platform === "win32")(
   SHELL_NATIVE_CONTROL_DEADLINE_TITLE,
   localDeadlineCannotExtend,
   SHELL_NATIVE_TEST_MS,

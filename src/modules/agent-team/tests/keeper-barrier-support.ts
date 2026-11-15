@@ -2,7 +2,7 @@ import { execFileSync, spawn } from "node:child_process"
 import { once } from "node:events"
 import { join } from "node:path"
 import { expect } from "vitest"
-import { confirmUnixGroupEmpty } from "#synapse/modules/agent-team/adapters/supervised-shell/unix"
+import { confirmUnixGroupEmpty } from "./confirm-group"
 import { SHELL_KEEPER_BARRIER_ERROR, SHELL_KEEPER_BARRIER_FILE } from "./constants"
 
 export class KeeperBarrierScenario {
@@ -62,7 +62,7 @@ export class KeeperBarrierScenario {
     expect(this.child.signalCode).toBeNull()
   }
   private onPipeError(error: Error): void {
-    if (!(this.oldKill && "code" in error && error.code === "EPIPE")) {
+    if (!(this.oldKill && "code" in error && (error.code === "EPIPE" || error.code === "ECONNRESET"))) {
       this.pipeFailure = error
     }
   }

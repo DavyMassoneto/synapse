@@ -1,4 +1,4 @@
-import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
+import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team/public/supervised-shell"
 import { type ShellCleanupAction, type ShellCleanupOutcome, type ShellOperationOutcome } from "./types"
 
 export async function captureShellCleanup<T>(action: ShellCleanupAction<T>): Promise<ShellOperationOutcome<T>> {

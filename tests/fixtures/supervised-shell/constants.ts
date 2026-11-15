@@ -124,3 +124,10 @@ export const SUPERVISED_TEST_NATIVE_INPUT_TITLE = "stdin Unix de 600KB sem leito
 
 export const SUPERVISED_TEST_NATIVE_EXEC_FAILURE_TITLE =
   "exec nativo falho preserva errno e confirma cleanup sem exit falso"
+
+export const SUPERVISED_BURST_PREPARATION = "prepare-ms"
+export const SUPERVISED_BURST_STOP = "release-to-stop-ms"
+export const SUPERVISED_BURST_COMPLETION = "release-to-CT-ms"
+export const SUPERVISED_BURST_PHASE_SEPARATOR = "\n"
+
+export const SUPERVISED_TEST_WINDOWS_SENTINEL_SCRIPT = "setInterval(()=>{},1000)"

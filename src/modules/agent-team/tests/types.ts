@@ -37,3 +37,7 @@ export interface ShellWireScenario {
 export type NativeTransportProcess = ChildProcess
 
 export type NativeFixtureExitCode = number | null
+
+export type UnixGroupResolve = (groups: string) => void
+export type UnixGroupReject = (error: Error) => void
+export type UnixGroupReadError = Error | null

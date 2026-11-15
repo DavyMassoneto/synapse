@@ -25,4 +25,4 @@ async function zombieIsNotEmpty(): Promise<void> {
   rmSync(directory, { recursive: true, force: true })
 }
 
-test.skipIf(process.platform !== "darwin")(SHELL_NATIVE_ZOMBIE_TITLE, zombieIsNotEmpty, SHELL_NATIVE_TEST_MS)
+test.skipIf(process.platform === "win32")(SHELL_NATIVE_ZOMBIE_TITLE, zombieIsNotEmpty, SHELL_NATIVE_TEST_MS)

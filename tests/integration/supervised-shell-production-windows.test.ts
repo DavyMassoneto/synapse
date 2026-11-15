@@ -1,3 +1,4 @@
+import { spawn } from "node:child_process"
 import { existsSync, mkdtempSync, rmSync } from "node:fs"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
@@ -22,6 +23,7 @@ import {
   SUPERVISED_TEST_WINDOWS_PID_SCRIPT,
   SUPERVISED_TEST_WINDOWS_PRODUCTION_TITLE,
   SUPERVISED_TEST_WINDOWS_SCRIPT,
+  SUPERVISED_TEST_WINDOWS_SENTINEL_SCRIPT,
   SUPERVISED_TEST_WINDOWS_TRUNCATED_TITLE,
   SUPERVISED_TEST_WINDOWS_UTF8_TITLE,
   type SupervisedTestEnvironmentEntry,
@@ -32,6 +34,7 @@ import {
 } from "../fixtures"
 
 async function productionWindowsArguments(): Promise<void> {
+  const sentinel = spawn(process.execPath, ["-e", SUPERVISED_TEST_WINDOWS_SENTINEL_SCRIPT], { stdio: "ignore" })
   const output = new SupervisedTestOutput()
   const supervisor = createSupervisedShell()
   const lease = await supervisor.create(
@@ -50,7 +53,9 @@ async function productionWindowsArguments(): Promise<void> {
     expect(output.text()).toContain(JSON.stringify(process.cwd()))
     await lease.terminate()
     expect(lease.state).toBe("exited")
+    expect(sentinel.exitCode).toBeNull()
   } finally {
+    sentinel.kill()
     await supervisor.close()
   }
 }

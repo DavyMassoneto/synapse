@@ -22,8 +22,15 @@ export class KeeperRuntimeScenario {
     this.terminal = this.exit.promise
     status.on("data", this.recordStatus.bind(this))
   }
-  static async create(command: string, extraEnvironment?: NodeJS.ProcessEnv): Promise<KeeperRuntimeScenario> {
-    const executable = await provisionUnixLauncher()
+  static async create(
+    command: string,
+    extraEnvironment?: NodeJS.ProcessEnv,
+    launcherExecutable?: string,
+  ): Promise<KeeperRuntimeScenario> {
+    let executable = launcherExecutable
+    if (!executable) {
+      executable = await provisionUnixLauncher()
+    }
     const child = spawn(
       process.execPath,
       ["--import", "jiti/register", join(__dirname, SHELL_RUNTIME_FILE), executable],

@@ -10,19 +10,8 @@ export const UNIX_KEEPER_IMPORT = "--import"
 export const UNIX_KEEPER_CONTROL_FD = 3
 export const UNIX_KEEPER_INCOMPLETE_FRAME = "Frame de shell incompleto."
 
-export const UNIX_KEEPER_GROUP_WAIT_MS = 5000
-export const UNIX_KEEPER_GROUP_RECHECK_MS = 20
-export const UNIX_KEEPER_PS = "/bin/ps"
-export const UNIX_KEEPER_PS_ARGUMENTS = ["-axo", "pgid="]
-export const UNIX_KEEPER_PS_MAX_BYTES = 1048576
-
 export const UNIX_KEEPER_STDERR_FD = 2
 export const UNIX_KEEPER_UTF8 = "utf8"
-
-export const SHELL_REQUIREMENT_PS = "Shell supervisionado requer /bin/ps executável para confirmar o grupo Unix."
-
-export const UNIX_KEEPER_GROUP_PATTERN_PREFIX = "(?:^|\\n)[ \\t]*"
-export const UNIX_KEEPER_GROUP_PATTERN_SUFFIX = "[ \\t]*(?:\\n|$)"
 
 export const UNIX_NATIVE_CONTROL_FD = 3
 export const UNIX_NATIVE_STATUS_FD = 4
@@ -49,3 +38,8 @@ export const UNIX_KEEPER_EVENT_ERROR = "error"
 export const UNIX_KEEPER_EVENT_DATA = "data"
 export const UNIX_KEEPER_EVENT_CLOSE = "close"
 export const UNIX_KEEPER_EVENT_END = "end"
+
+export const UNIX_CONTROL_RELEASE = "release"
+export const UNIX_CONTROL_PARTIAL = "partial-stop"
+export const UNIX_CONTROL_INVALID = "invalid"
+export const UNIX_CONTROL_STOP = "stop"

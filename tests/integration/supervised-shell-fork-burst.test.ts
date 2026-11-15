@@ -1,48 +1,43 @@
-import { expect, test } from "vitest"
-import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
+import { afterAll, beforeAll, test } from "vitest"
 import {
-  SUPERVISED_TEST_NATIVE_BURST_COMMAND,
   SUPERVISED_TEST_NATIVE_BURST_TITLE,
   SUPERVISED_TEST_TIMEOUT_MS,
   SUPERVISED_TEST_WINDOWS,
-  type SupervisedBurstResolve,
-  SupervisedTestOutput,
+  SupervisedForkBurst,
 } from "../fixtures"
 
-async function forkBurstTrial(index: number): Promise<void> {
-  const shell = createSupervisedShell()
-  const output = new SupervisedTestOutput()
-  try {
-    const lease = await shell.create(
-      {
-        executable: "/bin/bash",
-        arguments: ["-c", SUPERVISED_TEST_NATIVE_BURST_COMMAND],
-        cwd: process.cwd(),
-        environment: process.env,
-      },
-      output,
-    )
-    lease.release()
-    await output.waitForMarker()
-    await new Promise<void>(resolveBurstDelay.bind(undefined, index))
-    await lease.terminate()
-    expect(lease.state).toBe("exited")
-    expect(await lease.completion).toBeGreaterThanOrEqual(0)
-  } finally {
-    await shell.close()
+const trials: SupervisedForkBurst[] = []
+
+async function prepareBursts(): Promise<void> {
+  if (process.platform !== SUPERVISED_TEST_WINDOWS) {
+    const preparations: Promise<void>[] = []
+    for (let index = 0; index < 30; index++) {
+      const trial = new SupervisedForkBurst()
+      trials.push(trial)
+      preparations.push(trial.prepare(index))
+    }
+    await Promise.all(preparations)
   }
-}
-function resolveBurstDelay(index: number, resolve: SupervisedBurstResolve): void {
-  setTimeout(resolve, index % 3)
-}
-async function thirtyForkBursts(): Promise<void> {
-  const trials: Promise<void>[] = []
-  for (let trial = 0; trial < 30; trial++) {
-    trials.push(forkBurstTrial(trial))
-  }
-  await Promise.all(trials)
 }
 
+async function thirtyForkBursts(): Promise<void> {
+  const running: Promise<void>[] = []
+  for (const [index, trial] of trials.entries()) {
+    running.push(trial.run(index))
+  }
+  await Promise.all(running)
+}
+
+async function closeBursts(): Promise<void> {
+  const closing: Promise<void>[] = []
+  for (const trial of trials) {
+    closing.push(trial.close())
+  }
+  await Promise.all(closing)
+}
+
+beforeAll(prepareBursts, SUPERVISED_TEST_TIMEOUT_MS)
+afterAll(closeBursts, SUPERVISED_TEST_TIMEOUT_MS)
 test.skipIf(process.platform === SUPERVISED_TEST_WINDOWS)(
   SUPERVISED_TEST_NATIVE_BURST_TITLE,
   thirtyForkBursts,

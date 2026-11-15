@@ -24,7 +24,7 @@ function clockFailureIsTerminal(): void {
   }
 }
 
-test.skipIf(process.platform !== "darwin")(
+test.skipIf(process.platform === "win32")(
   SHELL_NATIVE_CLOCK_FAILURE_TITLE,
   clockFailureIsTerminal,
   SHELL_NATIVE_TEST_MS,

@@ -12,9 +12,9 @@ import {
   UNIX_LAUNCHER_IDENTITY_SEPARATOR,
   UNIX_LAUNCHER_INVALID,
   UNIX_LAUNCHER_PROBE_MS,
-  UNIX_LAUNCHER_UNSAFE_MODE,
   UNIX_LAUNCHER_UTF8,
 } from "./constants"
+import { requirePrivateLauncherDirectory } from "./directory-security"
 import { UNIX_LAUNCHER_IDENTITY_SCHEMA } from "./schemas"
 import {
   type UnixLauncherAsset,
@@ -30,9 +30,7 @@ export async function verifyUnixLauncher(
   signal?: AbortSignal,
 ): Promise<void> {
   const directory = await lstat(dirname(executable))
-  if (!directory.isDirectory() || directory.isSymbolicLink() || (directory.mode & UNIX_LAUNCHER_UNSAFE_MODE) !== 0) {
-    throw new Error(UNIX_LAUNCHER_INVALID)
-  }
+  requirePrivateLauncherDirectory(directory)
   const status = await lstat(executable)
   if (!status.isFile() || status.size > UNIX_LAUNCHER_EXECUTABLE_BYTES) {
     throw new Error(UNIX_LAUNCHER_INVALID)

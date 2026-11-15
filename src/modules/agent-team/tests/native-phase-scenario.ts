@@ -3,15 +3,21 @@ import { access, mkdtemp, readFile, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { setTimeout } from "node:timers/promises"
+import { provisionUnixLauncher } from "#synapse/modules/agent-team/adapters/supervised-shell/unix"
 import {
+  SHELL_PHASE_COMPILER_COMMAND,
+  SHELL_PHASE_COMPILER_OUTPUT_FLAG,
+  SHELL_PHASE_DARWIN_LIBRARY_FILE,
+  SHELL_PHASE_DARWIN_LIBRARY_FLAG,
   SHELL_PHASE_INJECTOR_SOURCE,
+  SHELL_PHASE_LINUX_BINARY,
+  SHELL_PHASE_LINUX_COMPILE_FLAGS,
+  SHELL_PHASE_LINUX_WRAP,
+  SHELL_PHASE_NATIVE_DIRECTORY,
+  SHELL_PHASE_NATIVE_SOURCES,
+  SHELL_PHASE_TEMPORARY_PREFIX,
+  SHELL_PHASE_USER_COMMAND,
   SHELL_PHASE_WAIT_MS,
-  SHELL_SCENARIO_CC,
-  SHELL_SCENARIO_DYNAMICLIB,
-  SHELL_SCENARIO_INJECTOR_DYLIB,
-  SHELL_SCENARIO_NATIVE_PHASES,
-  SHELL_SCENARIO_O,
-  SHELL_SCENARIO_PRINTF_FORBIDDEN,
 } from "./constants"
 import { KeeperRuntimeScenario } from "./keeper-runtime-scenario"
 
@@ -21,21 +27,45 @@ export class NativePhaseScenario {
     this.directory = directory
   }
   static async create(): Promise<NativePhaseScenario> {
-    const directory = await mkdtemp(join(tmpdir(), SHELL_SCENARIO_NATIVE_PHASES))
-    execFileSync(SHELL_SCENARIO_CC, [
-      SHELL_SCENARIO_DYNAMICLIB,
-      join(__dirname, SHELL_PHASE_INJECTOR_SOURCE),
-      SHELL_SCENARIO_O,
-      join(directory, SHELL_SCENARIO_INJECTOR_DYLIB),
-    ])
+    const directory = await mkdtemp(join(tmpdir(), SHELL_PHASE_TEMPORARY_PREFIX))
+    if (process.platform === "darwin") {
+      execFileSync(SHELL_PHASE_COMPILER_COMMAND, [
+        SHELL_PHASE_DARWIN_LIBRARY_FLAG,
+        join(__dirname, SHELL_PHASE_INJECTOR_SOURCE),
+        SHELL_PHASE_COMPILER_OUTPUT_FLAG,
+        join(directory, SHELL_PHASE_DARWIN_LIBRARY_FILE),
+      ])
+    } else {
+      const source = join(__dirname, SHELL_PHASE_NATIVE_DIRECTORY)
+      const inputs = SHELL_PHASE_NATIVE_SOURCES
+      const argumentsList = [...SHELL_PHASE_LINUX_COMPILE_FLAGS, source]
+      for (const input of inputs) {
+        argumentsList.push(join(source, input))
+      }
+      argumentsList.push(
+        join(__dirname, SHELL_PHASE_INJECTOR_SOURCE),
+        SHELL_PHASE_LINUX_WRAP,
+        "-o",
+        join(directory, SHELL_PHASE_LINUX_BINARY),
+      )
+      execFileSync(SHELL_PHASE_COMPILER_COMMAND, argumentsList)
+    }
     return new NativePhaseScenario(directory)
   }
   async start(mode: string): Promise<KeeperRuntimeScenario> {
-    return KeeperRuntimeScenario.create(SHELL_SCENARIO_PRINTF_FORBIDDEN, {
-      DYLD_INSERT_LIBRARIES: join(this.directory, SHELL_SCENARIO_INJECTOR_DYLIB),
-      SYNAPSE_FAULT_DIRECTORY: this.directory,
-      SYNAPSE_FAULT_MODE: mode,
-    })
+    let executable = join(this.directory, SHELL_PHASE_LINUX_BINARY)
+    if (process.platform === "darwin") {
+      executable = await provisionUnixLauncher()
+    }
+    return KeeperRuntimeScenario.create(
+      SHELL_PHASE_USER_COMMAND,
+      {
+        DYLD_INSERT_LIBRARIES: join(this.directory, SHELL_PHASE_DARWIN_LIBRARY_FILE),
+        SYNAPSE_FAULT_DIRECTORY: this.directory,
+        SYNAPSE_FAULT_MODE: mode,
+      },
+      executable,
+    )
   }
   async marker(name: string): Promise<string> {
     const path = join(this.directory, name)

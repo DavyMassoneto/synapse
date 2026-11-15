@@ -1,10 +1,12 @@
 import { expect, test } from "vitest"
+import { confirmUnixGroupEmpty } from "./confirm-group"
 import {
-  confirmUnixGroupEmpty,
+  SHELL_GROUP_INVALID_TITLE,
+  SHELL_GROUP_MATCH_TITLE,
+  SHELL_GROUP_REJECT_TITLE,
   UNIX_KEEPER_GROUP_PATTERN_PREFIX,
   UNIX_KEEPER_GROUP_PATTERN_SUFFIX,
-} from "#synapse/modules/agent-team/adapters/supervised-shell/unix"
-import { SHELL_GROUP_INVALID_TITLE, SHELL_GROUP_MATCH_TITLE, SHELL_GROUP_REJECT_TITLE } from "./constants"
+} from "./constants"
 
 function matchesGroup(text: string): void {
   const membership = new RegExp(`${UNIX_KEEPER_GROUP_PATTERN_PREFIX}123${UNIX_KEEPER_GROUP_PATTERN_SUFFIX}`)

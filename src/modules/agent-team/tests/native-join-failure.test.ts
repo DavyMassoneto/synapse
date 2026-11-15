@@ -29,7 +29,7 @@ function failedJoinDoesNotRelease(): void {
   }
 }
 
-test.skipIf(process.platform !== "darwin")(
+test.skipIf(process.platform === "win32")(
   SHELL_NATIVE_JOIN_FAILURE_TITLE,
   failedJoinDoesNotRelease,
   SHELL_NATIVE_TEST_MS,

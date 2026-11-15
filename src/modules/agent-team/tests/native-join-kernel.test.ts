@@ -28,7 +28,7 @@ function kernelRejectsSessionJoin(): void {
   }
 }
 
-test.skipIf(process.platform !== "darwin")(
+test.skipIf(process.platform === "win32")(
   SHELL_NATIVE_JOIN_KERNEL_TITLE,
   kernelRejectsSessionJoin,
   SHELL_NATIVE_TEST_MS,
