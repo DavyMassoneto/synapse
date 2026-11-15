@@ -15,6 +15,8 @@ A composição conecta configuração e ciclo de vida; o pi mantém o loop do ag
 
 O módulo advisor está disponível; memória, pi-web e navegador continuam como contratos de construção. O pacote carrega as fontes TypeScript pelo loader do pi, sem compilação manual nem dependências de desenvolvimento. Instale pelo Git com `pi install git:github.com/DavyMassoneto/synapse` ou, no diretório do pacote, com `pi install ./`. Não carregue outra extensão advisor simultaneamente.
 
+A instalação pelo Git exige `git` e `npm` no `PATH`. Instale sem `@ref` para seguir a `main`: com `@main`, uma tag ou um commit, o pacote fica fixado nesse ref e não recebe atualizações. Ao abrir o pi no modo interativo, um aviso indica quando há atualização do pacote; aplique-a com `pi update --extensions` ou `pi update git:github.com/DavyMassoneto/synapse`. `pi update` sem alvo atualiza o próprio pi, não o pacote.
+
 ## Desenvolvimento
 
 O desenvolvimento foi verificado com Node.js 24. Execute `npm ci` para instalar as dependências e `npm run validate` para executar Biome, verificação de tipos, build e testes Vitest. `npm run format` aplica as correções seguras do Biome. `npm run build` continua produzindo a árvore CommonJS em `dist/` e deriva o manifesto JavaScript do manifesto das fontes, preservando os imports de diretório. A instalação pelo pi usa as sete entradas TypeScript de `src/extensions/`, sem depender de `dist/`.
