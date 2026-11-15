@@ -1,12 +1,11 @@
 import { SHELL_WIRE_INVALID, SHELL_WIRE_STOP_WAIT_MS } from "./constants"
-import { type ShellWireProcess, type ShellWireReadyResolve, type ShellWireReject } from "./types"
+import { type ShellWireProcess, type ShellWireReject } from "./types"
 
 export class ShellWireOwnership {
   private readonly child: ShellWireProcess
   private readonly failed: ShellWireReject
-  private closeResolve?: ShellWireReadyResolve
-  private reject?: ShellWireReject
-  private resolve?: ShellWireReadyResolve
+  private readonly closure = Promise.withResolvers<void>()
+  private readonly termination = Promise.withResolvers<void>()
   private failure?: Error
   private closed = false
   private stopping?: Promise<void>
@@ -19,31 +18,23 @@ export class ShellWireOwnership {
   }
   close(): void {
     this.closed = true
-    this.closeResolve?.()
+    this.closure.resolve()
   }
   stop(): Promise<void> {
     if (!this.stopping) {
-      this.stopping = new Promise<void>(this.capture.bind(this))
+      this.stopping = this.termination.promise
       this.run().then(this.finish.bind(this), this.fail.bind(this))
     }
     return this.stopping
-  }
-  private capture(resolve: ShellWireReadyResolve, reject: ShellWireReject): void {
-    this.resolve = resolve
-    this.reject = reject
-  }
-  private captureClose(resolve: ShellWireReadyResolve): void {
-    this.closeResolve = resolve
   }
   private async run(): Promise<void> {
     if (this.closed) {
       throw new Error(SHELL_WIRE_INVALID)
     }
-    const closed = new Promise<void>(this.captureClose.bind(this))
     const timer = setTimeout(this.expired.bind(this), SHELL_WIRE_STOP_WAIT_MS)
     try {
       this.child.terminate()
-      await closed
+      await this.closure.promise
       await this.child.confirmEmpty()
       if (this.failure) {
         throw this.failure
@@ -54,7 +45,7 @@ export class ShellWireOwnership {
   }
   private finish(): void {
     if (!this.failure) {
-      this.resolve?.()
+      this.termination.resolve()
     }
   }
   private expired(): void {
@@ -64,7 +55,7 @@ export class ShellWireOwnership {
     if (!this.failure) {
       this.failure = error
       this.failed(error)
-      this.reject?.(error)
+      this.termination.reject(error)
     }
   }
 }

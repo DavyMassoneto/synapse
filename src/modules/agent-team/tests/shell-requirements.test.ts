@@ -1,5 +1,6 @@
 import { expect, test, vi } from "vitest"
-import { requireUnixShell, requireWindowsShell } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
+import { requireUnixShell } from "#synapse/modules/agent-team/adapters/supervised-shell/unix"
+import { requireWindowsShell } from "#synapse/modules/agent-team/adapters/supervised-shell/windows"
 import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import {
   SHELL_REQUIREMENT_ADD_TYPE_TITLE,

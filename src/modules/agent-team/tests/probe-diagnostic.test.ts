@@ -2,7 +2,7 @@ import { expect, test } from "vitest"
 import {
   formatShellProbeDiagnostic,
   limitShellProbeText,
-} from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
+} from "#synapse/modules/agent-team/adapters/supervised-shell/windows"
 import {
   SHELL_PROBE_DIAGNOSTIC_BOUND_TITLE,
   SHELL_PROBE_DIAGNOSTIC_PRIVATE_TEXT,

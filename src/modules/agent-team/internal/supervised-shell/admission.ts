@@ -2,28 +2,23 @@ import {
   SUPERVISED_SHELL_CLOSED,
   type SupervisedShellLease,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { type AdmissionResolve } from "./types"
 
 export class ShellAdmission {
   readonly cancellation = new AbortController()
   revoked = false
   private lease?: SupervisedShellLease
   private stopping?: Promise<void>
-  private finished?: AdmissionResolve
   private readonly registry: Set<ShellAdmission>
-  readonly completion: Promise<void>
+  private readonly prepared = Promise.withResolvers<void>()
+  readonly completion = this.prepared.promise
   constructor(registry: Set<ShellAdmission>) {
     this.registry = registry
-    this.completion = new Promise<void>(this.capture.bind(this))
-  }
-  private capture(resolve: AdmissionResolve): void {
-    this.finished = resolve
   }
   publish(lease: SupervisedShellLease): void {
     this.lease = lease
   }
   finish(): void {
-    this.finished?.()
+    this.prepared.resolve()
   }
   release(): void {
     if (this.revoked || !this.lease) {

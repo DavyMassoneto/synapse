@@ -1,5 +1,4 @@
 import {
-  SUPERVISED_SHELL_ABORTED,
   SUPERVISED_SHELL_CLOSED,
   SUPERVISED_SHELL_STOP_FAILED,
   type SupervisedShellLauncher,
@@ -8,7 +7,9 @@ import {
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
 import { ShellAdmission } from "./admission"
+import { createShellCancellation } from "./cancellation"
 import { captureShellCleanup, finishShellCleanups } from "./cleanup"
+import { AdmittedShellLease } from "./lease-facade"
 import { type ShellCleanupOutcome } from "./types"
 
 export class SupervisedShellSupervisor {
@@ -29,32 +30,18 @@ export class SupervisedShellSupervisor {
     if (this.closed) {
       throw new Error(SUPERVISED_SHELL_CLOSED)
     }
-    if (signal?.aborted) {
-      if (signal.reason instanceof Error) {
-        throw signal.reason
-      }
-      throw new Error(SUPERVISED_SHELL_ABORTED)
-    }
     const admission = new ShellAdmission(this.admissions)
+    const cancellation = createShellCancellation(admission.cancellation.signal, signal)
     const epoch = this.epoch
     this.admissions.add(admission)
     try {
-      const cancellation = AbortSignal.any([admission.cancellation.signal, ...(signal ? [signal] : [])])
       const lease = await this.launcher.create(spec, output, cancellation, admission.publish.bind(admission))
       admission.publish(lease)
       if (this.closed || epoch !== this.epoch || admission.revoked) {
         await admission.terminate()
         throw new Error(SUPERVISED_SHELL_CLOSED)
       }
-      return {
-        id: lease.id,
-        get state() {
-          return lease.state
-        },
-        completion: lease.completion,
-        release: admission.release.bind(admission),
-        terminate: admission.terminate.bind(admission),
-      }
+      return new AdmittedShellLease(lease, admission)
     } catch (failure) {
       await admission.creationFailed()
       throw failure

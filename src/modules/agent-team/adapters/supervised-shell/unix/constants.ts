@@ -27,3 +27,8 @@ export const UNIX_KEEPER_EVENT_EXIT = "exit"
 export const UNIX_KEEPER_EVENT_END = "end"
 export const UNIX_KEEPER_LINE_SEPARATOR = "\n"
 export const UNIX_KEEPER_UTF8 = "utf8"
+
+export const SHELL_REQUIREMENT_PS = "Shell supervisionado requer /bin/ps executável para confirmar o grupo Unix."
+
+export const UNIX_KEEPER_GROUP_PATTERN_PREFIX = "(?:^|\\n)[ \\t]*"
+export const UNIX_KEEPER_GROUP_PATTERN_SUFFIX = "[ \\t]*(?:\\n|$)"

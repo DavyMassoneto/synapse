@@ -2,25 +2,17 @@ import { type SupervisedShellLease } from "#synapse/modules/agent-team/public/su
 import { captureShellCleanup } from "../shell-cleanup"
 import { SUPERVISED_BASH_ABORT_EVENT, SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
 import { type SupervisedBashDeadline } from "./deadline"
-import {
-  type SupervisedBashFailureReject,
-  type SupervisedBashNeverResolve,
-  type SupervisedBashResultPromises,
-} from "./types"
+import { type SupervisedBashResultPromises } from "./types"
 
 export class SupervisedBashExecution {
   private readonly lease: SupervisedShellLease
   private readonly deadline: SupervisedBashDeadline
-  private reject?: SupervisedBashFailureReject
-  private readonly cancelled: Promise<never>
+  private readonly cancellation = Promise.withResolvers<never>()
+  private readonly cancelled = this.cancellation.promise
   private stopping?: Promise<void>
   constructor(lease: SupervisedShellLease, deadline: SupervisedBashDeadline) {
     this.lease = lease
     this.deadline = deadline
-    this.cancelled = new Promise<never>(this.capture.bind(this))
-  }
-  private capture(_resolve: SupervisedBashNeverResolve, reject: SupervisedBashFailureReject): void {
-    this.reject = reject
   }
   private cancel(): void {
     if (!this.stopping) {
@@ -40,7 +32,7 @@ export class SupervisedBashExecution {
     }
   }
   private failed(error: Error): void {
-    this.reject?.(error)
+    this.cancellation.reject(error)
   }
   private async failedResult(error: Error): Promise<never> {
     if (this.stopping) {

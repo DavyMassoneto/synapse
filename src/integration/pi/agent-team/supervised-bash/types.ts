@@ -22,10 +22,6 @@ export type SupervisedBashToolOptions = BashToolOptions
 
 export type SupervisedBashToolList = ToolDefinition[]
 
-export type SupervisedBashFailureReject = (error: Error) => void
-
-export type SupervisedBashNeverResolve = (value: PromiseLike<never>) => void
-
 export type SupervisedBashAbort = () => void
 
 export type SupervisedBashToolIndex = Map<string, SupervisedBashToolList[number]>

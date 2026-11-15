@@ -1,3 +1,6 @@
 export * from "./constants"
 export * from "./launcher"
+export * from "./probe-diagnostic"
+export * from "./requirements"
 export * from "./terminate"
+export * from "./types"

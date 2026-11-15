@@ -1,23 +1,17 @@
 import { SHELL_WIRE_INVALID, SHELL_WIRE_PREPARATION_WAIT_MS } from "./constants"
-import { type ShellWireReadyResolve, type ShellWireReject } from "./types"
+import { type ShellWireReject } from "./types"
 
 export class ShellWirePreparation {
-  readonly result: Promise<void>
-  private resolve?: ShellWireReadyResolve
-  private reject?: ShellWireReject
+  private readonly deferred = Promise.withResolvers<void>()
+  readonly result = this.deferred.promise
   private failure?: Error
   private failedResult?: Promise<void>
   private timer?: ReturnType<typeof setTimeout>
   private readonly expired: ShellWireReject
   constructor(expired: ShellWireReject) {
     this.expired = expired
-    this.result = new Promise<void>(this.capture.bind(this))
     this.result.catch(this.observe.bind(this))
     this.timer = setTimeout(this.timeout.bind(this), SHELL_WIRE_PREPARATION_WAIT_MS)
-  }
-  private capture(resolve: ShellWireReadyResolve, reject: ShellWireReject): void {
-    this.resolve = resolve
-    this.reject = reject
   }
   private observe(error: Error): void {
     this.failure = error
@@ -30,7 +24,7 @@ export class ShellWirePreparation {
   ready(): void {
     clearTimeout(this.timer)
     if (!this.failure) {
-      this.resolve?.()
+      this.deferred.resolve()
     }
   }
   current(): Promise<void> {
@@ -45,7 +39,7 @@ export class ShellWirePreparation {
       this.failure = error
       this.failedResult = Promise.reject(error)
       this.failedResult.catch(this.observe.bind(this))
-      this.reject?.(error)
+      this.deferred.reject(error)
     }
   }
 }

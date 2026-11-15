@@ -111,3 +111,7 @@ export const SHELL_REQUIREMENT_EXTRA_LINE_TITLE = "probe recusa stdout com linha
 export const SHELL_REQUIREMENT_TEST_MARKER = "ADD_TYPE_AVAILABLE\n"
 export const SHELL_REQUIREMENT_TEST_EXTRA_LINE =
   "WARNING: The generated type defines no public methods or properties.\nADD_TYPE_AVAILABLE\n"
+
+export const SHELL_GROUP_MATCH_TITLE = "PGID exato aceita padding e linhas %s"
+export const SHELL_GROUP_REJECT_TITLE = "PGID não confunde prefixo ou saída vazia %s"
+export const SHELL_GROUP_INVALID_TITLE = "PGID inválido recusa antes de consultar ps %s"

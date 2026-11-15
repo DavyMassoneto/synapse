@@ -1,10 +1,11 @@
 import { execFile } from "node:child_process"
 import { setTimeout } from "node:timers/promises"
 import {
+  UNIX_KEEPER_GROUP_PATTERN_PREFIX,
+  UNIX_KEEPER_GROUP_PATTERN_SUFFIX,
   UNIX_KEEPER_GROUP_RECHECK_MS,
   UNIX_KEEPER_GROUP_WAIT_MS,
   UNIX_KEEPER_INVALID,
-  UNIX_KEEPER_LINE_SEPARATOR,
   UNIX_KEEPER_PS,
   UNIX_KEEPER_PS_ARGUMENTS,
   UNIX_KEEPER_PS_MAX_BYTES,
@@ -13,11 +14,15 @@ import {
 import { type UnixGroupReadError, type UnixGroupReject, type UnixGroupResolve } from "./types"
 
 export async function confirmUnixGroupEmpty(group: number): Promise<void> {
+  if (!Number.isSafeInteger(group) || group <= 0) {
+    throw new Error(UNIX_KEEPER_INVALID)
+  }
+  const membership = new RegExp(`${UNIX_KEEPER_GROUP_PATTERN_PREFIX}${group}${UNIX_KEEPER_GROUP_PATTERN_SUFFIX}`)
   const deadline = performance.now() + UNIX_KEEPER_GROUP_WAIT_MS
   let present = true
   while (present && performance.now() < deadline) {
     const groups = await new Promise<string>(readUnixGroups)
-    present = groups.split(UNIX_KEEPER_LINE_SEPARATOR).map(Number).includes(group)
+    present = membership.test(groups)
     if (present) {
       await setTimeout(UNIX_KEEPER_GROUP_RECHECK_MS)
     }

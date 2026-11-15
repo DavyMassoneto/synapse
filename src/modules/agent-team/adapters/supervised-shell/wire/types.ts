@@ -10,7 +10,6 @@ export interface ShellWireProcess {
   confirmEmpty(): Promise<void>
   terminate(): void
 }
-export type ShellWireResolve = (exitCode: number) => void
 export type ShellWireReject = (error: Error) => void
 export type ShellWireReadyResolve = () => void
 
@@ -49,10 +48,3 @@ export type ShellWireStatus =
   | ShellWireReleased
   | ShellWireCompleted
   | ShellWireFailed
-
-export type ShellRequirementResolve = () => void
-export type ShellRequirementReject = (error: Error) => void
-export type ShellRequirementError = Error | null
-export interface ShellRequirementOptions {
-  signal?: AbortSignal
-}

@@ -7,7 +7,7 @@ import {
   type SupervisedShellPreparedObserver,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { encodeShellSpec, prepareShellLease, requireWindowsShell, SupervisedWireLease, writeShellSpec } from "../wire"
+import { encodeShellSpec, prepareShellLease, SupervisedWireLease, writeShellSpec } from "../wire"
 import {
   WINDOWS_SHELL_FLAGS,
   WINDOWS_SHELL_INVALID,
@@ -15,6 +15,7 @@ import {
   WINDOWS_SHELL_PIPE,
   WINDOWS_SHELL_POWERSHELL,
 } from "./constants"
+import { requireWindowsShell } from "./requirements"
 import { confirmWindowsShellEmpty, terminateWindowsShell } from "./terminate"
 
 export class WindowsSupervisedShellLauncher implements SupervisedShellLauncher {

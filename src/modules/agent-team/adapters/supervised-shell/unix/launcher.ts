@@ -7,7 +7,7 @@ import {
   type SupervisedShellPreparedObserver,
   type SupervisedShellSpec,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { encodeShellSpec, prepareShellLease, requireUnixShell, SupervisedWireLease, writeShellSpec } from "../wire"
+import { encodeShellSpec, prepareShellLease, SupervisedWireLease, writeShellSpec } from "../wire"
 import { confirmUnixGroupEmpty } from "./confirm-group"
 import {
   UNIX_KEEPER_CONTROL_FD,
@@ -20,6 +20,7 @@ import {
   UNIX_KEEPER_PS,
   UNIX_KEEPER_URL,
 } from "./constants"
+import { requireUnixShell } from "./requirements"
 import { terminateUnixKeeper } from "./terminate"
 
 export class UnixSupervisedShellLauncher implements SupervisedShellLauncher {

@@ -111,3 +111,8 @@ export const SUPERVISED_TEST_CLOSE_INVALID_FRAME_TITLE = "contrato CloseJob recu
 export const SUPERVISED_TEST_SYNC_CLEANUP_TITLE = "cleanup captura throw síncrono sem impedir outra limpeza"
 export const SUPERVISED_TEST_ASYNC_CLEANUP_TITLE = "cleanup preserva identidade da rejeição assíncrona"
 export const SUPERVISED_TEST_VALUE_CLEANUP_TITLE = "cleanup thunk retorna valor exato da operação"
+
+export const SUPERVISED_TEST_RELOAD_DEFAULT_TITLE = "bash supervisionado nasce ativo pela configuração nativa"
+export const SUPERVISED_TEST_RELOAD_INACTIVE_TITLE = "reload com override preserva inativação explícita"
+export const SUPERVISED_TEST_RELOAD_ACTIVE_TITLE = "reload com override preserva ativação explícita"
+export const SUPERVISED_TEST_RELOAD_REMOVAL_TITLE = "remoção do override em reload restaura bash supervisionado ativo"

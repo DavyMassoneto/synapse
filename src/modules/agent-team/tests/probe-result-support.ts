@@ -1,4 +1,4 @@
-import { checkedWindowsShell } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
+import { checkedWindowsShell } from "#synapse/modules/agent-team/adapters/supervised-shell/windows"
 
 export class ProbeResultScenario {
   accepted = false
