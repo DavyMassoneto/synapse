@@ -56,72 +56,51 @@ function isCombinedClick(name: string): boolean {
   return name === "click"
 }
 
-async function stopDuringFocus(): Promise<void> {
+async function refusesForegroundBeforeDriver(): Promise<void> {
   const driver = new ComputerPendingFocusDriver()
   const service = new ComputerUseService(COMPUTER_CANCELLATION_DEPENDENCIES, driver)
   await service.execute({ action: "capture", pid: 10, windowId: 20 }, COMPUTER_CANCELLATION_CONTEXT)
-  const pending = service.execute(
+  const callsBefore = [...driver.calls]
+  const result = await service.execute(
     { action: "click", element: 1, bringToFront: true, deliveryMode: "foreground" },
     COMPUTER_CANCELLATION_CONTEXT,
   )
-  await driver.focusEntered.promise
+  expect(result).toMatchObject({ result: { kind: "refused" }, verdict: { decision: "stop", retryAllowed: false } })
+  expect(driver.calls).toEqual(callsBefore)
   await service.stop()
-  const stoppedCalls = [...driver.calls]
-  driver.focusResponse.resolve(COMPUTER_CANCELLATION_RESPONSE)
-  expect(await pending).toMatchObject({
-    result: { kind: "cancelled" },
-    precedingEffects: [{ kind: "completed", action: "focus_app" }],
-  })
-  expect(driver.calls).toEqual(stoppedCalls)
-  expect(driver.calls.filter(isCombinedClick)).toHaveLength(0)
+}
+
+async function refusesRaiseWindowBeforeDriver(): Promise<void> {
+  const driver = new ComputerPendingFocusDriver()
+  const service = new ComputerUseService(COMPUTER_CANCELLATION_DEPENDENCIES, driver)
+  const result = await service.execute(
+    { action: "focus_app", app: "Editor", raiseWindow: true },
+    COMPUTER_CANCELLATION_CONTEXT,
+  )
+  expect(result).toMatchObject({ result: { kind: "refused" }, verdict: { decision: "stop", retryAllowed: false } })
+  expect(driver.calls).toEqual([])
+  await service.stop()
+}
+
+async function stopKeepsLifecycleAfterRefusal(): Promise<void> {
+  const driver = new ComputerCancellationDriver()
+  const service = new ComputerUseService(COMPUTER_CANCELLATION_DEPENDENCIES, driver)
+  const refused = await service.execute(
+    { action: "click", element: 1, deliveryMode: "foreground" },
+    COMPUTER_CANCELLATION_CONTEXT,
+  )
+  expect(refused).toMatchObject({ result: { kind: "refused" } })
+  await service.stop()
   expect((await service.execute({ action: "list_apps" }, COMPUTER_CANCELLATION_CONTEXT)).kind).toBe(
     "computer-apps-listed",
   )
   await service.stop()
 }
 
-async function focusCompletesNormally(): Promise<void> {
-  const driver = new ComputerPendingFocusDriver()
-  const service = new ComputerUseService(COMPUTER_CANCELLATION_DEPENDENCIES, driver)
-  await service.execute({ action: "capture", pid: 10, windowId: 20 }, COMPUTER_CANCELLATION_CONTEXT)
-  const pending = service.execute(
-    { action: "click", element: 1, bringToFront: true, deliveryMode: "foreground" },
-    COMPUTER_CANCELLATION_CONTEXT,
-  )
-  await driver.focusEntered.promise
-  driver.focusResponse.resolve(COMPUTER_CANCELLATION_RESPONSE)
-  expect(await pending).toMatchObject({
-    result: { kind: "completed" },
-    precedingEffects: [{ kind: "completed", action: "focus_app" }],
-  })
-  expect(driver.calls.filter(isCombinedClick)).toHaveLength(1)
-  await service.stop()
-}
-
-async function focusRemainsUnknownAfterStop(): Promise<void> {
-  const driver = new ComputerPendingFocusDriver()
-  const service = new ComputerUseService(COMPUTER_CANCELLATION_DEPENDENCIES, driver)
-  await service.execute({ action: "capture", pid: 10, windowId: 20 }, COMPUTER_CANCELLATION_CONTEXT)
-  const pending = service.execute(
-    { action: "click", element: 1, bringToFront: true, deliveryMode: "foreground" },
-    COMPUTER_CANCELLATION_CONTEXT,
-  )
-  await driver.focusEntered.promise
-  await service.stop()
-  const stoppedCalls = [...driver.calls]
-  driver.focusResponse.resolve({ kind: "driver-timeout", message: "focus may have happened" })
-  expect(await pending).toMatchObject({
-    result: { kind: "outcome-unknown" },
-    precedingEffects: [{ kind: "outcome-unknown", action: "focus_app" }],
-  })
-  expect(driver.calls).toEqual(stoppedCalls)
-  expect(driver.calls.filter(isCombinedClick)).toHaveLength(0)
-}
-
 function register(): void {
-  test("foco confirmado permite entrada sem stop", focusCompletesNormally)
-  test("foco incerto após stop não provoca entrada", focusRemainsUnknownAfterStop)
-  test("stop pendant foco impede continuação antiga", stopDuringFocus)
+  test("recusa primeiro plano antes do driver", refusesForegroundBeforeDriver)
+  test("recusa elevar janela antes do driver", refusesRaiseWindowBeforeDriver)
+  test("stop mantém o ciclo utilizável após recusa", stopKeepsLifecycleAfterRefusal)
   test("stop e abort pós-envio preservam confirmação", stopAfterSentConfirmed)
   test("stop e abort pós-envio preservam incerteza sem reabrir", stopAfterSentUnknown)
 }

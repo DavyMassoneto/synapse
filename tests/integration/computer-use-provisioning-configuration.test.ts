@@ -1,6 +1,5 @@
-import { randomUUID } from "node:crypto"
-import { existsSync, mkdirSync, rmSync, writeFileSync } from "node:fs"
-import { join, resolve } from "node:path"
+import { existsSync } from "node:fs"
+import { join } from "node:path"
 import { describe, expect, test, vi } from "vitest"
 import { computerUseDependenciesAt } from "#synapse/integration/pi/computer-use/host-dependencies"
 import {
@@ -9,13 +8,14 @@ import {
   COMPUTER_CONFIGURATION_FILE,
   COMPUTER_CONFIGURATION_INVALID_CONTENT,
   COMPUTER_CONFIGURATION_STATE_DIRECTORY,
-  COMPUTER_CONFIGURATION_TEST_ROOT,
+  createComputerConfigurationDirectory,
+  removeComputerConfigurationDirectory,
+  writeComputerConfigurationFile,
 } from "../fixtures"
 
 function invalidConfigurationDoesNotProvision(): void {
-  const directory = resolve(COMPUTER_CONFIGURATION_TEST_ROOT, randomUUID())
-  mkdirSync(directory, { recursive: true })
-  writeFileSync(join(directory, COMPUTER_CONFIGURATION_FILE), COMPUTER_CONFIGURATION_INVALID_CONTENT)
+  const directory = createComputerConfigurationDirectory()
+  writeComputerConfigurationFile(directory, COMPUTER_CONFIGURATION_FILE, COMPUTER_CONFIGURATION_INVALID_CONTENT)
   const download = vi.spyOn(globalThis, COMPUTER_CONFIGURATION_FETCH_FUNCTION)
   try {
     expect(computerUseDependenciesAt.bind(null, directory, "linux", process.env)).toThrow()
@@ -25,7 +25,7 @@ function invalidConfigurationDoesNotProvision(): void {
     ).toBe(false)
   } finally {
     download.mockRestore()
-    rmSync(directory, { recursive: true, force: true })
+    removeComputerConfigurationDirectory(directory)
   }
 }
 

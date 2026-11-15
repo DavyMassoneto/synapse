@@ -11,11 +11,14 @@ export const COMPUTER_VERIFY_TRANSPORT_MESSAGE =
 export const COMPUTER_VERIFY_UNKNOWN_MESSAGE =
   "O resultado é desconhecido e a ação não deve ser repetida. Capture o estado atual."
 
+export const COMPUTER_VERIFY_BACKGROUND_MESSAGE =
+  "O driver recomendou primeiro plano, que é recusado no modo somente segundo plano. A entrada pode não ter tido efeito: capture o estado atual e confira. Em aplicativo Unity, a interface pode exigir uma bridge específica."
+
 export const COMPUTER_ESCALATE_SET_VALUE_MESSAGE =
   "Nenhum caractere chegou. Use set_value no índice do campo; capture antes se o índice estiver desatualizado."
 
 export const COMPUTER_ESCALATE_MESSAGE =
-  "A entrada provavelmente não teve efeito. Siga a recomendação de coordenada ou primeiro plano, sem prever pelo aplicativo."
+  "A entrada provavelmente não teve efeito. Capture o estado e confira; quando houver recomendação de coordenada ou valor, use-a, sem prever pelo aplicativo."
 
 export const COMPUTER_EFFECT_POLICIES: ComputerEffectPolicies = {
   confirmed: { resultKind: COMPUTER_COMPLETED, verdict: { kind: COMPUTER_VERDICT_DONE } },

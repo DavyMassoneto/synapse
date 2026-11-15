@@ -28,10 +28,12 @@ export interface ComputerVerifyVerdict {
   retryAllowed: false
 }
 
+export type ComputerEscalationRecommendation = Exclude<ComputerRecommendedAction, "foreground">
+
 export interface ComputerEscalateVerdict {
   kind: "escalate"
   message: string
-  recommended?: ComputerRecommendedAction
+  recommended?: ComputerEscalationRecommendation
 }
 
 export type ComputerActionVerdict = ComputerDoneVerdict | ComputerVerifyVerdict | ComputerEscalateVerdict

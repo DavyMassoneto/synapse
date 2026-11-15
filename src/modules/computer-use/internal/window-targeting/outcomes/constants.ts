@@ -10,6 +10,8 @@ export const COMPUTER_TARGET_APP = "target-app"
 
 export const COMPUTER_TARGET_EXACT = "target-exact"
 
+export const COMPUTER_TARGET_WINDOW = "target-window"
+
 export const COMPUTER_TARGET_SCREEN = "target-screen"
 
 export const COMPUTER_EXACT_TARGET_SELECTED = "exact-target-selected"

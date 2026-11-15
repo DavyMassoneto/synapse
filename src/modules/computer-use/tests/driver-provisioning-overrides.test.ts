@@ -1,15 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
+import { existsSync } from "node:fs"
 import { join } from "node:path"
 import { afterEach, beforeEach, describe, expect, test } from "vitest"
-import { computerDriverBinaryPath } from "#synapse/modules/computer-use/adapters/driver-location"
-import { COMPUTER_LINUX, createComputerUse } from "#synapse/modules/computer-use/public"
+import { createComputerUse } from "#synapse/modules/computer-use/public"
 import { computerFakeDriverArguments } from "./fake-driver-launch"
 import {
   COMPUTER_PROVISION_CONTEXT,
-  COMPUTER_PROVISION_INCOMPATIBLE_SCRIPT,
-  COMPUTER_PROVISION_INCOMPATIBLE_VERSION,
   COMPUTER_PROVISION_MISSING_COMMAND,
-  COMPUTER_PROVISION_SCRIPT_MODE,
+  COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS,
   ComputerProvisioningFixture,
 } from "./provisioning"
 
@@ -45,7 +42,7 @@ async function compatibleOverrideIsNotReplaced(): Promise<void> {
       command: process.execPath,
       arguments: computerFakeDriverArguments(),
       environment: process.env,
-      timeoutMilliseconds: 5000,
+      timeoutMilliseconds: COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS,
       windowsHide: true,
     },
   })
@@ -60,24 +57,17 @@ async function compatibleOverrideIsNotReplaced(): Promise<void> {
   }
 }
 
-async function incompatibleManagedDriverIsNotReplaced(): Promise<void> {
-  const binary = computerDriverBinaryPath(
-    fixture.installationDirectory,
-    COMPUTER_LINUX,
-    COMPUTER_PROVISION_INCOMPATIBLE_VERSION,
-  )
-  mkdirSync(join(fixture.installationDirectory, COMPUTER_PROVISION_INCOMPATIBLE_VERSION), { recursive: true })
-  writeFileSync(binary, COMPUTER_PROVISION_INCOMPATIBLE_SCRIPT, { mode: COMPUTER_PROVISION_SCRIPT_MODE })
-  const result = await fixture.service.execute({ action: "list_apps" }, COMPUTER_PROVISION_CONTEXT)
-  expect(result).toMatchObject({ kind: "computer-executed", result: { kind: "failed" } })
-  expect(fixture.download).not.toHaveBeenCalled()
-  expect(readFileSync(binary, "utf8")).toBe(COMPUTER_PROVISION_INCOMPATIBLE_SCRIPT)
-}
-
 describe.skipIf(process.platform === "win32")("drivers explícitos sem provisionamento", () => {
   beforeEach(prepare)
   afterEach(dispose)
-  test("não substitui comando configurado que falha", configuredLaunchIsNotReplaced)
-  test("usa driverLaunch válido sem provisionar", compatibleOverrideIsNotReplaced)
-  test("não atualiza driver gerenciado incompatível", incompatibleManagedDriverIsNotReplaced)
+  test(
+    "não substitui comando configurado que falha",
+    configuredLaunchIsNotReplaced,
+    COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS,
+  )
+  test(
+    "usa driverLaunch válido sem provisionar",
+    compatibleOverrideIsNotReplaced,
+    COMPUTER_PROVISION_TEST_TIMEOUT_MILLISECONDS,
+  )
 })

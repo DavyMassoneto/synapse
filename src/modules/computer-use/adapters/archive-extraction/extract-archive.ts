@@ -11,14 +11,19 @@ import {
   COMPUTER_ARCHIVE_EXTRACTED,
   COMPUTER_ARCHIVE_EXTRACTION_FAILED,
   COMPUTER_ARCHIVE_REFUSED,
-  COMPUTER_ARCHIVE_TAR_EXECUTABLE,
+  COMPUTER_ARCHIVE_TAR_MISSING,
 } from "./constants"
+import { computerResolveArchiveTar } from "./resolve-tar"
 import { type ComputerArchiveExtractionResult, type ComputerArchiveRequest } from "./types"
 
 export async function computerExtractArchive(
   request: ComputerArchiveRequest,
   executor: ComputerCommandRunner,
 ): Promise<ComputerArchiveExtractionResult> {
+  const tar = computerResolveArchiveTar({ platform: request.platform, environment: request.environment })
+  if (tar.kind === COMPUTER_ARCHIVE_TAR_MISSING) {
+    return { kind: COMPUTER_ARCHIVE_REFUSED, message: tar.message }
+  }
   const argumentsValue = [
     COMPUTER_ARCHIVE_EXTRACT_FLAG,
     request.archive,
@@ -26,7 +31,7 @@ export async function computerExtractArchive(
     request.directory,
   ]
   try {
-    await executor(COMPUTER_ARCHIVE_TAR_EXECUTABLE, argumentsValue, {
+    await executor(tar.command, argumentsValue, {
       timeout: COMPUTER_COMMAND_ARCHIVE_TIMEOUT_MILLISECONDS,
     })
     return { kind: COMPUTER_ARCHIVE_EXTRACTED }

@@ -1,11 +1,15 @@
 import {
+  COMPUTER_DRIVER_MAX_ELEMENTS_PROPERTY,
+  COMPUTER_DRIVER_TREE_FORMAT_PROPERTY,
   COMPUTER_MODE_SOM,
   COMPUTER_MODE_VISION,
+  COMPUTER_TREE_FORMAT_ELEMENTS,
   type ComputerCapture,
   type ComputerCaptureAction,
   type ComputerCaptureMode,
   type ComputerDriverArguments,
   type ComputerDriverEnvelope,
+  type ComputerDriverTool,
 } from "#synapse/modules/computer-use/public/contracts"
 import { computerReadElementTree } from "../element-tree-reading"
 import {
@@ -16,11 +20,8 @@ import {
 } from "../window-targeting"
 import {
   COMPUTER_DISPATCH_DESKTOP_STATE,
-  COMPUTER_DISPATCH_JPEG_FORMAT,
-  COMPUTER_DISPATCH_JPEG_QUALITY,
   COMPUTER_DISPATCH_MAX_ELEMENTS,
   COMPUTER_DISPATCH_SCREEN_APP,
-  COMPUTER_DISPATCH_SCREENSHOT,
   COMPUTER_DISPATCH_WINDOW_STATE,
 } from "./constants"
 import { type ComputerPreparedCapture } from "./types"
@@ -28,17 +29,14 @@ import { type ComputerPreparedCapture } from "./types"
 export function computerPrepareCapture(
   action: ComputerCaptureAction,
   selection: ComputerTargetSelection,
+  tools: ComputerDriverTool[],
 ): ComputerPreparedCapture {
-  const argumentsValue: ComputerDriverArguments = { max_elements: COMPUTER_DISPATCH_MAX_ELEMENTS }
+  const argumentsValue: ComputerDriverArguments = {}
   let mode: ComputerCaptureMode = COMPUTER_MODE_SOM
   if (action.mode) {
     mode = action.mode
   }
-  let tool = mode === COMPUTER_MODE_VISION ? COMPUTER_DISPATCH_SCREENSHOT : COMPUTER_DISPATCH_WINDOW_STATE
-  if (tool === COMPUTER_DISPATCH_SCREENSHOT) {
-    argumentsValue.format = COMPUTER_DISPATCH_JPEG_FORMAT
-    argumentsValue.quality = COMPUTER_DISPATCH_JPEG_QUALITY
-  }
+  let tool = COMPUTER_DISPATCH_WINDOW_STATE
   let app = COMPUTER_DISPATCH_SCREEN_APP
   if (selection.kind === COMPUTER_TARGET_SELECTED) {
     argumentsValue.pid = selection.window.pid
@@ -53,7 +51,23 @@ export function computerPrepareCapture(
   } else {
     throw new Error(selection.message)
   }
+  if (tool === COMPUTER_DISPATCH_WINDOW_STATE) {
+    computerPrepareWindowStateArguments(argumentsValue, tools)
+  }
   return { tool, arguments: argumentsValue, mode, app }
+}
+
+function computerPrepareWindowStateArguments(
+  argumentsValue: ComputerDriverArguments,
+  tools: ComputerDriverTool[],
+): void {
+  const windowState = tools.find((tool) => tool.name === COMPUTER_DISPATCH_WINDOW_STATE)
+  if (windowState?.inputProperties.includes(COMPUTER_DRIVER_MAX_ELEMENTS_PROPERTY)) {
+    argumentsValue.max_elements = COMPUTER_DISPATCH_MAX_ELEMENTS
+  }
+  if (windowState?.inputProperties.includes(COMPUTER_DRIVER_TREE_FORMAT_PROPERTY)) {
+    argumentsValue.tree_format = COMPUTER_TREE_FORMAT_ELEMENTS
+  }
 }
 
 export function computerCaptureFromEnvelope(
@@ -62,12 +76,17 @@ export function computerCaptureFromEnvelope(
 ): ComputerCapture {
   const tree = computerReadElementTree(envelope.tree)
   const elements = envelope.elements.length ? envelope.elements : tree.elements
+  let app = prepared.app
+  const elementApp = elements[0]?.app
+  if (prepared.app === COMPUTER_DISPATCH_SCREEN_APP && elementApp) {
+    app = elementApp
+  }
   for (const element of elements) {
-    element.app = prepared.app
+    element.app = app
   }
   return {
     mode: prepared.mode,
-    app: prepared.app,
+    app,
     image: envelope.image,
     elements,
     windowTitle: tree.windowTitle,

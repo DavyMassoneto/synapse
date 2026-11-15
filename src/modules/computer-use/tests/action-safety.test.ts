@@ -1,5 +1,9 @@
 import { describe, expect, test } from "vitest"
-import { computerCheckActionSafety } from "../internal"
+import {
+  COMPUTER_FOCUS_REFUSED_MESSAGE,
+  COMPUTER_FOREGROUND_REFUSED_MESSAGE,
+  computerCheckActionSafety,
+} from "../internal"
 
 function acceptsNormalKey(): void {
   expect(computerCheckActionSafety({ action: "key", keys: "cmd+s" }, "darwin").kind).toBe("safety-allowed")
@@ -31,10 +35,39 @@ function acceptsNormalText(): void {
   expect(computerCheckActionSafety({ action: "type", text: "Olá, mundo!" }, "darwin").kind).toBe("safety-allowed")
 }
 
-function rejectsInvalidForeground(): void {
-  expect(computerCheckActionSafety({ action: "click", element: 1, bringToFront: true }, "darwin").kind).toBe(
-    "safety-refused",
+function rejectsBringToFront(): void {
+  expect(computerCheckActionSafety({ action: "click", element: 1, bringToFront: true }, "darwin")).toEqual({
+    kind: "safety-refused",
+    message: COMPUTER_FOCUS_REFUSED_MESSAGE,
+  })
+}
+
+function rejectsForegroundDelivery(): void {
+  expect(computerCheckActionSafety({ action: "click", element: 1, deliveryMode: "foreground" }, "darwin")).toEqual({
+    kind: "safety-refused",
+    message: COMPUTER_FOREGROUND_REFUSED_MESSAGE,
+  })
+}
+
+function rejectsRaiseWindow(): void {
+  expect(computerCheckActionSafety({ action: "focus_app", app: "Editor", raiseWindow: true }, "darwin")).toEqual({
+    kind: "safety-refused",
+    message: COMPUTER_FOCUS_REFUSED_MESSAGE,
+  })
+}
+
+function acceptsFocusSelectionWithoutRaise(): void {
+  expect(computerCheckActionSafety({ action: "focus_app", app: "Editor" }, "darwin").kind).toBe("safety-allowed")
+}
+
+function acceptsBackgroundDelivery(): void {
+  expect(computerCheckActionSafety({ action: "click", element: 1, deliveryMode: "background" }, "darwin").kind).toBe(
+    "safety-allowed",
   )
+}
+
+function acceptsClickWithoutFocusOptions(): void {
+  expect(computerCheckActionSafety({ action: "click", element: 1 }, "darwin").kind).toBe("safety-allowed")
 }
 
 function windowsLock(): void {
@@ -60,7 +93,12 @@ function register(): void {
   test("recusa pipeline perigoso", rejectsDangerousText)
   test("recusa remoção privilegiada", rejectsSudoRemoval)
   test("aceita texto normal", acceptsNormalText)
-  test("recusa foco sem primeiro plano", rejectsInvalidForeground)
+  test("recusa trazer à frente", rejectsBringToFront)
+  test("recusa entrega em primeiro plano", rejectsForegroundDelivery)
+  test("recusa elevar janela", rejectsRaiseWindow)
+  test("seleciona alvo sem elevar janela", acceptsFocusSelectionWithoutRaise)
+  test("aceita entrega em segundo plano", acceptsBackgroundDelivery)
+  test("aceita clique sem opções de foco", acceptsClickWithoutFocusOptions)
 }
 
 describe("segurança das ações", register)

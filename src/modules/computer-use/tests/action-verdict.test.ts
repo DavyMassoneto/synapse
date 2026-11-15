@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { computerJudgeAction } from "../internal"
+import { COMPUTER_VERIFY_BACKGROUND_MESSAGE, computerJudgeAction } from "../internal"
 
 function confirmed(): void {
   const judged = computerJudgeAction({ action: "click", ok: true, message: "", effect: "confirmed" })
@@ -84,6 +84,32 @@ function escalation(): void {
   ).toMatchObject({ kind: "escalate", recommended: "px" })
 }
 
+function foregroundRecommendationIsNotRepeated(): void {
+  const judged = computerJudgeAction({
+    action: "click",
+    ok: true,
+    message: "",
+    effect: "suspected_noop",
+    recommended: "foreground",
+  })
+  expect(judged.verdict).toMatchObject({ kind: "verify-fresh-state", message: COMPUTER_VERIFY_BACKGROUND_MESSAGE })
+  expect(judged.verdict).not.toHaveProperty("recommended")
+  expect(judged.verdict).toMatchObject({ retryAllowed: false })
+}
+
+function uncertainOutcomeNeverRepeats(): void {
+  const judged = computerJudgeAction({
+    action: "click",
+    ok: false,
+    message: "",
+    effect: "suspected_noop",
+    recommended: "px",
+    code: "timeout_outcome_unknown",
+  })
+  expect(judged.result).toMatchObject({ kind: "outcome-unknown", retryAllowed: false })
+  expect(judged.verdict).toMatchObject({ kind: "verify-fresh-state", retryAllowed: false })
+}
+
 function register(): void {
   test("confirma efeito", confirmed)
   test("não repete efeito não verificável", unconfirmed)
@@ -93,7 +119,9 @@ function register(): void {
   test("timeout prevalece sobre confirmação", timeout)
   test("falha de transporte não permite repetição", transportFailure)
   test("transporte sem prova exige captura", noProof)
-  test("preserva recomendação do driver", escalation)
+  test("preserva recomendação de coordenada do driver", escalation)
+  test("não encaminha recomendação de primeiro plano", foregroundRecommendationIsNotRepeated)
+  test("resultado incerto nunca é repetido", uncertainOutcomeNeverRepeats)
 }
 
 describe("veredito da ação", register)

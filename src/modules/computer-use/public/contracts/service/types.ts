@@ -7,7 +7,9 @@ import {
   type ComputerWindow,
 } from "../capture"
 import { type ComputerDriverLaunch, type ComputerWaitPort } from "../driver"
+import { type ComputerDriverPolicy } from "../driver-release"
 import { type ComputerActionResult, type ComputerRecommendedAction, type ComputerVerdictDecision } from "../results"
+import { type ComputerUnityBridgeConfiguration } from "../unity-bridge"
 
 export interface ComputerExecutionContext {
   sessionId: string
@@ -67,6 +69,7 @@ export interface ComputerReadyDiagnostic {
   kind: "computer-ready"
   binary: string
   version: string
+  message?: string
 }
 
 export interface ComputerUnavailableDiagnostic {
@@ -107,6 +110,8 @@ export interface ComputerUseDependencies {
   environment: NodeJS.ProcessEnv
   driverPath?: string
   driverLaunch?: ComputerDriverLaunch
+  driverPolicy?: ComputerDriverPolicy
+  unityBridge?: ComputerUnityBridgeConfiguration
 }
 
 export interface ComputerImageIncluded {

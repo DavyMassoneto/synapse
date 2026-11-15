@@ -25,6 +25,10 @@ export function computerDriverBinaryPath(directory: string, platform: ComputerPl
   return join(directory, version, ...COMPUTER_DRIVER_BINARY_FOLDERS[platform])
 }
 
+export function computerDriverExecutablePath(platform: ComputerPlatform): string {
+  return COMPUTER_DRIVER_BINARY_FOLDERS[platform].join(COMPUTER_DRIVER_PORTABLE_SEPARATOR)
+}
+
 export function computerDriverCommandPath(value: string): string {
   return normalize(value.replace(COMPUTER_DRIVER_FOREIGN_SEPARATOR_PATTERN, COMPUTER_DRIVER_PORTABLE_SEPARATOR))
 }

@@ -3,6 +3,7 @@ import {
   COMPUTER_CANCELLED,
   COMPUTER_DIAGNOSTIC_READY,
   COMPUTER_DIAGNOSTIC_UNAVAILABLE,
+  COMPUTER_DRIVER_POLICY_MODE_PINNED,
   COMPUTER_FAILED,
   COMPUTER_INSTALL_FAILED,
   COMPUTER_INSTALL_SUCCEEDED,
@@ -24,6 +25,8 @@ import { ComputerDriverSession } from "../driver-session"
 import { COMPUTER_CANCELLED_MESSAGE } from "../execution-cancellation"
 import { attemptComputer } from "./attempt-computer"
 import {
+  COMPUTER_DIAGNOSTIC_OVERRIDE_MESSAGE,
+  COMPUTER_DIAGNOSTIC_PINNED_MESSAGE,
   COMPUTER_SESSION_DISPATCH_ACTIVE,
   COMPUTER_SESSION_DISPATCH_IDLE,
   COMPUTER_SESSION_STOPPED_MESSAGE,
@@ -107,7 +110,17 @@ export class ComputerUseService implements ComputerUse {
 
   private async readDriverDiagnostic(): Promise<ComputerDiagnostic> {
     const checked = await this.checkedDriver({ provisionMissing: false })
-    return { kind: COMPUTER_DIAGNOSTIC_READY, binary: checked.launch.command, version: checked.manifest.version }
+    const binary = checked.launch.command
+    const version = checked.manifest.version
+    if (this.dependencies.driverLaunch || this.dependencies.driverPath) {
+      return { kind: COMPUTER_DIAGNOSTIC_READY, binary, version, message: COMPUTER_DIAGNOSTIC_OVERRIDE_MESSAGE }
+    }
+    const policy = this.dependencies.driverPolicy
+    if (policy?.mode === COMPUTER_DRIVER_POLICY_MODE_PINNED) {
+      const message = `${COMPUTER_DIAGNOSTIC_PINNED_MESSAGE} ${policy.version}: ${policy.reason}`
+      return { kind: COMPUTER_DIAGNOSTIC_READY, binary, version, message }
+    }
+    return { kind: COMPUTER_DIAGNOSTIC_READY, binary, version }
   }
 
   private diagnosticFailure(message: string): ComputerDiagnostic {

@@ -15,10 +15,16 @@ export interface ComputerExactTargetRequest {
   windowId: number
 }
 
+export interface ComputerWindowTargetRequest {
+  kind: "target-window"
+  windowId: number
+}
+
 export type ComputerTargetRequest =
   | ComputerImplicitTargetRequest
   | ComputerAppTargetRequest
   | ComputerExactTargetRequest
+  | ComputerWindowTargetRequest
 
 export interface ComputerSelectedTarget {
   kind: "target-selected"

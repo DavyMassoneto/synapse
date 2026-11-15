@@ -1,0 +1,15 @@
+export const COMPUTER_DRIVER_POLICY_MODE_LATEST_STABLE = "latest-stable"
+
+export const COMPUTER_DRIVER_POLICY_MODE_PINNED = "pinned"
+
+export const COMPUTER_DRIVER_POLICY_VERSION_PATTERN = "^\\d+\\.\\d+\\.\\d+$"
+
+export const COMPUTER_DRIVER_POLICY_REASON_PATTERN = "\\S"
+
+export const COMPUTER_DRIVER_CHECKSUM_SOURCE_SHA256SUMS = "sha256sums"
+
+export const COMPUTER_DRIVER_CHECKSUM_SOURCE_CHECKSUMS_TEXT = "checksums-text"
+
+export const COMPUTER_DRIVER_CHECKSUM_SOURCE_RELEASE_MANIFEST = "release-manifest"
+
+export const COMPUTER_DRIVER_CHECKSUM_SOURCE_ASSET_DIGEST = "github-asset-digest"

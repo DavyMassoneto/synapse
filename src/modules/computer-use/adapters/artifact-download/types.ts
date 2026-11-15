@@ -1,9 +1,8 @@
-import { type ComputerPinnedArtifact } from "./targets"
-
 export interface ComputerArtifactRequest {
-  baseUrl: string
+  url: string
   directory: string
-  artifact: ComputerPinnedArtifact
+  fileName: string
+  sha256: string
   maxBytes: number
 }
 

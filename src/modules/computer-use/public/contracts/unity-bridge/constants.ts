@@ -1,0 +1,3 @@
+export const COMPUTER_UNITY_BRIDGE_PID_PLACEHOLDER = "{pid}"
+
+export const COMPUTER_UNITY_BRIDGE_WINDOW_PLACEHOLDER = "{windowId}"

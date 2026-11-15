@@ -10,6 +10,12 @@ export const PI_COMPUTER_CAPTURE_DIRECTORY = "captures"
 
 export const PI_COMPUTER_DRIVER_CONFIGURATION_FILE = "computer-use-driver.json"
 
+export const PI_COMPUTER_DRIVER_POLICY_CONFIGURATION_FILE = "computer-use-driver-policy.json"
+
+export const PI_COMPUTER_DRIVER_POLICY_CONFIGURED = "driver-policy-configured"
+
+export const PI_COMPUTER_DRIVER_POLICY_UNCONFIGURED = "driver-policy-unconfigured"
+
 export const PI_COMPUTER_DRIVER_PATH_VARIABLE = "PI_CUA_DRIVER_CMD"
 
 export const PI_COMPUTER_HOST_TIMEOUT_MILLISECONDS = 30000
@@ -19,3 +25,13 @@ export const PI_COMPUTER_UNSUPPORTED_PLATFORM = "Uso do computador indisponível
 export const PI_COMPUTER_CONFIGURATION_MISSING_CODE = "ENOENT"
 
 export const PI_COMPUTER_CONFIGURATION_ERROR_CODE_PROPERTY = "code"
+
+export const PI_COMPUTER_UNITY_BRIDGE_CONFIGURATION_FILE = "computer-use-unity-bridge.json"
+
+export const PI_COMPUTER_UNITY_BRIDGE_CONFIGURED = "unity-bridge-configured"
+
+export const PI_COMPUTER_UNITY_BRIDGE_UNCONFIGURED = "unity-bridge-unconfigured"
+
+export const PI_COMPUTER_CONFIGURATION_FILE_READ = "configuration-file-read"
+
+export const PI_COMPUTER_CONFIGURATION_FILE_MISSING = "configuration-file-missing"

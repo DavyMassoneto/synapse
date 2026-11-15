@@ -3,7 +3,6 @@ import {
   COMPUTER_ARTIFACT_TEST_ADDRESS_FAILED,
   COMPUTER_ARTIFACT_TEST_CONTENT_TYPE,
   COMPUTER_ARTIFACT_TEST_HOST,
-  COMPUTER_ARTIFACT_TEST_HTTP_OK,
 } from "./artifact-download-constants"
 
 import { type ComputerServerCallback } from "./artifact-download-types"
@@ -13,8 +12,11 @@ export class ComputerArtifactTestServer {
 
   private readonly server: Server
 
-  constructor(payload: Buffer) {
+  private readonly status: number
+
+  constructor(payload: Buffer, status: number) {
     this.payload = payload
+    this.status = status
     this.server = createServer(this.respond.bind(this))
   }
 
@@ -40,7 +42,7 @@ export class ComputerArtifactTestServer {
   }
 
   private respond(_request: IncomingMessage, response: ServerResponse): void {
-    response.writeHead(COMPUTER_ARTIFACT_TEST_HTTP_OK, { "content-type": COMPUTER_ARTIFACT_TEST_CONTENT_TYPE })
+    response.writeHead(this.status, { "content-type": COMPUTER_ARTIFACT_TEST_CONTENT_TYPE })
     response.end(this.payload)
   }
 }
