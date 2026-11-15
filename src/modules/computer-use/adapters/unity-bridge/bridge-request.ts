@@ -7,6 +7,7 @@ import {
   COMPUTER_UNITY_BRIDGE_KEY_OP,
   COMPUTER_UNITY_BRIDGE_PING_OP,
   COMPUTER_UNITY_BRIDGE_SCROLL_OP,
+  COMPUTER_UNITY_BRIDGE_STOP_OP,
   COMPUTER_UNITY_BRIDGE_TEXT_OP,
 } from "./constants"
 
@@ -91,4 +92,8 @@ export function computerUnityBridgeTextRequest(
 
 export function computerUnityBridgeKeyRequest(token: string, key: string): ComputerUnityBridgeRequest {
   return { op: COMPUTER_UNITY_BRIDGE_KEY_OP, token, key }
+}
+
+export function computerUnityBridgeStopRequest(token: string): ComputerUnityBridgeRequest {
+  return { op: COMPUTER_UNITY_BRIDGE_STOP_OP, token }
 }

@@ -58,8 +58,9 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
     return this.driver.start()
   }
 
-  stop(): Promise<void> {
+  async stop(): Promise<void> {
     this.captures.clear()
+    await this.attachment.stopOwned()
     this.attachment.reset()
     return this.driver.stop()
   }
@@ -103,6 +104,7 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
       return result
     }
     const discovery = await computerUnityBridgeEnsureBridge(this.configuration, this.attachment, lookup.target, signal)
+    this.attachment.remember(lookup.target, discovery)
     const measurement = computerUnityBridgeCaptureMeasurement(result)
     if (!measurement.image) {
       this.captures.clear()
@@ -129,6 +131,7 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
     computerCheckCancellation(signal)
     const discovery = await computerDiscoverUnityBridge(this.configuration, target)
     if (discovery.kind === "bridge-ready") {
+      this.attachment.remember(target, discovery)
       return this.inputThroughBridge(name, argumentsValue, target, discovery, signal)
     }
     return this.inputWithoutBridge(name, argumentsValue, target, signal)
@@ -161,6 +164,7 @@ export class ComputerUnityBridgeDriver implements ComputerDriverPort {
   ): Promise<ComputerDriverCallResult> {
     const discovery = await computerUnityBridgeAwaitBridge(this.configuration, target)
     if (discovery.kind === "bridge-ready") {
+      this.attachment.remember(target, discovery)
       return this.inputThroughBridge(name, argumentsValue, target, discovery, signal)
     }
     return computerUnityBridgeUnavailable(target, COMPUTER_UNITY_BRIDGE_ATTACH_INCOMPLETE_TEXT)

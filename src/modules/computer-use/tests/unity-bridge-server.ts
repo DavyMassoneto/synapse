@@ -38,6 +38,10 @@ export class ComputerUnityBridgeTestServer {
     this.options.geometry = computerUnityBridgeTestGeometry(clientY)
   }
 
+  replaceInstance(instance: string): void {
+    this.options.instance = instance
+  }
+
   bumpGeneration(): void {
     this.options.generation += 1
   }

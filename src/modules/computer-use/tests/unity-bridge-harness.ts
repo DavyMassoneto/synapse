@@ -88,11 +88,16 @@ export class ComputerUnityBridgeTestHarness {
   }
 
   publishHandshake(): void {
+    this.replaceBridgeIdentity(COMPUTER_UNITY_BRIDGE_TEST_INSTANCE, COMPUTER_UNITY_BRIDGE_TEST_TOKEN)
+  }
+
+  replaceBridgeIdentity(instance: string, token: string): void {
+    this.server.replaceInstance(instance)
     const geometry = computerUnityBridgeTestGeometry(COMPUTER_UNITY_BRIDGE_TEST_CLIENT_Y)
     const handshake = computerUnityBridgeTestHandshake({
       port: this.port,
-      instance: COMPUTER_UNITY_BRIDGE_TEST_INSTANCE,
-      token: COMPUTER_UNITY_BRIDGE_TEST_TOKEN,
+      instance,
+      token,
       geometry,
       screen: {
         width: COMPUTER_UNITY_BRIDGE_TEST_CLIENT_WIDTH,

@@ -39,6 +39,12 @@ export interface ComputerUnityBridgeTarget {
 export interface ComputerUnityBridgeTargetLookup {
   target?: ComputerUnityBridgeTarget
 }
+export interface ComputerUnityBridgeOwnedBridge {
+  target: ComputerUnityBridgeTarget
+  instance: string
+  token: string
+  port: number
+}
 export interface ComputerUnityBridgeTransportResponse {
   kind: "transport-response"
   body: string
