@@ -37,10 +37,8 @@ export class IphoneWdaAdmission {
     if (this.owned) {
       throw new Error(IPHONE_WDA_ENDPOINT_BUSY)
     }
-    for (const port of this.requestedPorts) {
-      if (IphoneWdaAdmission.ports.has(port)) {
-        throw new Error(IPHONE_WDA_ENDPOINT_BUSY)
-      }
+    if (this.requestedPorts.some(IphoneWdaAdmission.ports.has, IphoneWdaAdmission.ports)) {
+      throw new Error(IPHONE_WDA_ENDPOINT_BUSY)
     }
     for (const port of this.requestedPorts) {
       IphoneWdaAdmission.ports.add(port)

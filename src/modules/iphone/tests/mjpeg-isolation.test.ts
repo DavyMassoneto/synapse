@@ -23,19 +23,25 @@ function observeForeign(_request: IncomingMessage, response: ServerResponse): vo
   response.end()
 }
 
-async function rejectsConfiguration(mjpegPort: number): Promise<void> {
+async function rejectsEqualPorts(): Promise<void> {
   const server = new TestIphoneHttpServer()
   const base = await server.start()
-  const config = simulatorWdaConfig(base, 54321, 54322)
-  config.capabilities = { wdaLocalPort: 54321, mjpegServerPort: mjpegPort, useNewWDA: true }
-  const scenario = new WdaFactoryScenario(config)
+  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, 54321, 54321))
   try {
-    const creating = scenario.factory.create(new AbortController().signal)
-    if (mjpegPort === 54321) {
-      await expect(creating).rejects.toThrow(IPHONE_MJPEG_PORT_CONFLICT)
-    } else {
-      await expect(creating).rejects.toThrow()
-    }
+    await expect(scenario.factory.create(new AbortController().signal)).rejects.toThrow(IPHONE_MJPEG_PORT_CONFLICT)
+    expect(server.requests).toBe(0)
+  } finally {
+    await scenario.stop()
+    await server.stop()
+  }
+}
+
+async function rejectsInvalidMjpeg(): Promise<void> {
+  const server = new TestIphoneHttpServer()
+  const base = await server.start()
+  const scenario = new WdaFactoryScenario(simulatorWdaConfig(base, 54321, 65536))
+  try {
+    await expect(scenario.factory.create(new AbortController().signal)).rejects.toThrow()
     expect(server.requests).toBe(0)
   } finally {
     await scenario.stop()
@@ -121,8 +127,8 @@ function preservesPhysicalTarget(): void {
 
 function suite(): void {
   test(texts.IPHONE_TEST_MJPEG_MISSING, rejectsMissingMjpeg)
-  test(texts.IPHONE_TEST_MJPEG_EQUAL, rejectsConfiguration.bind(null, 54321))
-  test(texts.IPHONE_TEST_MJPEG_INVALID, rejectsConfiguration.bind(null, 65536))
+  test(texts.IPHONE_TEST_MJPEG_EQUAL, rejectsEqualPorts)
+  test(texts.IPHONE_TEST_MJPEG_INVALID, rejectsInvalidMjpeg)
   test(texts.IPHONE_TEST_MJPEG_IPV4, rejectsOccupiedMjpeg.bind(null, IPHONE_WDA_IPV4_LOOPBACK))
   test(texts.IPHONE_TEST_MJPEG_IPV6, rejectsOccupiedMjpeg.bind(null, IPHONE_WDA_IPV6_LOOPBACK))
   test(texts.IPHONE_TEST_MJPEG_WILDCARD4, rejectsOccupiedMjpeg.bind(null, IPHONE_WDA_IPV4_WILDCARD))
