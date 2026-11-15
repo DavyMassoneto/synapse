@@ -8,15 +8,15 @@ import {
 import {
   type COMPUTER_DRIVER_RELEASE_ASSET_SCHEMA,
   type COMPUTER_DRIVER_RELEASE_MANIFEST_SCHEMA,
-  type COMPUTER_DRIVER_RELEASE_PAGE_SCHEMA,
   type COMPUTER_DRIVER_RELEASE_SCHEMA,
+  type COMPUTER_DRIVER_RELEASE_TAG_REF_SCHEMA,
 } from "./schemas"
 
 export type ComputerDriverReleaseAsset = Static<typeof COMPUTER_DRIVER_RELEASE_ASSET_SCHEMA>
 
 export type ComputerDriverReleaseRecord = Static<typeof COMPUTER_DRIVER_RELEASE_SCHEMA>
 
-export type ComputerDriverReleasePage = Static<typeof COMPUTER_DRIVER_RELEASE_PAGE_SCHEMA>
+export type ComputerDriverReleaseTagRef = Static<typeof COMPUTER_DRIVER_RELEASE_TAG_REF_SCHEMA>
 
 export type ComputerDriverReleaseManifest = Static<typeof COMPUTER_DRIVER_RELEASE_MANIFEST_SCHEMA>
 
@@ -58,3 +58,26 @@ export interface ComputerDriverReleaseTextRead {
 }
 
 export type ComputerDriverReleaseTextResult = ComputerDriverReleaseTextRead | ComputerDriverReleaseFailed
+
+export interface ComputerDriverReleaseCachedJsonRequest {
+  fetch: ComputerDriverReleaseFetch
+  url: string
+  cachedPages: ComputerDriverReleaseCachedPage[]
+  maxBytes: number
+  absentWhenNotFound: boolean
+}
+
+export interface ComputerDriverReleaseCachedJsonRead {
+  kind: "release-json-read"
+  text: string
+  etag?: string
+}
+
+export interface ComputerDriverReleaseCachedJsonAbsent {
+  kind: "release-json-absent"
+}
+
+export type ComputerDriverReleaseCachedJsonResult =
+  | ComputerDriverReleaseCachedJsonRead
+  | ComputerDriverReleaseCachedJsonAbsent
+  | ComputerDriverReleaseFailed

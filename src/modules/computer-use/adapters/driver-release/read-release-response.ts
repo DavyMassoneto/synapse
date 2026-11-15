@@ -1,13 +1,31 @@
+import { type ComputerDriverReleaseFailed } from "#synapse/modules/computer-use/public/contracts"
 import {
+  COMPUTER_DRIVER_RELEASE_ACCEPT_HEADER,
+  COMPUTER_DRIVER_RELEASE_ACCEPT_HEADER_NAME,
+  COMPUTER_DRIVER_RELEASE_ETAG_HEADER_NAME,
   COMPUTER_DRIVER_RELEASE_FAILED,
+  COMPUTER_DRIVER_RELEASE_HTTP_FORBIDDEN,
   COMPUTER_DRIVER_RELEASE_HTTP_METHOD,
+  COMPUTER_DRIVER_RELEASE_HTTP_NOT_FOUND,
+  COMPUTER_DRIVER_RELEASE_HTTP_NOT_MODIFIED,
+  COMPUTER_DRIVER_RELEASE_HTTP_TOO_MANY_REQUESTS,
+  COMPUTER_DRIVER_RELEASE_IF_NONE_MATCH_HEADER_NAME,
+  COMPUTER_DRIVER_RELEASE_JSON_ABSENT,
+  COMPUTER_DRIVER_RELEASE_JSON_READ,
+  COMPUTER_DRIVER_RELEASE_MISSING_CACHED_PAGE,
   COMPUTER_DRIVER_RELEASE_QUERY_FAILED,
+  COMPUTER_DRIVER_RELEASE_RATE_LIMIT_EXHAUSTED,
+  COMPUTER_DRIVER_RELEASE_RATE_LIMIT_REMAINING_HEADER_NAME,
+  COMPUTER_DRIVER_RELEASE_RATE_LIMITED,
   COMPUTER_DRIVER_RELEASE_RESPONSE,
   COMPUTER_DRIVER_RELEASE_RESPONSE_TOO_LARGE,
   COMPUTER_DRIVER_RELEASE_TEXT_READ,
   COMPUTER_DRIVER_RELEASE_TIMEOUT_MILLISECONDS,
 } from "./constants"
 import {
+  type ComputerDriverReleaseCachedJsonRead,
+  type ComputerDriverReleaseCachedJsonRequest,
+  type ComputerDriverReleaseCachedJsonResult,
   type ComputerDriverReleaseResponseRequest,
   type ComputerDriverReleaseResponseResult,
   type ComputerDriverReleaseTextRequest,
@@ -29,6 +47,50 @@ export async function computerFetchDriverRelease(
   }
 }
 
+export async function computerReadDriverReleaseCachedJson(
+  request: ComputerDriverReleaseCachedJsonRequest,
+): Promise<ComputerDriverReleaseCachedJsonResult> {
+  const cached = request.cachedPages.find((entry) => entry.url === request.url)
+  const headers = new Headers()
+  headers.set(COMPUTER_DRIVER_RELEASE_ACCEPT_HEADER_NAME, COMPUTER_DRIVER_RELEASE_ACCEPT_HEADER)
+  if (cached) {
+    headers.set(COMPUTER_DRIVER_RELEASE_IF_NONE_MATCH_HEADER_NAME, cached.etag)
+  }
+  const fetched = await computerFetchDriverRelease({ fetch: request.fetch, url: request.url, headers })
+  if (fetched.kind === COMPUTER_DRIVER_RELEASE_FAILED) {
+    return fetched
+  }
+  if (fetched.response.status === COMPUTER_DRIVER_RELEASE_HTTP_NOT_MODIFIED) {
+    if (!cached) {
+      return { kind: COMPUTER_DRIVER_RELEASE_FAILED, message: COMPUTER_DRIVER_RELEASE_MISSING_CACHED_PAGE }
+    }
+    return {
+      kind: COMPUTER_DRIVER_RELEASE_JSON_READ,
+      text: cached.body,
+      etag: cached.etag,
+    }
+  }
+  if (fetched.response.status === COMPUTER_DRIVER_RELEASE_HTTP_NOT_FOUND && request.absentWhenNotFound) {
+    return { kind: COMPUTER_DRIVER_RELEASE_JSON_ABSENT }
+  }
+  if (!fetched.response.ok) {
+    return computerDriverReleaseResponseFailure(fetched.response)
+  }
+  const text = await computerReadReleaseResponseText(fetched.response, request.maxBytes)
+  if (text.kind === COMPUTER_DRIVER_RELEASE_FAILED) {
+    return text
+  }
+  const read: ComputerDriverReleaseCachedJsonRead = {
+    kind: COMPUTER_DRIVER_RELEASE_JSON_READ,
+    text: text.text,
+  }
+  const etag = fetched.response.headers.get(COMPUTER_DRIVER_RELEASE_ETAG_HEADER_NAME)
+  if (etag) {
+    read.etag = etag
+  }
+  return read
+}
+
 export async function computerReadDriverReleaseText(
   request: ComputerDriverReleaseTextRequest,
 ): Promise<ComputerDriverReleaseTextResult> {
@@ -37,10 +99,7 @@ export async function computerReadDriverReleaseText(
     return fetched
   }
   if (!fetched.response.ok) {
-    return {
-      kind: COMPUTER_DRIVER_RELEASE_FAILED,
-      message: `${COMPUTER_DRIVER_RELEASE_QUERY_FAILED} HTTP ${fetched.response.status}.`,
-    }
+    return computerDriverReleaseResponseFailure(fetched.response)
   }
   return computerReadReleaseResponseText(fetched.response, request.maxBytes)
 }
@@ -60,5 +119,20 @@ export async function computerReadReleaseResponseText(
     return { kind: COMPUTER_DRIVER_RELEASE_TEXT_READ, text }
   } catch {
     return { kind: COMPUTER_DRIVER_RELEASE_FAILED, message: COMPUTER_DRIVER_RELEASE_QUERY_FAILED }
+  }
+}
+
+function computerDriverReleaseResponseFailure(response: Response): ComputerDriverReleaseFailed {
+  if (
+    response.status === COMPUTER_DRIVER_RELEASE_HTTP_TOO_MANY_REQUESTS ||
+    (response.status === COMPUTER_DRIVER_RELEASE_HTTP_FORBIDDEN &&
+      response.headers.get(COMPUTER_DRIVER_RELEASE_RATE_LIMIT_REMAINING_HEADER_NAME) ===
+        COMPUTER_DRIVER_RELEASE_RATE_LIMIT_EXHAUSTED)
+  ) {
+    return { kind: COMPUTER_DRIVER_RELEASE_FAILED, message: COMPUTER_DRIVER_RELEASE_RATE_LIMITED }
+  }
+  return {
+    kind: COMPUTER_DRIVER_RELEASE_FAILED,
+    message: `${COMPUTER_DRIVER_RELEASE_QUERY_FAILED} HTTP ${response.status}.`,
   }
 }

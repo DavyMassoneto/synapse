@@ -1,8 +1,10 @@
 import {
+  COMPUTER_DRIVER_RELEASE_TAG_REF_PREFIX,
   type ComputerDriverReleaseAsset,
   type ComputerDriverReleaseRecord,
+  computerDriverReleaseTagRefsUrl,
+  computerDriverReleaseTagUrl,
 } from "#synapse/modules/computer-use/adapters/driver-release"
-import { COMPUTER_DRIVER_RELEASE_PER_PAGE } from "#synapse/modules/computer-use/adapters/driver-release/release-page-reading"
 import {
   COMPUTER_DRIVER_RELEASE_TEST_ASSET_NAME,
   COMPUTER_DRIVER_RELEASE_TEST_HTTP_OK,
@@ -32,29 +34,48 @@ export function computerReleaseTestRelease(
   return { id, tag_name: tag, draft, prerelease, assets }
 }
 
-export function computerReleaseTestPageUrl(apiUrl: string, page: number): string {
-  const url = new URL(apiUrl)
-  url.searchParams.set("per_page", `${COMPUTER_DRIVER_RELEASE_PER_PAGE}`)
-  url.searchParams.set("page", `${page}`)
-  return url.toString()
+export function computerReleaseTestTagRef(tag: string): string {
+  return `${COMPUTER_DRIVER_RELEASE_TAG_REF_PREFIX}${tag}`
 }
 
-export function computerReleaseTestPage(releases: ComputerDriverReleaseRecord[]): string {
-  return JSON.stringify(releases)
+export function computerReleaseTestTagRefsBody(tags: string[]): string {
+  return JSON.stringify(tags.map((tag) => ({ ref: computerReleaseTestTagRef(tag) })))
 }
 
-export function computerReleaseTestPageRoute(
+export function computerReleaseTestTagRefsRoute(
   apiUrl: string,
-  page: number,
-  releases: ComputerDriverReleaseRecord[],
-  etag: string,
+  tags: string[],
+  etag?: string,
 ): ComputerReleaseTestRoute {
-  return {
-    url: computerReleaseTestPageUrl(apiUrl, page),
+  const route: ComputerReleaseTestRoute = {
+    url: computerDriverReleaseTagRefsUrl(apiUrl),
     status: COMPUTER_DRIVER_RELEASE_TEST_HTTP_OK,
-    body: computerReleaseTestPage(releases),
-    etag,
+    body: computerReleaseTestTagRefsBody(tags),
   }
+  if (etag) {
+    route.etag = etag
+  }
+  return route
+}
+
+export function computerReleaseTestReleaseBody(release: ComputerDriverReleaseRecord): string {
+  return JSON.stringify(release)
+}
+
+export function computerReleaseTestReleaseRoute(
+  apiUrl: string,
+  release: ComputerDriverReleaseRecord,
+  etag?: string,
+): ComputerReleaseTestRoute {
+  const route: ComputerReleaseTestRoute = {
+    url: computerDriverReleaseTagUrl(apiUrl, release.tag_name),
+    status: COMPUTER_DRIVER_RELEASE_TEST_HTTP_OK,
+    body: computerReleaseTestReleaseBody(release),
+  }
+  if (etag) {
+    route.etag = etag
+  }
+  return route
 }
 
 export function computerReleaseTestOlderRelease(): ComputerDriverReleaseRecord {
@@ -79,12 +100,6 @@ export function computerReleaseTestStableRelease(): ComputerDriverReleaseRecord 
 
 export function computerReleaseTestOtherRelease(id: number, tag: string): ComputerDriverReleaseRecord {
   return computerReleaseTestRelease(id, tag, [], false, false)
-}
-
-export function computerReleaseTestManyReleases(count: number, prefix: string): ComputerDriverReleaseRecord[] {
-  return Array.from({ length: count }, (_, index) =>
-    computerReleaseTestOtherRelease(index + 1, `${prefix}${index + 1}`),
-  )
 }
 
 export function computerReleaseTestChecksumLine(sha256: string, name: string): string {
