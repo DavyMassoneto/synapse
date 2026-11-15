@@ -2,7 +2,6 @@ import {
   type CreateTaskInput,
   TASK_ACCEPTED,
   TASK_CLEANED,
-  TASK_COMPLETED,
   TASK_DELETED,
   TASK_PENDING,
   TASK_REFUSED,
@@ -104,20 +103,14 @@ export class TaskBoard {
     if (caller !== TEAM_LEAD_NAME) {
       return { kind: TASK_REFUSED, message: TASK_BOARD_CLEAN_LEAD_ONLY }
     }
-    let count = 0
-    for (const task of this.tasks) {
-      if (task.status === TASK_COMPLETED) {
-        count++
-      }
-    }
-    if (count > 0) {
-      const updates = taskBoardCleanPlan(this.tasks)
-      this.journal.recordTaskCleanup(updates.map(taskBoardCopySnapshot))
-      for (const task of updates) {
+    const plan = taskBoardCleanPlan(this.tasks)
+    if (plan.count > 0) {
+      this.journal.recordTaskCleanup(plan.updates.map(taskBoardCopySnapshot))
+      for (const task of plan.updates) {
         this.store(task)
       }
     }
-    return { kind: TASK_CLEANED, count }
+    return { kind: TASK_CLEANED, count: plan.count }
   }
 
   private execute(action: TaskBoardAction): TaskOutcome {

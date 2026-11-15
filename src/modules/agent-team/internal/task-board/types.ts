@@ -13,6 +13,11 @@ export interface TaskTransition {
   directory: TeamDirectory
 }
 
+export interface TaskBoardCleanPlan {
+  updates: TaskSnapshot[]
+  count: number
+}
+
 export type TaskBoardAction = () => TaskView
 
 export type TaskBoardSnapshotIndex = Map<string, TaskSnapshot>
