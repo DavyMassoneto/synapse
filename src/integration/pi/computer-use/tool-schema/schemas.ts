@@ -15,8 +15,18 @@ import {
   COMPUTER_TYPE,
   COMPUTER_WAIT,
 } from "#synapse/modules/computer-use"
+import {
+  PI_COMPUTER_BRING_TO_FRONT_DESCRIPTION,
+  PI_COMPUTER_COORDINATE_DESCRIPTION,
+  PI_COMPUTER_DELIVERY_MODE_DESCRIPTION,
+  PI_COMPUTER_ELEMENT_DESCRIPTION,
+  PI_COMPUTER_MODE_DESCRIPTION,
+  PI_COMPUTER_RAISE_WINDOW_DESCRIPTION,
+} from "./constants"
 
-export const PI_COMPUTER_COORDINATE_SCHEMA = Type.Tuple([Type.Integer(), Type.Integer()])
+export const PI_COMPUTER_COORDINATE_SCHEMA = Type.Tuple([Type.Integer(), Type.Integer()], {
+  description: PI_COMPUTER_COORDINATE_DESCRIPTION,
+})
 
 export const PI_COMPUTER_ACTION_SCHEMA = Type.Union([
   Type.Literal(COMPUTER_CAPTURE),
@@ -38,11 +48,15 @@ export const PI_COMPUTER_ACTION_SCHEMA = Type.Union([
 export const PI_COMPUTER_PARAMETERS = Type.Object(
   {
     action: PI_COMPUTER_ACTION_SCHEMA,
-    mode: Type.Optional(Type.Union([Type.Literal("som"), Type.Literal("vision"), Type.Literal("ax")])),
+    mode: Type.Optional(
+      Type.Union([Type.Literal("som"), Type.Literal("vision"), Type.Literal("ax")], {
+        description: PI_COMPUTER_MODE_DESCRIPTION,
+      }),
+    ),
     app: Type.Optional(Type.String()),
     pid: Type.Optional(Type.Integer()),
     window_id: Type.Optional(Type.Integer()),
-    element: Type.Optional(Type.Integer()),
+    element: Type.Optional(Type.Integer({ description: PI_COMPUTER_ELEMENT_DESCRIPTION })),
     coordinate: Type.Optional(PI_COMPUTER_COORDINATE_SCHEMA),
     button: Type.Optional(Type.Union([Type.Literal("left"), Type.Literal("right"), Type.Literal("middle")])),
     modifiers: Type.Optional(
@@ -73,9 +87,13 @@ export const PI_COMPUTER_PARAMETERS = Type.Object(
     text: Type.Optional(Type.String()),
     keys: Type.Optional(Type.String()),
     seconds: Type.Optional(Type.Number()),
-    raise_window: Type.Optional(Type.Boolean()),
-    delivery_mode: Type.Optional(Type.Union([Type.Literal("background"), Type.Literal("foreground")])),
-    bring_to_front: Type.Optional(Type.Boolean()),
+    raise_window: Type.Optional(Type.Boolean({ description: PI_COMPUTER_RAISE_WINDOW_DESCRIPTION })),
+    delivery_mode: Type.Optional(
+      Type.Union([Type.Literal("background"), Type.Literal("foreground")], {
+        description: PI_COMPUTER_DELIVERY_MODE_DESCRIPTION,
+      }),
+    ),
+    bring_to_front: Type.Optional(Type.Boolean({ description: PI_COMPUTER_BRING_TO_FRONT_DESCRIPTION })),
     scope: Type.Optional(Type.Union([Type.Literal("window"), Type.Literal("desktop")])),
     capture_after: Type.Optional(Type.Boolean()),
   },

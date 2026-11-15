@@ -1,7 +1,7 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "includes": ["**", "!**/*.md"]
+    "includes": ["**", "!**/*.md", "!src/modules/computer-use/adapters/unity-bridge/native/client/client.mjs"]
   },
   "vcs": {
     "enabled": true,

@@ -1,5 +1,6 @@
 import { Type } from "typebox"
 import {
+  COMPUTER_BACKGROUND,
   COMPUTER_COORDINATE_RECOMMENDATION,
   COMPUTER_EFFECT_CONFIRMED,
   COMPUTER_EFFECT_SUSPECTED_NOOP,
@@ -14,6 +15,11 @@ import {
   COMPUTER_WINDOW_NOT_FOUND,
   COMPUTER_WINDOW_OWNER_MISMATCH,
 } from "#synapse/modules/computer-use/public/contracts"
+import {
+  COMPUTER_RESPONSE_CODE_BACKGROUND_UNAVAILABLE,
+  COMPUTER_RESPONSE_CODE_TOOL_INVOCATION_FAILED,
+  COMPUTER_RESPONSE_EFFECT_REFUSED,
+} from "./constants"
 
 export const COMPUTER_RAW_RECTANGLE_SCHEMA = Type.Object({
   x: Type.Number(),
@@ -34,7 +40,7 @@ export const COMPUTER_RAW_WINDOW_SCHEMA = Type.Object({
 
 export const COMPUTER_RAW_APP_BASE_SCHEMA = Type.Object({
   name: Type.String(),
-  bundle_id: Type.Optional(Type.String()),
+  bundle_id: Type.Optional(Type.Union([Type.String(), Type.Null()])),
 })
 
 export const COMPUTER_RAW_APP_SCHEMA = Type.Union([
@@ -55,11 +61,58 @@ export const COMPUTER_RAW_ELEMENT_SCHEMA = Type.Object({
   role: Type.String(),
   label: Type.Optional(Type.String()),
   element_token: Type.Optional(Type.String()),
+  depth: Type.Optional(Type.Integer({ minimum: 0 })),
+  enabled: Type.Optional(Type.Boolean()),
+  parent_index: Type.Optional(Type.Integer({ minimum: 0 })),
+  actions: Type.Optional(Type.Array(Type.String())),
+  value: Type.Optional(Type.String()),
   frame: Type.Optional(Type.Object({ x: Type.Number(), y: Type.Number(), w: Type.Number(), h: Type.Number() })),
+  screenshot_frame: Type.Optional(
+    Type.Object({ x: Type.Number(), y: Type.Number(), w: Type.Number(), h: Type.Number() }),
+  ),
+})
+
+export const COMPUTER_RAW_REFUSAL_SCHEMA = Type.Object({
+  code: Type.Optional(Type.String()),
+  message: Type.Optional(Type.String()),
+  hint: Type.Optional(Type.String()),
+})
+
+export const COMPUTER_RAW_ACTION_ERROR_SCHEMA = Type.Object({
+  code: Type.Optional(Type.String()),
+  message: Type.Optional(Type.String()),
+  hint: Type.Optional(Type.String()),
+})
+
+export const COMPUTER_RAW_DELIVERY_SCHEMA = Type.Object({
+  mode: Type.Optional(Type.Union([Type.Literal(COMPUTER_BACKGROUND), Type.Literal(COMPUTER_FOREGROUND)])),
 })
 
 export const COMPUTER_RAW_STATE_SCHEMA = Type.Object({
   message: Type.Optional(Type.String()),
+  app_name: Type.Optional(Type.String()),
+  pid: Type.Optional(Type.Integer({ minimum: 1 })),
+  window_id: Type.Optional(Type.Integer({ minimum: 1 })),
+  window_title: Type.Optional(Type.String()),
+  window_bounds: Type.Optional(COMPUTER_RAW_RECTANGLE_SCHEMA),
+  capture_id: Type.Optional(Type.String()),
+  snapshot_id: Type.Optional(Type.String()),
+  tree_format: Type.Optional(Type.Union([Type.Literal("markdown"), Type.Literal("elements"), Type.Literal("both")])),
+  truncated: Type.Optional(Type.Boolean()),
+  elements_complete: Type.Optional(Type.Boolean()),
+  element_count: Type.Optional(Type.Integer({ minimum: 0 })),
+  returned_element_count: Type.Optional(Type.Integer({ minimum: 0 })),
+  total_element_count: Type.Optional(Type.Integer({ minimum: 0 })),
+  timeout_ms: Type.Optional(Type.Integer({ minimum: 0 })),
+  screenshot_width: Type.Optional(Type.Integer({ minimum: 1 })),
+  screenshot_height: Type.Optional(Type.Integer({ minimum: 1 })),
+  screenshot_file_path: Type.Optional(Type.String()),
+  summary: Type.Optional(Type.String()),
+  route: Type.Optional(Type.String()),
+  delivery: Type.Optional(COMPUTER_RAW_DELIVERY_SCHEMA),
+  refusal: Type.Optional(COMPUTER_RAW_REFUSAL_SCHEMA),
+  error: Type.Optional(COMPUTER_RAW_ACTION_ERROR_SCHEMA),
+  hint: Type.Optional(Type.String()),
   windows: Type.Optional(Type.Array(COMPUTER_RAW_WINDOW_SCHEMA)),
   apps: Type.Optional(Type.Array(COMPUTER_RAW_APP_SCHEMA)),
   elements: Type.Optional(Type.Array(COMPUTER_RAW_ELEMENT_SCHEMA)),
@@ -72,6 +125,7 @@ export const COMPUTER_RAW_STATE_SCHEMA = Type.Object({
       Type.Literal(COMPUTER_EFFECT_CONFIRMED),
       Type.Literal(COMPUTER_EFFECT_UNVERIFIABLE),
       Type.Literal(COMPUTER_EFFECT_SUSPECTED_NOOP),
+      Type.Literal(COMPUTER_RESPONSE_EFFECT_REFUSED),
     ]),
   ),
   code: Type.Optional(
@@ -81,6 +135,8 @@ export const COMPUTER_RAW_STATE_SCHEMA = Type.Object({
       Type.Literal(COMPUTER_TRANSPORT_UNKNOWN),
       Type.Literal(COMPUTER_WINDOW_NOT_FOUND),
       Type.Literal(COMPUTER_WINDOW_OWNER_MISMATCH),
+      Type.Literal(COMPUTER_RESPONSE_CODE_TOOL_INVOCATION_FAILED),
+      Type.Literal(COMPUTER_RESPONSE_CODE_BACKGROUND_UNAVAILABLE),
     ]),
   ),
   escalation: Type.Optional(
@@ -92,6 +148,7 @@ export const COMPUTER_RAW_STATE_SCHEMA = Type.Object({
           Type.Literal(COMPUTER_FOREGROUND),
         ]),
       ),
+      reason: Type.Optional(Type.String()),
     }),
   ),
   delivered_chars: Type.Optional(Type.Integer()),

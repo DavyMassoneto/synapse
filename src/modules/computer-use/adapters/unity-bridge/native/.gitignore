@@ -1,0 +1,7 @@
+bin/
+obj/
+logs/
+run/
+launcher/bin/
+launcher/obj/
+*.user

@@ -2,6 +2,8 @@ import { type ComputerDeliveryMode, type ComputerInputScope, type ComputerScroll
 import { type ComputerApplication, type ComputerElement, type ComputerImage, type ComputerWindow } from "../capture"
 import { type ComputerActionCode, type ComputerActionEffect, type ComputerRecommendedAction } from "../results"
 
+export type ComputerTreeFormat = "markdown" | "elements" | "both"
+
 export interface ComputerDriverArguments {
   session?: string
   pid?: number
@@ -29,6 +31,7 @@ export interface ComputerDriverArguments {
   max_elements?: number
   on_screen_only?: boolean
   max_image_dimension?: number
+  tree_format?: ComputerTreeFormat
   format?: string
   quality?: number
   enabled?: boolean

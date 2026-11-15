@@ -8,6 +8,7 @@ import {
 } from "../capture"
 import { type ComputerDriverLaunch, type ComputerWaitPort } from "../driver"
 import { type ComputerActionResult, type ComputerRecommendedAction, type ComputerVerdictDecision } from "../results"
+import { type ComputerUnityBridgeConfiguration } from "../unity-bridge"
 
 export interface ComputerExecutionContext {
   sessionId: string
@@ -107,6 +108,7 @@ export interface ComputerUseDependencies {
   environment: NodeJS.ProcessEnv
   driverPath?: string
   driverLaunch?: ComputerDriverLaunch
+  unityBridge?: ComputerUnityBridgeConfiguration
 }
 
 export interface ComputerImageIncluded {

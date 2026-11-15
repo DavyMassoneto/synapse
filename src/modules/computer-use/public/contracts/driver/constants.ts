@@ -26,3 +26,37 @@ export const COMPUTER_DRIVER_READ_TOOLS = [
 ]
 
 export const COMPUTER_DRIVER_PROTOCOL_VERSION = "2025-06-18"
+
+export const COMPUTER_TREE_FORMAT_ELEMENTS = "elements"
+
+export const COMPUTER_DRIVER_CLICK_TOOL = "click"
+
+export const COMPUTER_DRIVER_INPUT_TOOLS = [
+  "bring_to_front",
+  "click",
+  "double_click",
+  "drag",
+  "hotkey",
+  "press_key",
+  "scroll",
+  "set_value",
+  "type_text",
+]
+
+export const COMPUTER_DRIVER_CAPTURE_TOOLS = ["get_window_state", "screenshot"]
+
+export const COMPUTER_DRIVER_LEFT_BUTTON = "left"
+
+export const COMPUTER_DRIVER_PID_PROPERTY = "pid"
+
+export const COMPUTER_DRIVER_WINDOW_PROPERTY = "window_id"
+
+export const COMPUTER_DRIVER_X_PROPERTY = "x"
+
+export const COMPUTER_DRIVER_Y_PROPERTY = "y"
+
+export const COMPUTER_DRIVER_BUTTON_PROPERTY = "button"
+
+export const COMPUTER_DRIVER_MODIFIER_PROPERTY = "modifier"
+
+export const COMPUTER_DRIVER_ELEMENT_PROPERTY = "element_index"

@@ -19,3 +19,13 @@ export const PI_COMPUTER_UNSUPPORTED_PLATFORM = "Uso do computador indisponível
 export const PI_COMPUTER_CONFIGURATION_MISSING_CODE = "ENOENT"
 
 export const PI_COMPUTER_CONFIGURATION_ERROR_CODE_PROPERTY = "code"
+
+export const PI_COMPUTER_UNITY_BRIDGE_CONFIGURATION_FILE = "computer-use-unity-bridge.json"
+
+export const PI_COMPUTER_UNITY_BRIDGE_CONFIGURED = "unity-bridge-configured"
+
+export const PI_COMPUTER_UNITY_BRIDGE_UNCONFIGURED = "unity-bridge-unconfigured"
+
+export const PI_COMPUTER_CONFIGURATION_FILE_READ = "configuration-file-read"
+
+export const PI_COMPUTER_CONFIGURATION_FILE_MISSING = "configuration-file-missing"

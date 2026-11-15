@@ -29,7 +29,11 @@ export const COMPUTER_UNSAFE_TEXT_MESSAGE = "Texto recusado: comandos de shell p
 
 export const COMPUTER_UNSAFE_KEY_MESSAGE = "Combinação recusada: atalhos destrutivos do sistema são bloqueados."
 
-export const COMPUTER_INVALID_FOREGROUND_MESSAGE = "Trazer à frente exige deliveryMode='foreground'."
+export const COMPUTER_FOREGROUND_REFUSED_MESSAGE =
+  "Entrega em primeiro plano recusada: o computer_use opera somente em segundo plano e não altera o foco."
+
+export const COMPUTER_FOCUS_REFUSED_MESSAGE =
+  "Trazer ou elevar a janela recusado: o computer_use opera somente em segundo plano e não altera o foco."
 
 export const COMPUTER_SAFETY_WIN_ALIASES = ["super", "meta"]
 

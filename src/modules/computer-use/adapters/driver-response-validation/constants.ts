@@ -29,3 +29,9 @@ export const COMPUTER_RESPONSE_REQUESTED_PROPERTY = "requested_chars"
 export const COMPUTER_RESPONSE_BASE64_ENCODING = "base64"
 
 export const COMPUTER_RESPONSE_LABEL_PROPERTY = "label"
+
+export const COMPUTER_RESPONSE_CODE_BACKGROUND_UNAVAILABLE = "background_unavailable"
+
+export const COMPUTER_RESPONSE_CODE_TOOL_INVOCATION_FAILED = "tool_invocation_failed"
+
+export const COMPUTER_RESPONSE_EFFECT_REFUSED = "refused"

@@ -6,10 +6,14 @@ import {
   type ComputerDriverEnvelope,
   type ComputerDriverPort,
   type ComputerPlatform,
+  type ComputerWindow,
 } from "#synapse/modules/computer-use/public/contracts"
 import {
   COMPUTER_TARGET_APP,
   COMPUTER_TARGET_EXACT,
+  COMPUTER_TARGET_REJECTED,
+  COMPUTER_TARGET_WINDOW,
+  COMPUTER_WINDOW_TARGET_NOT_FOUND,
   type ComputerStickyWindowTarget,
   type ComputerTargetSelection,
 } from "../window-targeting"
@@ -52,8 +56,12 @@ export class ComputerCaptureDispatch {
     if (request.kind === COMPUTER_TARGET_EXACT) {
       return this.target.select([], [], request, this.platform)
     }
-    const response = await this.driver.call(COMPUTER_DISPATCH_LIST_WINDOWS, { on_screen_only: true }, signal)
+    const onScreenOnly = request.kind !== COMPUTER_TARGET_WINDOW
+    const response = await this.driver.call(COMPUTER_DISPATCH_LIST_WINDOWS, { on_screen_only: onScreenOnly }, signal)
     const envelope = computerRequireEnvelope(response, this.target)
+    if (request.kind === COMPUTER_TARGET_WINDOW) {
+      return this.selectWindow(envelope.windows, request.windowId)
+    }
     let applications = envelope.applications
     if (request.kind === COMPUTER_TARGET_APP) {
       const apps = await this.driver.call(COMPUTER_DISPATCH_LIST_APPS, {}, signal)
@@ -62,5 +70,13 @@ export class ComputerCaptureDispatch {
       }
     }
     return this.target.select(envelope.windows, applications, request, this.platform)
+  }
+
+  private selectWindow(windows: ComputerWindow[], windowId: number): ComputerTargetSelection {
+    const found = windows.find((window) => window.windowId === windowId)
+    if (!found) {
+      return { kind: COMPUTER_TARGET_REJECTED, message: COMPUTER_WINDOW_TARGET_NOT_FOUND }
+    }
+    return this.target.select(windows, [], { kind: COMPUTER_TARGET_EXACT, pid: found.pid, windowId }, this.platform)
   }
 }

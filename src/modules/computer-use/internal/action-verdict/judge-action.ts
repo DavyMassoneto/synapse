@@ -2,6 +2,7 @@ import {
   COMPUTER_EFFECT_CONFIRMED,
   COMPUTER_EFFECT_SUSPECTED_NOOP,
   COMPUTER_FAILED,
+  COMPUTER_FOREGROUND,
   COMPUTER_OUTCOME_UNKNOWN,
   COMPUTER_UNCONFIRMED,
 } from "#synapse/modules/computer-use/public/contracts"
@@ -10,6 +11,7 @@ import {
   COMPUTER_EFFECT_POLICIES,
   COMPUTER_ESCALATE_MESSAGE,
   COMPUTER_ESCALATE_SET_VALUE_MESSAGE,
+  COMPUTER_VERIFY_BACKGROUND_MESSAGE,
   COMPUTER_VERIFY_TRANSPORT_MESSAGE,
   COMPUTER_VERIFY_UNKNOWN_MESSAGE,
 } from "./constants"
@@ -23,6 +25,13 @@ function computerEscalationVerdict(evidence: ComputerActionEvidence): ComputerAc
       kind: COMPUTER_VERDICT_ESCALATE,
       recommended: COMPUTER_NEXT_SET_VALUE,
       message: COMPUTER_ESCALATE_SET_VALUE_MESSAGE,
+    }
+  }
+  if (evidence.recommended === COMPUTER_FOREGROUND) {
+    return {
+      kind: COMPUTER_VERDICT_VERIFY,
+      message: COMPUTER_VERIFY_BACKGROUND_MESSAGE,
+      retryAllowed: false,
     }
   }
   if (evidence.recommended) {

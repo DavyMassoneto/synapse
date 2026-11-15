@@ -1,5 +1,7 @@
 export * from "./constants"
 export * from "./create-host-dependencies"
+export * from "./read-configuration-file"
 export * from "./read-launch-configuration"
+export * from "./read-unity-bridge-configuration"
 export * from "./schemas"
 export * from "./types"

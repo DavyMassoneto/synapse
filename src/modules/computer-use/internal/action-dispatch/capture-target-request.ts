@@ -4,6 +4,7 @@ import {
   COMPUTER_TARGET_APP,
   COMPUTER_TARGET_EXACT,
   COMPUTER_TARGET_IMPLICIT,
+  COMPUTER_TARGET_WINDOW,
   type ComputerTargetRequest,
 } from "../window-targeting"
 import { COMPUTER_DISPATCH_PID_PROPERTY, COMPUTER_DISPATCH_WINDOW_PROPERTY } from "./constants"
@@ -12,6 +13,9 @@ export function computerCaptureTargetRequest(action: ComputerCaptureAction): Com
   if (COMPUTER_DISPATCH_PID_PROPERTY in action || COMPUTER_DISPATCH_WINDOW_PROPERTY in action) {
     if (COMPUTER_DISPATCH_PID_PROPERTY in action && COMPUTER_DISPATCH_WINDOW_PROPERTY in action) {
       return { kind: COMPUTER_TARGET_EXACT, pid: action.pid, windowId: action.windowId }
+    }
+    if (COMPUTER_DISPATCH_WINDOW_PROPERTY in action) {
+      return { kind: COMPUTER_TARGET_WINDOW, windowId: action.windowId }
     }
     throw new Error(COMPUTER_INVALID_EXACT_TARGET)
   }

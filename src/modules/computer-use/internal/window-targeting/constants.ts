@@ -24,6 +24,8 @@ export const COMPUTER_SHELL_BACKDROPS: ComputerShellNames = {
 
 export const COMPUTER_NO_ELIGIBLE_WINDOW = "Nenhuma janela elegível foi encontrada."
 
+export const COMPUTER_WINDOW_TARGET_NOT_FOUND = "A janela informada (windowId) não foi encontrada na listagem."
+
 export const COMPUTER_INVALID_EXACT_TARGET = "O alvo exato exige pid e windowId inteiros positivos."
 
 export const COMPUTER_INPUT_TARGET_MISMATCH =

@@ -1,0 +1,7 @@
+# Perfil canonico: run/bridge.ini relativo a raiz de native/.
+# enabled=0 grava apenas diagnostico, sem listener nem GameObject.
+enabled=1
+port=47823
+request_timeout_ms=3000
+max_tree_items=400
+max_texts=300

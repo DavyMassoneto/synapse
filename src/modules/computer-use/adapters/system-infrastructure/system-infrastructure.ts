@@ -13,6 +13,7 @@ import { computerInstallDriver } from "../driver-installation"
 import { COMPUTER_DRIVER_FOUND, COMPUTER_DRIVER_NOT_INSTALLED, computerLocateDriver } from "../driver-location"
 import { ComputerDriverProcess } from "../driver-process"
 import { computerFilterDriverEnvironment } from "../environment-filtering"
+import { ComputerUnityBridgeDriver, computerRunUnityBridgeCommand } from "../unity-bridge"
 import { COMPUTER_SYSTEM_DRIVER_TIMEOUT_MILLISECONDS } from "./constants"
 
 export class ComputerSystemInfrastructure implements ComputerDriverInfrastructure {
@@ -60,7 +61,12 @@ export class ComputerSystemInfrastructure implements ComputerDriverInfrastructur
   }
 
   driver(launch: ComputerDriverLaunch): ComputerDriverPort {
-    return new ComputerDriverProcess(launch)
+    const driver = new ComputerDriverProcess(launch)
+    const configuration = this.dependencies.unityBridge
+    if (configuration) {
+      return new ComputerUnityBridgeDriver(driver, configuration, computerRunUnityBridgeCommand)
+    }
+    return driver
   }
 
   install(): Promise<string> {

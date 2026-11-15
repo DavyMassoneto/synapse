@@ -1,4 +1,5 @@
 import {
+  COMPUTER_FOCUS_APP,
   COMPUTER_FOREGROUND,
   COMPUTER_KEY,
   COMPUTER_TYPE,
@@ -15,7 +16,8 @@ import {
   COMPUTER_BLOCKED_COMBOS,
   COMPUTER_BLOCKED_TEXT_PATTERNS,
   COMPUTER_BRING_TO_FRONT_PROPERTY,
-  COMPUTER_INVALID_FOREGROUND_MESSAGE,
+  COMPUTER_FOCUS_REFUSED_MESSAGE,
+  COMPUTER_FOREGROUND_REFUSED_MESSAGE,
   COMPUTER_SAFETY_ALLOWED,
   COMPUTER_SAFETY_REFUSED,
   COMPUTER_SAFETY_WIN_ALIASES,
@@ -34,7 +36,7 @@ export function computerCheckActionSafety(action: ComputerAction, platform: Comp
   if (keys.kind === COMPUTER_SAFETY_REFUSED) {
     return keys
   }
-  return computerCheckForegroundRequest(action)
+  return computerCheckBackgroundOnlyPolicy(action)
 }
 
 function computerCheckTypedText(action: ComputerAction): ComputerSafetyResult {
@@ -63,13 +65,15 @@ function computerCheckSystemShortcut(action: ComputerAction, platform: ComputerP
   return { kind: COMPUTER_SAFETY_ALLOWED }
 }
 
-function computerCheckForegroundRequest(action: ComputerAction): ComputerSafetyResult {
-  if (
-    COMPUTER_BRING_TO_FRONT_PROPERTY in action &&
-    action.bringToFront &&
-    action.deliveryMode !== COMPUTER_FOREGROUND
-  ) {
-    return { kind: COMPUTER_SAFETY_REFUSED, message: COMPUTER_INVALID_FOREGROUND_MESSAGE }
+function computerCheckBackgroundOnlyPolicy(action: ComputerAction): ComputerSafetyResult {
+  if (action.action === COMPUTER_FOCUS_APP && action.raiseWindow) {
+    return { kind: COMPUTER_SAFETY_REFUSED, message: COMPUTER_FOCUS_REFUSED_MESSAGE }
+  }
+  if (COMPUTER_BRING_TO_FRONT_PROPERTY in action && action.bringToFront) {
+    return { kind: COMPUTER_SAFETY_REFUSED, message: COMPUTER_FOCUS_REFUSED_MESSAGE }
+  }
+  if ("deliveryMode" in action && action.deliveryMode === COMPUTER_FOREGROUND) {
+    return { kind: COMPUTER_SAFETY_REFUSED, message: COMPUTER_FOREGROUND_REFUSED_MESSAGE }
   }
   return { kind: COMPUTER_SAFETY_ALLOWED }
 }

@@ -34,13 +34,15 @@ export const PI_COMPUTER_NOTICE_INFO = "info"
 export const PI_COMPUTER_NOTICE_ERROR = "error"
 
 export const PI_COMPUTER_TOOL_DESCRIPTION =
-  "Controle o computador via cua-driver: capturas, mouse, teclado, rolagem e arraste em macOS, Windows e Linux. A entrada é enviada em segundo plano por padrão; siga o veredito para escalar a coordenadas ou ao primeiro plano, que altera o foco. Nunca repita entrada confirmada ou de resultado desconhecido. Capture para verificar antes de repetir entrada não verificável. capture(mode='som') devolve elementos numerados; prefira element ao invés de coordenadas. set_value define diretamente o valor acessível de seletores e controles. Capturas incluem screenshotStorage com referência ao arquivo salvo. A resposta limita a lista a 100 elementos e rótulos a 120 caracteres; a árvore integral fica no arquivo de elementos. Arrastar não substitui scroll."
+  "Controle o computador via cua-driver em modo somente segundo plano: capturas, mouse, teclado, rolagem e arraste em macOS, Windows e Linux. Nenhuma ação traz janelas à frente, eleva a janela ou move o cursor do usuário; delivery_mode='foreground', bring_to_front e raise_window são recusados antes de qualquer chamada ao driver. Nunca repita entrada confirmada ou de resultado desconhecido; capture para verificar antes de decidir agir novamente. capture(mode='som') devolve elementos numerados: prefira element quando a árvore expõe a interface e coordinate sobre a última captura quando ela expõe apenas a moldura da janela, caso comum em aplicativos Unity. Em aplicativos Unity, a interface pode exigir uma bridge específica; a falta dela não autoriza primeiro plano. Os controles do título da janela (Sistema, Minimizar, Maximizar, Fechar) pertencem à janela, não ao conteúdo do aplicativo. set_value define diretamente o valor acessível de seletores e controles. Capturas incluem screenshotStorage com referência ao arquivo salvo. A resposta limita a lista a 100 elementos e rótulos a 120 caracteres; a árvore integral fica no arquivo de elementos. Arrastar não substitui scroll."
 
 export const PI_COMPUTER_TOOL_SNIPPET =
-  "Controle o computador em segundo plano via cua-driver, com capturas e elementos numerados."
+  "Controle o computador somente em segundo plano via cua-driver, com capturas e elementos numerados."
 
 export const PI_COMPUTER_TOOL_GUIDELINES = [
-  "Use computer_use com action='capture' e mode='som' primeiro; clique por element e capture novamente após alterações ou use capture_after=true.",
+  "Use computer_use com action='capture' e mode='som' primeiro; clique por element quando a árvore expõe a interface e por coordinate sobre a última captura quando ela expõe apenas a moldura ou o aplicativo é Unity. Capture novamente após alterações ou use capture_after=true.",
+  "O modo é somente segundo plano: nunca peça foreground, bring_to_front ou raise_window; se a entrada não tiver efeito, capture e confira sem repetir entrada de resultado incerto, e informe a limitação ou a necessidade de bridge Unity.",
+  "Não trate Sistema, Minimizar, Maximizar e Fechar como conteúdo do jogo: são controles do título da janela.",
   "Siga o veredito de computer_use: nunca repita entrada confirmada ou de resultado desconhecido; capture para verificar uma entrada não verificável antes de decidir agir novamente.",
   "Prefira comandos de shell, APIs ou operações de arquivo ao computer_use quando a tarefa não exigir interface gráfica.",
 ]
