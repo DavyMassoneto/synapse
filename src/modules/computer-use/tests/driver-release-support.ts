@@ -1,0 +1,30 @@
+import { type ComputerDriverReleaseFetch } from "#synapse/modules/computer-use/adapters/driver-release"
+import { COMPUTER_DRIVER_RELEASE_TEST_UNKNOWN_URL } from "./driver-release-constants"
+import { type ComputerReleaseTestRequest, type ComputerReleaseTestRoute } from "./driver-release-types"
+
+export class ComputerFakeReleaseHttp {
+  readonly requests: ComputerReleaseTestRequest[] = []
+
+  private readonly routes: ComputerReleaseTestRoute[]
+
+  readonly fetch: ComputerDriverReleaseFetch = this.respond.bind(this)
+
+  constructor(routes: ComputerReleaseTestRoute[]) {
+    this.routes = routes
+  }
+
+  private async respond(url: string, init: RequestInit): Promise<Response> {
+    const headers = new Headers(init.headers)
+    this.requests.push({ url, headers })
+    const route = this.routes.find((entry) => entry.url === url)
+    if (!route) {
+      throw new Error(`${COMPUTER_DRIVER_RELEASE_TEST_UNKNOWN_URL} ${url}`)
+    }
+    const responseHeaders = new Headers(route.headers)
+    if (route.etag) {
+      responseHeaders.set("etag", route.etag)
+    }
+    const body = route.body.length === 0 ? null : route.body
+    return new Response(body, { status: route.status, headers: responseHeaders })
+  }
+}
