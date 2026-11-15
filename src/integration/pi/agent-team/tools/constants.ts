@@ -4,8 +4,6 @@ export const TEAM_TOOL_SEND_MESSAGE = "send_message"
 
 export const TEAM_TOOL_LIST_AGENTS = "list_agents"
 
-export const TEAM_TOOL_WAIT_AGENT = "wait_agent"
-
 export const TEAM_TOOL_INTERRUPT_AGENT = "interrupt_agent"
 
 export const TEAM_TOOL_LIST_MODELS = "list_models"
@@ -20,10 +18,6 @@ export const TEAM_TOOL_TASK_UPDATE = "team_task_update"
 
 export const TEAM_TOOL_TEXT_CONTENT = "text"
 
-export const TEAM_TOOL_MIN_WAIT_MS = 1000
-
-export const TEAM_TOOL_MAX_WAIT_MS = 3_600_000
-
 export const TEAM_TOOL_SUBAGENT_DESCRIPTION =
   "Inicia um subagente em segundo plano com a tarefa dada e retorna na hora com o nome dele, sem esperar o resultado. A resposta final do subagente chega depois como mensagem. O subagente continua disponível para send_message."
 
@@ -32,9 +26,6 @@ export const TEAM_TOOL_SEND_MESSAGE_DESCRIPTION =
 
 export const TEAM_TOOL_LIST_AGENTS_DESCRIPTION =
   "Lista os agentes da equipe: nome, estado do turno (running ou inactive) e descrição. O estado não diz se a tarefa foi concluída."
-
-export const TEAM_TOOL_WAIT_AGENT_DESCRIPTION =
-  "Espera chegar entrada para você: mensagem de agente ou aviso de término de subagente. Retorna na hora se já há entrada nova. timedOut false significa que há entrada nova, entregue a você no próximo passo."
 
 export const TEAM_TOOL_LIST_MODELS_DESCRIPTION =
   "Lista os modelos que um subagente pode usar, no formato provider/id, com os níveis de raciocínio que cada um aceita."
@@ -59,7 +50,3 @@ export const TEAM_TOOL_SUBJECT_FIELD = "subject"
 export const TEAM_TOOL_DESCRIPTION_FIELD = "description"
 
 export const TEAM_TOOL_OWNER_FIELD = "owner"
-
-export const TEAM_TOOL_CANCELLED_MESSAGE = "Espera da equipe cancelada."
-
-export const TEAM_TOOL_ABORT_NAME = "AbortError"

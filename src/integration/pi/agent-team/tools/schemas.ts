@@ -12,7 +12,6 @@ import {
   TASK_REOPEN,
   TASK_SET_DEPENDENCIES,
 } from "#synapse/modules/agent-team"
-import { TEAM_TOOL_MAX_WAIT_MS, TEAM_TOOL_MIN_WAIT_MS } from "./constants"
 
 export const TEAM_TOOL_SUBAGENT_PARAMETERS = Type.Object({
   task: Type.String({ description: "Tarefa completa do subagente; ele começa sem o histórico desta conversa." }),
@@ -46,14 +45,6 @@ export const TEAM_TOOL_SEND_MESSAGE_PARAMETERS = Type.Object({
 
 export const TEAM_TOOL_INTERRUPT_AGENT_PARAMETERS = Type.Object({
   agent: Type.String({ description: "Nome do subagente a interromper." }),
-})
-
-export const TEAM_TOOL_WAIT_AGENT_PARAMETERS = Type.Object({
-  timeout_ms: Type.Integer({
-    minimum: TEAM_TOOL_MIN_WAIT_MS,
-    maximum: TEAM_TOOL_MAX_WAIT_MS,
-    description: "Tempo máximo de espera, em milissegundos, de 1000 a 3600000.",
-  }),
 })
 
 export const TEAM_TOOL_NO_PARAMETERS = Type.Object({})

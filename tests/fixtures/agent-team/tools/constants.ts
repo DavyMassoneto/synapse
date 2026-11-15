@@ -13,3 +13,6 @@ export const TEAM_FIXTURE_TASK: TaskView = {
   ready: true,
   writeScopeWarnings: [],
 }
+
+export const TEAM_FIXTURE_NINE_TOOLS_TITLE = "registra as nove ferramentas do lead"
+export const TEAM_FIXTURE_REMOVED_WAIT_NAME = "wait_agent"

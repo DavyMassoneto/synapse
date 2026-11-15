@@ -15,7 +15,6 @@ import {
   type TeamAgentRow,
   type TeamAgentState,
 } from "#synapse/modules/agent-team/public/contracts"
-import { Inbox } from "../inbox"
 import { TeamRuleError } from "../operation-results"
 import { TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
 import { teamMemberOutcome } from "./member-outcome"
@@ -25,8 +24,6 @@ import { teamMemberRow } from "./member-row"
 import { type TeamActiveTools, type TeamMemberObserver, type TeamMemberOutcome } from "./types"
 
 export class TeamMember {
-  readonly inbox = new Inbox()
-
   readonly name: string
 
   private readonly opened: OpenedMember
@@ -69,7 +66,6 @@ export class TeamMember {
       opened: this.opened,
       lastState: this.lastState,
       busy: this.busy,
-      waiting: this.inbox.hasWaiter,
       unconfirmed: this.queue.unconfirmedCount,
       tools: this.tools,
       effectiveModel: this.responseState.effectiveModel,
@@ -86,7 +82,6 @@ export class TeamMember {
       throw new TeamRuleError(TEAM_MEMBER_CLOSED)
     }
     this.queue.accept(text, this.busy)
-    this.inbox.arrive()
   }
 
   interrupt(): void {
@@ -95,14 +90,12 @@ export class TeamMember {
 
   async dispose(): Promise<void> {
     this.closed = true
-    this.inbox.close()
     this.unsubscribe()
     await this.session.dispose()
   }
 
   async suspend(): Promise<void> {
     this.closed = true
-    this.inbox.close()
     try {
       await this.checkpointAndStop()
     } finally {
@@ -203,7 +196,6 @@ export class TeamMember {
   }
 
   private onTurnStarted(): void {
-    this.inbox.markSeen()
     this.queue.checkpoint(this.busy)
   }
 

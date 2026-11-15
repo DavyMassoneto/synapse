@@ -1,6 +1,11 @@
 import { describe, expect, test } from "vitest"
 import { leadTools, memberTools, TeamAgentHandlers, TeamTaskHandlers } from "#synapse/integration/pi/agent-team"
-import { type TeamToolsSut, ToolsTeamDouble } from "../fixtures"
+import {
+  TEAM_FIXTURE_NINE_TOOLS_TITLE,
+  TEAM_FIXTURE_REMOVED_WAIT_NAME,
+  type TeamToolsSut,
+  ToolsTeamDouble,
+} from "../fixtures"
 
 function makeSut(): TeamToolsSut {
   const team = new ToolsTeamDouble()
@@ -133,24 +138,10 @@ async function listTasks(): Promise<void> {
   expect(sut.team.filter).toEqual({ unowned: false })
 }
 
-async function waitMember(): Promise<void> {
-  const sut = makeSut()
-  expect((await sut.handlers.wait("id", { timeout_ms: 1000 })).content).toMatchObject([
-    { text: '{"kind":"wait_completed","timedOut":false}' },
-  ])
-  expect(sut.team.sender).toBe("worker")
-}
-
-async function cancelledWait(): Promise<void> {
-  const sut = makeSut()
-  await expect(sut.handlers.wait("id", { timeout_ms: 1000 }, AbortSignal.abort())).rejects.toMatchObject({
-    name: "AbortError",
-  })
-}
-
 function rejectLeadOnly(): void {
   const sut = makeSut()
   const tools = memberTools(sut.team, "worker")
+  expect(tools.map((tool) => tool.name)).not.toContain(TEAM_FIXTURE_REMOVED_WAIT_NAME)
   expect(tools.map((tool) => tool.name)).not.toContain("subagent")
   expect(tools.map((tool) => tool.name)).not.toContain("interrupt_agent")
 }
@@ -163,7 +154,6 @@ function registeredTools(): void {
     "list_models",
     "send_message",
     "list_agents",
-    "wait_agent",
     "team_task_create",
     "team_task_update",
     "team_task_get",
@@ -171,14 +161,8 @@ function registeredTools(): void {
   ])
 }
 
-async function refusedWait(): Promise<void> {
-  const sut = makeSut()
-  sut.team.refused = true
-  expect((await sut.handlers.wait("id", { timeout_ms: 1000 })).isError).toBe(true)
-}
-
 function registerTests(): void {
-  test("registra as dez ferramentas do lead", registeredTools)
+  test(TEAM_FIXTURE_NINE_TOOLS_TITLE, registeredTools)
   test("inicia membro", startMember)
   test("recusa início como erro", refuseStart)
   test("mensagem usa remetente da ferramenta", sendMember)
@@ -193,9 +177,6 @@ function registerTests(): void {
   test("recusa atualização como erro", refuseUpdate)
   test("lista agentes", listAgents)
   test("lista tarefas preservando false", listTasks)
-  test("espera recusada vira erro da ferramenta", refusedWait)
-  test("espera como dono da ferramenta", waitMember)
-  test("propaga cancelamento da espera", cancelledWait)
   test("membro não recebe ferramentas exclusivas do lead", rejectLeadOnly)
 }
 

@@ -29,6 +29,13 @@ import {
   TEAM_DISTRIBUTION_MODULE_FAILURE,
   TEAM_DISTRIBUTION_PERSIST_PROMPT,
   TEAM_DISTRIBUTION_REFUSED_REPLY,
+  TEAM_DISTRIBUTION_REMOVED_WAIT,
+  TEAM_DISTRIBUTION_REMOVED_WAIT_ARGUMENTS,
+  TEAM_DISTRIBUTION_REMOVED_WAIT_ERROR,
+  TEAM_DISTRIBUTION_REMOVED_WAIT_PROMPT,
+  TEAM_DISTRIBUTION_REMOVED_WAIT_REPLY,
+  TEAM_DISTRIBUTION_REMOVED_WAIT_TITLE,
+  TEAM_DISTRIBUTION_RESPONSE_EVENT,
   TEAM_DISTRIBUTION_RESTORE_PROMPT,
   TEAM_DISTRIBUTION_RESTORED_REPLY,
   TEAM_DISTRIBUTION_SEND_PROMPT,
@@ -47,6 +54,10 @@ function expectTeamDistributionToolEnd(piProcess: PiProcessScenarioHandle, toolN
 async function createsMember(piProcess: PiProcessScenarioHandle): Promise<void> {
   configureMemberScenario(piProcess, [TEAM_DISTRIBUTION_DONE_STEP, TEAM_DISTRIBUTION_DONE_STEP])
   await runPiProcessPrompt(piProcess, TEAM_DISTRIBUTION_CREATE_PROMPT)
+  await piProcess.received.waitFor(
+    { type: TEAM_DISTRIBUTION_RESPONSE_EVENT, text: TEAM_DISTRIBUTION_MEMBER_REPLY },
+    PI_PROCESS_TIMEOUT_MS,
+  )
   const recordsText = JSON.stringify(piProcess.received.records())
   expect(recordsText).not.toContain(TEAM_DISTRIBUTION_MODULE_FAILURE)
   expect(recordsText).toContain(TEAM_DISTRIBUTION_MEMBER_REPLY)
@@ -116,7 +127,26 @@ async function restoresMember(piProcess: PiProcessScenarioHandle): Promise<void>
   }
 }
 
+async function rejectsRemovedWait(piProcess: PiProcessScenarioHandle): Promise<void> {
+  piProcess.homeDirectory.script([
+    {
+      kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+      name: TEAM_DISTRIBUTION_REMOVED_WAIT,
+      argumentsJson: TEAM_DISTRIBUTION_REMOVED_WAIT_ARGUMENTS,
+    },
+    { kind: SCRIPTED_PROVIDER_TEXT_KIND, text: TEAM_DISTRIBUTION_REMOVED_WAIT_REPLY },
+  ])
+  await runPiProcessPrompt(piProcess, TEAM_DISTRIBUTION_REMOVED_WAIT_PROMPT)
+  expectTeamDistributionToolEnd(piProcess, TEAM_DISTRIBUTION_REMOVED_WAIT, true)
+  expect(JSON.stringify(piProcess.received.records())).toContain(TEAM_DISTRIBUTION_REMOVED_WAIT_ERROR)
+}
+
 function registerTests(): void {
+  test(
+    TEAM_DISTRIBUTION_REMOVED_WAIT_TITLE,
+    runWithPiProcess.bind(undefined, rejectsRemovedWait),
+    PI_PROCESS_TIMEOUT_MS,
+  )
   test(
     "pi cria sessão real de membro sem erro de carregador",
     runWithPiProcess.bind(undefined, createsMember),

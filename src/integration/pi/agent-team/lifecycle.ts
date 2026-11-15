@@ -43,7 +43,6 @@ export class PiTeamLifecycle {
 
   turnStart(_event: TurnStartEvent, context: AgentTeamContext): void {
     this.lead.attach(context)
-    this.team.markLeadSeen()
     this.team.refresh()
   }
 

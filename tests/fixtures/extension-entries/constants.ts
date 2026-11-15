@@ -33,7 +33,6 @@ export const ENTRIES_REGISTRATIONS: EntryRegistrationExpectation[] = [
       "list_models",
       "send_message",
       "list_agents",
-      "wait_agent",
       "team_task_create",
       "team_task_update",
       "team_task_get",
@@ -48,4 +47,4 @@ export const ENTRIES_REGISTRATIONS: EntryRegistrationExpectation[] = [
 ]
 export const ENTRIES_VIRTUAL_MODEL: EntryVirtualModelExpectation = { provider: "jev", id: "auto" }
 
-export const ENTRIES_TOOL_COUNTS = [1, 0, 0, 0, 10, 1, 1]
+export const ENTRIES_TOOL_COUNTS = [1, 0, 0, 0, 9, 1, 1]

@@ -2,7 +2,6 @@ import {
   TEAM_INACTIVE,
   TEAM_MODEL_KNOWN,
   TEAM_RUNNING,
-  TEAM_WAITING,
   TEAM_WORKING,
   type TeamAgentRow,
   type TeamAgentState,
@@ -13,9 +12,6 @@ import { type TeamMemberRowInput } from "./types"
 function memberRowState(input: TeamMemberRowInput): TeamAgentState {
   if (!input.busy) {
     return input.lastState
-  }
-  if (input.waiting) {
-    return TEAM_WAITING
   }
   return TEAM_WORKING
 }

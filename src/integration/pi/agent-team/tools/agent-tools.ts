@@ -5,11 +5,9 @@ import {
   TEAM_TOOL_LIST_AGENTS_DESCRIPTION,
   TEAM_TOOL_SEND_MESSAGE,
   TEAM_TOOL_SEND_MESSAGE_DESCRIPTION,
-  TEAM_TOOL_WAIT_AGENT,
-  TEAM_TOOL_WAIT_AGENT_DESCRIPTION,
 } from "./constants"
 import { registeredTeamTool } from "./register-tool"
-import { TEAM_TOOL_NO_PARAMETERS, TEAM_TOOL_SEND_MESSAGE_PARAMETERS, TEAM_TOOL_WAIT_AGENT_PARAMETERS } from "./schemas"
+import { TEAM_TOOL_NO_PARAMETERS, TEAM_TOOL_SEND_MESSAGE_PARAMETERS } from "./schemas"
 import { type TeamRegisteredTool } from "./types"
 
 export function teamAgentTools(team: AgentTeam, caller: string): TeamRegisteredTool[] {
@@ -26,12 +24,6 @@ export function teamAgentTools(team: AgentTeam, caller: string): TeamRegisteredT
       description: TEAM_TOOL_LIST_AGENTS_DESCRIPTION,
       parameters: TEAM_TOOL_NO_PARAMETERS,
       execute: handlers.list.bind(handlers),
-    }),
-    registeredTeamTool({
-      name: TEAM_TOOL_WAIT_AGENT,
-      description: TEAM_TOOL_WAIT_AGENT_DESCRIPTION,
-      parameters: TEAM_TOOL_WAIT_AGENT_PARAMETERS,
-      execute: handlers.wait.bind(handlers),
     }),
   ]
 }

@@ -92,6 +92,7 @@ export type PiProcessClosePromise = Promise<void>
 export type PiProcessCloseResolver = () => void
 
 export interface PiProcessMatch {
+  text?: string
   type: string
   id?: string
   method?: string

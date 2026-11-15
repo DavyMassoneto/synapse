@@ -10,6 +10,7 @@ import {
 import { advisorConfigPath } from "#synapse/integration/pi/advisor"
 import { responseRulesInstructionsPath } from "#synapse/integration/pi/response-rules"
 import {
+  COMPOSITION_NINE_TEAM_TOOLS_TITLE,
   COOLING_DOWN_ERROR,
   CompositionContext,
   DistributionEnvironment,
@@ -158,7 +159,6 @@ function registersTeamTools(): void {
       "list_models",
       "send_message",
       "list_agents",
-      "wait_agent",
       "team_task_create",
       "team_task_list",
       "team_task_get",
@@ -168,7 +168,7 @@ function registersTeamTools(): void {
 }
 
 function registerTests(): void {
-  test("composição registra as dez ferramentas da equipe", registersTeamTools)
+  test(COMPOSITION_NINE_TEAM_TOOLS_TITLE, registersTeamTools)
   beforeEach(prepare)
   afterEach(cleanup)
   test("composição registra a ferramenta e o encerramento", registersAdvisor)

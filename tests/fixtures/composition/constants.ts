@@ -23,3 +23,5 @@ export const COMPOSITION_MODEL_MISSING = "Modelo virtual ausente."
 export const COMPOSITION_CONTEXT_MISSING = "Handler de contexto ausente."
 
 export const COMPOSITION_EXECUTION_FORBIDDEN = "Execução externa proibida no coletor da composição."
+
+export const COMPOSITION_NINE_TEAM_TOOLS_TITLE = "composição registra as nove ferramentas da equipe"

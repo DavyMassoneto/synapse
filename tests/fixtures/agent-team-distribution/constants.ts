@@ -52,6 +52,13 @@ export const TEAM_DISTRIBUTION_TOOL_END_EVENT = "tool_execution_end"
 
 export const TEAM_DISTRIBUTION_EMPTY_ARGUMENTS = "{}"
 
-export const TEAM_DISTRIBUTION_WAIT_MILLISECONDS = 1000
-
 export const TEAM_DISTRIBUTION_PI_SETTINGS = "settings.json"
+
+export const TEAM_DISTRIBUTION_RESPONSE_EVENT = "message_end"
+
+export const TEAM_DISTRIBUTION_REMOVED_WAIT = "wait_agent"
+export const TEAM_DISTRIBUTION_REMOVED_WAIT_ERROR = "Tool wait_agent not found"
+export const TEAM_DISTRIBUTION_REMOVED_WAIT_TITLE = "wait_agent removido é recusado pelo runtime RPC"
+export const TEAM_DISTRIBUTION_REMOVED_WAIT_PROMPT = "Tente a ferramenta removida"
+export const TEAM_DISTRIBUTION_REMOVED_WAIT_ARGUMENTS = "{}"
+export const TEAM_DISTRIBUTION_REMOVED_WAIT_REPLY = "ferramenta indisponível"
