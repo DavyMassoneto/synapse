@@ -27,6 +27,7 @@ import {
   COMPUTER_UNITY_BRIDGE_HOTKEY_TEXT,
   COMPUTER_UNITY_BRIDGE_HOTKEY_TOOL,
   COMPUTER_UNITY_BRIDGE_KEY_TOOL,
+  COMPUTER_UNITY_BRIDGE_MODIFIERS_TEXT,
   COMPUTER_UNITY_BRIDGE_PROTOCOL_V2,
   COMPUTER_UNITY_BRIDGE_SCROLL_TOOL,
   COMPUTER_UNITY_BRIDGE_SET_VALUE_TOOL,
@@ -34,6 +35,7 @@ import {
   COMPUTER_UNITY_BRIDGE_UNSUPPORTED_TEXT,
 } from "./constants"
 import { type ComputerUnityBridgeReady } from "./handshake"
+import { hasComputerUnityBridgeModifiers } from "./predicates"
 import { type ComputerUnityBridgeTarget } from "./types"
 
 export function computerUnityBridgeInputPlan(
@@ -43,6 +45,9 @@ export function computerUnityBridgeInputPlan(
   ready: ComputerUnityBridgeReady,
   capture?: ComputerUnityBridgeCapture,
 ): ComputerUnityBridgeInputPlan {
+  if (hasComputerUnityBridgeModifiers(argumentsValue)) {
+    return computerUnityBridgeRefused(COMPUTER_UNITY_BRIDGE_MODIFIERS_TEXT)
+  }
   const element = computerUnityBridgeElementArgument(argumentsValue, capture)
   switch (name) {
     case COMPUTER_UNITY_BRIDGE_CLICK_TOOL:

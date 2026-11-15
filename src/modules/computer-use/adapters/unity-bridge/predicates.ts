@@ -88,6 +88,11 @@ export function isComputerUnityBridgeCapabilityMissing(ready: ComputerUnityBridg
   return ready.facts.protocol < COMPUTER_UNITY_BRIDGE_PROTOCOL_V2 || !capability
 }
 
+export function hasComputerUnityBridgeModifiers(argumentsValue: ComputerDriverArguments): boolean {
+  const modifiers = argumentsValue.modifier
+  return Array.isArray(modifiers) && modifiers.length > 0
+}
+
 export function isComputerUnityBridgeLeftButton(argumentsValue: ComputerDriverArguments): boolean {
   if (typeof argumentsValue.button !== "string") {
     return true

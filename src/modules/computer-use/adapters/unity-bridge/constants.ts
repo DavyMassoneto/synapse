@@ -52,6 +52,8 @@ export const COMPUTER_UNITY_BRIDGE_TEXT_OP = "text"
 
 export const COMPUTER_UNITY_BRIDGE_KEY_OP = "key"
 
+export const COMPUTER_UNITY_BRIDGE_STOP_OP = "stop"
+
 export const COMPUTER_UNITY_BRIDGE_CLICK_TOOL = "click"
 
 export const COMPUTER_UNITY_BRIDGE_SCROLL_TOOL = "scroll"
@@ -71,6 +73,8 @@ export const COMPUTER_UNITY_BRIDGE_HOVER = true
 export const COMPUTER_UNITY_BRIDGE_PING_TIMEOUT_MILLISECONDS = 2_000
 
 export const COMPUTER_UNITY_BRIDGE_CLICK_TIMEOUT_MILLISECONDS = 15_000
+
+export const COMPUTER_UNITY_BRIDGE_STOP_TIMEOUT_MILLISECONDS = 2_000
 
 export const COMPUTER_UNITY_BRIDGE_WINDOW_STATE_TOOL = "get_window_state"
 
@@ -256,6 +260,9 @@ export const COMPUTER_UNITY_BRIDGE_UNKNOWN_TEXT =
 export const COMPUTER_UNITY_BRIDGE_ERROR_TEXT = "a bridge não executou a operação. Motivo: "
 
 export const COMPUTER_UNITY_BRIDGE_REASON_ABSENT = "não informado"
+
+export const COMPUTER_UNITY_BRIDGE_MODIFIERS_TEXT =
+  "Rota unity-bridge: modificadores (ctrl/shift/alt) não são suportados em alvos Unity; nada foi executado."
 
 export const COMPUTER_UNITY_BRIDGE_UNSUPPORTED_TEXT =
   "Rota unity-bridge: esta entrada não é suportada pela bridge para esta janela; nada foi executado e nenhuma entrada em primeiro plano será usada."
