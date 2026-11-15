@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest"
-import { registerCooldownRetry } from "#synapse/integration/pi/cooldown-retry"
+import { registerCooldownRetry, rewriteCooldownError } from "#synapse/integration/pi/cooldown-retry"
 import {
   COOLING_DOWN_ERROR,
   CooldownRetryHostDouble,
@@ -14,7 +14,7 @@ import {
 
 function makeSut(): CooldownRetryHostDouble {
   const host = new CooldownRetryHostDouble()
-  registerCooldownRetry(host)
+  registerCooldownRetry(host, rewriteCooldownError)
   return host
 }
 

@@ -1,8 +1,9 @@
-import { mkdirSync, rmSync, symlinkSync, writeFileSync } from "node:fs"
+import { mkdirSync, symlinkSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { fileURLToPath } from "node:url"
 import { describe, expect, test } from "vitest"
 import {
+  cleanupMemberConfigFixture,
   MEMBER_CONFIG_ALIAS,
   MEMBER_CONFIG_COMMAND,
   MEMBER_CONFIG_DISABLE_PREFIX,
@@ -45,8 +46,7 @@ async function configurationReload(): Promise<void> {
     await fixture.loader.reload()
     expect(fixture.loader.getExtensions().extensions).toHaveLength(0)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -65,8 +65,7 @@ async function excludesBeforeImport(): Promise<void> {
     expect(fixture.loader.getExtensions().extensions).toHaveLength(1)
     expect(fixture.loader.getExtensions().extensions[0]?.commands.has(MEMBER_CONFIG_COMMAND)).toBe(true)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -78,8 +77,7 @@ async function rejectsInvalidBeforeImport(): Promise<void> {
     await expect(fixture.loader.reload()).rejects.toThrow(MEMBER_CONFIG_INVALID_MESSAGE)
     expect(fixture.loader.getExtensions().extensions).toHaveLength(0)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -96,8 +94,7 @@ async function trustControlsProject(): Promise<void> {
     await fixture.loader.reload()
     expect(fixture.loader.getExtensions().extensions).toHaveLength(1)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -114,8 +111,7 @@ async function excludesTeamEntry(): Promise<void> {
     expect(fixture.loader.getExtensions().extensions).toHaveLength(0)
     expect(fixture.loader.getExtensions().runtime.pendingVirtualModelRegistrations).toHaveLength(0)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -135,8 +131,7 @@ async function excludesCanonicalAlias(): Promise<void> {
     await fixture.loader.reload()
     expect(fixture.loader.getExtensions().extensions).toHaveLength(0)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -154,8 +149,7 @@ async function editedExtensionReloads(): Promise<void> {
     expect(fixture.loader.getExtensions().extensions[0]?.commands.has(MEMBER_CONFIG_EDITED_COMMAND)).toBe(true)
     expect(fixture.loader.getExtensions().extensions[0]?.commands.has(MEMBER_CONFIG_COMMAND)).toBe(false)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 
@@ -181,8 +175,7 @@ async function packageFilterDisablesEntry(): Promise<void> {
     await fixture.loader.reload()
     expect(fixture.loader.getExtensions().extensions).toHaveLength(0)
   } finally {
-    fixture.loader.getExtensions().runtime.invalidate()
-    rmSync(fixture.directory, { recursive: true, force: true })
+    cleanupMemberConfigFixture(fixture)
   }
 }
 

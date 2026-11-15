@@ -5,9 +5,9 @@ import {
   ENTRIES_REGISTRATIONS,
   ENTRIES_SDK_IMPORT_TIMEOUT_MS,
   ENTRIES_SUITE,
+  ENTRIES_TOOL_COUNTS,
   ENTRIES_VIRTUAL_MODEL,
   entryPathsLoader,
-  entryToolCount,
 } from "../fixtures"
 
 async function loadsSevenRealPaths(): Promise<void> {
@@ -15,7 +15,9 @@ async function loadsSevenRealPaths(): Promise<void> {
   const result = loader.getExtensions()
   expect(result.errors).toEqual([])
   expect(result.extensions).toHaveLength(7)
-  expect(result.extensions.map(entryToolCount)).toEqual([1, 0, 0, 0, 10, 1, 1])
+  for (const [position, extension] of result.extensions.entries()) {
+    expect(extension.tools.size).toBe(ENTRIES_TOOL_COUNTS[position])
+  }
   result.runtime.invalidate()
 }
 

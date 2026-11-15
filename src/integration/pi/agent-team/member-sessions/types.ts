@@ -1,4 +1,9 @@
-import { type AgentSession, type SessionManager, type SettingsManager } from "@earendil-works/pi-coding-agent"
+import {
+  type AgentSession,
+  type DefaultPackageManager,
+  type SessionManager,
+  type SettingsManager,
+} from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { type AgentTeamContext } from "../lead-session"
@@ -53,3 +58,6 @@ export interface TeamMemberResourceRequest {
   instructions: string
   settings: SettingsManager
 }
+
+export type TeamMemberResources = Awaited<ReturnType<DefaultPackageManager["resolve"]>>
+export type TeamExcludedExtensionPaths = Set<string>

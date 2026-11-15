@@ -1,7 +1,6 @@
 import { COOLDOWN_MESSAGE_END } from "./constants"
-import { rewriteCooldownError } from "./rewrite-cooldown-error"
-import { type CooldownRetryHost } from "./types"
+import { type CooldownMessageEndHandler, type CooldownRetryHost } from "./types"
 
-export function registerCooldownRetry(pi: CooldownRetryHost): void {
-  pi.on(COOLDOWN_MESSAGE_END, rewriteCooldownError)
+export function registerCooldownRetry(pi: CooldownRetryHost, rewrite: CooldownMessageEndHandler): void {
+  pi.on(COOLDOWN_MESSAGE_END, rewrite)
 }

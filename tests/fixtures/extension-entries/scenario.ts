@@ -1,5 +1,5 @@
 import { fileURLToPath } from "node:url"
-import { DefaultResourceLoader, type Extension } from "@earendil-works/pi-coding-agent"
+import { DefaultResourceLoader } from "@earendil-works/pi-coding-agent"
 import { ENTRIES_PATHS } from "./constants"
 
 export async function entryPathsLoader(disabled?: number): Promise<DefaultResourceLoader> {
@@ -20,8 +20,4 @@ export async function entryPathsLoader(disabled?: number): Promise<DefaultResour
   })
   await loader.reload()
   return loader
-}
-
-export function entryToolCount(extension: Extension): number {
-  return extension.tools.size
 }
