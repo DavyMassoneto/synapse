@@ -2,7 +2,11 @@ import { type SupervisedShellLease } from "#synapse/modules/agent-team/public/su
 import { captureShellCleanup } from "../shell-cleanup"
 import { SUPERVISED_BASH_ABORT_EVENT, SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
 import { type SupervisedBashDeadline } from "./deadline"
-import { type SupervisedBashFailureReject, type SupervisedBashNeverResolve } from "./types"
+import {
+  type SupervisedBashFailureReject,
+  type SupervisedBashNeverResolve,
+  type SupervisedBashResultPromises,
+} from "./types"
 
 export class SupervisedBashExecution {
   private readonly lease: SupervisedShellLease
@@ -40,7 +44,8 @@ export class SupervisedBashExecution {
   }
   private async failedResult(error: Error): Promise<never> {
     if (this.stopping) {
-      const outcome = await captureShellCleanup(this.stopping)
+      const resolve = Promise.resolve<void>
+      const outcome = await captureShellCleanup(resolve.bind(Promise, this.stopping))
       if (outcome.failed && outcome.error !== error) {
         throw new AggregateError([error, outcome.error], SUPERVISED_BASH_CLOSE_FAILURE)
       }
@@ -48,7 +53,8 @@ export class SupervisedBashExecution {
     throw error
   }
   private async result(): Promise<number> {
-    const result = await captureShellCleanup(Promise.race([this.lease.completion, this.cancelled]))
+    const race = Promise.race<SupervisedBashResultPromises>
+    const result = await captureShellCleanup(race.bind(Promise, [this.lease.completion, this.cancelled]))
     if (result.failed) {
       return this.failedResult(result.error)
     }

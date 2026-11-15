@@ -3,8 +3,11 @@ import { constants } from "node:fs"
 import { access } from "node:fs/promises"
 import {
   SHELL_PROBE_DIAGNOSTIC_PREFIX,
+  SHELL_PROBE_PROPERTY_CODE,
+  SHELL_REQUIREMENT_ACCESS_DENIED_CODE,
   SHELL_REQUIREMENT_ADD_TYPE,
   SHELL_REQUIREMENT_ADD_TYPE_MARKER,
+  SHELL_REQUIREMENT_NOT_FOUND_CODE,
   SHELL_REQUIREMENT_POWERSHELL,
   SHELL_REQUIREMENT_PROBE,
   SHELL_REQUIREMENT_PROBE_FLAGS,
@@ -61,7 +64,11 @@ export function checkedWindowsShell(
   stdout: string,
   stderr: string,
 ): void {
-  if (error && "code" in error && (error.code === "ENOENT" || error.code === "EACCES")) {
+  if (
+    error &&
+    SHELL_PROBE_PROPERTY_CODE in error &&
+    (error.code === SHELL_REQUIREMENT_NOT_FOUND_CODE || error.code === SHELL_REQUIREMENT_ACCESS_DENIED_CODE)
+  ) {
     reject(new Error(SHELL_REQUIREMENT_POWERSHELL))
   } else if (error || stdout.trim() !== SHELL_REQUIREMENT_ADD_TYPE_MARKER) {
     reject(

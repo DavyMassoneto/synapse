@@ -4,7 +4,6 @@ import {
   type SupervisedShellLeaseState,
   type SupervisedShellOutput,
 } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { ShellWireCompletion } from "./completion"
 import {
   SHELL_WIRE_COMPLETED,
   SHELL_WIRE_CREATED,
@@ -15,47 +14,38 @@ import {
   SHELL_WIRE_EVENT_ERROR,
   SHELL_WIRE_GATE_RELEASE,
   SHELL_WIRE_INVALID,
-  SHELL_WIRE_KILLED_EXIT,
   SHELL_WIRE_STATE_ACKNOWLEDGED,
   SHELL_WIRE_STATE_CREATED,
   SHELL_WIRE_STATE_EXITED,
   SHELL_WIRE_STATE_QUARANTINED,
   SHELL_WIRE_STATE_RELEASED,
 } from "./constants"
-import { ShellOutputDrain } from "./output-drain"
 import { ShellWireOwnership } from "./ownership"
 import { ShellWirePreparation } from "./preparation"
+import { ShellWireResult } from "./result"
 import { ShellStatusReader } from "./status"
 import { type ShellWireProcess } from "./types"
 
 export class SupervisedWireLease implements SupervisedShellLease {
   readonly id = randomUUID()
   state: SupervisedShellLeaseState = SHELL_WIRE_STATE_CREATED
-  private readonly execution = new ShellWireCompletion()
-  readonly completion = this.execution.result
+  private readonly result: ShellWireResult
+  readonly completion: Promise<number>
   private readonly preparation: ShellWirePreparation
   private readonly child: ShellWireProcess
-  private readonly output: ShellOutputDrain
   private readonly status = new ShellStatusReader()
   private released = false
   private closed = false
   private readonly ownership: ShellWireOwnership
   private stopping?: Promise<void>
-  private failure?: Error
-  private ownershipConfirmed = false
-  private pendingExit?: number
 
   constructor(child: ShellWireProcess, output: SupervisedShellOutput, signal?: AbortSignal) {
     this.child = child
     this.ownership = new ShellWireOwnership(child, this.stopFailed.bind(this))
     this.preparation = new ShellWirePreparation(this.onError.bind(this))
-    this.output = new ShellOutputDrain(
-      child.output,
-      output,
-      this.finishOutput.bind(this),
-      this.onOutputError.bind(this),
-    )
-    child.status.on(SHELL_WIRE_EVENT_END, this.onStatusEnd.bind(this))
+    this.result = new ShellWireResult(child, output, this.ownership, this.onOutputError.bind(this))
+    this.completion = this.result.completion
+    child.status.on(SHELL_WIRE_EVENT_END, this.onStatus.bind(this, undefined))
     child.status.on(SHELL_WIRE_EVENT_ERROR, this.onTransportError.bind(this))
     child.input.on(SHELL_WIRE_EVENT_ERROR, this.onTransportError.bind(this))
     child.status.on(SHELL_WIRE_EVENT_DATA, this.onStatus.bind(this))
@@ -73,7 +63,7 @@ export class SupervisedWireLease implements SupervisedShellLease {
     return this.preparation.current()
   }
   release(): void {
-    if (this.ownership.requested || this.failure || this.closed) {
+    if (this.ownership.requested || this.result.failure || this.closed) {
       throw new Error(SHELL_WIRE_INVALID)
     }
     if (!this.released) {
@@ -101,36 +91,33 @@ export class SupervisedWireLease implements SupervisedShellLease {
       this.stopFailed(error)
       throw error
     }
-    this.ownershipConfirmed = true
-    if (!this.failure) {
+    if (!this.result.failure) {
       this.state = SHELL_WIRE_STATE_EXITED
     }
-    this.finishOutput()
-    this.output.cancel()
-    if (typeof this.pendingExit !== "number" && !this.failure) {
-      this.execution.complete(SHELL_WIRE_KILLED_EXIT)
-    }
+    this.result.confirmed()
   }
   private stopFailed(error: Error): void {
-    this.failure = error
     this.state = SHELL_WIRE_STATE_QUARANTINED
     this.preparation.fail(error)
-    this.execution.fail(error)
+    this.result.fail(error)
   }
-  private onStatus(chunk: Buffer): void {
+  private onStatus(chunk?: Buffer): void {
     try {
-      this.status.receive(chunk)
+      if (chunk) {
+        this.status.receive(chunk)
+      } else if (!this.ownership.requested) {
+        this.status.eof()
+      }
       const state = this.status.state
       if (state.kind === SHELL_WIRE_CREATED) {
-        if (!this.ownership.requested && !this.failure) {
+        if (!this.ownership.requested && !this.result.failure) {
           this.state = SHELL_WIRE_STATE_ACKNOWLEDGED
           this.preparation.ready()
         } else if (this.ownership.requested) {
           this.status.release()
         }
       } else if (state.kind === SHELL_WIRE_COMPLETED) {
-        this.pendingExit = state.exitCode
-        this.output.fence(state.acceptedBytes)
+        this.result.exited(state.exitCode, state.acceptedBytes)
       }
     } catch (error) {
       if (error instanceof Error) {
@@ -145,44 +132,18 @@ export class SupervisedWireLease implements SupervisedShellLease {
       this.onError(error)
     }
   }
-  private onStatusEnd(): void {
-    if (!this.ownership.requested) {
-      try {
-        this.status.eof()
-      } catch (error) {
-        if (error instanceof Error) {
-          this.onError(error)
-        } else {
-          throw error
-        }
-      }
-    }
-  }
-  private finishOutput(): void {
-    if (
-      typeof this.pendingExit === "number" &&
-      this.output.fenced &&
-      !this.failure &&
-      (!this.ownership.requested || this.ownershipConfirmed)
-    ) {
-      this.execution.complete(this.pendingExit)
-    }
-  }
   private onOutputError(error: Error): void {
-    if (!this.execution.settled) {
-      this.failure = error
+    if (this.result.failure) {
       this.state = SHELL_WIRE_STATE_QUARANTINED
     }
-    this.execution.fail(error)
     if (!this.ownership.requested && !this.closed) {
       this.onError(error)
     }
   }
   private onError(error: Error): void {
-    this.failure = error
     this.state = SHELL_WIRE_STATE_QUARANTINED
     this.preparation.fail(error)
-    this.execution.fail(error)
+    this.result.fail(error)
     if (!this.closed) {
       this.terminate().catch(this.observeFailure.bind(this))
     }

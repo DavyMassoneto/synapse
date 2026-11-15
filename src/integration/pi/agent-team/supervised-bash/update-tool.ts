@@ -2,13 +2,18 @@ import { createBashToolDefinition, defineTool, type LoadExtensionsResult } from 
 import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
 import { SUPERVISED_BASH_TOOL_NAME } from "./constants"
 import { SupervisedBashOperations } from "./operations"
-import { type SupervisedBashMountRequest, type SupervisedBashToolList, type SupervisedBashToolOptions } from "./types"
+import {
+  type SupervisedBashMountRequest,
+  type SupervisedBashToolIndex,
+  type SupervisedBashToolList,
+  type SupervisedBashToolOptions,
+} from "./types"
 
 export function updateSupervisedBashTool(request: SupervisedBashMountRequest, loaded: LoadExtensionsResult): void {
   const tools = request.tools
   const shell = request.shell
   if (tools && shell) {
-    const registered = new Map<string, SupervisedBashToolList[number]>()
+    const registered: SupervisedBashToolIndex = new Map()
     for (const tool of tools) {
       registered.set(tool.name, tool)
     }
@@ -21,7 +26,7 @@ export function updateSupervisedBashTool(request: SupervisedBashMountRequest, lo
 function selectSupervisedBash(
   request: SupervisedBashMountRequest,
   loaded: LoadExtensionsResult,
-  registered: Map<string, SupervisedBashToolList[number]>,
+  registered: SupervisedBashToolIndex,
   shell: SupervisedShellService,
 ): SupervisedBashToolList {
   for (const extension of loaded.extensions) {

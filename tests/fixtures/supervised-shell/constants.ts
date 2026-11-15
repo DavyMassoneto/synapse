@@ -104,3 +104,10 @@ export const SUPERVISED_TEST_SLOW_OUTPUT_MS = 100
 
 export const SUPERVISED_TEST_PARITY_TIMEOUT_SECONDS = 0.25
 export const SUPERVISED_TEST_PARITY_TIMEOUT_MESSAGE = "entered\n\nCommand timed out after 0.25 seconds"
+
+export const SUPERVISED_TEST_CLOSE_OBSERVATION_TITLE = "contrato CloseJob recusa observação inválida %s"
+export const SUPERVISED_TEST_CLOSE_INVALID_FRAME_TITLE = "contrato CloseJob recusa frame inválido %s"
+
+export const SUPERVISED_TEST_SYNC_CLEANUP_TITLE = "cleanup captura throw síncrono sem impedir outra limpeza"
+export const SUPERVISED_TEST_ASYNC_CLEANUP_TITLE = "cleanup preserva identidade da rejeição assíncrona"
+export const SUPERVISED_TEST_VALUE_CLEANUP_TITLE = "cleanup thunk retorna valor exato da operação"

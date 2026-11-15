@@ -1,19 +1,11 @@
-export type ShellCleanupAction = () => Promise<void>
-export type ShellCleanupOutcome = ShellCleanupSuccess | ShellCleanupFailure
-export interface ShellCleanupSuccess {
+export type ShellCleanupAction<T> = () => Promise<T>
+export type ShellOperationOutcome<T> = ShellOperationSuccess<T> | ShellCleanupFailure
+export interface ShellOperationSuccess<T> {
   failed: false
-  kind: "cleanup"
+  value: T
 }
 export interface ShellCleanupFailure {
   failed: true
   error: Error
 }
-
-export type ShellOperationOutcome<T> = ShellOperationSuccess<T> | ShellCleanupFailure
-export type ShellCaptureOutcome<T> = ShellOperationOutcome<T> | ShellCleanupOutcome
-export interface ShellOperationSuccess<T> {
-  failed: false
-  kind: "operation"
-  value: T
-}
-export type ShellOperationInput<T> = ShellCleanupAction | Promise<T>
+export type ShellCleanupOutcome = ShellOperationOutcome<void>

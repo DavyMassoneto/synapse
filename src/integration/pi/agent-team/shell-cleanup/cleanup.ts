@@ -1,23 +1,9 @@
 import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team/public/supervised-shell/contracts"
-import { SHELL_CLEANUP_VALUE, SHELL_CLEANUP_VOID } from "./constants"
-import {
-  type ShellCaptureOutcome,
-  type ShellCleanupAction,
-  type ShellCleanupOutcome,
-  type ShellOperationInput,
-  type ShellOperationOutcome,
-} from "./types"
+import { type ShellCleanupAction, type ShellCleanupOutcome, type ShellOperationOutcome } from "./types"
 
-export function captureShellCleanup(action: ShellCleanupAction): Promise<ShellCleanupOutcome>
-export function captureShellCleanup<T>(action: Promise<T>): Promise<ShellOperationOutcome<T>>
-export async function captureShellCleanup<T>(action: ShellOperationInput<T>): Promise<ShellCaptureOutcome<T>> {
+export async function captureShellCleanup<T>(action: ShellCleanupAction<T>): Promise<ShellOperationOutcome<T>> {
   try {
-    if (typeof action === "function") {
-      await action()
-      return { failed: false, kind: SHELL_CLEANUP_VOID }
-    } else {
-      return { failed: false, kind: SHELL_CLEANUP_VALUE, value: await action }
-    }
+    return { failed: false, value: await action() }
   } catch (failure) {
     if (failure instanceof Error) {
       return { failed: true, error: failure }

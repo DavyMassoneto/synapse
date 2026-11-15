@@ -4,7 +4,9 @@ import { requireSupervisedBashDirectory } from "./directory"
 import { SupervisedBashExecution } from "./execution"
 import { SupervisedBashOutput } from "./output"
 import { SupervisedBashRequest } from "./request"
+import { buildSupervisedBashSpec } from "./spec"
 import { type SupervisedBashOptions, type SupervisedBashResult } from "./types"
+import { validateSupervisedBashOptions } from "./validate-options"
 
 export class SupervisedBashOperations implements BashOperations {
   private readonly supervisor: SupervisedShellService
@@ -17,11 +19,13 @@ export class SupervisedBashOperations implements BashOperations {
   }
 
   async exec(command: string, cwd: string, options: SupervisedBashOptions): Promise<SupervisedBashResult> {
-    const request = new SupervisedBashRequest(command, cwd, options, this.shellPath)
+    const environment = validateSupervisedBashOptions(options)
+    const spec = buildSupervisedBashSpec(command, cwd, environment, this.shellPath)
+    const request = new SupervisedBashRequest(options)
     try {
       await requireSupervisedBashDirectory(cwd)
       const lease = await this.supervisor.create(
-        request.spec,
+        spec,
         new SupervisedBashOutput(options),
         request.deadline.cancellation.signal,
       )
