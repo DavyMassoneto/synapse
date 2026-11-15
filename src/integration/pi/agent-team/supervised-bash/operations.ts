@@ -1,5 +1,5 @@
 import { type BashOperations } from "@earendil-works/pi-coding-agent"
-import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellService } from "#synapse/modules/agent-team"
 import { requireSupervisedBashDirectory } from "./directory"
 import { SupervisedBashExecution } from "./execution"
 import { SupervisedBashOutput } from "./output"

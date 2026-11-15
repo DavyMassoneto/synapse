@@ -1,4 +1,4 @@
-import { type SupervisedShellOutput } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellOutput } from "#synapse/modules/agent-team"
 import { type SupervisedBashOptions } from "./types"
 
 export class SupervisedBashOutput implements SupervisedShellOutput {

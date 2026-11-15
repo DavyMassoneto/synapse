@@ -1,5 +1,5 @@
 import { createBashToolDefinition, defineTool, type LoadExtensionsResult } from "@earendil-works/pi-coding-agent"
-import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellService } from "#synapse/modules/agent-team"
 import { SUPERVISED_BASH_TOOL_NAME } from "./constants"
 import { SupervisedBashOperations } from "./operations"
 import {

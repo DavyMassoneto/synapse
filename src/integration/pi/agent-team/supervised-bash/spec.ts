@@ -1,5 +1,5 @@
 import { getShellConfig } from "@earendil-works/pi-coding-agent"
-import { type SupervisedShellSpec } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellSpec } from "#synapse/modules/agent-team"
 import { SUPERVISED_BASH_STDIN } from "./constants"
 
 export function buildSupervisedBashSpec(

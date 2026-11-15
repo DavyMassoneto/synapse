@@ -1,4 +1,4 @@
-import { type SupervisedShellLease } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellLease } from "#synapse/modules/agent-team"
 import { captureShellCleanup } from "../shell-cleanup"
 import { SUPERVISED_BASH_ABORT_EVENT, SUPERVISED_BASH_CLOSE_FAILURE } from "./constants"
 import { type SupervisedBashDeadline } from "./deadline"

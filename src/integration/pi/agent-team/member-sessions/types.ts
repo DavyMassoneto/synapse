@@ -5,11 +5,12 @@ import {
   type SettingsManager,
   type ToolDefinition,
 } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam, type OpenMemberRequest } from "#synapse/modules/agent-team"
 import {
+  type AgentTeam,
+  type OpenMemberRequest,
   type SupervisedShellFactory,
   type SupervisedShellService,
-} from "#synapse/modules/agent-team/public/supervised-shell"
+} from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { type AgentTeamContext } from "../lead-session"
 import { type SelectedMemberModel } from "../model-selection"

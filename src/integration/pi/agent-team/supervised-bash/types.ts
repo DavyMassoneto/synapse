@@ -4,7 +4,7 @@ import {
   type SettingsManager,
   type ToolDefinition,
 } from "@earendil-works/pi-coding-agent"
-import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellService } from "#synapse/modules/agent-team"
 
 export type SupervisedBashOptions = Parameters<BashOperations["exec"]>[2]
 export type SupervisedBashResult = Awaited<ReturnType<BashOperations["exec"]>>

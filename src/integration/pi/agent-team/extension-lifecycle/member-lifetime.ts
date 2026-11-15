@@ -1,4 +1,4 @@
-import { type SupervisedShellService } from "#synapse/modules/agent-team/public/supervised-shell"
+import { type SupervisedShellService } from "#synapse/modules/agent-team"
 import { captureShellCleanup, finishShellCleanups } from "../shell-cleanup"
 import { TEAM_MEMBER_CLOSE_FAILURE } from "./constants"
 import { type TeamMemberExtensionLifetime } from "./types"

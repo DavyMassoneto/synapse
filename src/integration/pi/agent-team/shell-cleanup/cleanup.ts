@@ -1,4 +1,4 @@
-import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team/public/supervised-shell"
+import { SUPERVISED_SHELL_STOP_FAILED } from "#synapse/modules/agent-team"
 import {
   type ShellCleanupInput,
   type ShellCleanupOutcome,

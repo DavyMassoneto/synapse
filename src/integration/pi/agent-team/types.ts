@@ -6,8 +6,13 @@ import {
   type SessionStartEvent,
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam, type MemberSessions, type TeamClock, type TeamLead } from "#synapse/modules/agent-team"
-import { type SupervisedShellFactory } from "#synapse/modules/agent-team/public/supervised-shell"
+import {
+  type AgentTeam,
+  type MemberSessions,
+  type SupervisedShellFactory,
+  type TeamClock,
+  type TeamLead,
+} from "#synapse/modules/agent-team"
 import { type AgentTeamContext } from "./lead-session"
 
 import { type TeamRegisteredTool } from "./tools"
