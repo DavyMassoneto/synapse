@@ -28,7 +28,15 @@ export function formatShellProbeDiagnostic(error: ShellRequirementError, stdout:
     }
     killed = SHELL_PROBE_PROPERTY_KILLED in error && error.killed === true
   }
-  return `${SHELL_PROBE_CODE_LABEL}${limitShellProbeText(code)}${SHELL_PROBE_SIGNAL_LABEL}${limitShellProbeText(signal)}${SHELL_PROBE_KILLED_LABEL}${killed}${SHELL_PROBE_STDERR_LABEL}${limitShellProbeText(stderr)}${SHELL_PROBE_STDOUT_LABEL}${limitShellProbeText(stdout)}`
+  const limitedCode = limitShellProbeText(code)
+  const limitedSignal = limitShellProbeText(signal)
+  const limitedStderr = limitShellProbeText(stderr)
+  const limitedStdout = limitShellProbeText(stdout)
+  return (
+    `${SHELL_PROBE_CODE_LABEL}${limitedCode}${SHELL_PROBE_SIGNAL_LABEL}${limitedSignal}` +
+    `${SHELL_PROBE_KILLED_LABEL}${killed}${SHELL_PROBE_STDERR_LABEL}${limitedStderr}` +
+    `${SHELL_PROBE_STDOUT_LABEL}${limitedStdout}`
+  )
 }
 
 export function limitShellProbeText(text: string): string {

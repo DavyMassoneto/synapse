@@ -38,3 +38,5 @@ export const UNIX_CONTROL_INVALID = "invalid"
 export const UNIX_CONTROL_STOP = "stop"
 
 export const UNIX_KEEPER_EVENT_DRAIN = "drain"
+
+export const UNIX_KEEPER_OVERSIZE_FRAME = "Frame de shell excede o limite permitido."

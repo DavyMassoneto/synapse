@@ -1,6 +1,4 @@
-import { type ChildProcess } from "node:child_process"
 export type WindowsChannelExitCode = number | null
-export type WindowsSentinel = ChildProcess | null
 
 export interface WindowsNativeFaultCase {
   target: string

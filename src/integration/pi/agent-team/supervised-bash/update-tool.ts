@@ -13,11 +13,7 @@ export function updateSupervisedBashTool(request: SupervisedBashMountRequest, lo
   const tools = request.tools
   const shell = request.shell
   if (tools && shell) {
-    const registered: SupervisedBashToolIndex = new Map()
-    for (const tool of tools) {
-      registered.set(tool.name, tool)
-    }
-    registered.delete(SUPERVISED_BASH_TOOL_NAME)
+    const registered = indexWithoutSupervisedBash(tools)
     const mounted = selectSupervisedBash(request, loaded, registered, shell)
     tools.splice(0, tools.length, ...mounted)
   }
@@ -46,4 +42,13 @@ function buildSupervisedBashDefinition(request: SupervisedBashMountRequest, shel
     options.commandPrefix = prefix
   }
   return defineTool({ ...createBashToolDefinition(request.cwd, options), defaultActive: false })
+}
+
+function indexWithoutSupervisedBash(tools: SupervisedBashToolList): SupervisedBashToolIndex {
+  const registered: SupervisedBashToolIndex = new Map()
+  for (const tool of tools) {
+    registered.set(tool.name, tool)
+  }
+  registered.delete(SUPERVISED_BASH_TOOL_NAME)
+  return registered
 }

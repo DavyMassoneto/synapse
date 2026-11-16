@@ -62,7 +62,6 @@ export class SupervisedShellSupervisor {
     this.epoch++
     const attempts: Promise<ShellCleanupOutcome>[] = []
     for (const admission of this.admissions) {
-      admission.revoked = true
       attempts.push(captureShellCleanup(admission.stop.bind(admission)))
     }
     await finishShellCleanups(attempts, SUPERVISED_SHELL_STOP_FAILED)

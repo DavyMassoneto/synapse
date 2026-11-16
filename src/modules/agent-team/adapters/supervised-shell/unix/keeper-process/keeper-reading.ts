@@ -6,7 +6,7 @@ import {
   SHELL_WIRE_MAX_SPEC_BYTES,
   type ShellWireSpec,
 } from "#synapse/modules/agent-team/adapters/supervised-shell/wire"
-import { UNIX_KEEPER_CONTROL_FD, UNIX_KEEPER_INCOMPLETE_FRAME } from "./constants"
+import { UNIX_KEEPER_CONTROL_FD, UNIX_KEEPER_INCOMPLETE_FRAME, UNIX_KEEPER_OVERSIZE_FRAME } from "./constants"
 import { UNIX_KEEPER_SPEC_SCHEMA } from "./schemas"
 
 export function readKeeperSpec(): ShellWireSpec {
@@ -14,7 +14,7 @@ export function readKeeperSpec(): ShellWireSpec {
   readKeeperBytes(header)
   const size = header.readUInt32BE()
   if (size > SHELL_WIRE_MAX_SPEC_BYTES) {
-    throw new Error(UNIX_KEEPER_INCOMPLETE_FRAME)
+    throw new Error(UNIX_KEEPER_OVERSIZE_FRAME)
   }
   const body = Buffer.alloc(size)
   readKeeperBytes(body)
