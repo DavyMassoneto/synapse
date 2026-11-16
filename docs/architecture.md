@@ -105,11 +105,12 @@ Cada entrada é desativada no pi independentemente das outras e aparece separada
 
 ## Suporte por sistema operacional
 
-O pacote roda em macOS, Linux e Windows. Advisor, equipe de agentes, roteador de modelos e as capacidades da integração não dependem do sistema operacional. Os módulos que controlam algo fora do processo declaram o que fazem em cada sistema e recusam, com uma mensagem que diz o motivo, o que o sistema não oferece:
+O pacote roda em macOS, Linux e Windows. Advisor, roteador de modelos e as capacidades da integração não dependem do sistema operacional. O contrato da equipe de agentes também não depende; a supervisão dos processos dos membros é feita por adaptadores próprios de Unix e de Windows. Os módulos que controlam algo fora do processo declaram o que fazem em cada sistema e recusam, com uma mensagem que diz o motivo, o que o sistema não oferece:
 
 | Capacidade | macOS | Linux | Windows |
 | --- | --- | --- | --- |
 | Computer-use | Driver nativo; exige as permissões de Acessibilidade e de Gravação de Tela | Driver nativo | Driver nativo |
+| Equipe de agentes: supervisão de processos | Launcher nativo próprio | Launcher nativo próprio | Job Object do Windows |
 | iPhone: servidor de automação | Local ou remoto | Local ou remoto | Local ou remoto |
 | iPhone: simulador | Disponível | Recusado: o simulador do iOS só existe no macOS | Recusado: o simulador do iOS só existe no macOS |
 | iPhone: aparelho físico | Disponível | Só com o WebDriverAgent já instalado no aparelho, porque compilá-lo exige o Xcode | Só com o WebDriverAgent já instalado no aparelho, porque compilá-lo exige o Xcode |
