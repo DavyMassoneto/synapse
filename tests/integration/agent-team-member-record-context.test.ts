@@ -2,6 +2,7 @@ import { readFileSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
 import { describe, expect, test } from "vitest"
 import { createPiTeamLeadSession, memberTools, PiTeamMemberSessions } from "#synapse/integration/pi/agent-team"
+import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import {
   fixtureModel,
   TEAM_SESSION_FIXTURE_CONTEXT_WINDOW,
@@ -33,6 +34,7 @@ function makeSut(): PiTeamMemberSessions {
   )
   return new PiTeamMemberSessions({
     context: lead.context.bind(lead),
+    shell: createSupervisedShell,
     tools: memberTools,
   })
 }

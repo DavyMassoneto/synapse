@@ -1,5 +1,6 @@
 import { type MemberSession, type MemberSessionListener, type MemberUnsubscribe } from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
+import { abortMemberSession } from "./abort-session"
 import { PiTeamEventConnection } from "./event-connection"
 import { type TeamMemberSessionPort } from "./types"
 
@@ -11,6 +12,7 @@ export class PiTeamSessionAdapter implements MemberSession {
   constructor(session: TeamMemberSessionPort, lifetime: TeamMemberExtensionLifetime) {
     this.session = session
     this.lifetime = lifetime
+    this.abort = abortMemberSession.bind(undefined, session, lifetime)
   }
 
   isStreaming(): boolean {
@@ -29,9 +31,7 @@ export class PiTeamSessionAdapter implements MemberSession {
     this.lifetime.ensureHealthy()
   }
 
-  async abort(): Promise<void> {
-    await this.session.abort()
-  }
+  readonly abort: MemberSession["abort"]
 
   async dispose(): Promise<void> {
     await this.lifetime.close()

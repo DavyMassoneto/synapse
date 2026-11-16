@@ -104,6 +104,7 @@ export class PiTeamMemberSessions implements MemberSessions {
       instructions: `${TEAM_PI_MEMBER_IDENTITY_START}${name}${TEAM_PI_MEMBER_IDENTITY_END}`,
       tools: this.dependencies.tools(team, name),
       projectTrusted: input.projectTrusted,
+      shell: this.dependencies.shell(),
     })
   }
 

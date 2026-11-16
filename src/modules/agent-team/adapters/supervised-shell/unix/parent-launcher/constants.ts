@@ -1,0 +1,14 @@
+export const UNIX_KEEPER_URL = "../keeper-process/keeper.ts"
+export const UNIX_KEEPER_PIPE = "pipe"
+export const UNIX_KEEPER_IGNORE = "ignore"
+export const UNIX_KEEPER_NODE = "--no-warnings"
+export const UNIX_KEEPER_INVALID = "Protocolo do keeper de shell inválido."
+export const UNIX_KEEPER_JITI_REGISTER = "jiti/register"
+export const UNIX_KEEPER_IMPORT = "--import"
+export const UNIX_KEEPER_CONTROL_FD = 3
+export const UNIX_KEEPER_UTF8 = "utf8"
+export const UNIX_NATIVE_STOP = 2
+export const UNIX_NATIVE_STOP_BYTES = 9
+export const UNIX_PARENT_STDIN_FD = 5
+export const UNIX_NATIVE_STOP_BUDGET_NS = 5000000000n
+export const UNIX_KEEPER_EVENT_ERROR = "error"

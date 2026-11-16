@@ -11,13 +11,14 @@ import { PiTeamLifecycle } from "./lifecycle"
 import { PiTeamMemberSessions } from "./member-sessions"
 import { piTeamClock } from "./team-clock"
 import { leadTools, memberTools } from "./tools"
-import { type AgentTeamHost, type AgentTeamMount } from "./types"
+import { type AgentTeamHost, type AgentTeamMount, type AgentTeamShellFactory } from "./types"
 
-export function registerAgentTeam(pi: AgentTeamHost, mount: AgentTeamMount): void {
+export function registerAgentTeam(pi: AgentTeamHost, mount: AgentTeamMount, shell: AgentTeamShellFactory): void {
   const lead = createPiTeamLeadSession(pi)
   const sessions = new PiTeamMemberSessions({
     context: lead.context.bind(lead),
     tools: memberTools,
+    shell,
   })
   const team = mount(lead, sessions, piTeamClock)
   const lifecycle = new PiTeamLifecycle(lead, team)

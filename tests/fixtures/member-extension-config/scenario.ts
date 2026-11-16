@@ -8,6 +8,7 @@ import {
   PiTeamMemberSessions,
   TeamMemberResourceLoader,
 } from "#synapse/integration/pi/agent-team"
+import { createSupervisedShell } from "#synapse/modules/agent-team/public/supervised-shell"
 import { TeamLeadContext, TeamLeadHost, ToolsTeamDouble } from "../agent-team"
 import { fixtureModel } from "../context"
 import {
@@ -47,6 +48,10 @@ export function memberConfigSessions(fixture: MemberConfigFixture): MemberConfig
   context.projectTrusted = false
   const lead = createPiTeamLeadSession(new TeamLeadHost())
   lead.attach(context)
-  const sessions = new PiTeamMemberSessions({ context: lead.context.bind(lead), tools: memberTools })
+  const sessions = new PiTeamMemberSessions({
+    context: lead.context.bind(lead),
+    shell: createSupervisedShell,
+    tools: memberTools,
+  })
   return { context, sessions, team: new ToolsTeamDouble() }
 }
