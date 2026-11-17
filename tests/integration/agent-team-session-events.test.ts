@@ -5,13 +5,22 @@ import {
   subscribedTeamSession,
   TEAM_EXTENSION_FIXTURE_FAILURE,
   TEAM_EXTENSION_FIXTURE_NON_ERROR_TEST,
+  TEAM_SESSION_ACTIVITY_CALL,
+  TEAM_SESSION_ACTIVITY_EXECUTION,
+  TEAM_SESSION_ACTIVITY_KIND,
+  TEAM_SESSION_ACTIVITY_STARTED,
+  TEAM_SESSION_ACTIVITY_TOOL_END,
+  TEAM_SESSION_ACTIVITY_TOOL_START,
   TeamSessionDouble,
 } from "../fixtures"
 
 function translatesStart(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "agent_start" })
-  expect(session.events).toEqual([{ kind: "execution_started" }])
+  expect(session.events).toEqual([
+    { kind: TEAM_SESSION_ACTIVITY_KIND, executionId: 0, phase: TEAM_SESSION_ACTIVITY_STARTED },
+    { kind: "execution_started" },
+  ])
 }
 
 function translatesTurn(): void {
@@ -35,7 +44,16 @@ function translatesAborted(): void {
 function translatesToolStart(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "tool_execution_start", toolCallId: "call", toolName: "read", args: { path: "source.ts" } })
-  expect(session.events).toEqual([{ kind: "tool_started", callId: "call", label: "read: source.ts" }])
+  expect(session.events).toEqual([
+    {
+      kind: TEAM_SESSION_ACTIVITY_KIND,
+      executionId: 0,
+      phase: TEAM_SESSION_ACTIVITY_TOOL_START,
+      callId: TEAM_SESSION_ACTIVITY_CALL,
+      category: TEAM_SESSION_ACTIVITY_EXECUTION,
+    },
+    { kind: "tool_started", callId: "call", label: "read: source.ts" },
+  ])
 }
 
 function translatesToolEnd(): void {
@@ -47,7 +65,16 @@ function translatesToolEnd(): void {
     result: { content: [] },
     isError: false,
   })
-  expect(session.events).toEqual([{ kind: "tool_ended", callId: "call" }])
+  expect(session.events).toEqual([
+    {
+      kind: TEAM_SESSION_ACTIVITY_KIND,
+      executionId: 0,
+      phase: TEAM_SESSION_ACTIVITY_TOOL_END,
+      callId: TEAM_SESSION_ACTIVITY_CALL,
+      category: TEAM_SESSION_ACTIVITY_EXECUTION,
+    },
+    { kind: "tool_ended", callId: "call" },
+  ])
 }
 
 function translatesAssistantFailure(): void {

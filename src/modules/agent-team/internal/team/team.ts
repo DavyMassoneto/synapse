@@ -3,6 +3,7 @@ import {
   type CreateTaskInput,
   type MemberRecord,
   type MemberSessions,
+  type MemberTurnRuntime,
   TASK_ACCEPTED,
   type TaskCleanOutcome,
   type TaskOutcome,
@@ -37,6 +38,8 @@ export class Team implements AgentTeam {
 
   private closed = false
 
+  readonly memberNotice: TeamLead["deliver"]
+
   readonly start: AgentTeam["start"]
 
   readonly send: AgentTeam["send"]
@@ -47,12 +50,13 @@ export class Team implements AgentTeam {
 
   readonly listTasks: AgentTeam["listTasks"]
 
-  constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock) {
+  constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock, runtime: MemberTurnRuntime) {
     this.lead = lead
+    this.memberNotice = lead.deliver.bind(lead)
     this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
     this.messages = new TeamMessages(lead, this.roster, this.events, this)
-    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events)
+    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime)
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.interrupt = this.messages.interrupt.bind(this.messages)

@@ -56,6 +56,7 @@ export interface MemberExecutionSettled {
 }
 
 export type MemberSessionEvent =
+  | MemberExecutionActivity
   | MemberExecutionStarted
   | MemberTurnStarted
   | MemberToolStarted
@@ -65,7 +66,7 @@ export type MemberSessionEvent =
 
 export interface MemberSession {
   isStreaming(): boolean
-  prompt(text: string): Promise<void>
+  prompt(text: string, executionId: number): Promise<void>
   steer(text: string): Promise<void>
   abort(): Promise<void>
   dispose(): Promise<void>
@@ -85,3 +86,28 @@ export interface OpenMemberRequest {
   model?: string
   thinking?: string
 }
+
+export type MemberTimerCallback = () => void
+export type MemberTimerCancel = () => void
+export interface MemberTurnRuntime {
+  monotonic(): number
+  schedule(callback: MemberTimerCallback, delayMs: number): MemberTimerCancel
+}
+export type MemberActivityPhase = "started" | "updated" | "settled"
+interface MemberExecutionLifecycleActivity {
+  kind: "execution_activity"
+  executionId: number
+  phase: MemberActivityPhase
+}
+interface MemberToolActivity {
+  kind: "execution_activity"
+  executionId: number
+  phase: MemberToolActivityPhase
+  callId: string
+  category: MemberToolActivityCategory
+}
+export type MemberExecutionActivity = MemberExecutionLifecycleActivity | MemberToolActivity
+
+export type MemberToolActivityPhase = "tool-start" | "tool-update" | "tool-end"
+
+export type MemberToolActivityCategory = "execution" | "observation" | "coordination"

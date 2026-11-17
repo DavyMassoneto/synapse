@@ -17,24 +17,34 @@ import {
   TEAM_PI_MEMBER_TOOL_START,
   TEAM_PI_MEMBER_TURN_START,
 } from "./constants"
+import { PiMemberExecutionActivity } from "./execution-activity"
 import { applyTeamMemberExtensionFailure } from "./extension-failure"
 import { teamMemberAssistantResponse, teamMemberSettledResponse } from "./session-response"
-import { type TeamMemberSessionPort } from "./types"
+import { type TeamMemberExecutionState, type TeamMemberSessionPort } from "./types"
 
 export class PiTeamEventConnection {
+  private readonly activity: PiMemberExecutionActivity
+
   private readonly session: TeamMemberSessionPort
 
   private readonly listener: MemberSessionListener
 
   private readonly lifetime: TeamMemberExtensionLifetime
 
-  constructor(session: TeamMemberSessionPort, listener: MemberSessionListener, lifetime: TeamMemberExtensionLifetime) {
+  constructor(
+    session: TeamMemberSessionPort,
+    listener: MemberSessionListener,
+    lifetime: TeamMemberExtensionLifetime,
+    execution: TeamMemberExecutionState,
+  ) {
+    this.activity = new PiMemberExecutionActivity(execution, listener)
     this.session = session
     this.listener = listener
     this.lifetime = lifetime
   }
 
   onEvent(event: AgentSessionEvent): void {
+    this.activity.record(event)
     switch (event.type) {
       case TEAM_PI_MEMBER_AGENT_START:
         this.listener({ kind: MEMBER_EXECUTION_STARTED })

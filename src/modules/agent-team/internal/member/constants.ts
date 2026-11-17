@@ -1,3 +1,6 @@
+import { MEMBER_WATCHDOG_CONFIRMED, MEMBER_WATCHDOG_UNCONFIRMED } from "../turn-watchdog"
+import { type TeamMemberStopMessages } from "./types"
+
 export const TEAM_MEMBER_CLOSED = "A sessão deste membro está encerrando; a mensagem não foi aceita"
 
 export const TEAM_MESSAGE_BREAK = "\n\n"
@@ -11,3 +14,16 @@ export const TEAM_NO_ANSWER = "(o agente terminou o turno sem texto de resposta)
 export const TEAM_MEMBER_HAS_FAILURE = "failed"
 
 export const TEAM_MEMBER_NO_FAILURE = "none"
+
+export const TEAM_MEMBER_CLOSE_FAILED = "Falha ao encerrar os recursos do membro."
+
+export const MEMBER_STOP_FAILED = "failed"
+export const MEMBER_STOP_REQUESTED = "requested"
+
+export const MEMBER_STOP_CONFIRMED = "confirmed"
+export const MEMBER_STOP_UNCONFIRMED = "unconfirmed"
+
+export const MEMBER_STOP_MESSAGES: TeamMemberStopMessages = {
+  confirmed: MEMBER_WATCHDOG_CONFIRMED,
+  unconfirmed: MEMBER_WATCHDOG_UNCONFIRMED,
+}
