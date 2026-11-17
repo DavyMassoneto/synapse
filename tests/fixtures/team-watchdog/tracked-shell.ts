@@ -12,6 +12,8 @@ export class WatchdogTrackedShell implements SupervisedShellService {
 
   confirmed = false
 
+  realClosed = false
+
   failure?: Error
 
   injectedFailure?: Error
@@ -24,6 +26,7 @@ export class WatchdogTrackedShell implements SupervisedShellService {
 
   private async closeOwnedShell(): Promise<void> {
     await this.shell.close()
+    this.realClosed = true
     if (this.injectedFailure) {
       throw this.injectedFailure
     }

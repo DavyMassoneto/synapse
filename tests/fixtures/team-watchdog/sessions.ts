@@ -35,6 +35,7 @@ import {
   type WatchdogAcquisitionCleanup,
   type WatchdogAgentSessions,
   type WatchdogRecords,
+  type WatchdogSessionAcquisition,
   type WatchdogTrackedShells,
 } from "./types"
 
@@ -90,46 +91,52 @@ export class WatchdogSessions implements MemberSessions {
     const settings = SettingsManager.inMemory()
     const loader = await prepareWatchdogResources(this.directory, settings)
     const runtime = await prepareWatchdogRuntime()
-    const realShell = createSupervisedShell()
-    let shell = realShell
+    const shell = this.registerShell()
+    const cleanup: WatchdogAcquisitionCleanup = { shell, lifecycleStarting: false }
+    const acquisition: WatchdogSessionAcquisition = { record, settings, loader, runtime, cleanup }
+    const result = await captureShellCleanup(this.acquireSession.bind(this, acquisition))
+    if (result.failed) {
+      return this.cleanupFailedAcquisition([result.error], cleanup)
+    }
+    return result.value
+  }
+
+  private registerShell(): WatchdogTrackedShell {
+    let shell = createSupervisedShell()
     if (this.failStop) {
-      this.unconfirmedShell = new WatchdogUnconfirmedShell(realShell)
+      this.unconfirmedShell = new WatchdogUnconfirmedShell(shell)
       shell = this.unconfirmedShell
     }
     const tracked = new WatchdogTrackedShell(shell)
     this.shells.push(tracked)
-    shell = tracked
-    const cleanup: WatchdogAcquisitionCleanup = { shell: tracked, lifecycleStarting: false }
-    try {
-      const tools = prepareWatchdogTools(this.directory, shell, record.name, this.team)
-      const created = await createAgentSession({
-        cwd: this.directory,
-        agentDir: this.directory,
-        settingsManager: settings,
-        resourceLoader: loader,
-        modelRuntime: runtime,
-        sessionManager: SessionManager.inMemory(this.directory),
-        noTools: WATCHDOG_NO_BUILTIN_TOOLS,
-        model: fixtureModel(WATCHDOG_PROVIDER, WATCHDOG_MODEL, WATCHDOG_CONTEXT_WINDOW),
-        customTools: tools,
-      })
-      this.sessions.push(created.session)
-      cleanup.session = created.session
-      created.session.agent.streamFunction = this.model.stream.bind(this.model)
-      cleanup.lifecycleStarting = true
-      const lifecycle = await startCreatedTeamMemberSession(created.session)
-      cleanup.lifecycle = lifecycle
-      return {
-        record,
-        journal: this.journal,
-        session: new PiTeamSessionAdapter(created.session, new SupervisedMemberLifetime(lifecycle, shell)),
-      }
-    } catch (error) {
-      const primary = await captureShellCleanup(Promise.reject(error))
-      if (primary.failed) {
-        return this.cleanupFailedAcquisition([primary.error], cleanup)
-      }
-      throw new Error(WATCHDOG_ACQUISITION_FAILURE)
+    return tracked
+  }
+
+  private async acquireSession(input: WatchdogSessionAcquisition): Promise<OpenedMember> {
+    const { record, settings, loader, runtime, cleanup } = input
+    const shell = cleanup.shell
+    const tools = prepareWatchdogTools(this.directory, shell, record.name, this.team)
+    const created = await createAgentSession({
+      cwd: this.directory,
+      agentDir: this.directory,
+      settingsManager: settings,
+      resourceLoader: loader,
+      modelRuntime: runtime,
+      sessionManager: SessionManager.inMemory(this.directory),
+      noTools: WATCHDOG_NO_BUILTIN_TOOLS,
+      model: fixtureModel(WATCHDOG_PROVIDER, WATCHDOG_MODEL, WATCHDOG_CONTEXT_WINDOW),
+      customTools: tools,
+    })
+    this.sessions.push(created.session)
+    cleanup.session = created.session
+    created.session.agent.streamFunction = this.model.stream.bind(this.model)
+    cleanup.lifecycleStarting = true
+    const lifecycle = await startCreatedTeamMemberSession(created.session)
+    cleanup.lifecycle = lifecycle
+    return {
+      record,
+      journal: this.journal,
+      session: new PiTeamSessionAdapter(created.session, new SupervisedMemberLifetime(lifecycle, shell)),
     }
   }
 

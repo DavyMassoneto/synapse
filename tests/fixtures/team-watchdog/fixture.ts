@@ -40,6 +40,17 @@ export class WatchdogFixture {
     return scenario
   }
 
+  isRealShellCloseConfirmed(): boolean {
+    if (this.scenario) {
+      for (const shell of this.scenario.sessions.shells) {
+        if (!shell.realClosed) {
+          return false
+        }
+      }
+    }
+    return true
+  }
+
   private resetStopFailure(): void {
     if (this.scenario) {
       this.scenario.sessions.failStop = false

@@ -1,4 +1,5 @@
 import { MEMBER_WATCHDOG_NOTIFICATION_FAILED, MEMBER_WATCHDOG_OPERATION_FAILED } from "../turn-watchdog"
+import { captureMemberNotification } from "./capture-notification"
 import { type TeamMemberObserver } from "./types"
 
 export class TeamMemberNotification {
@@ -14,27 +15,17 @@ export class TeamMemberNotification {
   }
 
   deliver(message: string): void {
-    try {
-      this.observer.memberNotice(message)
-    } catch (failure) {
-      if (failure instanceof Error) {
-        this.failures.push(failure)
-      } else {
-        this.failures.push(new Error(MEMBER_WATCHDOG_NOTIFICATION_FAILED))
-      }
+    const outcome = captureMemberNotification(this.observer.memberNotice.bind(this.observer, message))
+    if (outcome.failed) {
+      this.failures.push(outcome.error)
       this.report(MEMBER_WATCHDOG_NOTIFICATION_FAILED)
     }
   }
 
   report(message: string): void {
-    try {
-      this.observer.memberStartFailed(this.name, message)
-    } catch (failure) {
-      if (failure instanceof Error) {
-        this.failures.push(failure)
-      } else {
-        this.failures.push(new Error(MEMBER_WATCHDOG_NOTIFICATION_FAILED))
-      }
+    const outcome = captureMemberNotification(this.observer.memberStartFailed.bind(this.observer, this.name, message))
+    if (outcome.failed) {
+      this.failures.push(outcome.error)
     }
   }
 
