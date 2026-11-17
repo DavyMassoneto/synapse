@@ -29,10 +29,17 @@ export class WatchdogFixture {
     this.scenario = scenario
     scenario.sessions.model.shell = options.shell
     scenario.sessions.failStop = options.failStop
+    scenario.team.createTask({
+      subject: WATCHDOG_PRIVATE_DESCRIPTION,
+      description: WATCHDOG_PROMPT,
+      blockedBy: [],
+      writeScopes: [],
+    })
     const started = await scenario.team.start({
       name: WATCHDOG_MEMBER,
       description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
+      taskId: "task-1",
+      expectedRevision: 1,
     })
     if (started.kind !== WATCHDOG_MEMBER_STARTED) {
       throw new Error(started.message)

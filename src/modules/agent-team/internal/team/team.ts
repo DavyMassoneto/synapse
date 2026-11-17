@@ -58,7 +58,7 @@ export class Team implements AgentTeam {
     this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
     this.messages = new TeamMessages(lead, this.roster, this.events, this)
-    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime)
+    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime, this.board)
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.interrupt = this.messages.interrupt.bind(this.messages)

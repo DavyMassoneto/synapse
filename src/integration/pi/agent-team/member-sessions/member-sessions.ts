@@ -1,3 +1,4 @@
+import { rmSync } from "node:fs"
 import { REFERENCE_SEPARATOR } from "#synapse/modules/advisor"
 import {
   type AgentTeam,
@@ -27,6 +28,10 @@ export class PiTeamMemberSessions implements MemberSessions {
 
   constructor(dependencies: TeamMemberSessionDependencies) {
     this.dependencies = dependencies
+  }
+
+  discardPrepared(record: MemberRecord): void {
+    rmSync(record.sessionFile, { force: true })
   }
 
   async open(request: OpenMemberRequest, team: AgentTeam): Promise<OpenedMember> {

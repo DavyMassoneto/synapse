@@ -9,6 +9,7 @@ import {
   SCRIPTED_PROVIDER_PROVIDER,
   SCRIPTED_PROVIDER_PROVIDER_VARIABLE,
   SCRIPTED_PROVIDER_SCRIPT_VARIABLE,
+  type ScriptedProviderScript,
 } from "../scripted-provider"
 import {
   SELECTION_AGENT_ENVIRONMENT,
@@ -17,12 +18,11 @@ import {
   SELECTION_EXCLUDED_EXTENSION_URL,
   SELECTION_EXTERNAL_EXTENSION_URL,
   SELECTION_LOG,
-  SELECTION_MEMBER_MARKER,
   SELECTION_PROVIDER_URL,
   SELECTION_SCRIPT,
   SELECTION_SETTINGS,
 } from "./constants"
-import { SELECTION_LEAD_STEPS, SELECTION_MEMBER_STEPS } from "./lifecycle-script"
+import { SELECTION_SCRIPT_SCENARIO } from "./scenario"
 import { type SelectionPaths } from "./types"
 
 export function prepareSelectionDirectories(paths: SelectionPaths): void {
@@ -56,13 +56,12 @@ export function disableSelectionExternal(paths: SelectionPaths): void {
   )
 }
 
-export function prepareSelectionScript(paths: SelectionPaths): void {
-  writeFileSync(
-    join(paths.directory, SELECTION_SCRIPT),
-    JSON.stringify({
-      tracks: [{ marker: SELECTION_MEMBER_MARKER, steps: SELECTION_MEMBER_STEPS }, { steps: SELECTION_LEAD_STEPS }],
-    }),
-  )
+export function prepareSelectionScript(paths: SelectionPaths, script?: ScriptedProviderScript): void {
+  let scenario = SELECTION_SCRIPT_SCENARIO
+  if (script) {
+    scenario = script
+  }
+  writeFileSync(join(paths.directory, SELECTION_SCRIPT), JSON.stringify(scenario))
 }
 
 export function prepareSelectionEnvironment(paths: SelectionPaths): void {

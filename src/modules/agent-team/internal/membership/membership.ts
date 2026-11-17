@@ -12,8 +12,17 @@ import { TeamMember } from "../member"
 import { TeamRuleError, teamAsyncOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { type TeamRoster } from "../roster"
-import { TEAM_EVENT_STARTED, TEAM_MEMBERSHIP_CLOSED, TEAM_SESSION_REPLACED } from "./constants"
+import { type TaskBoard, TaskRefusal } from "../task-board"
+import {
+  TEAM_ADMISSION_CLEANUP_FAILED,
+  TEAM_ADMISSION_INSTRUCTIONS,
+  TEAM_ADMISSION_MESSAGE_SEPARATOR,
+  TEAM_EVENT_STARTED,
+  TEAM_MEMBERSHIP_CLOSED,
+  TEAM_SESSION_REPLACED,
+} from "./constants"
 import { teamOpenRequest } from "./open-request"
+import { rollbackPreparedMember } from "./rollback"
 import { type TeamAdmissionAttempt, type TeamMembershipContext } from "./types"
 
 export class TeamMembership {
@@ -29,6 +38,8 @@ export class TeamMembership {
 
   private readonly runtime: MemberTurnRuntime
 
+  private readonly board: TaskBoard
+
   private generation = 0
 
   private closed = false
@@ -40,7 +51,9 @@ export class TeamMembership {
     roster: TeamRoster,
     events: TeamRecentEvents,
     runtime: MemberTurnRuntime,
+    board: TaskBoard,
   ) {
+    this.board = board
     this.runtime = runtime
     this.team = team
     this.sessions = sessions
@@ -60,7 +73,20 @@ export class TeamMembership {
 
   private async startMember(request: StartMemberRequest): Promise<TeamStartOutcome> {
     const name = this.reserve(request)
-    return this.openReserved(name, request, this.generation)
+    const generation = this.generation
+    try {
+      this.board.prepareAdmission(name, request.taskId, request.expectedRevision)
+      const opened = await this.sessions.open(teamOpenRequest(name, request), this.team)
+      return await this.admit(opened, request, generation)
+    } catch (error) {
+      if (generation === this.generation) {
+        this.roster.release(name)
+      }
+      if (error instanceof TaskRefusal) {
+        throw new TeamRuleError(error.message)
+      }
+      throw error
+    }
   }
 
   private reserve(request: StartMemberRequest): string {
@@ -79,18 +105,6 @@ export class TeamMembership {
     }
   }
 
-  private async openReserved(name: string, request: StartMemberRequest, generation: number): Promise<TeamStartOutcome> {
-    try {
-      const opened = await this.sessions.open(teamOpenRequest(name, request), this.team)
-      return await this.admit(opened, request, generation)
-    } catch (error) {
-      if (generation === this.generation) {
-        this.roster.release(name)
-      }
-      throw error
-    }
-  }
-
   private async admit(
     opened: OpenedMember,
     request: StartMemberRequest,
@@ -101,24 +115,44 @@ export class TeamMembership {
       this.ensureGeneration(generation)
       const member = new TeamMember(opened, this.team, this.runtime)
       attempt.member = member
-      return this.publishMember(member, opened.record, request)
+      return this.publishMember(member, opened.record, request, attempt)
     } catch (error) {
-      if (attempt.member) {
-        await attempt.member.dispose()
-      } else {
-        await opened.session.dispose()
+      try {
+        if (!attempt.committed) {
+          await rollbackPreparedMember(this.sessions, opened, attempt)
+        }
+      } catch (cleanup) {
+        const failures = [error, cleanup]
+        const message = `${TEAM_ADMISSION_CLEANUP_FAILED}${TEAM_ADMISSION_MESSAGE_SEPARATOR}${failures.join(TEAM_ADMISSION_MESSAGE_SEPARATOR)}`
+        throw new AggregateError(failures, message)
       }
       throw error
     }
   }
 
-  private publishMember(member: TeamMember, record: MemberRecord, request: StartMemberRequest): TeamStartOutcome {
-    member.accept(request.task)
-    this.lead.recordMember(record)
+  private publishMember(
+    member: TeamMember,
+    record: MemberRecord,
+    request: StartMemberRequest,
+    attempt: TeamAdmissionAttempt,
+  ): TeamStartOutcome {
+    const task = this.board.prepareAdmission(record.name, request.taskId, request.expectedRevision)
+    member.accept(`${TEAM_ADMISSION_INSTRUCTIONS}\n${JSON.stringify(task)}`)
+    this.board.prepareAdmission(record.name, request.taskId, request.expectedRevision)
+    this.lead.recordAdmission(
+      { ...record },
+      {
+        ...task,
+        blockedBy: [...task.blockedBy],
+        writeScopes: [...task.writeScopes],
+      },
+    )
+    attempt.committed = true
+    const snapshot = this.board.acceptAdmission(task)
     this.roster.add(member)
     this.events.add(`${record.name}${TEAM_EVENT_STARTED}${request.description}`)
     member.startPending()
-    return { kind: TEAM_STARTED, name: record.name, model: record.model }
+    return { kind: TEAM_STARTED, name: record.name, model: record.model, task: snapshot }
   }
 
   async restore(records: MemberRecord[]): Promise<void> {

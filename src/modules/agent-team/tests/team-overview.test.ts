@@ -25,8 +25,8 @@ async function taskPanel(): Promise<void> {
   const { team, lead } = makeTeamSut()
   const result = team.createTask({ subject: "x", description: "x", blockedBy: [], writeScopes: [] })
   expect(result.kind).toBe("accepted")
-  expect(lead.tasks).toHaveLength(1)
-  expect(lead.panels).toHaveLength(1)
+  expect(lead.tasks).toHaveLength(2)
+  expect(lead.panels).toHaveLength(2)
 }
 
 function register(): void {

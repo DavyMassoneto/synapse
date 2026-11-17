@@ -9,19 +9,19 @@ import { failedAliceAcceptance, failedAliceRecord, failedAliceStart, makeTeamSut
 
 async function starts(): Promise<void> {
   const { team, sessions } = makeTeamSut()
-  const result = await team.start({ description: "trabalho", task: "faça" })
+  const result = await team.start({ description: "trabalho", taskId: "task-1", expectedRevision: 1 })
   expect(result.kind).toBe("started")
-  expect(sessions.session.prompts).toEqual(["faça"])
+  expect(sessions.session.prompts[0]).toContain('"owner":"agent-1"')
 }
 
 async function invalid(): Promise<void> {
   const { team } = makeTeamSut()
-  expect((await team.start({ name: "Lead", description: "x", task: "x" })).kind).toBe("refused")
+  expect((await team.start({ ...TEAM_TEST_ALICE_REQUEST, name: "Lead" })).kind).toBe("refused")
 }
 
 async function reserved(): Promise<void> {
   const { team } = makeTeamSut()
-  expect((await team.start({ name: "lead", description: "x", task: "x" })).kind).toBe("refused")
+  expect((await team.start({ ...TEAM_TEST_ALICE_REQUEST, name: "lead" })).kind).toBe("refused")
 }
 
 async function duplicate(): Promise<void> {
@@ -86,7 +86,7 @@ async function reusesNameAfterRecordFailure(): Promise<void> {
 
 async function journalStart(): Promise<void> {
   const { sessions } = await failedAliceStart()
-  expect(sessions.journal.checkpoint.pending).toEqual(["x"])
+  expect(sessions.journal.checkpoint.pending[0]).toContain('"id":"task-1"')
 }
 
 async function journalStartDoesNotPrompt(): Promise<void> {
@@ -97,7 +97,7 @@ async function journalStartDoesNotPrompt(): Promise<void> {
 async function journalStartCanContinue(): Promise<void> {
   const { team, sessions } = await failedAliceStart()
   team.send("lead", "alice", "segunda")
-  expect(sessions.session.prompts[0]).toContain("x\n\n")
+  expect(sessions.session.prompts[0]).toContain('"owner":"alice"')
 }
 
 async function constructorFailureDisposesSession(): Promise<void> {

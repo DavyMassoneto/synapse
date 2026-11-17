@@ -20,5 +20,6 @@ export function createPiTeamLeadSession(pi: AgentTeamLeadHost): PiTeamLeadSessio
     recordTaskCleanup: output.recordTaskCleanup.bind(output),
     recordTask: output.recordTask.bind(output),
     recordMember: output.recordMember.bind(output),
+    recordAdmission: output.recordAdmission.bind(output),
   }
 }

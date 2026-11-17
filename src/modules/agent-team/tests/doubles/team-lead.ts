@@ -51,6 +51,11 @@ export class TeamTestLead implements TeamLead {
     this.tasks.push(task)
   }
 
+  recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
+    this.recordMember(record)
+    this.tasks.push(task)
+  }
+
   recordMember(record: MemberRecord): void {
     if (this.failRecord) {
       throw new Error("registro indisponível")

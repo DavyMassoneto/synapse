@@ -13,7 +13,10 @@ export class TeamAgentHandlers {
   }
 
   async subagent(_id: string, input: TeamSubagentInput): Promise<TeamToolOutput> {
-    return teamAcceptedOrRefusedOutput(await this.team.start(input))
+    const { task_id, expected_revision, ...options } = input
+    return teamAcceptedOrRefusedOutput(
+      await this.team.start({ ...options, taskId: task_id, expectedRevision: expected_revision }),
+    )
   }
 
   async interrupt(_id: string, input: TeamInterruptInput): Promise<TeamToolOutput> {

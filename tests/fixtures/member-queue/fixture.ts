@@ -39,7 +39,13 @@ export class QueueFixture {
     this.sessions.real.journal.save(checkpoint)
     const lead = createPiTeamLeadSession(this.host)
     this.team = createAgentTeam(lead, this.sessions, piTeamClock, this.clock)
-    const started = await this.team.start({ name: WATCHDOG_MEMBER, description: WATCHDOG_DESCRIPTION, task: prompt })
+    this.team.createTask({ subject: WATCHDOG_DESCRIPTION, description: prompt, blockedBy: [], writeScopes: [] })
+    const started = await this.team.start({
+      name: WATCHDOG_MEMBER,
+      description: WATCHDOG_DESCRIPTION,
+      taskId: "task-1",
+      expectedRevision: 1,
+    })
     if (started.kind !== QUEUE_STARTED) {
       throw new Error(started.message)
     }

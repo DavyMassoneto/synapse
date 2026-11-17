@@ -2,7 +2,12 @@ import { type SupervisedShellSpec } from "#synapse/modules/agent-team/public/sup
 import { type StartMemberRequest } from "../public"
 import { type ShellTestStdioOptions } from "./native-test-types"
 
-export const TEAM_TEST_ALICE_REQUEST: StartMemberRequest = { name: "alice", description: "x", task: "x" }
+export const TEAM_TEST_ALICE_REQUEST: StartMemberRequest = {
+  name: "alice",
+  description: "x",
+  taskId: "task-1",
+  expectedRevision: 1,
+}
 
 export const TEAM_TEST_SUBSCRIPTION_FAILURE = "Falha ao assinar sessão"
 

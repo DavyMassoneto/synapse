@@ -19,7 +19,7 @@ export const TEAM_TOOL_TASK_UPDATE = "team_task_update"
 export const TEAM_TOOL_TEXT_CONTENT = "text"
 
 export const TEAM_TOOL_SUBAGENT_DESCRIPTION =
-  "Inicia um subagente em segundo plano com a tarefa dada e retorna na hora com o nome dele, sem esperar o resultado. A resposta final do subagente chega depois como mensagem. O subagente continua disponível para send_message."
+  "Delega uma tarefa existente (task_id e expected_revision) a um novo subagente. Valida revisão, estado e bloqueios; atribui responsável, seleciona a tarefa e registra membro e snapshot atomicamente antes de iniciar. Retorna nome e snapshot. Fim de turno não conclui tarefa. A seleção organiza o trabalho, não autoriza comandos; escopos são avisos, não permissões. A resposta final chega depois como mensagem; o membro continua disponível para send_message."
 
 export const TEAM_TOOL_SEND_MESSAGE_DESCRIPTION =
   "Envia uma mensagem a um agente da equipe. Um agente trabalhando a recebe no próximo passo; um agente parado inicia um novo turno com ela. Retorna a confirmação de entrega, nunca uma resposta."
