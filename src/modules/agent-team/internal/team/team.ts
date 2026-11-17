@@ -38,6 +38,8 @@ export class Team implements AgentTeam {
 
   private closed = false
 
+  readonly memberNotice: TeamLead["deliver"]
+
   readonly start: AgentTeam["start"]
 
   readonly send: AgentTeam["send"]
@@ -50,6 +52,7 @@ export class Team implements AgentTeam {
 
   constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock, runtime: MemberTurnRuntime) {
     this.lead = lead
+    this.memberNotice = lead.deliver.bind(lead)
     this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
     this.messages = new TeamMessages(lead, this.roster, this.events, this)
@@ -79,10 +82,6 @@ export class Team implements AgentTeam {
     }
     agents.push(...this.roster.failures())
     return { agents, tasks: this.board.list({}), events: this.events.list() }
-  }
-
-  memberNotice(message: string): void {
-    this.lead.deliver(message)
   }
 
   refresh(): void {

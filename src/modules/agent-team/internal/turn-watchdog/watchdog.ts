@@ -30,8 +30,7 @@ export class MemberTurnWatchdog {
 
   update(executionId: number): void {
     if (this.state.kind === MEMBER_WATCHDOG_RUNNING && this.state.executionId === executionId) {
-      this.cancel?.()
-      this.arm(executionId)
+      this.state.updatedAt = this.runtime.monotonic()
     }
   }
 

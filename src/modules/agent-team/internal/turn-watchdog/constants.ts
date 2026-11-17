@@ -16,3 +16,5 @@ export const MEMBER_WATCHDOG_OBSERVATIONAL_TOOLS = [
   "list_models",
   "send_message",
 ]
+
+export const MEMBER_WATCHDOG_OPERATION_FAILED = "Falha operacional ao finalizar a parada do watchdog."

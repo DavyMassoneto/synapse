@@ -1,4 +1,4 @@
-import { MEMBER_WATCHDOG_NOTIFICATION_FAILED } from "../turn-watchdog"
+import { MEMBER_WATCHDOG_NOTIFICATION_FAILED, MEMBER_WATCHDOG_OPERATION_FAILED } from "../turn-watchdog"
 import { type TeamMemberObserver } from "./types"
 
 export class TeamMemberNotification {
@@ -31,6 +31,11 @@ export class TeamMemberNotification {
         this.failure = new Error(MEMBER_WATCHDOG_NOTIFICATION_FAILED)
       }
     }
+  }
+
+  operationalFailure(error: Error): void {
+    this.report(MEMBER_WATCHDOG_OPERATION_FAILED)
+    this.failure = error
   }
 
   ensureHealthy(): void {

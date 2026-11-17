@@ -51,10 +51,15 @@ export type TeamMemberStopConfirmed = () => void
 export interface TeamMemberStopPolicy {
   confirmed(): void
   unconfirmed(): void
-  failed(message: string): void
+  failed(error: Error): void
   notice: TeamMemberNotice
 }
 
-export type TeamMemberNotice = (message: string) => void
+type TeamMemberNotice = (message: string) => void
 
 export type TeamMemberStopRequest = "requested" | "failed"
+
+export interface TeamMemberStopResultPort {
+  accepts(executionId: number): boolean
+  finishStop(unconfirmed: boolean): void
+}

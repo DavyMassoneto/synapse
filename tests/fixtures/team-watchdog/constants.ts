@@ -1,3 +1,9 @@
+import { type WatchdogFixtureOptions } from "./types"
+
+export const WATCHDOG_DEFAULT_OPTIONS: WatchdogFixtureOptions = { shell: false, failStop: false }
+export const WATCHDOG_SHELL_OPTIONS: WatchdogFixtureOptions = { shell: true, failStop: false }
+export const WATCHDOG_UNCONFIRMED_OPTIONS: WatchdogFixtureOptions = { shell: false, failStop: true }
+export const WATCHDOG_ACQUISITION_FAILURE = "Falha ao abrir sessão e encerrar shell de teste."
 export const WATCHDOG_DIRECTORY = "watchdog-e2e-"
 export const WATCHDOG_PROVIDER = "anthropic"
 export const WATCHDOG_MODEL = "watchdog-fixture"
@@ -15,6 +21,8 @@ export const WATCHDOG_THINKING = "off"
 export const WATCHDOG_TIMEOUT_MS = 600000
 export const WATCHDOG_TEST_TIMEOUT_MS = 15000
 export const WATCHDOG_TITLE_TIMEOUT = "inatividade vence e avisa o lead imediatamente"
+export const WATCHDOG_TITLE_TOOL_DELTA = "delta de ferramenta vazio não renova texto anterior"
+export const WATCHDOG_TITLE_THINKING_DELTA = "delta real de raciocínio renova o prazo"
 export const WATCHDOG_TITLE_ACTIVITY = "atividade real renova o prazo"
 export const WATCHDOG_POLL_TOOL = "team_task_list"
 export const WATCHDOG_ROLE_ASSISTANT = "assistant"
@@ -26,6 +34,9 @@ export const WATCHDOG_TOOL_USE = "toolUse"
 export const WATCHDOG_EVENT_START = "start"
 export const WATCHDOG_EVENT_DONE = "done"
 export const WATCHDOG_EVENT_ERROR = "error"
+export const WATCHDOG_EVENT_TOOL_DELTA = "toolcall_delta"
+export const WATCHDOG_EVENT_THINKING_DELTA = "thinking_delta"
+export const WATCHDOG_SESSION_MESSAGE_UPDATE = "message_update"
 export const WATCHDOG_EVENT_TEXT_DELTA = "text_delta"
 export const WATCHDOG_ABORT_EVENT = "abort"
 export const WATCHDOG_TOOL_RESULT_ROLE = "toolResult"
@@ -53,6 +64,18 @@ export const WATCHDOG_INITIAL_NOTICE =
 export const WATCHDOG_PID_FILE = "child.pid"
 export const WATCHDOG_PID_SCRIPT =
   'require("node:fs").writeFileSync("child.pid",String(process.pid));setTimeout(process.exit,120000)'
+export const WATCHDOG_NODE_EVAL_FLAG = "-e"
+export const WATCHDOG_SHELL_CLEANUP_UNCONFIRMED = "Encerramento da shell de teste não foi confirmado."
+export const WATCHDOG_NO_BUILTIN_TOOLS = "builtin"
+export const WATCHDOG_SHELL_SPECIAL_FILENAME = "node space ' $ ` \""
+export const WATCHDOG_SHELL_SPECIAL_ARGUMENT = "value space ' $ ` \""
+export const WATCHDOG_SHELL_ROUNDTRIP_SCRIPT = "process.stdout.write(process.argv[1])"
+export const WATCHDOG_SHELL_ROUNDTRIP_TITLE = "argumentos shell preservam caracteres especiais"
+export const WATCHDOG_SHELL_EXECUTABLE = "/bin/bash"
+export const WATCHDOG_SHELL_COMMAND_FLAG = "-c"
+export const WATCHDOG_SHELL_ARGUMENT_SEPARATOR = " "
+export const WATCHDOG_SHELL_QUOTE = "'"
+export const WATCHDOG_SHELL_QUOTE_ESCAPE = "'\\''"
 export const WATCHDOG_PATH_SEPARATOR = /\\/g
 export const WATCHDOG_SHELL_PATH_SEPARATOR = "/"
 export const WATCHDOG_TOOL_NAME = "bash"

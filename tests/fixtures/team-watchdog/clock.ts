@@ -3,6 +3,7 @@ import { type WatchdogTimer, type WatchdogTimers } from "./types"
 
 export class WatchdogClock implements MemberTurnRuntime {
   private now = 0
+
   readonly timers: WatchdogTimers = []
 
   monotonic(): number {

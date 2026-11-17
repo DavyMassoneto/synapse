@@ -23,13 +23,15 @@ import {
   TEAM_PI_ACTIVITY_MESSAGE_START,
   TEAM_PI_ACTIVITY_MESSAGE_UPDATE,
   TEAM_PI_ACTIVITY_TEXT,
+  TEAM_PI_ACTIVITY_TEXT_DELTA,
   TEAM_PI_ACTIVITY_THINKING,
+  TEAM_PI_ACTIVITY_THINKING_DELTA,
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_END,
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_START,
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE,
   TEAM_PI_MEMBER_ASSISTANT_ROLE,
 } from "./constants"
-import { type TeamMemberExecutionState } from "./types"
+import { type TeamMemberExecutionState, type TeamMemberMessageUpdate, type TeamMemberToolEvent } from "./types"
 
 export class PiMemberExecutionActivity {
   constructor(state: TeamMemberExecutionState, listener: MemberSessionListener) {
@@ -51,16 +53,22 @@ export class PiMemberExecutionActivity {
         this.settle()
         break
       case TEAM_PI_ACTIVITY_MESSAGE_START:
-      case TEAM_PI_ACTIVITY_MESSAGE_UPDATE:
       case TEAM_PI_ACTIVITY_MESSAGE_END:
         if (event.message.role === TEAM_PI_MEMBER_ASSISTANT_ROLE) {
           this.message(event.message)
         }
         break
+      case TEAM_PI_ACTIVITY_MESSAGE_UPDATE:
+        this.messageUpdate(event)
+        break
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_START:
+        this.tool(event, MEMBER_ACTIVITY_TOOL_START)
+        break
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE:
+        this.tool(event, MEMBER_ACTIVITY_TOOL_UPDATE)
+        break
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_END:
-        this.tool(event)
+        this.tool(event, MEMBER_ACTIVITY_TOOL_END)
         break
       case TEAM_PI_ACTIVITY_AUTO_RETRY_START:
       case TEAM_PI_ACTIVITY_AUTO_RETRY_END:
@@ -71,26 +79,24 @@ export class PiMemberExecutionActivity {
     }
   }
 
-  private tool(event: AgentSessionEvent): void {
+  private messageUpdate(event: TeamMemberMessageUpdate): void {
     if (
-      event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_START ||
-      event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE ||
-      event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_END
+      (event.assistantMessageEvent.type === TEAM_PI_ACTIVITY_TEXT_DELTA ||
+        event.assistantMessageEvent.type === TEAM_PI_ACTIVITY_THINKING_DELTA) &&
+      event.assistantMessageEvent.delta.length > 0
     ) {
-      let phase: MemberToolActivityPhase = MEMBER_ACTIVITY_TOOL_UPDATE
-      if (event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_START) {
-        phase = MEMBER_ACTIVITY_TOOL_START
-      } else if (event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_END) {
-        phase = MEMBER_ACTIVITY_TOOL_END
-      }
-      this.listener({
-        kind: MEMBER_EXECUTION_ACTIVITY,
-        executionId: this.state.executionId,
-        phase,
-        callId: event.toolCallId,
-        name: event.toolName,
-      })
+      this.update()
     }
+  }
+
+  private tool(event: TeamMemberToolEvent, phase: MemberToolActivityPhase): void {
+    this.listener({
+      kind: MEMBER_EXECUTION_ACTIVITY,
+      executionId: this.state.executionId,
+      phase,
+      callId: event.toolCallId,
+      name: event.toolName,
+    })
   }
 
   private message(message: AssistantMessage): void {

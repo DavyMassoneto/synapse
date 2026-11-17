@@ -33,6 +33,7 @@ export class TeamMember {
   private readonly responseState: TeamMemberResponseState
 
   private run = Promise.resolve()
+
   private readonly turn: TeamMemberTurnControl
 
   constructor(opened: contracts.OpenedMember, observer: TeamMemberObserver, runtime: contracts.MemberTurnRuntime) {

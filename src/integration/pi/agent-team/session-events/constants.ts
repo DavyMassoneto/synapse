@@ -37,3 +37,6 @@ export const TEAM_PI_ACTIVITY_COMPACTION_END = "compaction_end"
 
 export const TEAM_PI_ACTIVITY_TEXT = "text"
 export const TEAM_PI_ACTIVITY_THINKING = "thinking"
+
+export const TEAM_PI_ACTIVITY_TEXT_DELTA = "text_delta"
+export const TEAM_PI_ACTIVITY_THINKING_DELTA = "thinking_delta"

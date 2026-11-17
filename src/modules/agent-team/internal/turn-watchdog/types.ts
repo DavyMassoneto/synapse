@@ -10,7 +10,7 @@ export interface MemberWatchdogRunning {
   updatedAt: number
 }
 
-export interface MemberWatchdogIdle {
+interface MemberWatchdogIdle {
   kind: "idle"
 }
 

@@ -1,4 +1,5 @@
-import { createMemberTurnRuntime, Team } from "../internal"
+import { createMemberTurnRuntime } from "#synapse/modules/agent-team/adapters/turn-runtime"
+import { Team } from "../internal"
 import { type AgentTeam, type MemberSessions, type MemberTurnRuntime, type TeamClock, type TeamLead } from "./contracts"
 
 export function createAgentTeam(

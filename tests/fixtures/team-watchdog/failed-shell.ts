@@ -3,7 +3,9 @@ import { WATCHDOG_STOP_FAILURE } from "./constants"
 
 export class WatchdogUnconfirmedShell implements SupervisedShellService {
   readonly create: SupervisedShellService["create"]
+
   readonly close: SupervisedShellService["close"]
+
   fail = true
 
   constructor(shell: SupervisedShellService) {

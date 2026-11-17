@@ -1,5 +1,12 @@
 import { type MemberRecord } from "#synapse/modules/agent-team"
 
+export const TEAM_SESSION_ACTIVITY_KIND = "execution_activity"
+export const TEAM_SESSION_ACTIVITY_STARTED = "started"
+export const TEAM_SESSION_ACTIVITY_TOOL_START = "tool-start"
+export const TEAM_SESSION_ACTIVITY_TOOL_END = "tool-end"
+export const TEAM_SESSION_ACTIVITY_CALL = "call"
+export const TEAM_SESSION_ACTIVITY_READ = "read"
+
 export const TEAM_SESSION_FIXTURE_TEST_PREFIX = "synapse-team-session-"
 
 export const TEAM_SESSION_FIXTURE_TEST_CWD = "workspace"

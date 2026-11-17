@@ -1,14 +1,30 @@
+import { type AgentSessionEvent } from "@earendil-works/pi-coding-agent"
 import { type TeamLeadHost } from "../agent-team"
 import { type WatchdogClock } from "./clock"
-import { WATCHDOG_TOOL_RESULT_ROLE, WATCHDOG_UNCONFIRMED_NOTICE } from "./constants"
+import {
+  WATCHDOG_EVENT_TEXT_DELTA,
+  WATCHDOG_EVENT_THINKING_DELTA,
+  WATCHDOG_EVENT_TOOL_DELTA,
+  WATCHDOG_SESSION_MESSAGE_UPDATE,
+  WATCHDOG_TOOL_RESULT_ROLE,
+  WATCHDOG_UNCONFIRMED_NOTICE,
+} from "./constants"
 import { type WatchdogAgentSessions } from "./types"
 
 export class WatchdogObservation {
   private readonly clock: WatchdogClock
+
   private readonly host: TeamLeadHost
+
   private readonly sessions: WatchdogAgentSessions
-  private baseline = 0
+
   private index = 0
+
+  private textUpdates = 0
+
+  private thinkingUpdates = 0
+
+  private toolUpdates = 0
 
   constructor(clock: WatchdogClock, host: TeamLeadHost, sessions: WatchdogAgentSessions) {
     this.clock = clock
@@ -16,16 +32,12 @@ export class WatchdogObservation {
     this.sessions = sessions
   }
 
-  markTimers(): void {
-    this.baseline = this.clock.timers.length
-  }
-
   selectSession(index: number): void {
     this.index = index
   }
 
   hasNewTimer(): boolean {
-    return this.clock.timers.length > this.baseline
+    return this.clock.timers.length > 0
   }
 
   isStreaming(): boolean {
@@ -38,6 +50,34 @@ export class WatchdogObservation {
 
   hasUnconfirmedNotice(): boolean {
     return JSON.stringify(this.host.notices).includes(WATCHDOG_UNCONFIRMED_NOTICE)
+  }
+
+  observe(event: AgentSessionEvent): void {
+    if (event.type === WATCHDOG_SESSION_MESSAGE_UPDATE) {
+      switch (event.assistantMessageEvent.type) {
+        case WATCHDOG_EVENT_TEXT_DELTA:
+          this.textUpdates++
+          break
+        case WATCHDOG_EVENT_THINKING_DELTA:
+          this.thinkingUpdates++
+          break
+        case WATCHDOG_EVENT_TOOL_DELTA:
+          this.toolUpdates++
+          break
+      }
+    }
+  }
+
+  hasTextUpdate(): boolean {
+    return this.textUpdates > 0
+  }
+
+  hasThinkingUpdate(): boolean {
+    return this.thinkingUpdates > 0
+  }
+
+  hasToolUpdate(): boolean {
+    return this.toolUpdates > 0
   }
 
   hasToolResult(): boolean {

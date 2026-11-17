@@ -7,18 +7,23 @@ import {
   WATCHDOG_PROCESS_EXIT_FAILURE,
   WATCHDOG_PROCESS_START_FAILURE,
 } from "./constants"
+import { type WatchdogStartWait } from "./types"
 import { waitForWatchdogCondition } from "./wait"
 
 export class WatchdogChildProof {
   private readonly file: string
+
   private pid = 0
+
+  readonly waitForStart: WatchdogStartWait
 
   constructor(directory: string) {
     this.file = join(directory, WATCHDOG_PID_FILE)
-  }
-
-  async waitForStart(): Promise<void> {
-    await waitForWatchdogCondition(this.isRunning.bind(this), WATCHDOG_PROCESS_START_FAILURE)
+    this.waitForStart = waitForWatchdogCondition.bind(
+      undefined,
+      this.isRunning.bind(this),
+      WATCHDOG_PROCESS_START_FAILURE,
+    )
   }
 
   private isRunning(): boolean {
