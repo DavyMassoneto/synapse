@@ -1,9 +1,16 @@
+import { type Api, type AssistantMessageEventStream, type Model, type TranscriptContext } from "@earendil-works/pi-ai"
 import { type Static } from "typebox"
 import {
   type SCRIPTED_PROVIDER_SCRIPT_SCHEMA,
   type SCRIPTED_PROVIDER_STEPS_SCHEMA,
   type SCRIPTED_PROVIDER_TRACKS_SCHEMA,
 } from "./schemas"
+
+export interface ScriptedProviderStream {
+  stream(model: Model<Api>, context: TranscriptContext): AssistantMessageEventStream
+}
+
+export type ScriptedProviderStreamFactory = new (script: ScriptedProviderScript) => ScriptedProviderStream
 
 export type ScriptedProviderScript = Static<typeof SCRIPTED_PROVIDER_SCRIPT_SCHEMA>
 

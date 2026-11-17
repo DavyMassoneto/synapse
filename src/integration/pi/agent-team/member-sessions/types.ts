@@ -1,6 +1,7 @@
 import {
   type AgentSession,
   type DefaultPackageManager,
+  type ExtensionFactory,
   type SessionManager,
   type SettingsManager,
   type ToolDefinition,
@@ -27,6 +28,7 @@ export interface TeamMemberSessionRequest {
   storage: SessionManager
   selection: SelectedMemberModel
   instructions: string
+  taskContext: ExtensionFactory
   tools: TeamRegisteredTool[]
   projectTrusted: boolean
   shell: SupervisedShellService
@@ -66,6 +68,7 @@ export interface TeamMemberResourceRequest {
   cwd: string
   agentDirectory: string
   instructions: string
+  taskContext?: ExtensionFactory
   settings: SettingsManager
 }
 

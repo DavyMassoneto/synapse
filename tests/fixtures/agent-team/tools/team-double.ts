@@ -6,6 +6,7 @@ import {
   type TaskCleanOutcome,
   type TaskFilter,
   type TaskOutcome,
+  type TaskSelection,
   type TaskSnapshot,
   type TaskView,
   type TeamInterruptOutcome,
@@ -68,6 +69,10 @@ export class ToolsTeamDouble implements AgentTeam {
   createTask(input: CreateTaskInput): TaskOutcome {
     this.createInput = input
     return this.taskOutcome()
+  }
+
+  selectedTask(_caller: string): TaskSelection {
+    return { kind: "unselected" }
   }
 
   getTask(_id: string): TaskOutcome {

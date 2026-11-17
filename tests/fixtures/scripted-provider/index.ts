@@ -1,4 +1,5 @@
 export * from "./constants"
+export * from "./register-provider"
 export * from "./require-environment"
 export * from "./schemas"
 export * from "./script-track"

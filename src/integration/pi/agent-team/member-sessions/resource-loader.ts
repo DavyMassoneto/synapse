@@ -19,6 +19,7 @@ export class TeamMemberResourceLoader extends DefaultResourceLoader {
       noExtensions: true,
       additionalExtensionPaths: paths,
       appendSystemPrompt: [request.instructions],
+      extensionFactories: request.taskContext ? [request.taskContext] : [],
     })
     this.paths = paths
     this.request = request

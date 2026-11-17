@@ -8,6 +8,12 @@ export const TASK_DELETED = "deleted"
 
 export const TASK_CLAIM = "claim"
 
+export const TASK_RESUME = "resume"
+
+export const TASK_SELECTED = "selected"
+
+export const TASK_UNSELECTED = "unselected"
+
 export const TASK_RELEASE = "release"
 
 export const TASK_EDIT = "edit"

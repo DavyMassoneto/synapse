@@ -18,6 +18,8 @@ export interface TaskBoardCleanPlan {
   count: number
 }
 
+export type TaskBoardSelection = Map<string, string>
+
 export type TaskBoardAction = () => TaskView
 
 export type TaskBoardSnapshotIndex = Map<string, TaskSnapshot>

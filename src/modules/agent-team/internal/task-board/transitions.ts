@@ -10,6 +10,7 @@ import {
   TASK_REASSIGN,
   TASK_RELEASE,
   TASK_REOPEN,
+  TASK_RESUME,
   TASK_SET_DEPENDENCIES,
   type TaskSnapshot,
   type TaskStatus,
@@ -28,6 +29,7 @@ import {
   TASK_BOARD_NOT_IN_PROGRESS,
   TASK_BOARD_NOT_READY,
   TASK_BOARD_NOT_REASSIGNABLE,
+  TASK_BOARD_RESUME_OWNER_REQUIRED,
   TASK_BOARD_UNAUTHORIZED,
   TASK_BOARD_UNKNOWN_OWNER,
 } from "./constants"
@@ -71,6 +73,17 @@ function claim(transition: TaskTransition): TaskSnapshot {
     throw new TaskRefusal(TASK_BOARD_NOT_READY)
   }
   return { ...current, status: TASK_IN_PROGRESS, owner: caller }
+}
+
+function resume(transition: TaskTransition): TaskSnapshot {
+  if (transition.current.owner !== transition.caller) {
+    throw new TaskRefusal(TASK_BOARD_RESUME_OWNER_REQUIRED)
+  }
+  ensureStatus(transition.current, TASK_IN_PROGRESS, TASK_BOARD_NOT_IN_PROGRESS)
+  if (!isTaskBoardTaskReady(taskBoardStatuses(transition.tasks), transition.current)) {
+    throw new TaskRefusal(TASK_BOARD_NOT_READY)
+  }
+  return transition.current
 }
 
 function release(transition: TaskTransition): TaskSnapshot {
@@ -160,6 +173,8 @@ export function taskBoardApplyAction(transition: TaskTransition): TaskSnapshot {
   switch (transition.input.action) {
     case TASK_CLAIM:
       return claim(transition)
+    case TASK_RESUME:
+      return resume(transition)
     case TASK_RELEASE:
       return release(transition)
     case TASK_EDIT:

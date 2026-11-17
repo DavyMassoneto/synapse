@@ -10,6 +10,7 @@ import { type AgentTeamContext } from "../lead-session"
 import { selectMemberModel } from "../model-selection"
 import { PiTeamSessionAdapter } from "../session-events"
 import { createTeamMemberStorage, openTeamMemberStorage, PiTeamMemberJournal } from "../session-persistence"
+import { PiTeamTaskContext } from "../task-context"
 import { TEAM_PI_MEMBER_IDENTITY_END, TEAM_PI_MEMBER_IDENTITY_START, TEAM_PI_MEMBER_WRONG_LEAD } from "./constants"
 import { createPiTeamMemberSession } from "./create-member-session"
 import { removeFailedMemberFile, requireCreatedMemberFile } from "./session-file"
@@ -97,11 +98,13 @@ export class PiTeamMemberSessions implements MemberSessions {
 
   private create(input: TeamSessionCreation): Promise<TeamCreatedMemberSession> {
     const { cwd, storage, selection, name, team } = input
+    const taskContext = new PiTeamTaskContext(team, name)
     return createPiTeamMemberSession({
       cwd,
       storage,
       selection,
       instructions: `${TEAM_PI_MEMBER_IDENTITY_START}${name}${TEAM_PI_MEMBER_IDENTITY_END}`,
+      taskContext: taskContext.register.bind(taskContext),
       tools: this.dependencies.tools(team, name),
       projectTrusted: input.projectTrusted,
       shell: this.dependencies.shell(),
