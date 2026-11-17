@@ -35,12 +35,5 @@ export const TEAM_PI_ACTIVITY_AUTO_RETRY_END = "auto_retry_end"
 export const TEAM_PI_ACTIVITY_COMPACTION_START = "compaction_start"
 export const TEAM_PI_ACTIVITY_COMPACTION_END = "compaction_end"
 
-export const TEAM_PI_WATCHDOG_OBSERVATIONAL_TOOLS = [
-  "list_agents",
-  "team_task_list",
-  "team_task_get",
-  "list_models",
-  "send_message",
-]
 export const TEAM_PI_ACTIVITY_TEXT = "text"
 export const TEAM_PI_ACTIVITY_THINKING = "thinking"

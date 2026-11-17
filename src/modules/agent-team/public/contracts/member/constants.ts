@@ -14,3 +14,7 @@ export const MEMBER_EXECUTION_ACTIVITY = "execution_activity"
 export const MEMBER_ACTIVITY_STARTED = "started"
 export const MEMBER_ACTIVITY_UPDATED = "updated"
 export const MEMBER_ACTIVITY_SETTLED = "settled"
+
+export const MEMBER_ACTIVITY_TOOL_START = "tool-start"
+export const MEMBER_ACTIVITY_TOOL_UPDATE = "tool-update"
+export const MEMBER_ACTIVITY_TOOL_END = "tool-end"

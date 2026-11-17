@@ -8,3 +8,11 @@ export const MEMBER_WATCHDOG_UNCONFIRMED =
   "Watchdog: parada não confirmada; o membro permanece ocupado até o encerramento observado."
 
 export const MEMBER_WATCHDOG_NOTIFICATION_FAILED = "Falha ao entregar aviso do watchdog."
+
+export const MEMBER_WATCHDOG_OBSERVATIONAL_TOOLS = [
+  "list_agents",
+  "team_task_list",
+  "team_task_get",
+  "list_models",
+  "send_message",
+]

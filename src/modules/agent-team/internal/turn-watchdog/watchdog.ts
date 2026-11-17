@@ -9,6 +9,7 @@ import {
 
 export class MemberTurnWatchdog {
   private state: MemberWatchdogState = { kind: MEMBER_WATCHDOG_IDLE }
+
   private cancel?: MemberTimerCancel
 
   constructor(privateRuntime: MemberWatchdogRuntime, privateTarget: MemberWatchdogTarget) {
@@ -17,6 +18,7 @@ export class MemberTurnWatchdog {
   }
 
   private readonly runtime: MemberWatchdogRuntime
+
   private readonly target: MemberWatchdogTarget
 
   start(executionId: number): void {
@@ -35,6 +37,7 @@ export class MemberTurnWatchdog {
 
   invalidate(): void {
     this.cancel?.()
+    delete this.cancel
     this.state = { kind: MEMBER_WATCHDOG_IDLE }
   }
 

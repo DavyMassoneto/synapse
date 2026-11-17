@@ -94,8 +94,18 @@ export interface MemberTurnRuntime {
   schedule(callback: MemberTimerCallback, delayMs: number): MemberTimerCancel
 }
 export type MemberActivityPhase = "started" | "updated" | "settled"
-export interface MemberExecutionActivity {
+export interface MemberExecutionLifecycleActivity {
   kind: "execution_activity"
   executionId: number
   phase: MemberActivityPhase
 }
+export interface MemberToolActivity {
+  kind: "execution_activity"
+  executionId: number
+  phase: MemberToolActivityPhase
+  callId: string
+  name: string
+}
+export type MemberExecutionActivity = MemberExecutionLifecycleActivity | MemberToolActivity
+
+export type MemberToolActivityPhase = "tool-start" | "tool-update" | "tool-end"

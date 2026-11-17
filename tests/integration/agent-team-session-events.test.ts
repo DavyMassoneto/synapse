@@ -38,7 +38,10 @@ function translatesAborted(): void {
 function translatesToolStart(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "tool_execution_start", toolCallId: "call", toolName: "read", args: { path: "source.ts" } })
-  expect(session.events).toEqual([{ kind: "tool_started", callId: "call", label: "read: source.ts" }])
+  expect(session.events).toEqual([
+    { kind: "execution_activity", executionId: 0, phase: "tool-start", callId: "call", name: "read" },
+    { kind: "tool_started", callId: "call", label: "read: source.ts" },
+  ])
 }
 
 function translatesToolEnd(): void {
@@ -50,7 +53,10 @@ function translatesToolEnd(): void {
     result: { content: [] },
     isError: false,
   })
-  expect(session.events).toEqual([{ kind: "tool_ended", callId: "call" }])
+  expect(session.events).toEqual([
+    { kind: "execution_activity", executionId: 0, phase: "tool-end", callId: "call", name: "read" },
+    { kind: "tool_ended", callId: "call" },
+  ])
 }
 
 function translatesAssistantFailure(): void {

@@ -3,10 +3,14 @@ import { type AgentSessionEvent } from "@earendil-works/pi-coding-agent"
 import {
   MEMBER_ACTIVITY_SETTLED,
   MEMBER_ACTIVITY_STARTED,
+  MEMBER_ACTIVITY_TOOL_END,
+  MEMBER_ACTIVITY_TOOL_START,
+  MEMBER_ACTIVITY_TOOL_UPDATE,
   MEMBER_ACTIVITY_UPDATED,
   MEMBER_EXECUTION_ACTIVITY,
   type MemberActivityPhase,
   type MemberSessionListener,
+  type MemberToolActivityPhase,
 } from "#synapse/modules/agent-team"
 import {
   TEAM_PI_ACTIVITY_AGENT_SETTLED,
@@ -24,17 +28,17 @@ import {
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_START,
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE,
   TEAM_PI_MEMBER_ASSISTANT_ROLE,
-  TEAM_PI_WATCHDOG_OBSERVATIONAL_TOOLS,
 } from "./constants"
 import { type TeamMemberExecutionState } from "./types"
 
 export class PiMemberExecutionActivity {
-  private readonly tools = new Set<string>()
   constructor(state: TeamMemberExecutionState, listener: MemberSessionListener) {
     this.state = state
     this.listener = listener
   }
+
   private readonly state: TeamMemberExecutionState
+
   private readonly listener: MemberSessionListener
   private active = false
 
@@ -54,14 +58,9 @@ export class PiMemberExecutionActivity {
         }
         break
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_START:
-        if (this.active && !TEAM_PI_WATCHDOG_OBSERVATIONAL_TOOLS.includes(event.toolName)) {
-          this.tools.add(event.toolCallId)
-          this.update()
-        }
-        break
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE:
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_END:
-        this.toolProgress(event.toolCallId, event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_END)
+        this.tool(event)
         break
       case TEAM_PI_ACTIVITY_AUTO_RETRY_START:
       case TEAM_PI_ACTIVITY_AUTO_RETRY_END:
@@ -69,6 +68,28 @@ export class PiMemberExecutionActivity {
       case TEAM_PI_ACTIVITY_COMPACTION_END:
         this.update()
         break
+    }
+  }
+
+  private tool(event: AgentSessionEvent): void {
+    if (
+      event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_START ||
+      event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE ||
+      event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_END
+    ) {
+      let phase: MemberToolActivityPhase = MEMBER_ACTIVITY_TOOL_UPDATE
+      if (event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_START) {
+        phase = MEMBER_ACTIVITY_TOOL_START
+      } else if (event.type === TEAM_PI_ACTIVITY_TOOL_EXECUTION_END) {
+        phase = MEMBER_ACTIVITY_TOOL_END
+      }
+      this.listener({
+        kind: MEMBER_EXECUTION_ACTIVITY,
+        executionId: this.state.executionId,
+        phase,
+        callId: event.toolCallId,
+        name: event.toolName,
+      })
     }
   }
 
@@ -87,24 +108,13 @@ export class PiMemberExecutionActivity {
   private settle(): void {
     if (this.active) {
       this.active = false
-      this.tools.clear()
       this.emit(MEMBER_ACTIVITY_SETTLED)
-    }
-  }
-
-  private toolProgress(callId: string, ended: boolean): void {
-    if (this.tools.has(callId)) {
-      this.update()
-      if (ended) {
-        this.tools.delete(callId)
-      }
     }
   }
 
   private start(): void {
     if (!this.active) {
       this.active = true
-      this.tools.clear()
       this.listener({
         kind: MEMBER_EXECUTION_ACTIVITY,
         executionId: this.state.executionId,

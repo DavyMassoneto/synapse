@@ -1,29 +1,32 @@
 import {
-  MEMBER_ACTIVITY_SETTLED,
-  MEMBER_ACTIVITY_STARTED,
   type MemberExecutionActivity,
   type MemberSession,
   type MemberTurnRuntime,
 } from "#synapse/modules/agent-team/public/contracts"
 import {
   MEMBER_WATCHDOG_CONFIRMED,
-  MEMBER_WATCHDOG_NOTIFICATION_FAILED,
   MEMBER_WATCHDOG_UNCONFIRMED,
+  MemberTurnActivity,
   MemberTurnWatchdog,
 } from "../turn-watchdog"
+import { TeamMemberNotification } from "./notification"
 import { stopMemberTurn } from "./stop-turn"
 import { type TeamMemberObserver, type TeamMemberStopConfirmed, type TeamMemberStopPolicy } from "./types"
 
 export class TeamMemberTurnControl {
+  private readonly activityPolicy: MemberTurnActivity
+
   private readonly watchdog: MemberTurnWatchdog
+
   private readonly session: MemberSession
-  private readonly observer: TeamMemberObserver
+  private readonly notification: TeamMemberNotification
+
   private readonly confirmed: TeamMemberStopConfirmed
-  private notificationFailure?: Error
-  private readonly name: string
   private executionId = 0
-  stopping = false
+
+  private stopPending = false
   private active = false
+
   private settledDuringStop = false
   constructor(
     name: string,
@@ -32,80 +35,71 @@ export class TeamMemberTurnControl {
     runtime: MemberTurnRuntime,
     confirmed: TeamMemberStopConfirmed,
   ) {
-    this.name = name
     this.session = session
-    this.observer = observer
+    this.notification = new TeamMemberNotification(name, observer)
+    this.ensureHealthy = this.notification.ensureHealthy.bind(this.notification)
     this.confirmed = confirmed
     this.watchdog = new MemberTurnWatchdog(runtime, this)
+    this.activityPolicy = new MemberTurnActivity(this.watchdog)
   }
+
+  get stopping(): boolean {
+    return this.stopPending
+  }
+
   begin(): number {
     this.invalidate()
     this.active = true
     this.settledDuringStop = false
     return this.executionId
   }
+
   invalidate(): void {
     this.executionId++
     this.watchdog.invalidate()
+    this.activityPolicy.clear()
     this.active = false
-    this.stopping = false
+    this.stopPending = false
   }
+
   accepts(executionId: number): boolean {
     return this.active && executionId === this.executionId
   }
+
   acceptSettlement(): boolean {
-    this.watchdog.invalidate()
-    if (this.stopping) {
+    if (this.stopPending) {
+      this.watchdog.invalidate()
       this.settledDuringStop = true
     }
-    return !this.stopping
+    return !this.stopPending
   }
+
   activity(event: MemberExecutionActivity): void {
-    if (event.executionId === this.executionId && this.active && !this.stopping) {
-      if (event.phase === MEMBER_ACTIVITY_STARTED) {
-        this.watchdog.start(event.executionId)
-      } else if (event.phase === MEMBER_ACTIVITY_SETTLED) {
-        this.watchdog.invalidate()
-      } else {
-        this.watchdog.update(event.executionId)
-      }
+    if (event.executionId === this.executionId && this.active && !this.stopPending) {
+      this.activityPolicy.record(event)
     }
   }
+
   expired(executionId: number): void {
-    if (this.active && executionId === this.executionId && !this.stopping) {
-      this.stopping = true
+    if (this.active && executionId === this.executionId && !this.stopPending) {
+      this.stopPending = true
       const policy: TeamMemberStopPolicy = {
         confirmed: this.confirmStop.bind(this, executionId),
         unconfirmed: this.unconfirmedStop.bind(this, executionId),
-        failed: this.reportNotificationFailure.bind(this),
-      }
-      if (this.observer.memberNotice) {
-        policy.notice = this.observer.memberNotice.bind(this.observer)
+        failed: this.notification.report.bind(this.notification),
+        notice: this.notification.deliver.bind(this.notification),
       }
       stopMemberTurn(this.session, policy)
     }
   }
-  ensureHealthy(): void {
-    if (this.notificationFailure) {
-      throw this.notificationFailure
-    }
-  }
-  private reportNotificationFailure(message: string): void {
-    try {
-      this.observer.memberStartFailed(this.name, message)
-    } catch (failure) {
-      if (failure instanceof Error) {
-        this.notificationFailure = failure
-      } else {
-        this.notificationFailure = new Error(MEMBER_WATCHDOG_NOTIFICATION_FAILED)
-      }
-    }
-  }
+
+  readonly ensureHealthy: TeamMemberNotification["ensureHealthy"]
+
   private confirmStop(executionId: number): void {
     if (executionId === this.executionId) {
-      this.stopping = false
+      this.stopPending = false
       try {
-        this.observer.memberNotice?.(MEMBER_WATCHDOG_CONFIRMED)
+        this.notification.deliver(MEMBER_WATCHDOG_CONFIRMED)
       } finally {
         if (this.active && !this.session.isStreaming()) {
           this.confirmed()
@@ -113,11 +107,12 @@ export class TeamMemberTurnControl {
       }
     }
   }
+
   private unconfirmedStop(executionId: number): void {
     if (executionId === this.executionId) {
-      this.stopping = false
+      this.stopPending = false
       try {
-        this.observer.memberNotice?.(MEMBER_WATCHDOG_UNCONFIRMED)
+        this.notification.deliver(MEMBER_WATCHDOG_UNCONFIRMED)
       } finally {
         if (this.settledDuringStop) {
           this.confirmed()

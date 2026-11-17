@@ -13,3 +13,6 @@ export const TEAM_MEMBER_HAS_FAILURE = "failed"
 export const TEAM_MEMBER_NO_FAILURE = "none"
 
 export const TEAM_MEMBER_CLOSE_FAILED = "Falha ao encerrar os recursos do membro."
+
+export const MEMBER_STOP_FAILED = "failed"
+export const MEMBER_STOP_REQUESTED = "requested"

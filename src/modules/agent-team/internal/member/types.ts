@@ -16,7 +16,7 @@ export interface TeamMemberCompletedOutcome {
 export type TeamMemberOutcome = TeamMemberInterruptedOutcome | TeamMemberCompletedOutcome
 
 export interface TeamMemberObserver {
-  memberNotice?(message: string): void
+  memberNotice(message: string): void
   memberSettled(name: string, outcome: TeamMemberOutcome): void
   memberStartFailed(name: string, message: string): void
   refresh(): void
@@ -52,7 +52,9 @@ export interface TeamMemberStopPolicy {
   confirmed(): void
   unconfirmed(): void
   failed(message: string): void
-  notice?: TeamMemberNotice
+  notice: TeamMemberNotice
 }
 
 export type TeamMemberNotice = (message: string) => void
+
+export type TeamMemberStopRequest = "requested" | "failed"
