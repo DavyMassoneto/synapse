@@ -16,14 +16,13 @@ import {
   SELECTION_DISABLE_EXTENSION_PREFIX,
   SELECTION_EXCLUDED_EXTENSION_URL,
   SELECTION_EXTERNAL_EXTENSION_URL,
-  SELECTION_LEAD_STEPS,
   SELECTION_LOG,
   SELECTION_MEMBER_MARKER,
-  SELECTION_MEMBER_STEPS,
   SELECTION_PROVIDER_URL,
   SELECTION_SCRIPT,
   SELECTION_SETTINGS,
 } from "./constants"
+import { SELECTION_LEAD_STEPS, SELECTION_MEMBER_STEPS } from "./lifecycle-script"
 import { type SelectionPaths } from "./types"
 
 export function prepareSelectionDirectories(paths: SelectionPaths): void {

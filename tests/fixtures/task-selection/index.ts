@@ -1,6 +1,7 @@
 export * from "./cleanup-observation"
 export * from "./constants"
 export * from "./fixture"
+export * from "./lifecycle-script"
 export * from "./predicates"
 export * from "./preparation"
 export * from "./provider"
