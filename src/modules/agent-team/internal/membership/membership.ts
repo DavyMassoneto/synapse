@@ -1,6 +1,7 @@
 import {
   type MemberRecord,
   type MemberSessions,
+  type MemberTurnRuntime,
   type OpenedMember,
   type StartMemberRequest,
   TEAM_STARTED,
@@ -26,6 +27,8 @@ export class TeamMembership {
 
   private readonly events: TeamRecentEvents
 
+  private readonly runtime: MemberTurnRuntime
+
   private generation = 0
 
   private closed = false
@@ -36,7 +39,9 @@ export class TeamMembership {
     lead: TeamLead,
     roster: TeamRoster,
     events: TeamRecentEvents,
+    runtime: MemberTurnRuntime,
   ) {
+    this.runtime = runtime
     this.team = team
     this.sessions = sessions
     this.lead = lead
@@ -94,7 +99,7 @@ export class TeamMembership {
     const attempt: TeamAdmissionAttempt = {}
     try {
       this.ensureGeneration(generation)
-      const member = new TeamMember(opened, this.team)
+      const member = new TeamMember(opened, this.team, this.runtime)
       attempt.member = member
       return this.publishMember(member, opened.record, request)
     } catch (error) {
@@ -133,7 +138,7 @@ export class TeamMembership {
   private async admitRestored(opened: OpenedMember, generation: number): Promise<void> {
     try {
       this.ensureGeneration(generation)
-      this.roster.add(new TeamMember(opened, this.team))
+      this.roster.add(new TeamMember(opened, this.team, this.runtime))
     } catch (error) {
       await opened.session.dispose()
       throw error

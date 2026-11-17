@@ -1,40 +1,26 @@
-import {
-  MEMBER_ASSISTANT_RESPONSE,
-  MEMBER_EXECUTION_SETTLED,
-  MEMBER_EXECUTION_STARTED,
-  MEMBER_TOOL_ENDED,
-  MEMBER_TOOL_STARTED,
-  MEMBER_TURN_STARTED,
-  type MemberSession,
-  type MemberSessionEvent,
-  type MemberUnsubscribe,
-  type OpenedMember,
-  TEAM_FAILED,
-  TEAM_IDLE,
-  TEAM_INTERRUPTED,
-  type TeamAgentRow,
-  type TeamAgentState,
-} from "#synapse/modules/agent-team/public/contracts"
+import * as contracts from "#synapse/modules/agent-team/public/contracts"
+
 import { TeamRuleError } from "../operation-results"
 import { TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
 import { teamMemberOutcome } from "./member-outcome"
 import { TeamMemberQueue } from "./member-queue"
 import { TeamMemberResponseState } from "./member-response-state"
 import { teamMemberRow } from "./member-row"
+import { TeamMemberTurnControl } from "./turn-control"
 import { type TeamActiveTools, type TeamMemberObserver, type TeamMemberOutcome } from "./types"
 
 export class TeamMember {
   readonly name: string
 
-  private readonly opened: OpenedMember
+  private readonly opened: contracts.OpenedMember
 
-  private readonly session: MemberSession
+  private readonly session: contracts.MemberSession
 
   private readonly queue: TeamMemberQueue
 
   private readonly observer: TeamMemberObserver
 
-  private readonly unsubscribe: MemberUnsubscribe
+  private readonly unsubscribe: contracts.MemberUnsubscribe
 
   private readonly tools: TeamActiveTools = new Map()
 
@@ -42,26 +28,28 @@ export class TeamMember {
 
   private closed = false
 
-  private lastState: TeamAgentState = TEAM_IDLE
+  private lastState: contracts.TeamAgentState = contracts.TEAM_IDLE
 
   private readonly responseState: TeamMemberResponseState
 
   private run = Promise.resolve()
+  private readonly turn: TeamMemberTurnControl
 
-  constructor(opened: OpenedMember, observer: TeamMemberObserver) {
+  constructor(opened: contracts.OpenedMember, observer: TeamMemberObserver, runtime: contracts.MemberTurnRuntime) {
+    this.turn = new TeamMemberTurnControl(opened.session, observer, runtime, this.confirmStopped.bind(this))
     this.opened = opened
     this.name = opened.record.name
     this.session = opened.session
     this.queue = new TeamMemberQueue(opened.journal)
     this.observer = observer
     if (this.queue.interrupted) {
-      this.lastState = TEAM_INTERRUPTED
+      this.lastState = contracts.TEAM_INTERRUPTED
     }
     this.responseState = new TeamMemberResponseState(opened.lastModel)
     this.unsubscribe = opened.session.subscribe(this.onEvent.bind(this))
   }
 
-  row(): TeamAgentRow {
+  row(): contracts.TeamAgentRow {
     return teamMemberRow({
       opened: this.opened,
       lastState: this.lastState,
@@ -85,16 +73,19 @@ export class TeamMember {
   }
 
   interrupt(): void {
+    this.turn.invalidate()
     this.session.abort().catch(this.onFailure.bind(this))
   }
 
   async dispose(): Promise<void> {
+    this.turn.invalidate()
     this.closed = true
     this.unsubscribe()
     await this.session.dispose()
   }
 
   async suspend(): Promise<void> {
+    this.turn.invalidate()
     this.closed = true
     try {
       await this.checkpointAndStop()
@@ -135,7 +126,7 @@ export class TeamMember {
     if (this.queue.pendingCount > 0) {
       if (!this.busy) {
         this.start()
-      } else if (this.session.isStreaming()) {
+      } else if (this.session.isStreaming() && !this.turn.stopping) {
         this.steerPending()
       }
     }
@@ -152,44 +143,58 @@ export class TeamMember {
     this.responseState.clearFailure()
     this.busy = true
     const text = this.queue.takePending().join(TEAM_MESSAGE_BREAK)
-    this.run = this.session.prompt(text).catch(this.onFailure.bind(this))
+    const executionId = this.turn.begin()
+    this.run = this.session.prompt(text, executionId).catch(this.promptFailed.bind(this, executionId))
     this.observer.refresh()
+  }
+
+  private confirmStopped(): void {
+    this.settle({ state: contracts.TEAM_INTERRUPTED })
+  }
+
+  private promptFailed(executionId: number, error: Error): void {
+    if (this.turn.accepts(executionId)) {
+      this.onFailure(error)
+    }
   }
 
   private onFailure(error: Error): void {
     if (!this.closed && this.busy && !this.session.isStreaming()) {
-      this.settle({ state: TEAM_FAILED, text: error.message })
+      this.settle({ state: contracts.TEAM_FAILED, text: error.message })
     }
   }
 
-  private onEvent(event: MemberSessionEvent): void {
+  private onEvent(event: contracts.MemberSessionEvent): void {
     if (!this.closed) {
       this.applyEvent(event)
-    } else if (event.kind === MEMBER_EXECUTION_STARTED) {
+    } else if (event.kind === contracts.MEMBER_EXECUTION_STARTED) {
       this.session.abort().catch(this.onFailure.bind(this))
     }
   }
 
-  private applyEvent(event: MemberSessionEvent): void {
+  private applyEvent(event: contracts.MemberSessionEvent): void {
     switch (event.kind) {
-      case MEMBER_EXECUTION_STARTED:
+      case contracts.MEMBER_EXECUTION_ACTIVITY:
+        this.turn.activity(event)
+        break
+      case contracts.MEMBER_EXECUTION_STARTED:
         this.pump()
         break
-      case MEMBER_TURN_STARTED:
+      case contracts.MEMBER_TURN_STARTED:
         this.onTurnStarted()
         break
-      case MEMBER_TOOL_STARTED:
+      case contracts.MEMBER_TOOL_STARTED:
         this.tools.set(event.callId, event.label)
         this.observer.refresh()
         break
-      case MEMBER_TOOL_ENDED:
+      case contracts.MEMBER_TOOL_ENDED:
         this.tools.delete(event.callId)
         this.observer.refresh()
         break
-      case MEMBER_ASSISTANT_RESPONSE:
+      case contracts.MEMBER_ASSISTANT_RESPONSE:
         this.responseState.record(event)
         break
-      case MEMBER_EXECUTION_SETTLED:
+      case contracts.MEMBER_EXECUTION_SETTLED:
         this.settle(teamMemberOutcome(event, this.responseState.failure))
         break
     }
@@ -200,7 +205,8 @@ export class TeamMember {
   }
 
   private settle(outcome: TeamMemberOutcome): void {
-    if (this.busy) {
+    if (this.busy && this.turn.acceptSettlement()) {
+      this.turn.invalidate()
       this.queue.complete()
       this.busy = false
       this.lastState = outcome.state

@@ -31,3 +31,9 @@ Cada capacidade aparece separadamente em `pi config` e na listagem de extensões
 - [Legibilidade](docs/standards/legibilidade.md): regras de legibilidade do código.
 - [Tipagem](docs/standards/tipagem.md): regras de tipagem do TypeScript.
 - [AGENTS.md](AGENTS.md): instruções para agentes que trabalham no repositório, distintas dos prompts dos modelos do runtime.
+
+## Watchdog da equipe de agentes
+
+O turno de um membro sem atualização real por 10 minutos recebe um pedido de interrupção e de parada imediata de todas as suas shells supervisionadas. O lead é avisado no vencimento e recebe a confirmação ou a indicação de parada não confirmada. Eventos reais do modelo e progresso de ferramentas renovam o prazo; consultar agentes, consultar tarefas e trocar mensagens de coordenação não o renovam. O relógio é monotônico, e callbacks de execuções antigas não afetam uma execução nova. O watchdog não conclui nem reatribui tarefas.
+
+Os membros continuam em sessões do SDK no mesmo processo do lead, com o mesmo carregamento de extensões. O cancelamento alcança o loop e as shells supervisionadas pelo lifetime já existente. Uma ferramenta de extensão que ignore o AbortSignal ou bloqueie de forma síncrona fica fora do alcance: nesse caso não há garantia de interrupção imediata no processo compartilhado, e a ausência de confirmação é comunicada ao lead.

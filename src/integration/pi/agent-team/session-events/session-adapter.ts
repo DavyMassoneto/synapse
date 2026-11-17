@@ -2,9 +2,11 @@ import { type MemberSession, type MemberSessionListener, type MemberUnsubscribe 
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
 import { abortMemberSession } from "./abort-session"
 import { PiTeamEventConnection } from "./event-connection"
-import { type TeamMemberSessionPort } from "./types"
+import { type TeamMemberExecutionState, type TeamMemberSessionPort } from "./types"
 
 export class PiTeamSessionAdapter implements MemberSession {
+  private readonly execution: TeamMemberExecutionState = { executionId: 0 }
+
   private readonly session: TeamMemberSessionPort
 
   private readonly lifetime: TeamMemberExtensionLifetime
@@ -19,7 +21,10 @@ export class PiTeamSessionAdapter implements MemberSession {
     return this.session.isStreaming
   }
 
-  async prompt(text: string): Promise<void> {
+  async prompt(text: string, executionId?: number): Promise<void> {
+    if (executionId) {
+      this.execution.executionId = executionId
+    }
     this.lifetime.ensureHealthy()
     await this.session.prompt(text)
     this.lifetime.ensureHealthy()
@@ -38,7 +43,7 @@ export class PiTeamSessionAdapter implements MemberSession {
   }
 
   subscribe(listener: MemberSessionListener): MemberUnsubscribe {
-    const connection = new PiTeamEventConnection(this.session, listener, this.lifetime)
+    const connection = new PiTeamEventConnection(this.session, listener, this.lifetime, this.execution)
     return this.session.subscribe(connection.onEvent.bind(connection))
   }
 }

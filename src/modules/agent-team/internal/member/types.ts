@@ -16,6 +16,7 @@ export interface TeamMemberCompletedOutcome {
 export type TeamMemberOutcome = TeamMemberInterruptedOutcome | TeamMemberCompletedOutcome
 
 export interface TeamMemberObserver {
+  memberNotice?(message: string): void
   memberSettled(name: string, outcome: TeamMemberOutcome): void
   memberStartFailed(name: string, message: string): void
   refresh(): void
@@ -44,3 +45,5 @@ export interface TeamMemberNoFailure {
 }
 
 export type TeamMemberCompletedState = "finished" | "failed"
+
+export type TeamMemberStopConfirmed = () => void

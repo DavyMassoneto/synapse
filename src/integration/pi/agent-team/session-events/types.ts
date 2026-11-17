@@ -9,3 +9,7 @@ export type TeamMemberSessionOperation =
   | "getLastAssistantText"
 
 export type TeamMemberSessionPort = Pick<AgentSession, TeamMemberSessionOperation>
+
+export interface TeamMemberExecutionState {
+  executionId: number
+}

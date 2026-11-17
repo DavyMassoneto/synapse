@@ -11,7 +11,10 @@ import {
 function translatesStart(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "agent_start" })
-  expect(session.events).toEqual([{ kind: "execution_started" }])
+  expect(session.events).toEqual([
+    { kind: "execution_activity", executionId: 0, phase: "started" },
+    { kind: "execution_started" },
+  ])
 }
 
 function translatesTurn(): void {
