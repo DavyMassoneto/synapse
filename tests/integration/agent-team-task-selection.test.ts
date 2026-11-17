@@ -1,6 +1,7 @@
 import { describe, expect, test } from "vitest"
 import {
   isSelectionToolError,
+  observeSelectionCleanup,
   SELECTION_SCENARIO,
   SELECTION_SUITE,
   SELECTION_TIMEOUT_MS,
@@ -87,6 +88,8 @@ async function selectionLifecycle(): Promise<void> {
       kind: "accepted",
       task: { revision: 4, status: "completed" },
     })
+    await fixture.close()
+    await observeSelectionCleanup(fixture.directory)
   } finally {
     await fixture.close()
   }

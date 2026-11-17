@@ -1,4 +1,4 @@
-import { type ExtensionAPI } from "@earendil-works/pi-coding-agent"
+import { type ExtensionAPI, type ExtensionContext, type SessionStartEvent } from "@earendil-works/pi-coding-agent"
 import {
   requireEnvironment,
   SCRIPTED_PROVIDER_API,
@@ -11,9 +11,15 @@ import {
   SCRIPTED_PROVIDER_SCRIPT_VARIABLE,
 } from "../scripted-provider"
 import { readJsonFile } from "../validated-json"
+import { SELECTION_SESSION_START } from "./constants"
 import { SelectionScriptedProvider } from "./provider"
 
+async function prepareSelectionProvider(_event: SessionStartEvent, context: ExtensionContext): Promise<void> {
+  await context.modelRegistry.refresh({ allowNetwork: false })
+}
+
 export default function registerSelectionProvider(pi: ExtensionAPI): void {
+  pi.on(SELECTION_SESSION_START, prepareSelectionProvider)
   const script = readJsonFile(requireEnvironment(SCRIPTED_PROVIDER_SCRIPT_VARIABLE), SCRIPTED_PROVIDER_SCRIPT_SCHEMA)
   const scripted = new SelectionScriptedProvider(script)
   const provider = requireEnvironment(SCRIPTED_PROVIDER_PROVIDER_VARIABLE)
