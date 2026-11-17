@@ -5,7 +5,7 @@ export type WatchdogScenario = ReturnType<typeof createWatchdogScenario>
 export interface WatchdogCloseVerification {
   verify(result: ShellCleanupOutcome): void
 }
-export type WatchdogCloseScenarioBody = (
+export type WatchdogCloseScenarioConstructor = new (
   scenario: WatchdogScenario,
   fixture: WatchdogFixture,
 ) => WatchdogCloseVerification
