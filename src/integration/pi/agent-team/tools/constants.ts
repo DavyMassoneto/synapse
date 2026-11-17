@@ -22,7 +22,7 @@ export const TEAM_TOOL_SUBAGENT_DESCRIPTION =
   "Delega uma tarefa existente (task_id e expected_revision) a um novo subagente. Valida revisão, estado e bloqueios; atribui responsável, seleciona a tarefa e registra membro e snapshot atomicamente antes de iniciar. Retorna nome e snapshot. Fim de turno não conclui tarefa. A seleção organiza o trabalho, não autoriza comandos; escopos são avisos, não permissões. A resposta final chega depois como mensagem; o membro continua disponível para send_message."
 
 export const TEAM_TOOL_SEND_MESSAGE_DESCRIPTION =
-  "Envia uma mensagem a um agente da equipe. Um agente trabalhando a recebe no próximo passo; um agente parado inicia um novo turno com ela. Retorna a confirmação de entrega, nunca uma resposta."
+  "Envia coordenação livre (mode coordination) sem mudar a tarefa selecionada, ou delega trabalho (mode delegation + task_id + expected_revision) a agente existente, inclusive entre membros. Delegação valida revisão, prontidão e responsável, persiste e seleciona antes da entrega; lead pode transferir qualquer responsável, membro só tarefa livre, própria ou do destino. Retorna entrega e snapshot na delegação, nunca resposta. Em curso usa steer nativo; parado inicia turno. Mudanças de tarefa não cancelam execução; fim de turno não conclui tarefa."
 
 export const TEAM_TOOL_LIST_AGENTS_DESCRIPTION =
   "Lista os agentes da equipe: nome, estado do turno (running ou inactive) e descrição. O estado não diz se a tarefa foi concluída."

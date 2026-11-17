@@ -72,7 +72,7 @@ export const SELECTION_LEAD_STEPS: ScriptedProviderSteps = [
   {
     kind: "toolCall",
     name: "send_message",
-    argumentsJson: JSON.stringify({ agent: "worker", message: "Assuma a tarefa reservada." }),
+    argumentsJson: JSON.stringify({ agent: "worker", message: "Assuma a tarefa reservada.", mode: "coordination" }),
   },
   { kind: "text", text: "phase-3" },
   {
@@ -102,7 +102,7 @@ export const SELECTION_LEAD_STEPS: ScriptedProviderSteps = [
   {
     kind: "toolCall",
     name: "send_message",
-    argumentsJson: JSON.stringify({ agent: "worker", message: "Retome explicitamente." }),
+    argumentsJson: JSON.stringify({ agent: "worker", message: "Retome explicitamente.", mode: "coordination" }),
   },
   { kind: "text", text: "phase-6" },
   {
@@ -113,7 +113,7 @@ export const SELECTION_LEAD_STEPS: ScriptedProviderSteps = [
   {
     kind: "toolCall",
     name: "send_message",
-    argumentsJson: JSON.stringify({ agent: "worker", message: "Confira a seleção e conclua." }),
+    argumentsJson: JSON.stringify({ agent: "worker", message: "Confira a seleção e conclua.", mode: "coordination" }),
   },
   {
     kind: "toolCall",

@@ -1,7 +1,9 @@
 import {
+  TEAM_DELEGATED,
   TEAM_DONE,
   TEAM_INTERRUPT_REQUESTED,
   TEAM_LEAD_NAME,
+  type TeamDelegationOutcome,
   type TeamInterruptOutcome,
   type TeamLead,
   type TeamOutcome,
@@ -9,8 +11,10 @@ import {
 import { TeamRuleError, teamOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { TEAM_UNKNOWN_AGENT, type TeamRoster } from "../roster"
+import { type TaskBoard, TaskRefusal } from "../task-board"
 import {
   TEAM_CLOSED,
+  TEAM_DELEGATION_HEADER,
   TEAM_EVENT_ARROW,
   TEAM_EVENT_DETAIL,
   TEAM_MESSAGE_FROM,
@@ -28,9 +32,12 @@ export class TeamMessages {
 
   private readonly view: TeamRefreshPort
 
+  private readonly board: TaskBoard
+
   private closed = false
 
-  constructor(lead: TeamLead, roster: TeamRoster, events: TeamRecentEvents, view: TeamRefreshPort) {
+  constructor(lead: TeamLead, roster: TeamRoster, events: TeamRecentEvents, view: TeamRefreshPort, board: TaskBoard) {
+    this.board = board
     this.lead = lead
     this.roster = roster
     this.events = events
@@ -47,6 +54,41 @@ export class TeamMessages {
 
   send(sender: string, target: string, message: string): TeamOutcome {
     return teamOperationResult(this.deliverMessage.bind(this, sender, target, message))
+  }
+
+  delegate(
+    sender: string,
+    target: string,
+    message: string,
+    taskId: string,
+    expectedRevision: number,
+  ): TeamDelegationOutcome {
+    return teamOperationResult(this.delegateMessage.bind(this, sender, target, message, taskId, expectedRevision))
+  }
+
+  private delegateMessage(
+    sender: string,
+    target: string,
+    message: string,
+    taskId: string,
+    expectedRevision: number,
+  ): TeamDelegationOutcome {
+    this.ensureCanSend(sender, target)
+    if (target !== TEAM_LEAD_NAME) {
+      this.roster.find(target)
+    }
+    try {
+      const prepared = this.board.prepareDelegation(sender, target, taskId, expectedRevision)
+      this.lead.recordTask({ ...prepared, blockedBy: [...prepared.blockedBy], writeScopes: [...prepared.writeScopes] })
+      const task = this.board.acceptAdmission(prepared)
+      this.deliverMessage(sender, target, `${TEAM_DELEGATION_HEADER}${JSON.stringify(task)}\n${message}`)
+      return { kind: TEAM_DELEGATED, task }
+    } catch (error) {
+      if (error instanceof TaskRefusal) {
+        throw new TeamRuleError(error.message)
+      }
+      throw error
+    }
   }
 
   interrupt(target: string): TeamInterruptOutcome {

@@ -12,6 +12,8 @@ import {
   TASK_REOPEN,
   TASK_RESUME,
   TASK_SET_DEPENDENCIES,
+  TEAM_MESSAGE_COORDINATION,
+  TEAM_MESSAGE_DELEGATION,
 } from "#synapse/modules/agent-team"
 
 export const TEAM_TOOL_SUBAGENT_PARAMETERS = Type.Object({
@@ -40,10 +42,36 @@ export const TEAM_TOOL_SUBAGENT_PARAMETERS = Type.Object({
   ),
 })
 
-export const TEAM_TOOL_SEND_MESSAGE_PARAMETERS = Type.Object({
-  agent: Type.String({ description: "Nome de outro agente da equipe, como mostrado por list_agents." }),
-  message: Type.String({ description: "Mensagem a entregar ao agente." }),
-})
+export const TEAM_TOOL_SEND_MESSAGE_PARAMETERS = Type.Union([
+  Type.Object(
+    {
+      agent: Type.String({
+        minLength: 1,
+        description: "Nome de outro agente da equipe, como mostrado por list_agents.",
+      }),
+      message: Type.String({ description: "Mensagem a entregar ao agente." }),
+      mode: Type.Literal(TEAM_MESSAGE_COORDINATION, {
+        description: "Comunicação livre, sem mudar a tarefa selecionada.",
+      }),
+    },
+    { additionalProperties: false },
+  ),
+  Type.Object(
+    {
+      agent: Type.String({
+        minLength: 1,
+        description: "Nome de outro agente da equipe, como mostrado por list_agents.",
+      }),
+      message: Type.String({ description: "Mensagem a entregar ao agente." }),
+      mode: Type.Literal(TEAM_MESSAGE_DELEGATION, {
+        description: "Atribui e inicia tarefa específica no agente existente.",
+      }),
+      task_id: Type.String({ minLength: 1, description: "Id da tarefa existente no quadro." }),
+      expected_revision: Type.Integer({ minimum: 1, description: "Revisão atual da tarefa, lida no quadro." }),
+    },
+    { additionalProperties: false },
+  ),
+])
 
 export const TEAM_TOOL_INTERRUPT_AGENT_PARAMETERS = Type.Object({
   agent: Type.String({ description: "Nome do subagente a interromper." }),

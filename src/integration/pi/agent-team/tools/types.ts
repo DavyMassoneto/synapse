@@ -55,6 +55,7 @@ export type TeamToolOutcome =
   | Awaited<ReturnType<AgentTeam["start"]>>
   | ReturnType<AgentTeam["getTask"]>
   | ReturnType<AgentTeam["send"]>
+  | ReturnType<AgentTeam["delegate"]>
   | ReturnType<AgentTeam["interrupt"]>
 
 export type TeamToolName =

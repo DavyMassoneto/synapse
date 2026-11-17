@@ -44,6 +44,8 @@ export class Team implements AgentTeam {
 
   readonly send: AgentTeam["send"]
 
+  readonly delegate: AgentTeam["delegate"]
+
   readonly interrupt: AgentTeam["interrupt"]
 
   readonly selectedTask: AgentTeam["selectedTask"]
@@ -57,10 +59,11 @@ export class Team implements AgentTeam {
     this.memberNotice = lead.deliver.bind(lead)
     this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
-    this.messages = new TeamMessages(lead, this.roster, this.events, this)
+    this.messages = new TeamMessages(lead, this.roster, this.events, this, this.board)
     this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime, this.board)
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
+    this.delegate = this.messages.delegate.bind(this.messages)
     this.interrupt = this.messages.interrupt.bind(this.messages)
     this.selectedTask = this.board.selectedTask.bind(this.board)
     this.getTask = this.board.get.bind(this.board)
