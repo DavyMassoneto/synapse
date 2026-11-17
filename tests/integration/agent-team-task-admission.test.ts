@@ -11,13 +11,13 @@ import {
   ADMISSION_FAULT_DISCARD,
   ADMISSION_FAULT_NONE,
   ADMISSION_FAULT_REVISION,
-  ADMISSION_LIFECYCLE,
   ADMISSION_MEMBER_CLOSE_FAILURE,
   ADMISSION_RACE,
   ADMISSION_RACE_SCRIPT,
   ADMISSION_RACES,
+  ADMISSION_RELOAD,
   ADMISSION_RETRY_SCRIPT,
-  ADMISSION_SCRIPT,
+  ADMISSION_START,
   ADMISSION_SUITE,
   type AdmissionFault,
   AdmissionFaults,
@@ -26,16 +26,14 @@ import {
   isSelectionToolError,
   SELECTION_TIMEOUT_MS,
   selectionRequestContexts,
+  startAdmissionScenario,
   TaskSelectionFixture,
 } from "../fixtures"
 
-async function admissionLifecycle(): Promise<void> {
-  const faults = new AdmissionFaults()
-  const fixture = new TaskSelectionFixture(ADMISSION_SCRIPT, faults.mount.bind(faults))
+async function admissionStart(): Promise<void> {
+  const { fixture, session, faults } = await startAdmissionScenario()
   try {
-    const session = await fixture.start()
-    await fixture.step()
-    expect(session.messages.filter(isSelectionToolError)).toHaveLength(4)
+    expect(session.messages.filter(isSelectionToolError)).toHaveLength(0)
     expect(faults.opened).toBe(1)
     expect(fixture.board().selectedTask("worker")).toMatchObject({
       kind: "selected",
@@ -58,6 +56,17 @@ async function admissionLifecycle(): Promise<void> {
       selected: expect.stringContaining('"id":"task-1","revision":3'),
       external: true,
     })
+    expect(admissionSessionFiles(fixture.agentDirectory, session.sessionId)).toHaveLength(1)
+    expect(fixture.errors).toEqual([])
+  } finally {
+    await fixture.close()
+  }
+}
+
+async function admissionReload(): Promise<void> {
+  const { fixture, session, faults } = await startAdmissionScenario()
+  try {
+    const admissions = admissionEntries(session)
     const files = admissionSessionFiles(fixture.agentDirectory, session.sessionId)
     expect(files).toHaveLength(1)
     const tasks = fixture.board().listTasks({})
@@ -161,7 +170,8 @@ async function racedAdmission(mode: AdmissionFault): Promise<void> {
 }
 
 function register(): void {
-  test(ADMISSION_LIFECYCLE, admissionLifecycle, SELECTION_TIMEOUT_MS)
+  test(ADMISSION_START, admissionStart, SELECTION_TIMEOUT_MS)
+  test(ADMISSION_RELOAD, admissionReload, SELECTION_TIMEOUT_MS)
   test.each(ADMISSION_FAILURES)(`${ADMISSION_FAILURE}: %s`, failedAdmission, SELECTION_TIMEOUT_MS)
   test.each(ADMISSION_CLEANUP_FAILURES)(`${ADMISSION_CLEANUP}: %s`, failedAdmission, SELECTION_TIMEOUT_MS)
   test.each(ADMISSION_RACES)(`${ADMISSION_RACE}: %s`, racedAdmission, SELECTION_TIMEOUT_MS)

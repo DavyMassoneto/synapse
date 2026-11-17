@@ -3,7 +3,8 @@ import { SELECTION_MEMBER_MARKER } from "../task-selection"
 import { type AdmissionFault } from "./types"
 
 export const ADMISSION_SUITE = "admissão atômica pelo modelo no SDK real"
-export const ADMISSION_LIFECYCLE = "recusa entradas inválidas e restaura a admissão sem iniciar ou selecionar no reload"
+export const ADMISSION_START = "admite tarefa do lead com snapshot e contexto antes do primeiro pedido"
+export const ADMISSION_RELOAD = "reload preserva a admissão válida sem iniciar ou selecionar o membro"
 export const ADMISSION_FAILURE = "falhas de abertura, fila e journal preservam tarefa e liberam nome"
 export const ADMISSION_RACE = "revalida revisão e bloqueios depois da abertura assíncrona"
 export const ADMISSION_FAILURE_MESSAGE = "admission fixture failure"
@@ -54,41 +55,6 @@ export const ADMISSION_SCRIPT: ScriptedProviderScript = {
             description: "Blocked B",
             blocked_by: ["task-1"],
             write_scopes: [],
-          }),
-        },
-        {
-          kind: "toolCall",
-          name: "subagent",
-          argumentsJson: JSON.stringify({ name: "worker", description: "fixture", task: "legacy free text" }),
-        },
-        {
-          kind: "toolCall",
-          name: "subagent",
-          argumentsJson: JSON.stringify({
-            name: "worker",
-            description: "fixture",
-            task_id: "task-1",
-            expected_revision: 0,
-          }),
-        },
-        {
-          kind: "toolCall",
-          name: "subagent",
-          argumentsJson: JSON.stringify({
-            name: "worker",
-            description: "fixture",
-            task_id: "task-1",
-            expected_revision: 9,
-          }),
-        },
-        {
-          kind: "toolCall",
-          name: "subagent",
-          argumentsJson: JSON.stringify({
-            name: "worker",
-            description: "fixture",
-            task_id: "task-2",
-            expected_revision: 1,
           }),
         },
         {

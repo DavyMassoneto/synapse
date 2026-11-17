@@ -9,10 +9,10 @@ import {
   type TeamStartOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
 import { TeamMember } from "../member"
-import { TeamRuleError, teamAsyncOperationResult } from "../operation-results"
+import { rethrowTeamOperationError, TeamRuleError, teamAsyncOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { type TeamRoster } from "../roster"
-import { type TaskBoard, TaskRefusal, taskBoardCopySnapshot } from "../task-board"
+import { type TaskBoard, taskBoardCopySnapshot } from "../task-board"
 import { acceptMemberTask } from "./accept-task"
 import {
   TEAM_ADMISSION_CLEANUP_FAILED,
@@ -82,8 +82,8 @@ export class TeamMembership {
       if (generation === this.generation) {
         this.roster.release(name)
       }
-      if (error instanceof TaskRefusal) {
-        throw new TeamRuleError(error.message)
+      if (error instanceof Error) {
+        rethrowTeamOperationError(error)
       }
       throw error
     }
