@@ -20,6 +20,7 @@ export const SELECTION_AGENT_ENVIRONMENT = "PI_CODING_AGENT_DIR"
 export const SELECTION_DISABLE_EXTENSION_PREFIX = "-"
 export const SELECTION_SYSTEM_ROLE = "system"
 export const SELECTION_NO_TEAM = "Equipe não montada"
+export const SELECTION_MEMBER_TIMEOUT = "O membro continuou em execução após o limite de espera"
 export const SELECTION_SESSION_START = "session_start"
 export const SELECTION_CLEANUP_OBSERVATION_MS = 3000
 export const SELECTION_CLEANUP_POLL_MS = 50

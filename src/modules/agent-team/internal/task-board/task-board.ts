@@ -1,13 +1,11 @@
 import {
   type CreateTaskInput,
   TASK_ACCEPTED,
-  TASK_CLAIM,
   TASK_CLEANED,
   TASK_DELETED,
   TASK_IN_PROGRESS,
   TASK_PENDING,
   TASK_REFUSED,
-  TASK_RESUME,
   TASK_SELECTED,
   TASK_UNSELECTED,
   type TaskCleanOutcome,
@@ -36,6 +34,7 @@ import {
   TASK_BOARD_UNKNOWN_TASK,
 } from "./constants"
 import { hasTaskBoardLimit, isTaskBoardActive, isTaskBoardFilterMatch, isTaskBoardTaskReady } from "./predicates"
+import { selectAcceptedTask } from "./selection"
 import { taskBoardCopySnapshot } from "./snapshot-copy"
 import { TaskRefusal } from "./task-refusal"
 import { taskBoardRequireText } from "./task-text"
@@ -180,9 +179,7 @@ export class TaskBoard {
     }
     const next = taskBoardApplyAction({ current, tasks: this.tasks, input, caller, directory: this.directory })
     const view = this.commit({ ...next, revision: current.revision + 1 })
-    if (input.action === TASK_CLAIM || input.action === TASK_RESUME) {
-      this.selection.set(caller, view.id)
-    }
+    selectAcceptedTask(this.selection, caller, input, view)
     return view
   }
 

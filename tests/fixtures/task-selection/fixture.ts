@@ -33,6 +33,7 @@ import {
 import {
   SELECTION_AGENT_DIRECTORY,
   SELECTION_DIRECTORY,
+  SELECTION_MEMBER_TIMEOUT,
   SELECTION_NO_TEAM,
   SELECTION_POLL_MS,
   SELECTION_PROJECT_DIRECTORY,
@@ -131,7 +132,7 @@ export class TaskSelectionFixture {
     const deadline = Date.now() + SELECTION_TIMEOUT_MS
     while (this.board().overview().agents.some(isSelectionMemberRunning)) {
       if (Date.now() >= deadline) {
-        throw new Error(SELECTION_NO_TEAM)
+        throw new Error(SELECTION_MEMBER_TIMEOUT)
       }
       await setTimeout(SELECTION_POLL_MS)
     }
