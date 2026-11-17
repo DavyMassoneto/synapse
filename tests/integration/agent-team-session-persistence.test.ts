@@ -38,9 +38,7 @@ function rejectsWhitespaceOnlyInteriorLine(): void {
   const header = JSON.stringify({ type: TEAM_SESSION_FIXTURE_HEADER_TYPE, id: record.sessionId, cwd: record.cwd })
   const content = `${header}${TEAM_SESSION_FIXTURE_INTERIOR_WHITESPACE}${JSON.stringify({ type: TEAM_SESSION_FIXTURE_MESSAGE_TYPE })}${TEAM_SESSION_FIXTURE_NEWLINE}`
   writeFileSync(record.sessionFile, content)
-  expect(validateTeamSessionFile.bind(null, record, Buffer.byteLength(content))).toThrow(
-    TEAM_SESSION_FIXTURE_INVALID_PATTERN,
-  )
+  expect(validateTeamSessionFile.bind(null, record)).toThrow(TEAM_SESSION_FIXTURE_INVALID_PATTERN)
 }
 
 function acceptsBlankLinesAndFinalWhitespace(): void {
@@ -48,16 +46,14 @@ function acceptsBlankLinesAndFinalWhitespace(): void {
   const header = JSON.stringify({ type: TEAM_SESSION_FIXTURE_HEADER_TYPE, id: record.sessionId, cwd: record.cwd })
   const content = `${header}${TEAM_SESSION_FIXTURE_BLANK_LINES}${JSON.stringify({ type: TEAM_SESSION_FIXTURE_MESSAGE_TYPE })}${TEAM_SESSION_FIXTURE_FINAL_WHITESPACE}`
   writeFileSync(record.sessionFile, content)
-  expect(validateTeamSessionFile.bind(null, record, Buffer.byteLength(content))).not.toThrow()
+  expect(validateTeamSessionFile.bind(null, record)).not.toThrow()
 }
 
 function rejectsMalformedEntry(): void {
   const record = teamStorageRecord(fixture)
   const content = `${JSON.stringify({ type: TEAM_SESSION_FIXTURE_HEADER_TYPE, id: record.sessionId, cwd: record.cwd })}${TEAM_SESSION_FIXTURE_MALFORMED_ENTRY}`
   writeFileSync(record.sessionFile, content)
-  expect(validateTeamSessionFile.bind(null, record, Buffer.byteLength(content))).toThrow(
-    TEAM_SESSION_FIXTURE_INVALID_PATTERN,
-  )
+  expect(validateTeamSessionFile.bind(null, record)).toThrow(TEAM_SESSION_FIXTURE_INVALID_PATTERN)
 }
 
 function rejectsMismatchedIdentity(): void {
@@ -68,9 +64,7 @@ function rejectsMismatchedIdentity(): void {
     cwd: record.cwd,
   })
   writeFileSync(record.sessionFile, content)
-  expect(validateTeamSessionFile.bind(null, record, Buffer.byteLength(content))).toThrow(
-    TEAM_SESSION_FIXTURE_DIVERGENT_PATTERN,
-  )
+  expect(validateTeamSessionFile.bind(null, record)).toThrow(TEAM_SESSION_FIXTURE_DIVERGENT_PATTERN)
 }
 
 function rejectsZeroWidthSuffix(): void {
@@ -78,9 +72,7 @@ function rejectsZeroWidthSuffix(): void {
   const header = JSON.stringify({ type: TEAM_SESSION_FIXTURE_HEADER_TYPE, id: record.sessionId, cwd: record.cwd })
   const content = header + TEAM_SESSION_FIXTURE_ZERO_WIDTH_END
   writeFileSync(record.sessionFile, content)
-  expect(validateTeamSessionFile.bind(null, record, Buffer.byteLength(content))).toThrow(
-    TEAM_SESSION_FIXTURE_INVALID_PATTERN,
-  )
+  expect(validateTeamSessionFile.bind(null, record)).toThrow(TEAM_SESSION_FIXTURE_INVALID_PATTERN)
 }
 
 function registerTests(): void {

@@ -24,6 +24,6 @@ export function openTeamMemberStorage(record: MemberRecord): SessionManager {
   if (bytes === 0) {
     throw new Error(TEAM_PI_MEMBER_MISSING_SESSION + record.sessionFile)
   }
-  validateTeamSessionFile(record, bytes)
+  validateTeamSessionFile(record)
   return SessionManager.open(record.sessionFile)
 }
