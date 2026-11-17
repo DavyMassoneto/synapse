@@ -5,6 +5,16 @@ import { type MemberRecord } from "#synapse/modules/agent-team"
 import { type PiProcess, type PiProcessHome } from "../pi-process"
 import { type HISTORY_MIGRATION_AGENTS_SCHEMA, type HISTORY_MIGRATION_TASKS_SCHEMA } from "./schemas"
 
+export interface HistoryMigrationSettings {
+  extensions: string[]
+  enableAnalytics: boolean
+  enableInstallTelemetry: boolean
+}
+
+export interface HistoryMigrationTeamConfiguration {
+  excludedMemberExtensions: string[]
+}
+
 export type HistoryMigrationToolResult = ToolResultMessage
 
 export interface HistoryMigrationContext {

@@ -36,12 +36,13 @@ function rejectsHomeAcquisition(): void {
   vi.spyOn(fs, HISTORY_MIGRATION_CREATE_DIRECTORY_METHOD).mockImplementation(fault.captureHome.bind(fault))
   vi.spyOn(fs, HISTORY_MIGRATION_WRITE_METHOD).mockImplementation(fault.rejectWrite.bind(fault))
   syncBuiltinESMExports()
-  expect(createHome).toThrow(HISTORY_MIGRATION_ACQUISITION_PRIMARY)
+  expect.assertions(2)
+  try {
+    new PiProcessHome()
+  } catch (error) {
+    expect(error).toBe(HISTORY_MIGRATION_ACQUISITION_PRIMARY)
+  }
   expect(fs.existsSync(fault.home)).toBe(false)
-}
-
-function createHome(): PiProcessHome {
-  return new PiProcessHome()
 }
 
 function rejectsHomeCleanup(): void {
@@ -52,7 +53,7 @@ function rejectsHomeCleanup(): void {
   syncBuiltinESMExports()
   expect.assertions(3)
   try {
-    createHome()
+    new PiProcessHome()
   } catch (error) {
     expect(error).toBeInstanceOf(AggregateError)
     if (error instanceof AggregateError) {
