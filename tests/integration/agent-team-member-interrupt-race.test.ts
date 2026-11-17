@@ -1,5 +1,6 @@
 import { expect, test, vi } from "vitest"
 import {
+  QUEUE_ADMISSION_FIRST,
   QUEUE_FIRST,
   QUEUE_INPUT,
   QUEUE_MESSAGE,
@@ -33,11 +34,11 @@ async function preflightInterruptionIsSticky(): Promise<void> {
       sessions.model.finish()
     }
     await vi.waitFor(() => expect(probe.events.some((event) => event.kind === "execution_settled")).toBe(true))
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
     expect(probe.events.some((event) => event.kind === "execution_started")).toBe(true)
     expect(probe.events.some((event) => event.kind === "execution_settled" && event.aborted)).toBe(true)
     expect(preserved).toHaveLength(2)
-    expect(preserved[0]).toBe(QUEUE_FIRST)
+    expect(preserved[0]).toBe(QUEUE_ADMISSION_FIRST)
     expect(preserved[1]).toContain(QUEUE_MESSAGE)
     expect(sessions.journal.load()).toEqual({ interrupted: true, pending: preserved })
     expect(team.overview().agents.find((row) => row.name === WATCHDOG_MEMBER)?.state).toBe("interrupted")
@@ -72,9 +73,9 @@ async function settledInterruptionIsSticky(): Promise<void> {
     fixture.barrier?.release()
     await vi.waitFor(() => expect(probe.events.some((event) => event.kind === "execution_settled")).toBe(true))
     expect(probe.events.some((event) => event.kind === "execution_settled" && !event.aborted)).toBe(true)
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
     expect(preserved).toHaveLength(2)
-    expect(preserved[0]).toBe(QUEUE_FIRST)
+    expect(preserved[0]).toBe(QUEUE_ADMISSION_FIRST)
     expect(preserved[1]).toContain(QUEUE_MESSAGE)
     expect(sessions.journal.load()).toEqual({ interrupted: true, pending: preserved })
     expect(team.overview().agents.find((row) => row.name === WATCHDOG_MEMBER)?.state).toBe("interrupted")

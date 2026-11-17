@@ -17,6 +17,8 @@ export class QueueSessions implements MemberSessions {
     this.real = new WatchdogSessions(directory)
   }
 
+  discardPrepared(_record: MemberRecord): void {}
+
   async open(request: OpenMemberRequest, team: AgentTeam): Promise<OpenedMember> {
     const opened = await this.real.open(request, team)
     this.probe = new QueueSessionProbe(opened.session)

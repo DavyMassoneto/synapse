@@ -1,4 +1,5 @@
 import { TEAM_OPERATION_FAILED, TEAM_REFUSED } from "#synapse/modules/agent-team/public/contracts"
+import { TaskRefusal } from "../task-board"
 import { TeamRuleError } from "./rule-error"
 import {
   type TeamAsyncOperation,
@@ -29,6 +30,13 @@ export async function teamAsyncOperationResult<Result>(
     }
     throw error
   }
+}
+
+export function rethrowTeamOperationError(error: Error): never {
+  if (error instanceof TaskRefusal) {
+    throw new TeamRuleError(error.message)
+  }
+  throw error
 }
 
 export function teamClassifyError(error: Error): TeamOperationError {

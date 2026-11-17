@@ -15,7 +15,7 @@ import {
   SettingsManager,
 } from "@earendil-works/pi-coding-agent"
 import { vi } from "vitest"
-import { registerAgentTeam } from "#synapse/integration/pi/agent-team"
+import { type AgentTeamMount, registerAgentTeam } from "#synapse/integration/pi/agent-team"
 import {
   type AgentTeam,
   createAgentTeam,
@@ -29,6 +29,7 @@ import {
   SCRIPTED_PROVIDER_CONTEXT_WINDOW,
   SCRIPTED_PROVIDER_MODEL,
   SCRIPTED_PROVIDER_PROVIDER,
+  type ScriptedProviderScript,
 } from "../scripted-provider"
 import {
   SELECTION_AGENT_DIRECTORY,
@@ -58,11 +59,15 @@ export class TaskSelectionFixture {
   readonly errors: ExtensionError[] = []
   private team?: AgentTeam
   private session?: AgentSession
+  private readonly createTeam?: AgentTeamMount
 
-  constructor() {
+  constructor(script?: ScriptedProviderScript, createTeam?: AgentTeamMount) {
+    if (createTeam) {
+      this.createTeam = createTeam
+    }
     prepareSelectionDirectories(this)
     prepareSelectionExtensions(this)
-    prepareSelectionScript(this)
+    prepareSelectionScript(this, script)
     prepareSelectionEnvironment(this)
   }
 
@@ -71,7 +76,11 @@ export class TaskSelectionFixture {
   }
 
   private mount(lead: TeamLead, members: MemberSessions, clock: TeamClock): AgentTeam {
-    this.team = createAgentTeam(lead, members, clock)
+    if (this.createTeam) {
+      this.team = this.createTeam(lead, members, clock)
+    } else {
+      this.team = createAgentTeam(lead, members, clock)
+    }
     return this.team
   }
 

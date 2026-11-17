@@ -1,5 +1,6 @@
 import { expect, test, vi } from "vitest"
 import {
+  QUEUE_ADMISSION_FIRST,
   QUEUE_FAILURE,
   QUEUE_FIRST,
   QUEUE_MESSAGE,
@@ -23,7 +24,7 @@ async function finishedPreservesHistory(): Promise<void> {
     sessions.model.finish()
     await fixture.waitSettled()
     expect(sessions.journal.load()).toEqual({ interrupted: true, pending: [QUEUE_OLD, QUEUE_FIRST] })
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
     expect(team.overview().agents.find((row) => row.name === WATCHDOG_MEMBER)?.state).toBe("finished")
     expect(team.send(WATCHDOG_MEMBER, WATCHDOG_MEMBER, QUEUE_NEXT).kind).toBe("refused")
   } finally {
@@ -41,10 +42,10 @@ async function manualInterruptionPreservesPending(): Promise<void> {
     await fixture.waitSettled()
     const preserved = sessions.journal.load().pending
     expect(preserved).toHaveLength(2)
-    expect(preserved[0]).toBe(QUEUE_FIRST)
+    expect(preserved[0]).toBe(QUEUE_ADMISSION_FIRST)
     expect(preserved[1]).toContain(QUEUE_MESSAGE)
     expect(sessions.journal.load().interrupted).toBe(true)
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
     team.send(WATCHDOG_LEAD, WATCHDOG_MEMBER, QUEUE_NEXT)
     await fixture.waitStreaming()
     sessions.model.finish()
@@ -70,7 +71,7 @@ async function watchdogPreservesPending(): Promise<void> {
     expect(sessions.journal.load().pending).toHaveLength(2)
     expect(sessions.journal.load().interrupted).toBe(true)
     expect(team.overview().agents.find((row) => row.name === WATCHDOG_MEMBER)?.state).toBe("interrupted")
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
     expect(JSON.stringify(fixture.host.notices)).toContain("Watchdog")
   } finally {
     await fixture.close()
@@ -112,10 +113,10 @@ async function failurePreservesBatch(): Promise<void> {
     sessions.sessions[0]?.settingsManager.setRetryEnabled(false)
     sessions.model.fail(QUEUE_FAILURE)
     await fixture.waitSettled()
-    expect(sessions.journal.load()).toEqual({ interrupted: true, pending: [QUEUE_OLD, QUEUE_FIRST] })
+    expect(sessions.journal.load()).toEqual({ interrupted: true, pending: [QUEUE_OLD, QUEUE_ADMISSION_FIRST] })
     expect(team.overview().agents.find((row) => row.name === WATCHDOG_MEMBER)?.state).toBe("failed")
     expect(JSON.stringify(fixture.host.notices)).toContain(QUEUE_FAILURE)
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
   } finally {
     await fixture.close()
   }
@@ -135,7 +136,7 @@ async function steerResolutionIsNotAcknowledgement(): Promise<void> {
     expect(sessions.journal.load().pending).toHaveLength(1)
     expect(sessions.journal.load().pending[0]).toContain(QUEUE_MESSAGE)
     expect(sessions.journal.load().interrupted).toBe(true)
-    expect(probe.prompts).toEqual([QUEUE_FIRST])
+    expect(probe.prompts).toEqual([QUEUE_ADMISSION_FIRST])
   } finally {
     await fixture.close()
   }
@@ -149,7 +150,7 @@ async function handledInputCannotConfirm(): Promise<void> {
     probe.record({ kind: "execution_settled", executionId: probe.executionId, aborted: false })
     expect(sessions.model.streams).toBe(0)
     expect(probe.events.some((event) => event.kind === "execution_started")).toBe(false)
-    expect(sessions.journal.load()).toEqual({ interrupted: true, pending: [QUEUE_FIRST] })
+    expect(sessions.journal.load()).toEqual({ interrupted: true, pending: [QUEUE_ADMISSION_FIRST] })
     expect(team.overview().agents.find((row) => row.name === WATCHDOG_MEMBER)?.state).toBe("working")
   } finally {
     await fixture.close()

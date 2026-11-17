@@ -14,12 +14,14 @@ import {
 export interface StartMemberRequest {
   name?: string
   description: string
-  task: string
+  taskId: string
+  expectedRevision: number
   model?: string
   thinking?: string
 }
 
 export interface MemberSessions {
+  discardPrepared(record: MemberRecord): void
   open(request: OpenMemberRequest, team: AgentTeam): Promise<OpenedMember>
   reopen(record: MemberRecord, team: AgentTeam): Promise<OpenedMember>
 }
@@ -75,6 +77,7 @@ export interface TeamLeadState {
 
 export interface TeamMemberRegistry {
   recordMember(record: MemberRecord): void
+  recordAdmission(record: MemberRecord, task: TaskSnapshot): void
 }
 
 export interface TeamRestorationDiagnostics {
@@ -92,6 +95,7 @@ export interface TeamStarted {
   kind: "started"
   name: string
   model: string
+  task: TaskView
 }
 
 export type TeamStartOutcome = TeamStarted | TeamRefused | TeamFailed

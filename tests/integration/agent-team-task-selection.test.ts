@@ -18,13 +18,13 @@ async function selectionLifecycle(): Promise<void> {
       kind: "selected",
       task: { id: "task-1", revision: 2, owner: "lead" },
     })
-    expect(fixture.board().selectedTask("worker")).toEqual({ kind: "unselected" })
+    expect(fixture.board().selectedTask("worker")).toMatchObject({ kind: "selected", task: { id: "task-4" } })
     expect(fixture.errors).toEqual([])
     expect(fixture.board().overview().agents).toContainEqual(
       expect.objectContaining({ name: "worker", state: "finished" }),
     )
     expect(selectionRequestContexts(fixture.directory)).toContainEqual({
-      selected: expect.stringContaining("Nenhuma tarefa selecionada"),
+      selected: expect.stringContaining('"id":"task-4","revision":2'),
       external: true,
     })
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(3)
@@ -33,7 +33,7 @@ async function selectionLifecycle(): Promise<void> {
       kind: "selected",
       task: { id: "task-1", revision: 2 },
     })
-    expect(fixture.board().selectedTask("worker")).toEqual({ kind: "unselected" })
+    expect(fixture.board().selectedTask("worker")).toMatchObject({ kind: "selected", task: { id: "task-4" } })
     await fixture.step()
     expect(fixture.board().selectedTask("worker")).toMatchObject({
       kind: "selected",
@@ -41,7 +41,7 @@ async function selectionLifecycle(): Promise<void> {
     })
     await fixture.step()
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(4)
-    expect(fixture.board().selectedTask("lead")).toMatchObject({ kind: "selected", task: { id: "task-4" } })
+    expect(fixture.board().selectedTask("lead")).toMatchObject({ kind: "selected", task: { id: "task-5" } })
     expect(fixture.board().getTask("task-1")).toMatchObject({
       kind: "accepted",
       task: { revision: 2, status: "in_progress" },
@@ -78,7 +78,7 @@ async function selectionLifecycle(): Promise<void> {
     })
     expect(fixture.errors).toEqual([])
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(6)
-    expect(fixture.board().getTask("task-4")).toMatchObject({
+    expect(fixture.board().getTask("task-5")).toMatchObject({
       kind: "accepted",
       task: { revision: 4, status: "pending", owner: "lead", blockedBy: ["task-3"] },
     })

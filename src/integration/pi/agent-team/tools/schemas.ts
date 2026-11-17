@@ -15,7 +15,8 @@ import {
 } from "#synapse/modules/agent-team"
 
 export const TEAM_TOOL_SUBAGENT_PARAMETERS = Type.Object({
-  task: Type.String({ description: "Tarefa completa do subagente; ele começa sem o histórico desta conversa." }),
+  task_id: Type.String({ minLength: 1, description: "Id da tarefa existente; detalhes e escopos vêm do quadro." }),
+  expected_revision: Type.Integer({ minimum: 1, description: "Revisão atual da tarefa, lida no quadro." }),
   description: Type.String({ description: "Descrição curta do trabalho do subagente, mostrada em list_agents." }),
   name: Type.Optional(
     Type.String({

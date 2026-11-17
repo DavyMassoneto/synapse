@@ -65,6 +65,8 @@ export class WatchdogSessions implements MemberSessions {
     this.directory = directory
   }
 
+  discardPrepared(_record: MemberRecord): void {}
+
   async open(request: OpenMemberRequest, team: AgentTeam): Promise<OpenedMember> {
     this.team = team
     const record: MemberRecord = {

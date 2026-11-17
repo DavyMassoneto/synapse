@@ -5,4 +5,5 @@ export type TeamMembershipContext = AgentTeam & TeamMemberObserver
 
 export interface TeamAdmissionAttempt {
   member?: TeamMember
+  committed?: boolean
 }

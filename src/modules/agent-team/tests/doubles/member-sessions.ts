@@ -21,6 +21,8 @@ export class TeamTestSessions implements MemberSessions {
 
   private openedMembers: OpenedMember[] = []
 
+  discardPrepared(_record: MemberRecord): void {}
+
   open(request: OpenMemberRequest): Promise<OpenedMember> {
     if (this.fail) {
       return Promise.reject(new Error("abertura indisponível"))

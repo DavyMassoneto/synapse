@@ -55,7 +55,8 @@ async function journalAccept(): Promise<void> {
   const { team, sessions } = await startAlice()
   sessions.journal.failAt = 3
   expect(team.send("lead", "alice", "oi").kind).toBe(TEAM_OPERATION_FAILED)
-  expect(sessions.journal.checkpoint.pending).toEqual(["x"])
+  expect(sessions.journal.checkpoint.pending).toHaveLength(1)
+  expect(sessions.journal.checkpoint.pending[0]).toContain('"owner":"alice"')
 }
 
 async function unknownSender(): Promise<void> {

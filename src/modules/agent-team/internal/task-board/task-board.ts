@@ -3,11 +3,8 @@ import {
   TASK_ACCEPTED,
   TASK_CLEANED,
   TASK_DELETED,
-  TASK_IN_PROGRESS,
   TASK_PENDING,
   TASK_REFUSED,
-  TASK_SELECTED,
-  TASK_UNSELECTED,
   type TaskCleanOutcome,
   type TaskFilter,
   type TaskJournal,
@@ -18,6 +15,7 @@ import {
   TEAM_LEAD_NAME,
   type UpdateTaskInput,
 } from "#synapse/modules/agent-team/public/contracts"
+import { taskBoardPrepareAdmission, taskBoardValidateAdmission } from "./admission"
 import { taskBoardResolveBlockers } from "./blockers"
 import { taskBoardCleanPlan } from "./clean-plan"
 import {
@@ -33,8 +31,8 @@ import {
   TASK_BOARD_STALE_REVISION,
   TASK_BOARD_UNKNOWN_TASK,
 } from "./constants"
-import { hasTaskBoardLimit, isTaskBoardActive, isTaskBoardFilterMatch, isTaskBoardTaskReady } from "./predicates"
-import { selectAcceptedTask } from "./selection"
+import { hasTaskBoardLimit, isTaskBoardActive, isTaskBoardFilterMatch } from "./predicates"
+import { selectAcceptedTask, taskBoardSelectedTask } from "./selection"
 import { taskBoardCopySnapshot } from "./snapshot-copy"
 import { TaskRefusal } from "./task-refusal"
 import { taskBoardRequireText } from "./task-text"
@@ -90,6 +88,22 @@ export class TaskBoard {
     return this.execute(this.getView.bind(this, id))
   }
 
+  validateAdmission(taskId: string, expectedRevision: number): void {
+    taskBoardValidateAdmission(this.tasks, this.find(taskId), expectedRevision)
+  }
+
+  prepareAdmission(name: string, taskId: string, expectedRevision: number): TaskSnapshot {
+    return taskBoardPrepareAdmission(this.tasks, this.find(taskId), name, expectedRevision)
+  }
+
+  acceptAdmission(task: TaskSnapshot): TaskView {
+    this.store(task)
+    if (task.owner) {
+      this.selection.set(task.owner, task.id)
+    }
+    return taskBoardToTaskView(taskBoardViewContext(this.tasks), task)
+  }
+
   private getView(id: string): TaskView {
     return taskBoardToTaskView(taskBoardViewContext(this.tasks), this.find(id))
   }
@@ -113,19 +127,7 @@ export class TaskBoard {
   }
 
   selectedTask(caller: string): TaskSelection {
-    const id = this.selection.get(caller)
-    if (!id) {
-      return { kind: TASK_UNSELECTED }
-    }
-    const task = this.tasks.find((candidate) => candidate.id === id)
-    if (!task || task.owner !== caller || task.status !== TASK_IN_PROGRESS) {
-      return { kind: TASK_UNSELECTED }
-    }
-    const context = taskBoardViewContext(this.tasks)
-    if (!isTaskBoardTaskReady(context.statuses, task)) {
-      return { kind: TASK_UNSELECTED }
-    }
-    return { kind: TASK_SELECTED, task: taskBoardToTaskView(context, task) }
+    return taskBoardSelectedTask(this.tasks, this.selection, caller)
   }
 
   clean(caller: string): TaskCleanOutcome {

@@ -20,19 +20,22 @@ function makeSut(): TeamToolsSut {
 async function startMember(): Promise<void> {
   const sut = makeSut()
   const result = await sut.handlers.subagent("id", {
-    task: "Execute",
+    task_id: "task-1",
+    expected_revision: 1,
     description: "Trabalho",
     model: "provider/model",
     thinking: "high",
   })
   expect(result.isError).toBe(false)
-  expect(sut.team.startInput).toMatchObject({ task: "Execute", model: "provider/model" })
+  expect(sut.team.startInput).toMatchObject({ taskId: "task-1", expectedRevision: 1, model: "provider/model" })
 }
 
 async function refuseStart(): Promise<void> {
   const sut = makeSut()
   sut.team.refused = true
-  expect((await sut.handlers.subagent("id", { task: "Execute", description: "Trabalho" })).isError).toBe(true)
+  expect(
+    (await sut.handlers.subagent("id", { task_id: "task-1", expected_revision: 1, description: "Trabalho" })).isError,
+  ).toBe(true)
 }
 
 async function sendMember(): Promise<void> {

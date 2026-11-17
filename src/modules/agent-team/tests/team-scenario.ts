@@ -10,7 +10,9 @@ function teamTestClock(): string {
 export function makeTeamSut(): TeamTestSut {
   const lead = new TeamTestLead()
   const sessions = new TeamTestSessions()
-  return { lead, sessions, team: createAgentTeam(lead, sessions, teamTestClock) }
+  const team = createAgentTeam(lead, sessions, teamTestClock)
+  team.createTask({ subject: "x", description: "x", blockedBy: [], writeScopes: [] })
+  return { lead, sessions, team }
 }
 
 export async function startAlice(): Promise<TeamTestSut> {
@@ -45,7 +47,7 @@ export async function replacedAliceGeneration(): Promise<TeamGenerationSut> {
   sut.sessions.held = true
   const previous = sut.team.start({ ...TEAM_TEST_ALICE_REQUEST, description: "antiga" })
   await sut.team.suspend()
-  await sut.team.restore([], [])
+  await sut.team.restore([], sut.lead.tasks)
   const current = sut.team.start({ ...TEAM_TEST_ALICE_REQUEST, description: "nova" })
   sut.sessions.releaseFirst()
   const previousResult = await previous

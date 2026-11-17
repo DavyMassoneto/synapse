@@ -1,5 +1,7 @@
 export const QUEUE_OLD = "previous unconfirmed message"
 export const QUEUE_FIRST = "current prompt"
+export const QUEUE_ADMISSION_FIRST =
+  'Delegação vinculada; use o snapshot do quadro como contrato. Fim de turno não conclui a tarefa.\n{"id":"task-1","revision":2,"subject":"fixture","description":"current prompt","status":"in_progress","blockedBy":[],"writeScopes":[],"owner":"worker"}'
 export const QUEUE_NEXT = "explicit next prompt"
 export const QUEUE_FAILURE = "queue fixture provider failure"
 export const QUEUE_MESSAGE = "message while streaming"

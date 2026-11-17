@@ -41,7 +41,7 @@ export class ToolsTeamDouble implements AgentTeam {
     if (this.refused) {
       return TEAM_FIXTURE_REFUSAL
     }
-    return { kind: "started", name: "worker", model: "provider/model" }
+    return { kind: "started", name: "worker", model: "provider/model", task: TEAM_FIXTURE_TASK }
   }
 
   async restore(_records: MemberRecord[], _tasks: TaskSnapshot[]): Promise<void> {}

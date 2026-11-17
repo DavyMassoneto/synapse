@@ -39,11 +39,22 @@ export function configureMemberScenario(piProcess: PiProcessScenarioHandle, fina
         steps: [
           {
             kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
+            name: "team_task_create",
+            argumentsJson: JSON.stringify({
+              subject: TEAM_DISTRIBUTION_DESCRIPTION,
+              description: TEAM_DISTRIBUTION_TASK,
+              blocked_by: [],
+              write_scopes: [],
+            }),
+          },
+          {
+            kind: SCRIPTED_PROVIDER_TOOL_CALL_KIND,
             name: TEAM_TOOL_SUBAGENT,
             argumentsJson: JSON.stringify({
               name: TEAM_DISTRIBUTION_MEMBER_NAME,
               description: TEAM_DISTRIBUTION_DESCRIPTION,
-              task: TEAM_DISTRIBUTION_TASK,
+              task_id: "task-1",
+              expected_revision: 1,
             }),
           },
           ...finalSteps,
