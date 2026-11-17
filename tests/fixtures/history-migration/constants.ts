@@ -1,9 +1,23 @@
+import { fileURLToPath } from "node:url"
 import { type TaskSnapshot } from "#synapse/modules/agent-team"
 import {
+  SCRIPTED_PROVIDER_PROVIDER_URL,
   SCRIPTED_PROVIDER_TEXT_KIND,
   SCRIPTED_PROVIDER_TOOL_CALL_KIND,
   type ScriptedProviderStep,
 } from "../scripted-provider"
+
+import { type HistoryMigrationSettings, type HistoryMigrationTeamConfiguration } from "./types"
+
+export const HISTORY_MIGRATION_SETTINGS: HistoryMigrationSettings = {
+  extensions: [fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL)],
+  enableAnalytics: false,
+  enableInstallTelemetry: false,
+}
+
+export const HISTORY_MIGRATION_TEAM_CONFIGURATION: HistoryMigrationTeamConfiguration = {
+  excludedMemberExtensions: [],
+}
 
 export const HISTORY_MIGRATION_ENTRYPOINT = new URL("../../../src/extensions/agent-team.ts", import.meta.url)
 export const HISTORY_MIGRATION_ALPHA = "alpha"

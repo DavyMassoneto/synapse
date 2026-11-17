@@ -10,7 +10,7 @@ import {
   type PiProcess,
   type PiProcessHome,
 } from "../pi-process"
-import { SCRIPTED_PROVIDER_MODEL_REFERENCE, SCRIPTED_PROVIDER_PROVIDER_URL } from "../scripted-provider"
+import { SCRIPTED_PROVIDER_MODEL_REFERENCE } from "../scripted-provider"
 import {
   HISTORY_MIGRATION_CONFIG_FILE,
   HISTORY_MIGRATION_ENCODING,
@@ -24,8 +24,10 @@ import {
   HISTORY_MIGRATION_SEED,
   HISTORY_MIGRATION_SEED_TIMESTAMP_MS,
   HISTORY_MIGRATION_SESSION_MISSING,
+  HISTORY_MIGRATION_SETTINGS,
   HISTORY_MIGRATION_SETTINGS_FILE,
   HISTORY_MIGRATION_STEPS,
+  HISTORY_MIGRATION_TEAM_CONFIGURATION,
   HISTORY_MIGRATION_TEXT_KIND,
   HISTORY_MIGRATION_THINKING,
   HISTORY_MIGRATION_TOOL_RESULT_ROLE,
@@ -58,15 +60,11 @@ export class HistoryMigrationFixture {
     this.home.script(HISTORY_MIGRATION_STEPS)
     writeFileSync(
       join(this.home.agentDirectory, HISTORY_MIGRATION_SETTINGS_FILE),
-      JSON.stringify({
-        extensions: [fileURLToPath(SCRIPTED_PROVIDER_PROVIDER_URL)],
-        enableAnalytics: false,
-        enableInstallTelemetry: false,
-      }),
+      JSON.stringify(HISTORY_MIGRATION_SETTINGS),
     )
     writeFileSync(
       join(this.home.agentDirectory, HISTORY_MIGRATION_CONFIG_FILE),
-      JSON.stringify({ excludedMemberExtensions: [] }),
+      JSON.stringify(HISTORY_MIGRATION_TEAM_CONFIGURATION),
     )
   }
 
