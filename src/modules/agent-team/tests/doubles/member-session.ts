@@ -24,11 +24,15 @@ export class TeamTestSession implements MemberSession {
 
   private resolve?: TeamTestResolve
 
+  executionId = 0
+
   isStreaming(): boolean {
     return this.streaming
   }
 
-  prompt(text: string): Promise<void> {
+  prompt(text: string, executionId: number): Promise<void> {
+    this.executionId = executionId
+    this.emit({ kind: "execution_started", executionId })
     this.prompts.push(text)
     return new Promise<void>(this.capture.bind(this))
   }

@@ -2,6 +2,7 @@ import { type ToolCall } from "@earendil-works/pi-ai"
 import {
   type AgentSession,
   type DefaultResourceLoader,
+  type InlineExtension,
   type ModelRuntime,
   type SettingsManager,
 } from "@earendil-works/pi-coding-agent"
@@ -43,3 +44,4 @@ export interface WatchdogFixtureOptions {
 export type WatchdogTimers = WatchdogTimer[]
 export type WatchdogRecords = MemberRecord[]
 export type WatchdogTrackedShells = WatchdogTrackedShell[]
+export type WatchdogExtensions = InlineExtension[]

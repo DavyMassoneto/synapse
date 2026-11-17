@@ -6,6 +6,7 @@ import { teamMemberOutcome } from "./member-outcome"
 import { TeamMemberQueue } from "./member-queue"
 import { TeamMemberResponseState } from "./member-response-state"
 import { teamMemberRow } from "./member-row"
+import { suspendMemberSession } from "./suspend-session"
 import { TeamMemberTurnControl } from "./turn-control"
 import { type TeamActiveTools, type TeamMemberObserver, type TeamMemberOutcome } from "./types"
 
@@ -25,6 +26,8 @@ export class TeamMember {
   private readonly tools: TeamActiveTools = new Map()
 
   private busy = false
+
+  private executionStarted = false
 
   private closed = false
 
@@ -80,8 +83,9 @@ export class TeamMember {
   }
 
   interrupt(): void {
-    this.turn.invalidate()
-    this.session.abort().catch(this.onFailure.bind(this))
+    const executionId = this.turn.currentExecutionId
+    this.turn.interrupt()
+    this.session.abort().catch(this.promptFailed.bind(this, executionId))
   }
 
   async dispose(): Promise<void> {
@@ -97,25 +101,9 @@ export class TeamMember {
     this.turn.invalidate()
     this.closed = true
     try {
-      await this.checkpointAndStop()
+      await suspendMemberSession(this.session, this.queue, this.busy, this.run)
     } finally {
       await this.dispose()
-    }
-  }
-
-  private async checkpointAndStop(): Promise<void> {
-    try {
-      this.queue.checkpoint(this.busy)
-    } finally {
-      await this.stopSession()
-    }
-  }
-
-  private async stopSession(): Promise<void> {
-    try {
-      await this.session.abort()
-    } finally {
-      await this.run
     }
   }
 
@@ -142,8 +130,9 @@ export class TeamMember {
   }
 
   private steerPending(): void {
-    for (const text of this.queue.takePending()) {
-      this.session.steer(text).catch(this.onFailure.bind(this))
+    const executionId = this.turn.currentExecutionId
+    for (const text of this.queue.takePending(false)) {
+      this.session.steer(text).catch(this.promptFailed.bind(this, executionId))
     }
   }
 
@@ -151,7 +140,8 @@ export class TeamMember {
     this.queue.checkpoint(true)
     this.responseState.clearFailure()
     this.busy = true
-    const text = this.queue.takePending().join(TEAM_MESSAGE_BREAK)
+    this.executionStarted = false
+    const text = this.queue.takePending(true).join(TEAM_MESSAGE_BREAK)
     const executionId = this.turn.begin()
     this.run = this.session.prompt(text, executionId).catch(this.promptFailed.bind(this, executionId))
     this.observer.refresh()
@@ -162,13 +152,7 @@ export class TeamMember {
   }
 
   private promptFailed(executionId: number, error: Error): void {
-    if (this.turn.isCurrentExecution(executionId)) {
-      this.onFailure(error)
-    }
-  }
-
-  private onFailure(error: Error): void {
-    if (!this.closed && this.busy && !this.session.isStreaming()) {
+    if (this.turn.isCurrentExecution(executionId) && !this.closed && this.busy && !this.session.isStreaming()) {
       this.settle({ state: contracts.TEAM_FAILED, text: error.message })
     }
   }
@@ -177,7 +161,7 @@ export class TeamMember {
     if (!this.closed) {
       this.applyEvent(event)
     } else if (event.kind === contracts.MEMBER_EXECUTION_STARTED) {
-      this.session.abort().catch(this.onFailure.bind(this))
+      this.session.abort().catch(this.promptFailed.bind(this, event.executionId))
     }
   }
 
@@ -187,10 +171,17 @@ export class TeamMember {
         this.turn.activity(event)
         break
       case contracts.MEMBER_EXECUTION_STARTED:
-        this.pump()
+        if (this.turn.isCurrentExecution(event.executionId)) {
+          this.executionStarted = true
+          if (this.turn.interrupted) {
+            this.session.abort().catch(this.promptFailed.bind(this, event.executionId))
+          } else {
+            this.pump()
+          }
+        }
         break
       case contracts.MEMBER_TURN_STARTED:
-        this.onTurnStarted()
+        this.queue.checkpoint(this.busy)
         break
       case contracts.MEMBER_TOOL_STARTED:
         this.tools.set(event.callId, event.label)
@@ -204,23 +195,28 @@ export class TeamMember {
         this.responseState.record(event)
         break
       case contracts.MEMBER_EXECUTION_SETTLED:
-        this.settle(teamMemberOutcome(event, this.responseState.failure))
+        if (this.executionStarted && this.turn.isCurrentExecution(event.executionId)) {
+          this.settle(teamMemberOutcome(event, this.responseState.failure))
+        }
         break
     }
   }
 
-  private onTurnStarted(): void {
-    this.queue.checkpoint(this.busy)
-  }
-
   private settle(outcome: TeamMemberOutcome): void {
     if (this.busy && this.turn.acceptSettlement()) {
+      if (this.turn.interrupted && outcome.state === contracts.TEAM_FINISHED) {
+        outcome = { state: contracts.TEAM_INTERRUPTED }
+      }
       this.turn.invalidate()
-      this.queue.complete()
+      if (outcome.state === contracts.TEAM_FINISHED) {
+        this.queue.complete()
+      } else {
+        this.queue.interrupt()
+      }
       this.busy = false
       this.lastState = outcome.state
       this.tools.clear()
-      if (this.queue.pendingCount > 0) {
+      if (outcome.state === contracts.TEAM_FINISHED && this.queue.pendingCount > 0) {
         this.start()
       } else {
         this.observer.memberSettled(this.name, outcome)

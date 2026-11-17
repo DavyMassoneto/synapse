@@ -1,19 +1,22 @@
 import { type MemberJournal } from "#synapse/modules/agent-team/public/contracts"
+import { type TeamQueuedMessage } from "./types"
 
 export class TeamMemberQueue {
   readonly interrupted: boolean
 
   private readonly journal: MemberJournal
 
-  private pending: string[] = []
+  private pending: TeamQueuedMessage[] = []
 
-  private unconfirmed: string[]
+  private unconfirmed: TeamQueuedMessage[]
+
+  private readonly delivered = new Set<TeamQueuedMessage>()
 
   constructor(journal: MemberJournal) {
     this.journal = journal
     const checkpoint = journal.load()
     this.interrupted = checkpoint.interrupted
-    this.unconfirmed = [...checkpoint.pending]
+    this.unconfirmed = checkpoint.pending.map((text) => ({ text }))
   }
 
   get pendingCount(): number {
@@ -25,28 +28,42 @@ export class TeamMemberQueue {
   }
 
   accept(text: string, busy: boolean): void {
-    const next = [...this.unconfirmed, text]
-    this.save(busy, next)
+    const message: TeamQueuedMessage = { text }
+    const next = [...this.unconfirmed, message]
+    this.save(busy || this.unconfirmed.length > 0, next)
     this.unconfirmed = next
-    this.pending.push(text)
+    this.pending.push(message)
   }
 
   checkpoint(busy: boolean): void {
-    this.save(busy, this.unconfirmed)
+    this.save(busy || this.unconfirmed.length > 0, this.unconfirmed)
   }
 
   complete(): void {
-    this.save(false, this.pending)
-    this.unconfirmed = [...this.pending]
+    const remaining = this.unconfirmed.filter((message) => !this.delivered.has(message))
+    this.save(remaining.length > 0, remaining)
+    this.unconfirmed = remaining
+    this.delivered.clear()
   }
 
-  takePending(): string[] {
+  interrupt(): void {
+    this.save(true, this.unconfirmed)
+    this.pending = []
+    this.delivered.clear()
+  }
+
+  takePending(forPrompt: boolean): string[] {
     const pending = this.pending
     this.pending = []
-    return pending
+    return pending.map((message) => {
+      if (forPrompt) {
+        this.delivered.add(message)
+      }
+      return message.text
+    })
   }
 
-  private save(interrupted: boolean, pending: string[]): void {
-    this.journal.save({ interrupted, pending: [...pending] })
+  private save(interrupted: boolean, pending: TeamQueuedMessage[]): void {
+    this.journal.save({ interrupted, pending: pending.map((message) => message.text) })
   }
 }

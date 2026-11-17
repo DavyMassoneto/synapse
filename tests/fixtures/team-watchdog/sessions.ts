@@ -34,6 +34,7 @@ import { WatchdogTrackedShell } from "./tracked-shell"
 import {
   type WatchdogAcquisitionCleanup,
   type WatchdogAgentSessions,
+  type WatchdogExtensions,
   type WatchdogRecords,
   type WatchdogSessionAcquisition,
   type WatchdogTrackedShells,
@@ -41,6 +42,8 @@ import {
 
 export class WatchdogSessions implements MemberSessions {
   readonly model = new WatchdogModel()
+
+  extensions: WatchdogExtensions = []
 
   readonly journal = new WatchdogJournal()
 
@@ -89,7 +92,7 @@ export class WatchdogSessions implements MemberSessions {
 
   async reopen(record: MemberRecord): Promise<OpenedMember> {
     const settings = SettingsManager.inMemory()
-    const loader = await prepareWatchdogResources(this.directory, settings)
+    const loader = await prepareWatchdogResources(this.directory, settings, this.extensions)
     const runtime = await prepareWatchdogRuntime()
     const shell = this.registerShell()
     const cleanup: WatchdogAcquisitionCleanup = { shell, lifecycleStarting: false }

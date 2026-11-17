@@ -24,7 +24,12 @@ async function suspendPrompt(): Promise<void> {
 async function lateCallback(): Promise<void> {
   const { team, sessions, lead } = await startAlice()
   const stopping = team.suspend()
-  sessions.session.emit({ kind: "execution_settled", aborted: false, answer: "x" })
+  sessions.session.emit({
+    kind: "execution_settled",
+    executionId: sessions.session.executionId,
+    aborted: false,
+    answer: "x",
+  })
   sessions.session.finishPrompt()
   await stopping
   expect(lead.deliveries).toHaveLength(0)

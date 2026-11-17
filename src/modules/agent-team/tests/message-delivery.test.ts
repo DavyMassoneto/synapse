@@ -34,14 +34,19 @@ async function preparing(): Promise<void> {
   const { team, sessions } = await startAlice()
   team.send("lead", "alice", "oi")
   sessions.session.streaming = true
-  sessions.session.emit({ kind: "execution_started" })
+  sessions.session.emit({ kind: "execution_started", executionId: sessions.session.executionId })
   expect(sessions.session.steers).toHaveLength(1)
 }
 
 async function pending(): Promise<void> {
   const { team, sessions, lead } = await startAlice()
   team.send("lead", "alice", "oi")
-  sessions.session.emit({ kind: "execution_settled", aborted: false, answer: "fim" })
+  sessions.session.emit({
+    kind: "execution_settled",
+    executionId: sessions.session.executionId,
+    aborted: false,
+    answer: "fim",
+  })
   expect(sessions.session.prompts).toHaveLength(2)
   expect(lead.deliveries).toHaveLength(0)
 }

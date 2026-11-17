@@ -72,3 +72,7 @@ export interface TeamMemberStopMessages {
 }
 
 export type TeamMemberNotificationAction = () => void
+
+export interface TeamQueuedMessage {
+  text: string
+}
