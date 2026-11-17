@@ -12,6 +12,7 @@ import {
   WATCHDOG_ABORT_EVENT,
   WATCHDOG_ABORTED,
   WATCHDOG_COORD_TOOL,
+  WATCHDOG_ERROR,
   WATCHDOG_EVENT_DONE,
   WATCHDOG_EVENT_ERROR,
   WATCHDOG_EVENT_START,
@@ -44,11 +45,14 @@ export class WatchdogModel {
 
   shell = false
 
+  streams = 0
+
   private shellIssued = false
 
   private pendingTool = ""
 
   stream(model: Model<Api>, _context: TranscriptContext, options?: SimpleStreamOptions): AssistantMessageEventStream {
+    this.streams++
     const stream = createAssistantMessageEventStream()
     const message = this.prepareMessage(model)
     this.streamResult = stream
@@ -149,6 +153,15 @@ export class WatchdogModel {
     if (this.streamResult && this.message) {
       this.message.stopReason = WATCHDOG_STOP
       this.streamResult.push({ type: WATCHDOG_EVENT_DONE, reason: WATCHDOG_STOP, message: this.message })
+      this.streamResult.end(this.message)
+    }
+  }
+
+  fail(message: string): void {
+    if (this.streamResult && this.message) {
+      this.message.stopReason = WATCHDOG_ERROR
+      this.message.errorMessage = message
+      this.streamResult.push({ type: WATCHDOG_EVENT_ERROR, reason: WATCHDOG_ERROR, error: this.message })
       this.streamResult.end(this.message)
     }
   }

@@ -25,6 +25,7 @@ export type MemberSessionListener = (event: MemberSessionEvent) => void
 
 export interface MemberExecutionStarted {
   kind: "execution_started"
+  executionId: number
 }
 
 export interface MemberTurnStarted {
@@ -50,6 +51,7 @@ export interface MemberAssistantResponse {
 
 export interface MemberExecutionSettled {
   kind: "execution_settled"
+  executionId: number
   aborted: boolean
   failure?: string
   answer?: string

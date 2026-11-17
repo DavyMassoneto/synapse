@@ -19,7 +19,7 @@ function translatesStart(): void {
   session.emit({ type: "agent_start" })
   expect(session.events).toEqual([
     { kind: TEAM_SESSION_ACTIVITY_KIND, executionId: 0, phase: TEAM_SESSION_ACTIVITY_STARTED },
-    { kind: "execution_started" },
+    { kind: "execution_started", executionId: 0 },
   ])
 }
 
@@ -32,13 +32,13 @@ function translatesTurn(): void {
 function translatesSettled(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "agent_settled", aborted: false })
-  expect(session.events).toEqual([{ kind: "execution_settled", aborted: false, answer: "resposta" }])
+  expect(session.events).toEqual([{ kind: "execution_settled", executionId: 0, aborted: false, answer: "resposta" }])
 }
 
 function translatesAborted(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "agent_settled", aborted: true })
-  expect(session.events).toEqual([{ kind: "execution_settled", aborted: true, answer: "resposta" }])
+  expect(session.events).toEqual([{ kind: "execution_settled", executionId: 0, aborted: true, answer: "resposta" }])
 }
 
 function translatesToolStart(): void {

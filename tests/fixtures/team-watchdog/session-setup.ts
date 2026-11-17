@@ -10,16 +10,19 @@ import {
 import { memberTools, SupervisedBashOperations } from "#synapse/integration/pi/agent-team"
 import { type AgentTeam, type SupervisedShellService } from "#synapse/modules/agent-team"
 import { WATCHDOG_API_KEY, WATCHDOG_PROVIDER } from "./constants"
+import { type WatchdogExtensions } from "./types"
 
 export async function prepareWatchdogResources(
   directory: string,
   settings: SettingsManager,
+  extensions: WatchdogExtensions,
 ): Promise<DefaultResourceLoader> {
   const loader = new DefaultResourceLoader({
     cwd: directory,
     agentDir: directory,
     settingsManager: settings,
     noExtensions: true,
+    extensionFactories: extensions,
     noSkills: true,
     noPromptTemplates: true,
     noThemes: true,

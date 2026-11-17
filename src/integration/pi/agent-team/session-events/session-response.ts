@@ -21,8 +21,12 @@ export function teamMemberAssistantResponse(message: AssistantMessage): MemberAs
   return response
 }
 
-export function teamMemberSettledResponse(aborted: boolean, answer?: string): MemberExecutionSettled {
-  const settled: MemberExecutionSettled = { kind: MEMBER_EXECUTION_SETTLED, aborted }
+export function teamMemberSettledResponse(
+  executionId: number,
+  aborted: boolean,
+  answer?: string,
+): MemberExecutionSettled {
+  const settled: MemberExecutionSettled = { kind: MEMBER_EXECUTION_SETTLED, executionId, aborted }
   if (answer) {
     settled.answer = answer
   }

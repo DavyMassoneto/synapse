@@ -25,6 +25,8 @@ import { type TeamMemberExecutionState, type TeamMemberSessionPort } from "./typ
 export class PiTeamEventConnection {
   private readonly activity: PiMemberExecutionActivity
 
+  private readonly execution: TeamMemberExecutionState
+
   private readonly session: TeamMemberSessionPort
 
   private readonly listener: MemberSessionListener
@@ -37,6 +39,7 @@ export class PiTeamEventConnection {
     lifetime: TeamMemberExtensionLifetime,
     execution: TeamMemberExecutionState,
   ) {
+    this.execution = execution
     this.activity = new PiMemberExecutionActivity(execution, listener)
     this.session = session
     this.listener = listener
@@ -44,10 +47,11 @@ export class PiTeamEventConnection {
   }
 
   onEvent(event: AgentSessionEvent): void {
+    const executionId = this.execution.executionId
     this.activity.record(event)
     switch (event.type) {
       case TEAM_PI_MEMBER_AGENT_START:
-        this.listener({ kind: MEMBER_EXECUTION_STARTED })
+        this.listener({ kind: MEMBER_EXECUTION_STARTED, executionId })
         break
       case TEAM_PI_MEMBER_TURN_START:
         this.listener({ kind: MEMBER_TURN_STARTED })
@@ -65,7 +69,7 @@ export class PiTeamEventConnection {
         break
       case TEAM_PI_MEMBER_SETTLED: {
         const answer = this.session.getLastAssistantText()
-        const settled = teamMemberSettledResponse(event.aborted, answer)
+        const settled = teamMemberSettledResponse(executionId, event.aborted, answer)
         applyTeamMemberExtensionFailure(settled, this.lifetime)
         this.listener(settled)
         break

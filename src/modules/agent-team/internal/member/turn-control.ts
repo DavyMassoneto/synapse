@@ -32,6 +32,8 @@ export class TeamMemberTurnControl {
 
   private stopPending = false
 
+  private interruptionRequested = false
+
   private active = false
 
   private settledDuringStop = false
@@ -53,7 +55,21 @@ export class TeamMemberTurnControl {
   }
 
   get stopping(): boolean {
-    return this.stopPending
+    return this.stopPending || this.interruptionRequested
+  }
+
+  get interrupted(): boolean {
+    return this.interruptionRequested
+  }
+
+  get currentExecutionId(): number {
+    return this.executionId
+  }
+
+  interrupt(): void {
+    this.interruptionRequested = true
+    this.watchdog.invalidate()
+    this.activityPolicy.clear()
   }
 
   begin(): number {
@@ -69,6 +85,7 @@ export class TeamMemberTurnControl {
     this.activityPolicy.clear()
     this.active = false
     this.stopPending = false
+    this.interruptionRequested = false
   }
 
   isCurrentExecution(executionId: number): boolean {
@@ -84,13 +101,13 @@ export class TeamMemberTurnControl {
   }
 
   activity(event: MemberExecutionActivity): void {
-    if (event.executionId === this.executionId && this.active && !this.stopPending) {
+    if (event.executionId === this.executionId && this.active && !this.stopping) {
       this.activityPolicy.record(event)
     }
   }
 
   expired(executionId: number): void {
-    if (this.active && executionId === this.executionId && !this.stopPending) {
+    if (this.active && executionId === this.executionId && !this.stopping) {
       this.stopPending = true
       const policy: TeamMemberStopPolicy = {
         confirmed: this.stopResult.finish.bind(this.stopResult, executionId, MEMBER_STOP_CONFIRMED),
