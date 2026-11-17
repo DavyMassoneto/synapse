@@ -23,7 +23,7 @@ export class PiTeamMemberJournal implements MemberJournal {
     if (entry?.type === TEAM_PI_MEMBER_CUSTOM_ENTRY) {
       return Value.Parse(TEAM_PI_MEMBER_CHECKPOINT_SCHEMA, entry.data)
     }
-    return { interrupted: false, pending: [] }
+    return { interrupted: true, pending: [] }
   }
 
   save(checkpoint: MemberCheckpoint): void {

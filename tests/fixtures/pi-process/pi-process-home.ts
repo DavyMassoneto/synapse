@@ -3,6 +3,7 @@ import { tmpdir } from "node:os"
 import { join } from "node:path"
 import { SCRIPTED_PROVIDER_SCRIPT_FILE, type ScriptedProviderScript } from "../scripted-provider"
 import {
+  PI_PROCESS_ACQUISITION_CLEANUP_FAILURE,
   PI_PROCESS_AGENT_DIRECTORY,
   PI_PROCESS_PI_DIRECTORY,
   PI_PROCESS_PREFIX,
@@ -17,9 +18,18 @@ export class PiProcessHome {
   readonly agentDirectory = join(this.home, PI_PROCESS_PI_DIRECTORY, PI_PROCESS_AGENT_DIRECTORY)
 
   constructor() {
-    mkdirSync(this.agentDirectory, { recursive: true })
-    writeFileSync(join(this.agentDirectory, PI_PROCESS_SETTINGS_FILE), JSON.stringify(PI_PROCESS_RETRY_SETTINGS))
-    this.script([])
+    try {
+      mkdirSync(this.agentDirectory, { recursive: true })
+      writeFileSync(join(this.agentDirectory, PI_PROCESS_SETTINGS_FILE), JSON.stringify(PI_PROCESS_RETRY_SETTINGS))
+      this.script([])
+    } catch (error) {
+      try {
+        this.remove()
+      } catch (cleanupError) {
+        throw new AggregateError([error, cleanupError], PI_PROCESS_ACQUISITION_CLEANUP_FAILURE)
+      }
+      throw error
+    }
   }
 
   script(steps: ScriptedProviderScript): void {
