@@ -1,6 +1,7 @@
 import { MEMBER_WATCHDOG_CONFIRMED, MEMBER_WATCHDOG_UNCONFIRMED } from "../turn-watchdog"
+import { MEMBER_STOP_CONFIRMED } from "./constants"
 import { type TeamMemberNotification } from "./notification"
-import { type TeamMemberStopResultPort } from "./types"
+import { type TeamMemberStopOutcome, type TeamMemberStopResultPort } from "./types"
 
 export class TeamMemberStopResult {
   private readonly member: TeamMemberStopResultPort
@@ -12,20 +13,15 @@ export class TeamMemberStopResult {
     this.notification = notification
   }
 
-  confirmed(executionId: number): void {
+  finish(executionId: number, outcome: TeamMemberStopOutcome): void {
     if (this.member.accepts(executionId)) {
-      this.notification.deliver(MEMBER_WATCHDOG_CONFIRMED)
-      if (this.member.accepts(executionId)) {
-        this.member.finishStop(false)
+      let message = MEMBER_WATCHDOG_UNCONFIRMED
+      if (outcome === MEMBER_STOP_CONFIRMED) {
+        message = MEMBER_WATCHDOG_CONFIRMED
       }
-    }
-  }
-
-  unconfirmed(executionId: number): void {
-    if (this.member.accepts(executionId)) {
-      this.notification.deliver(MEMBER_WATCHDOG_UNCONFIRMED)
+      this.notification.deliver(message)
       if (this.member.accepts(executionId)) {
-        this.member.finishStop(true)
+        this.member.finishStop(outcome)
       }
     }
   }

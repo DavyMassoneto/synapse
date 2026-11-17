@@ -34,10 +34,7 @@ async function expiresWithoutActivity(scenario: WatchdogScenario): Promise<void>
 
 async function activityRenewsDeadline(scenario: WatchdogScenario): Promise<void> {
   scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
-  const session = scenario.sessions.sessions[0]
-  if (!session) {
-    throw new Error(WATCHDOG_TASK_SUBJECT)
-  }
+  const session = scenario.observation.selectedSession()
   const unsubscribe = session.subscribe(scenario.observation.observe.bind(scenario.observation))
   try {
     scenario.sessions.model.update()

@@ -1,10 +1,14 @@
 import { type ToolCall } from "@earendil-works/pi-ai"
 import { type AgentSession } from "@earendil-works/pi-coding-agent"
-import { type MemberRecord, type SupervisedShellService } from "#synapse/modules/agent-team"
+import { type TeamMemberExtensionLifecycle } from "#synapse/integration/pi/agent-team"
+import { type MemberRecord } from "#synapse/modules/agent-team"
+
+import { type WatchdogTrackedShell } from "./tracked-shell"
 
 export interface WatchdogAcquisitionCleanup {
-  shell: SupervisedShellService
+  shell: WatchdogTrackedShell
   session?: AgentSession
+  lifecycle?: TeamMemberExtensionLifecycle
   lifecycleStarting: boolean
 }
 
@@ -15,6 +19,7 @@ export interface WatchdogTimer {
 }
 
 type WatchdogTimerCallback = () => void
+export type WatchdogFailure = Error | null
 export type WatchdogToolCall = ToolCall
 export type WatchdogStartWait = () => Promise<void>
 export type WatchdogAgentSessions = AgentSession[]
@@ -25,3 +30,4 @@ export interface WatchdogFixtureOptions {
 }
 export type WatchdogTimers = WatchdogTimer[]
 export type WatchdogRecords = MemberRecord[]
+export type WatchdogTrackedShells = WatchdogTrackedShell[]

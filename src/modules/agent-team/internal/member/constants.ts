@@ -16,3 +16,6 @@ export const TEAM_MEMBER_CLOSE_FAILED = "Falha ao encerrar os recursos do membro
 
 export const MEMBER_STOP_FAILED = "failed"
 export const MEMBER_STOP_REQUESTED = "requested"
+
+export const MEMBER_STOP_CONFIRMED = "confirmed"
+export const MEMBER_STOP_UNCONFIRMED = "unconfirmed"

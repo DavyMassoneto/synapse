@@ -1,7 +1,12 @@
 import { type TeamMemberObserver, TeamMemberTurnControl } from "#synapse/modules/agent-team/internal/member"
 import { type MemberTurnRuntime } from "../public"
 import { TeamTestSession } from "./doubles"
-import { WATCHDOG_STOP_CONFIRMED, WATCHDOG_STOP_JOURNAL_ERROR, WATCHDOG_STOP_NAME } from "./watchdog-stop-constants"
+import {
+  WATCHDOG_STOP_CONFIRMED,
+  WATCHDOG_STOP_JOURNAL_ERROR,
+  WATCHDOG_STOP_NAME,
+  WATCHDOG_STOP_REPORT_ERROR,
+} from "./watchdog-stop-constants"
 
 export class WatchdogStopScenario implements TeamMemberObserver {
   readonly session = new TeamTestSession()
@@ -17,6 +22,10 @@ export class WatchdogStopScenario implements TeamMemberObserver {
   refreshes = 0
 
   confirmed = 0
+
+  failReport = false
+
+  readonly reportError = new Error(WATCHDOG_STOP_REPORT_ERROR)
 
   failJournal = false
 
@@ -36,6 +45,9 @@ export class WatchdogStopScenario implements TeamMemberObserver {
 
   memberStartFailed(_name: string, _message: string): void {
     this.reports++
+    if (this.failReport) {
+      throw this.reportError
+    }
   }
 
   memberSettled(): void {

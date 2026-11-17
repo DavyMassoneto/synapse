@@ -61,5 +61,7 @@ export type TeamMemberStopRequest = "requested" | "failed"
 
 export interface TeamMemberStopResultPort {
   accepts(executionId: number): boolean
-  finishStop(unconfirmed: boolean): void
+  finishStop(outcome: TeamMemberStopOutcome): void
 }
+
+export type TeamMemberStopOutcome = "confirmed" | "unconfirmed"

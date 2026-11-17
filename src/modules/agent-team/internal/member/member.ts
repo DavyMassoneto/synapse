@@ -1,6 +1,6 @@
 import * as contracts from "#synapse/modules/agent-team/public/contracts"
+import { captureMemberOutcome, finishMemberOutcomes } from "../member-outcome"
 import { TeamRuleError } from "../operation-results"
-import { captureShellCleanup, finishShellCleanups } from "../supervised-shell"
 import { TEAM_MEMBER_CLOSE_FAILED, TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
 import { teamMemberOutcome } from "./member-outcome"
 import { TeamMemberQueue } from "./member-queue"
@@ -88,9 +88,9 @@ export class TeamMember {
     this.turn.invalidate()
     this.closed = true
     this.unsubscribe()
-    const closed = captureShellCleanup(this.session.dispose.bind(this.session))
-    const health = captureShellCleanup(this.turn.ensureHealthy.bind(this.turn))
-    await finishShellCleanups([closed, health], TEAM_MEMBER_CLOSE_FAILED)
+    const closed = captureMemberOutcome(this.session.dispose.bind(this.session))
+    const health = captureMemberOutcome(this.turn.ensureHealthy.bind(this.turn))
+    await finishMemberOutcomes([closed, health], TEAM_MEMBER_CLOSE_FAILED)
   }
 
   async suspend(): Promise<void> {

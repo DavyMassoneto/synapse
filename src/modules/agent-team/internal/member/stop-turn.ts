@@ -1,5 +1,5 @@
 import { type MemberSession } from "#synapse/modules/agent-team/public/contracts"
-import { captureShellCleanup } from "../supervised-shell"
+import { captureMemberOutcome } from "../member-outcome"
 import { MEMBER_WATCHDOG_NOTICE } from "../turn-watchdog"
 import { MEMBER_STOP_FAILED, MEMBER_STOP_REQUESTED } from "./constants"
 import { type TeamMemberStopPolicy, type TeamMemberStopRequest } from "./types"
@@ -30,7 +30,7 @@ async function observeStopOutcome(
   action: TeamMemberStopPolicy["confirmed"],
   policy: TeamMemberStopPolicy,
 ): Promise<void> {
-  const outcome = await captureShellCleanup(action)
+  const outcome = await captureMemberOutcome(action)
   if (outcome.failed) {
     policy.failed(outcome.error)
   }

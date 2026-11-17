@@ -4,10 +4,16 @@ import {
   type MemberTurnRuntime,
 } from "#synapse/modules/agent-team/public/contracts"
 import { MemberTurnActivity, MemberTurnWatchdog } from "../turn-watchdog"
+import { MEMBER_STOP_CONFIRMED, MEMBER_STOP_UNCONFIRMED } from "./constants"
 import { TeamMemberNotification } from "./notification"
 import { TeamMemberStopResult } from "./stop-result"
 import { stopMemberTurn } from "./stop-turn"
-import { type TeamMemberObserver, type TeamMemberStopConfirmed, type TeamMemberStopPolicy } from "./types"
+import {
+  type TeamMemberObserver,
+  type TeamMemberStopConfirmed,
+  type TeamMemberStopOutcome,
+  type TeamMemberStopPolicy,
+} from "./types"
 
 export class TeamMemberTurnControl {
   private readonly activityPolicy: MemberTurnActivity
@@ -87,8 +93,8 @@ export class TeamMemberTurnControl {
     if (this.active && executionId === this.executionId && !this.stopPending) {
       this.stopPending = true
       const policy: TeamMemberStopPolicy = {
-        confirmed: this.stopResult.confirmed.bind(this.stopResult, executionId),
-        unconfirmed: this.stopResult.unconfirmed.bind(this.stopResult, executionId),
+        confirmed: this.stopResult.finish.bind(this.stopResult, executionId, MEMBER_STOP_CONFIRMED),
+        unconfirmed: this.stopResult.finish.bind(this.stopResult, executionId, MEMBER_STOP_UNCONFIRMED),
         failed: this.notification.operationalFailure.bind(this.notification),
         notice: this.notification.deliver.bind(this.notification),
       }
@@ -98,9 +104,13 @@ export class TeamMemberTurnControl {
 
   readonly ensureHealthy: TeamMemberNotification["ensureHealthy"]
 
-  finishStop(unconfirmed: boolean): void {
+  finishStop(outcome: TeamMemberStopOutcome): void {
     this.stopPending = false
-    if ((unconfirmed && this.settledDuringStop) || (!unconfirmed && this.active && !this.session.isStreaming())) {
+    if (outcome === MEMBER_STOP_UNCONFIRMED) {
+      if (this.settledDuringStop) {
+        this.confirmed()
+      }
+    } else if (this.active && !this.session.isStreaming()) {
       this.confirmed()
     }
   }

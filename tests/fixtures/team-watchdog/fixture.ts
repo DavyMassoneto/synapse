@@ -1,9 +1,12 @@
 import { mkdtemp, rm } from "node:fs/promises"
 import { tmpdir } from "node:os"
 import { join } from "node:path"
+import { captureShellCleanup } from "#synapse/integration/pi/agent-team"
 import {
   WATCHDOG_DIRECTORY,
+  WATCHDOG_FIXTURE_CLOSE_FAILURE,
   WATCHDOG_MEMBER,
+  WATCHDOG_MEMBER_STARTED,
   WATCHDOG_PRIVATE_DESCRIPTION,
   WATCHDOG_PROMPT,
   WATCHDOG_SHELL_CLEANUP_UNCONFIRMED,
@@ -16,17 +19,24 @@ export class WatchdogFixture {
 
   private directory = ""
 
+  finishFailure?: Error
+
+  resetFailure?: Error
+
   async start(options: WatchdogFixtureOptions): Promise<ReturnType<typeof createWatchdogScenario>> {
     this.directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
     const scenario = createWatchdogScenario(this.directory)
     this.scenario = scenario
     scenario.sessions.model.shell = options.shell
     scenario.sessions.failStop = options.failStop
-    await scenario.team.start({
+    const started = await scenario.team.start({
       name: WATCHDOG_MEMBER,
       description: WATCHDOG_PRIVATE_DESCRIPTION,
       task: WATCHDOG_PROMPT,
     })
+    if (started.kind !== WATCHDOG_MEMBER_STARTED) {
+      throw new Error(started.message)
+    }
     return scenario
   }
 
@@ -36,29 +46,58 @@ export class WatchdogFixture {
       if (this.scenario.sessions.unconfirmedShell) {
         this.scenario.sessions.unconfirmedShell.fail = false
       }
+      if (this.resetFailure) {
+        throw this.resetFailure
+      }
+    }
+  }
+
+  private finishModel(): void {
+    if (this.scenario) {
+      this.scenario.sessions.model.finish()
+      if (this.finishFailure) {
+        throw this.finishFailure
+      }
+    }
+  }
+
+  private async finishScenario(failures: Error[]): Promise<void> {
+    if (this.scenario) {
+      const finished = await captureShellCleanup(this.finishModel.bind(this))
+      if (finished.failed) {
+        failures.push(finished.error)
+      }
+      const reset = await captureShellCleanup(this.resetStopFailure.bind(this))
+      if (reset.failed) {
+        failures.push(reset.error)
+      }
+      const suspended = await captureShellCleanup(this.scenario.team.suspend.bind(this.scenario.team))
+      if (suspended.failed) {
+        failures.push(suspended.error)
+      }
+      for (const shell of this.scenario.sessions.shells) {
+        if (shell.failure) {
+          failures.push(shell.failure)
+        }
+      }
     }
   }
 
   async close(): Promise<void> {
-    let ownershipConfirmed = !this.scenario
-    if (this.scenario) {
-      try {
-        this.scenario.sessions.model.finish()
-      } finally {
-        try {
-          this.resetStopFailure()
-        } finally {
-          await this.scenario.team.suspend()
-          ownershipConfirmed = this.scenario.sessions.isShellCleanupConfirmed()
+    const failures: Error[] = []
+    await this.finishScenario(failures)
+    if (!this.scenario || this.scenario.sessions.isShellCleanupConfirmed()) {
+      if (this.directory) {
+        const removed = await captureShellCleanup(rm.bind(undefined, this.directory, { recursive: true, force: true }))
+        if (removed.failed) {
+          failures.push(removed.error)
         }
       }
-    }
-    if (ownershipConfirmed) {
-      if (this.directory) {
-        await rm(this.directory, { recursive: true, force: true })
-      }
     } else {
-      throw new Error(WATCHDOG_SHELL_CLEANUP_UNCONFIRMED)
+      failures.push(new Error(WATCHDOG_SHELL_CLEANUP_UNCONFIRMED))
+    }
+    if (failures.length > 0) {
+      throw new AggregateError(failures, WATCHDOG_FIXTURE_CLOSE_FAILURE)
     }
   }
 }

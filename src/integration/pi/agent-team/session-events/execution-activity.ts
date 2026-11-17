@@ -42,6 +42,7 @@ export class PiMemberExecutionActivity {
   private readonly state: TeamMemberExecutionState
 
   private readonly listener: MemberSessionListener
+
   private active = false
 
   record(event: AgentSessionEvent): void {

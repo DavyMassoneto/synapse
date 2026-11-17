@@ -6,6 +6,7 @@ import {
   WATCHDOG_EVENT_THINKING_DELTA,
   WATCHDOG_EVENT_TOOL_DELTA,
   WATCHDOG_SESSION_MESSAGE_UPDATE,
+  WATCHDOG_SESSION_MISSING,
   WATCHDOG_TOOL_RESULT_ROLE,
   WATCHDOG_UNCONFIRMED_NOTICE,
 } from "./constants"
@@ -38,6 +39,14 @@ export class WatchdogObservation {
 
   hasNewTimer(): boolean {
     return this.clock.timers.length > 0
+  }
+
+  selectedSession(): WatchdogAgentSessions[number] {
+    const session = this.sessions[this.index]
+    if (!session) {
+      throw new Error(WATCHDOG_SESSION_MISSING)
+    }
+    return session
   }
 
   isStreaming(): boolean {

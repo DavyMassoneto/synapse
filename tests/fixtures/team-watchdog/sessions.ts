@@ -1,5 +1,6 @@
 import { createAgentSession, SessionManager, SettingsManager } from "@earendil-works/pi-coding-agent"
 import {
+  captureShellCleanup,
   PiTeamSessionAdapter,
   SupervisedMemberLifetime,
   startCreatedTeamMemberSession,
@@ -29,7 +30,13 @@ import { WatchdogUnconfirmedShell } from "./failed-shell"
 import { WatchdogJournal } from "./journal"
 import { WatchdogModel } from "./model"
 import { prepareWatchdogResources, prepareWatchdogRuntime, prepareWatchdogTools } from "./session-setup"
-import { type WatchdogAcquisitionCleanup, type WatchdogAgentSessions, type WatchdogRecords } from "./types"
+import { WatchdogTrackedShell } from "./tracked-shell"
+import {
+  type WatchdogAcquisitionCleanup,
+  type WatchdogAgentSessions,
+  type WatchdogRecords,
+  type WatchdogTrackedShells,
+} from "./types"
 
 export class WatchdogSessions implements MemberSessions {
   readonly model = new WatchdogModel()
@@ -44,7 +51,7 @@ export class WatchdogSessions implements MemberSessions {
 
   unconfirmedShell?: WatchdogUnconfirmedShell
 
-  private shellCleanupFailed = false
+  readonly shells: WatchdogTrackedShells = []
 
   private readonly directory: string
 
@@ -71,7 +78,12 @@ export class WatchdogSessions implements MemberSessions {
   }
 
   isShellCleanupConfirmed(): boolean {
-    return !this.shellCleanupFailed
+    for (const shell of this.shells) {
+      if (!shell.confirmed) {
+        return false
+      }
+    }
+    return true
   }
 
   async reopen(record: MemberRecord): Promise<OpenedMember> {
@@ -84,7 +96,10 @@ export class WatchdogSessions implements MemberSessions {
       this.unconfirmedShell = new WatchdogUnconfirmedShell(realShell)
       shell = this.unconfirmedShell
     }
-    const cleanup: WatchdogAcquisitionCleanup = { shell, lifecycleStarting: false }
+    const tracked = new WatchdogTrackedShell(shell)
+    this.shells.push(tracked)
+    shell = tracked
+    const cleanup: WatchdogAcquisitionCleanup = { shell: tracked, lifecycleStarting: false }
     try {
       const tools = prepareWatchdogTools(this.directory, shell, record.name, this.team)
       const created = await createAgentSession({
@@ -103,43 +118,36 @@ export class WatchdogSessions implements MemberSessions {
       created.session.agent.streamFunction = this.model.stream.bind(this.model)
       cleanup.lifecycleStarting = true
       const lifecycle = await startCreatedTeamMemberSession(created.session)
+      cleanup.lifecycle = lifecycle
       return {
         record,
         journal: this.journal,
         session: new PiTeamSessionAdapter(created.session, new SupervisedMemberLifetime(lifecycle, shell)),
       }
     } catch (error) {
-      if (error instanceof Error) {
-        return this.cleanupFailedAcquisition([error], cleanup)
+      const primary = await captureShellCleanup(Promise.reject(error))
+      if (primary.failed) {
+        return this.cleanupFailedAcquisition([primary.error], cleanup)
       }
-      if (typeof error === "string") {
-        return this.cleanupFailedAcquisition([new Error(error)], cleanup)
-      }
-      return this.cleanupFailedAcquisition([new Error(WATCHDOG_ACQUISITION_FAILURE)], cleanup)
+      throw new Error(WATCHDOG_ACQUISITION_FAILURE)
     }
   }
 
   private async cleanupFailedAcquisition(failures: Error[], cleanup: WatchdogAcquisitionCleanup): Promise<never> {
-    if (cleanup.session && !cleanup.lifecycleStarting) {
-      try {
-        cleanup.session.dispose()
-      } catch (cleanupError) {
-        if (cleanupError instanceof Error) {
-          failures.push(cleanupError)
-        } else {
-          failures.push(new Error(WATCHDOG_ACQUISITION_FAILURE))
-        }
+    if (cleanup.lifecycle) {
+      const closedLifecycle = await captureShellCleanup(cleanup.lifecycle.close.bind(cleanup.lifecycle))
+      if (closedLifecycle.failed) {
+        failures.push(closedLifecycle.error)
+      }
+    } else if (cleanup.session && !cleanup.lifecycleStarting) {
+      const disposed = await captureShellCleanup(cleanup.session.dispose.bind(cleanup.session))
+      if (disposed.failed) {
+        failures.push(disposed.error)
       }
     }
-    try {
-      await cleanup.shell.close()
-    } catch (cleanupError) {
-      this.shellCleanupFailed = true
-      if (cleanupError instanceof Error) {
-        failures.push(cleanupError)
-      } else {
-        failures.push(new Error(WATCHDOG_ACQUISITION_FAILURE))
-      }
+    const closed = await captureShellCleanup(cleanup.shell.close.bind(cleanup.shell))
+    if (closed.failed) {
+      failures.push(closed.error)
     }
     if (failures.length > 1) {
       throw new AggregateError(failures, WATCHDOG_ACQUISITION_FAILURE)

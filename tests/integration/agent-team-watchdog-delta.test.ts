@@ -3,7 +3,6 @@ import {
   runWatchdogScenario,
   WATCHDOG_DEFAULT_OPTIONS,
   WATCHDOG_INITIAL_NOTICE,
-  WATCHDOG_TASK_SUBJECT,
   WATCHDOG_TIMEOUT_MS,
   WATCHDOG_TITLE_THINKING_DELTA,
   WATCHDOG_TITLE_TOOL_DELTA,
@@ -12,10 +11,7 @@ import {
 } from "../fixtures"
 
 async function staleTextDoesNotRenew(scenario: WatchdogScenario): Promise<void> {
-  const session = scenario.sessions.sessions[0]
-  if (!session) {
-    throw new Error(WATCHDOG_TASK_SUBJECT)
-  }
+  const session = scenario.observation.selectedSession()
   const unsubscribe = session.subscribe(scenario.observation.observe.bind(scenario.observation))
   try {
     scenario.sessions.model.update()
@@ -31,10 +27,7 @@ async function staleTextDoesNotRenew(scenario: WatchdogScenario): Promise<void> 
 }
 
 async function thinkingDeltaRenews(scenario: WatchdogScenario): Promise<void> {
-  const session = scenario.sessions.sessions[0]
-  if (!session) {
-    throw new Error(WATCHDOG_TASK_SUBJECT)
-  }
+  const session = scenario.observation.selectedSession()
   const unsubscribe = session.subscribe(scenario.observation.observe.bind(scenario.observation))
   try {
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
