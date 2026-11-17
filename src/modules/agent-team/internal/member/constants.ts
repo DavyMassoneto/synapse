@@ -11,3 +11,5 @@ export const TEAM_NO_ANSWER = "(o agente terminou o turno sem texto de resposta)
 export const TEAM_MEMBER_HAS_FAILURE = "failed"
 
 export const TEAM_MEMBER_NO_FAILURE = "none"
+
+export const TEAM_MEMBER_CLOSE_FAILED = "Falha ao encerrar os recursos do membro."

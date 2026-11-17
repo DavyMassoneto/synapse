@@ -1,4 +1,4 @@
-import { Team } from "../internal"
+import { createMemberTurnRuntime, Team } from "../internal"
 import { type AgentTeam, type MemberSessions, type MemberTurnRuntime, type TeamClock, type TeamLead } from "./contracts"
 
 export function createAgentTeam(
@@ -7,5 +7,8 @@ export function createAgentTeam(
   clock: TeamClock,
   runtime?: MemberTurnRuntime,
 ): AgentTeam {
-  return new Team(lead, sessions, clock, runtime)
+  if (runtime) {
+    return new Team(lead, sessions, clock, runtime)
+  }
+  return new Team(lead, sessions, clock, createMemberTurnRuntime())
 }

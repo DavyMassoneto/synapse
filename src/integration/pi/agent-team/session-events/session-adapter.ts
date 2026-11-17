@@ -21,10 +21,8 @@ export class PiTeamSessionAdapter implements MemberSession {
     return this.session.isStreaming
   }
 
-  async prompt(text: string, executionId?: number): Promise<void> {
-    if (executionId) {
-      this.execution.executionId = executionId
-    }
+  async prompt(text: string, executionId: number): Promise<void> {
+    this.execution.executionId = executionId
     this.lifetime.ensureHealthy()
     await this.session.prompt(text)
     this.lifetime.ensureHealthy()

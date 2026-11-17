@@ -7,27 +7,32 @@ import {
 } from "#synapse/modules/agent-team/public/contracts"
 import {
   MEMBER_WATCHDOG_CONFIRMED,
-  MEMBER_WATCHDOG_NOTICE,
+  MEMBER_WATCHDOG_NOTIFICATION_FAILED,
   MEMBER_WATCHDOG_UNCONFIRMED,
   MemberTurnWatchdog,
 } from "../turn-watchdog"
-import { type TeamMemberObserver, type TeamMemberStopConfirmed } from "./types"
+import { stopMemberTurn } from "./stop-turn"
+import { type TeamMemberObserver, type TeamMemberStopConfirmed, type TeamMemberStopPolicy } from "./types"
 
 export class TeamMemberTurnControl {
   private readonly watchdog: MemberTurnWatchdog
   private readonly session: MemberSession
   private readonly observer: TeamMemberObserver
   private readonly confirmed: TeamMemberStopConfirmed
+  private notificationFailure?: Error
+  private readonly name: string
   private executionId = 0
   stopping = false
   private active = false
   private settledDuringStop = false
   constructor(
+    name: string,
     session: MemberSession,
     observer: TeamMemberObserver,
     runtime: MemberTurnRuntime,
     confirmed: TeamMemberStopConfirmed,
   ) {
+    this.name = name
     this.session = session
     this.observer = observer
     this.confirmed = confirmed
@@ -69,31 +74,54 @@ export class TeamMemberTurnControl {
   expired(executionId: number): void {
     if (this.active && executionId === this.executionId && !this.stopping) {
       this.stopping = true
-      try {
-        const stopped = this.session.abort()
-        stopped.then(this.confirmStop.bind(this, executionId), this.unconfirmedStop.bind(this, executionId))
-        this.observer.memberNotice?.(MEMBER_WATCHDOG_NOTICE)
-      } catch {
-        this.observer.memberNotice?.(MEMBER_WATCHDOG_NOTICE)
-        this.unconfirmedStop(executionId)
+      const policy: TeamMemberStopPolicy = {
+        confirmed: this.confirmStop.bind(this, executionId),
+        unconfirmed: this.unconfirmedStop.bind(this, executionId),
+        failed: this.reportNotificationFailure.bind(this),
+      }
+      if (this.observer.memberNotice) {
+        policy.notice = this.observer.memberNotice.bind(this.observer)
+      }
+      stopMemberTurn(this.session, policy)
+    }
+  }
+  ensureHealthy(): void {
+    if (this.notificationFailure) {
+      throw this.notificationFailure
+    }
+  }
+  private reportNotificationFailure(message: string): void {
+    try {
+      this.observer.memberStartFailed(this.name, message)
+    } catch (failure) {
+      if (failure instanceof Error) {
+        this.notificationFailure = failure
+      } else {
+        this.notificationFailure = new Error(MEMBER_WATCHDOG_NOTIFICATION_FAILED)
       }
     }
   }
   private confirmStop(executionId: number): void {
     if (executionId === this.executionId) {
-      this.observer.memberNotice?.(MEMBER_WATCHDOG_CONFIRMED)
       this.stopping = false
-      if (this.active && !this.session.isStreaming()) {
-        this.confirmed()
+      try {
+        this.observer.memberNotice?.(MEMBER_WATCHDOG_CONFIRMED)
+      } finally {
+        if (this.active && !this.session.isStreaming()) {
+          this.confirmed()
+        }
       }
     }
   }
   private unconfirmedStop(executionId: number): void {
     if (executionId === this.executionId) {
-      this.observer.memberNotice?.(MEMBER_WATCHDOG_UNCONFIRMED)
       this.stopping = false
-      if (this.settledDuringStop) {
-        this.confirmed()
+      try {
+        this.observer.memberNotice?.(MEMBER_WATCHDOG_UNCONFIRMED)
+      } finally {
+        if (this.settledDuringStop) {
+          this.confirmed()
+        }
       }
     }
   }

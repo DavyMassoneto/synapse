@@ -1,30 +1,20 @@
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import { expect, test } from "vitest"
 import {
-  createWatchdogScenario,
-  WATCHDOG_DIRECTORY,
   WATCHDOG_INITIAL_NOTICE,
   WATCHDOG_LEAD,
   WATCHDOG_MEMBER,
-  WATCHDOG_PRIVATE_DESCRIPTION,
   WATCHDOG_PROMPT,
   WATCHDOG_TIMEOUT_MS,
   WATCHDOG_TITLE_RELOAD,
   WATCHDOG_TITLE_STALE,
+  WatchdogFixture,
   waitForWatchdogCondition,
 } from "../fixtures"
 
 async function oldTimerCannotAbortNewTurn(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     const oldTimer = scenario.clock.timers[0]
     expect(oldTimer).toBeDefined()
@@ -40,24 +30,14 @@ async function oldTimerCannotAbortNewTurn(): Promise<void> {
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS)
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_INITIAL_NOTICE)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 
 async function oldTimerCannotAbortReloadedMember(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     const oldTimer = scenario.clock.timers[0]
     expect(oldTimer).toBeDefined()
@@ -75,12 +55,7 @@ async function oldTimerCannotAbortReloadedMember(): Promise<void> {
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS)
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_INITIAL_NOTICE)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 

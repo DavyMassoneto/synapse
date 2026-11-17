@@ -1,31 +1,19 @@
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import { expect, test } from "vitest"
 import {
-  createWatchdogScenario,
   WATCHDOG_COORD_TOOL,
-  WATCHDOG_DIRECTORY,
   WATCHDOG_INITIAL_NOTICE,
-  WATCHDOG_MEMBER,
   WATCHDOG_POLL_TOOL,
-  WATCHDOG_PRIVATE_DESCRIPTION,
-  WATCHDOG_PROMPT,
   WATCHDOG_TIMEOUT_MS,
   WATCHDOG_TITLE_SDK_COORD,
   WATCHDOG_TITLE_SDK_POLL,
+  WatchdogFixture,
   waitForWatchdogCondition,
 } from "../fixtures"
 
 async function observationalToolDoesNotRenew(tool: string): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
     const timers = scenario.clock.timers.length
@@ -36,12 +24,7 @@ async function observationalToolDoesNotRenew(tool: string): Promise<void> {
     scenario.clock.advance(1)
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_INITIAL_NOTICE)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 

@@ -10,8 +10,6 @@ import {
 export class MemberTurnWatchdog {
   private state: MemberWatchdogState = { kind: MEMBER_WATCHDOG_IDLE }
   private cancel?: MemberTimerCancel
-  private generation = 0
-  private revision = 0
 
   constructor(privateRuntime: MemberWatchdogRuntime, privateTarget: MemberWatchdogTarget) {
     this.runtime = privateRuntime
@@ -37,7 +35,6 @@ export class MemberTurnWatchdog {
 
   invalidate(): void {
     this.cancel?.()
-    this.generation++
     this.state = { kind: MEMBER_WATCHDOG_IDLE }
   }
 
@@ -45,8 +42,6 @@ export class MemberTurnWatchdog {
     const state: MemberWatchdogRunning = {
       kind: MEMBER_WATCHDOG_RUNNING,
       executionId,
-      generation: this.generation,
-      revision: ++this.revision,
       updatedAt: this.runtime.monotonic(),
     }
     this.state = state
@@ -55,12 +50,7 @@ export class MemberTurnWatchdog {
 
   private check(expected: MemberWatchdogRunning): void {
     const current = this.state
-    if (
-      current.kind === MEMBER_WATCHDOG_RUNNING &&
-      current.executionId === expected.executionId &&
-      current.generation === expected.generation &&
-      current.revision === expected.revision
-    ) {
+    if (current === expected) {
       const remaining = MEMBER_TURN_IDLE_TIMEOUT_MS - (this.runtime.monotonic() - current.updatedAt)
       if (remaining > 0) {
         this.cancel = this.runtime.schedule(this.check.bind(this, expected), remaining)

@@ -7,8 +7,6 @@ export interface MemberWatchdogTarget {
 export interface MemberWatchdogRunning {
   kind: "running"
   executionId: number
-  generation: number
-  revision: number
   updatedAt: number
 }
 

@@ -1,7 +1,7 @@
 import * as contracts from "#synapse/modules/agent-team/public/contracts"
-
 import { TeamRuleError } from "../operation-results"
-import { TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
+import { captureShellCleanup, finishShellCleanups } from "../supervised-shell"
+import { TEAM_MEMBER_CLOSE_FAILED, TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
 import { teamMemberOutcome } from "./member-outcome"
 import { TeamMemberQueue } from "./member-queue"
 import { TeamMemberResponseState } from "./member-response-state"
@@ -36,7 +36,13 @@ export class TeamMember {
   private readonly turn: TeamMemberTurnControl
 
   constructor(opened: contracts.OpenedMember, observer: TeamMemberObserver, runtime: contracts.MemberTurnRuntime) {
-    this.turn = new TeamMemberTurnControl(opened.session, observer, runtime, this.confirmStopped.bind(this))
+    this.turn = new TeamMemberTurnControl(
+      opened.record.name,
+      opened.session,
+      observer,
+      runtime,
+      this.confirmStopped.bind(this),
+    )
     this.opened = opened
     this.name = opened.record.name
     this.session = opened.session
@@ -81,7 +87,9 @@ export class TeamMember {
     this.turn.invalidate()
     this.closed = true
     this.unsubscribe()
-    await this.session.dispose()
+    const closed = captureShellCleanup(this.session.dispose.bind(this.session))
+    const health = captureShellCleanup(this.turn.ensureHealthy.bind(this.turn))
+    await finishShellCleanups([closed, health], TEAM_MEMBER_CLOSE_FAILED)
   }
 
   async suspend(): Promise<void> {

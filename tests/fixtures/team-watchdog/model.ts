@@ -17,11 +17,13 @@ import {
   WATCHDOG_EVENT_START,
   WATCHDOG_EVENT_TEXT_DELTA,
   WATCHDOG_LEAD,
-  WATCHDOG_PID_COMMAND,
+  WATCHDOG_PATH_SEPARATOR,
+  WATCHDOG_PID_SCRIPT,
   WATCHDOG_PROMPT,
   WATCHDOG_ROLE_ASSISTANT,
   WATCHDOG_ROLE_TEXT,
   WATCHDOG_ROLE_TOOL_CALL,
+  WATCHDOG_SHELL_PATH_SEPARATOR,
   WATCHDOG_STOP,
   WATCHDOG_TOOL_ID,
   WATCHDOG_TOOL_NAME,
@@ -62,7 +64,9 @@ export class WatchdogModel {
           type: WATCHDOG_ROLE_TOOL_CALL,
           id: WATCHDOG_TOOL_ID,
           name: WATCHDOG_TOOL_NAME,
-          arguments: { command: WATCHDOG_PID_COMMAND },
+          arguments: {
+            command: `"${process.execPath.replace(WATCHDOG_PATH_SEPARATOR, WATCHDOG_SHELL_PATH_SEPARATOR)}" -e '${WATCHDOG_PID_SCRIPT}'`,
+          },
         },
       ]
       stream.push({ type: WATCHDOG_EVENT_DONE, reason: WATCHDOG_TOOL_USE, message })

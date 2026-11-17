@@ -1,13 +1,8 @@
-import { mkdtemp, rm } from "node:fs/promises"
-import { tmpdir } from "node:os"
-import { join } from "node:path"
 import { expect, test } from "vitest"
 import {
-  createWatchdogScenario,
   WATCHDOG_ACCEPTED,
   WATCHDOG_CLAIM,
   WATCHDOG_DESCRIPTION,
-  WATCHDOG_DIRECTORY,
   WATCHDOG_INITIAL_NOTICE,
   WATCHDOG_LEAD,
   WATCHDOG_MEMBER,
@@ -21,44 +16,30 @@ import {
   WATCHDOG_TITLE_TIMEOUT,
   WATCHDOG_TITLE_UNCONFIRMED,
   WATCHDOG_UNCONFIRMED_NOTICE,
+  WatchdogFixture,
   waitForWatchdogCondition,
 } from "../fixtures"
 
 async function expiresWithoutActivity(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
     expect(scenario.host.notices).toHaveLength(0)
     scenario.clock.advance(1)
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_INITIAL_NOTICE)
     expect(JSON.stringify(scenario.host.notices)).not.toContain(WATCHDOG_PRIVATE_DESCRIPTION)
-    expect(JSON.stringify(scenario.host.notices)).not.toContain(directory)
+    expect(JSON.stringify(scenario.host.notices)).not.toContain(scenario.directory)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 
 async function activityRenewsDeadline(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
     scenario.observation.markTimers()
@@ -69,24 +50,14 @@ async function activityRenewsDeadline(): Promise<void> {
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_INITIAL_NOTICE)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 
 async function pollingDoesNotRenew(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 1)
     scenario.team.overview()
@@ -95,47 +66,27 @@ async function pollingDoesNotRenew(): Promise<void> {
     scenario.clock.advance(1)
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_INITIAL_NOTICE)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 
 async function unconfirmedStop(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
-  scenario.sessions.failStop = true
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({ name: WATCHDOG_MEMBER, description: WATCHDOG_DESCRIPTION, task: WATCHDOG_PROMPT })
+    const scenario = await fixture.start({ shell: false, failStop: true })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS)
     await waitForWatchdogCondition(scenario.observation.hasUnconfirmedNotice.bind(scenario.observation))
     expect(JSON.stringify(scenario.host.notices)).toContain(WATCHDOG_UNCONFIRMED_NOTICE)
   } finally {
-    if (scenario.sessions.unconfirmedShell) {
-      scenario.sessions.unconfirmedShell.fail = false
-    }
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 
 async function taskRemainsAssigned(): Promise<void> {
-  const directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
-  const scenario = createWatchdogScenario(directory)
+  const fixture = new WatchdogFixture()
   try {
-    await scenario.team.start({
-      name: WATCHDOG_MEMBER,
-      description: WATCHDOG_PRIVATE_DESCRIPTION,
-      task: WATCHDOG_PROMPT,
-    })
+    const scenario = await fixture.start({ shell: false, failStop: false })
     await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
     const created = scenario.team.createTask({
       subject: WATCHDOG_TASK_SUBJECT,
@@ -159,12 +110,7 @@ async function taskRemainsAssigned(): Promise<void> {
     scenario.clock.advance(WATCHDOG_TIMEOUT_MS)
     expect(scenario.team.getTask(created.task.id)).toEqual(claimed)
   } finally {
-    scenario.sessions.model.finish()
-    try {
-      await scenario.team.suspend()
-    } finally {
-      await rm(directory, { recursive: true, force: true })
-    }
+    await fixture.close()
   }
 }
 

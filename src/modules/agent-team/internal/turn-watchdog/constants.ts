@@ -6,3 +6,5 @@ export const MEMBER_WATCHDOG_NOTICE =
 export const MEMBER_WATCHDOG_CONFIRMED = "Watchdog: parada do turno e das shells confirmada."
 export const MEMBER_WATCHDOG_UNCONFIRMED =
   "Watchdog: parada não confirmada; o membro permanece ocupado até o encerramento observado."
+
+export const MEMBER_WATCHDOG_NOTIFICATION_FAILED = "Falha ao entregar aviso do watchdog."

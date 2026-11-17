@@ -12,10 +12,10 @@ import {
 import {
   memberTools,
   PiTeamSessionAdapter,
+  SupervisedBashOperations,
   SupervisedMemberLifetime,
   startCreatedTeamMemberSession,
 } from "#synapse/integration/pi/agent-team"
-import { SupervisedBashOperations } from "#synapse/integration/pi/agent-team/supervised-bash"
 import {
   type AgentTeam,
   createSupervisedShell,

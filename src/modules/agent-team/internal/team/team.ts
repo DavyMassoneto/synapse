@@ -20,7 +20,6 @@ import { teamLeadRow, teamOutcomePresentation } from "../presentation"
 import { TeamRecentEvents } from "../recent-events"
 import { TeamRoster } from "../roster"
 import { TaskBoard } from "../task-board"
-import { createMemberTurnRuntime } from "../turn-watchdog"
 import { TeamBoardDirectory } from "./board-directory"
 import { teamSuspendMembers } from "./suspend-members"
 
@@ -49,16 +48,12 @@ export class Team implements AgentTeam {
 
   readonly listTasks: AgentTeam["listTasks"]
 
-  constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock, runtime?: MemberTurnRuntime) {
+  constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock, runtime: MemberTurnRuntime) {
     this.lead = lead
     this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
     this.messages = new TeamMessages(lead, this.roster, this.events, this)
-    let turnRuntime = runtime
-    if (!turnRuntime) {
-      turnRuntime = createMemberTurnRuntime()
-    }
-    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, turnRuntime)
+    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime)
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.interrupt = this.messages.interrupt.bind(this.messages)

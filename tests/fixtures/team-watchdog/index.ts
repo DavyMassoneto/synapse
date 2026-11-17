@@ -1,6 +1,7 @@
 export * from "./clock"
 export * from "./constants"
 export * from "./journal"
+export * from "./lifecycle"
 export * from "./model"
 export * from "./process-proof"
 export * from "./scenario"

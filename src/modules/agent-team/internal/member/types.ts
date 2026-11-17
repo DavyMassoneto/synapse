@@ -47,3 +47,12 @@ export interface TeamMemberNoFailure {
 export type TeamMemberCompletedState = "finished" | "failed"
 
 export type TeamMemberStopConfirmed = () => void
+
+export interface TeamMemberStopPolicy {
+  confirmed(): void
+  unconfirmed(): void
+  failed(message: string): void
+  notice?: TeamMemberNotice
+}
+
+export type TeamMemberNotice = (message: string) => void

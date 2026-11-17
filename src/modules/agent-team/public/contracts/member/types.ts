@@ -66,7 +66,7 @@ export type MemberSessionEvent =
 
 export interface MemberSession {
   isStreaming(): boolean
-  prompt(text: string, executionId?: number): Promise<void>
+  prompt(text: string, executionId: number): Promise<void>
   steer(text: string): Promise<void>
   abort(): Promise<void>
   dispose(): Promise<void>
