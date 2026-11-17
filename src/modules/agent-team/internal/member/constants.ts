@@ -1,3 +1,6 @@
+import { MEMBER_WATCHDOG_CONFIRMED, MEMBER_WATCHDOG_UNCONFIRMED } from "../turn-watchdog"
+import { type TeamMemberStopMessages } from "./types"
+
 export const TEAM_MEMBER_CLOSED = "A sessão deste membro está encerrando; a mensagem não foi aceita"
 
 export const TEAM_MESSAGE_BREAK = "\n\n"
@@ -19,3 +22,8 @@ export const MEMBER_STOP_REQUESTED = "requested"
 
 export const MEMBER_STOP_CONFIRMED = "confirmed"
 export const MEMBER_STOP_UNCONFIRMED = "unconfirmed"
+
+export const MEMBER_STOP_MESSAGES: TeamMemberStopMessages = {
+  confirmed: MEMBER_WATCHDOG_CONFIRMED,
+  unconfirmed: MEMBER_WATCHDOG_UNCONFIRMED,
+}

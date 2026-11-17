@@ -66,4 +66,9 @@ export interface TeamMemberStopResultPort {
 
 export type TeamMemberStopOutcome = "confirmed" | "unconfirmed"
 
+export interface TeamMemberStopMessages {
+  confirmed: string
+  unconfirmed: string
+}
+
 export type TeamMemberNotificationAction = () => void
