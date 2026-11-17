@@ -12,10 +12,10 @@ import { TeamMember } from "../member"
 import { TeamRuleError, teamAsyncOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { type TeamRoster } from "../roster"
-import { type TaskBoard, TaskRefusal } from "../task-board"
+import { type TaskBoard, TaskRefusal, taskBoardCopySnapshot } from "../task-board"
+import { acceptMemberTask } from "./accept-task"
 import {
   TEAM_ADMISSION_CLEANUP_FAILED,
-  TEAM_ADMISSION_INSTRUCTIONS,
   TEAM_ADMISSION_MESSAGE_SEPARATOR,
   TEAM_EVENT_STARTED,
   TEAM_MEMBERSHIP_CLOSED,
@@ -75,7 +75,7 @@ export class TeamMembership {
     const name = this.reserve(request)
     const generation = this.generation
     try {
-      this.board.prepareAdmission(name, request.taskId, request.expectedRevision)
+      this.board.validateAdmission(request.taskId, request.expectedRevision)
       const opened = await this.sessions.open(teamOpenRequest(name, request), this.team)
       return await this.admit(opened, request, generation)
     } catch (error) {
@@ -137,16 +137,9 @@ export class TeamMembership {
     attempt: TeamAdmissionAttempt,
   ): TeamStartOutcome {
     const task = this.board.prepareAdmission(record.name, request.taskId, request.expectedRevision)
-    member.accept(`${TEAM_ADMISSION_INSTRUCTIONS}\n${JSON.stringify(task)}`)
-    this.board.prepareAdmission(record.name, request.taskId, request.expectedRevision)
-    this.lead.recordAdmission(
-      { ...record },
-      {
-        ...task,
-        blockedBy: [...task.blockedBy],
-        writeScopes: [...task.writeScopes],
-      },
-    )
+    acceptMemberTask(member, task)
+    this.board.validateAdmission(request.taskId, request.expectedRevision)
+    this.lead.recordAdmission({ ...record }, taskBoardCopySnapshot(task))
     attempt.committed = true
     const snapshot = this.board.acceptAdmission(task)
     this.roster.add(member)

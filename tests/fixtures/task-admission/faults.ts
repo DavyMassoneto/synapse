@@ -13,6 +13,8 @@ import {
   ADMISSION_DISCARD_FAILURE,
   ADMISSION_FAILURE_MESSAGE,
   ADMISSION_FAULT_BLOCKER,
+  ADMISSION_FAULT_CLOSE,
+  ADMISSION_FAULT_DISCARD,
   ADMISSION_FAULT_NONE,
   ADMISSION_FAULT_OPEN,
   ADMISSION_FAULT_QUEUE,
@@ -44,7 +46,7 @@ export class AdmissionFaults implements MemberSessions {
     }
     this.discardAttempts += 1
     this.sessions.discardPrepared(record)
-    if (this.mode === "discard") {
+    if (this.mode === ADMISSION_FAULT_DISCARD) {
       throw new Error(ADMISSION_DISCARD_FAILURE)
     }
   }
@@ -63,7 +65,7 @@ export class AdmissionFaults implements MemberSessions {
     } else if (this.mode === ADMISSION_FAULT_BLOCKER) {
       team.updateTask("lead", { taskId: "task-2", expectedRevision: 3, action: "reopen" })
     }
-    if (this.mode === "close" || this.mode === "discard") {
+    if (this.mode === ADMISSION_FAULT_CLOSE || this.mode === ADMISSION_FAULT_DISCARD) {
       const session = new AdmissionFailingSession(opened.session)
       const journal = new AdmissionFailingJournal(opened.journal)
       return { ...opened, session, journal }

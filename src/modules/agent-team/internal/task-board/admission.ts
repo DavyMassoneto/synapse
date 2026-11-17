@@ -5,12 +5,11 @@ import { taskBoardCopySnapshot } from "./snapshot-copy"
 import { TaskRefusal } from "./task-refusal"
 import { taskBoardStatuses } from "./task-status"
 
-export function taskBoardPrepareAdmission(
+export function taskBoardValidateAdmission(
   tasks: TaskSnapshot[],
   current: TaskSnapshot,
-  name: string,
   expectedRevision: number,
-): TaskSnapshot {
+): void {
   if (current.revision !== expectedRevision) {
     throw new TaskRefusal(`${TASK_BOARD_STALE_REVISION}${current.revision}`)
   }
@@ -20,5 +19,14 @@ export function taskBoardPrepareAdmission(
   ) {
     throw new TaskRefusal(TASK_BOARD_NOT_READY)
   }
+}
+
+export function taskBoardPrepareAdmission(
+  tasks: TaskSnapshot[],
+  current: TaskSnapshot,
+  name: string,
+  expectedRevision: number,
+): TaskSnapshot {
+  taskBoardValidateAdmission(tasks, current, expectedRevision)
   return taskBoardCopySnapshot({ ...current, owner: name, status: TASK_IN_PROGRESS, revision: current.revision + 1 })
 }

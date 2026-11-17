@@ -15,7 +15,7 @@ import {
   TEAM_LEAD_NAME,
   type UpdateTaskInput,
 } from "#synapse/modules/agent-team/public/contracts"
-import { taskBoardPrepareAdmission } from "./admission"
+import { taskBoardPrepareAdmission, taskBoardValidateAdmission } from "./admission"
 import { taskBoardResolveBlockers } from "./blockers"
 import { taskBoardCleanPlan } from "./clean-plan"
 import {
@@ -86,6 +86,10 @@ export class TaskBoard {
 
   get(id: string): TaskOutcome {
     return this.execute(this.getView.bind(this, id))
+  }
+
+  validateAdmission(taskId: string, expectedRevision: number): void {
+    taskBoardValidateAdmission(this.tasks, this.find(taskId), expectedRevision)
   }
 
   prepareAdmission(name: string, taskId: string, expectedRevision: number): TaskSnapshot {

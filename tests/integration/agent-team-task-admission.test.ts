@@ -6,7 +6,11 @@ import {
   ADMISSION_FAILURE,
   ADMISSION_FAILURE_MESSAGE,
   ADMISSION_FAILURES,
+  ADMISSION_FAULT_BLOCKER,
+  ADMISSION_FAULT_CLOSE,
+  ADMISSION_FAULT_DISCARD,
   ADMISSION_FAULT_NONE,
+  ADMISSION_FAULT_REVISION,
   ADMISSION_LIFECYCLE,
   ADMISSION_MEMBER_CLOSE_FAILURE,
   ADMISSION_RACE,
@@ -83,11 +87,11 @@ async function failedAdmission(mode: AdmissionFault): Promise<void> {
     faults.mode = mode
     await fixture.step()
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(1)
-    if (mode === "close" || mode === "discard") {
+    if (mode === ADMISSION_FAULT_CLOSE || mode === ADMISSION_FAULT_DISCARD) {
       expect(JSON.stringify(session.messages.filter(isSelectionToolError))).toContain(ADMISSION_MEMBER_CLOSE_FAILURE)
       expect(JSON.stringify(session.messages.filter(isSelectionToolError))).toContain(ADMISSION_FAILURE_MESSAGE)
       expect(faults.discardAttempts).toBe(1)
-      if (mode === "discard") {
+      if (mode === ADMISSION_FAULT_DISCARD) {
         expect(JSON.stringify(session.messages.filter(isSelectionToolError))).toContain(ADMISSION_DISCARD_FAILURE)
       }
     }
@@ -117,7 +121,7 @@ async function failedAdmission(mode: AdmissionFault): Promise<void> {
 async function racedAdmission(mode: AdmissionFault): Promise<void> {
   const faults = new AdmissionFaults()
   let script = ADMISSION_RETRY_SCRIPT
-  if (mode === "blocker") {
+  if (mode === ADMISSION_FAULT_BLOCKER) {
     script = ADMISSION_RACE_SCRIPT
   }
   const fixture = new TaskSelectionFixture(script, faults.mount.bind(faults))
@@ -125,10 +129,10 @@ async function racedAdmission(mode: AdmissionFault): Promise<void> {
     const session = await fixture.start()
     await fixture.step()
     switch (mode) {
-      case "revision":
+      case ADMISSION_FAULT_REVISION:
         faults.mode = mode
         break
-      case "blocker":
+      case ADMISSION_FAULT_BLOCKER:
         fixture.board().createTask({ subject: "blocker", description: "blocker", blockedBy: [], writeScopes: [] })
         fixture.board().updateTask("lead", { taskId: "task-2", expectedRevision: 1, action: "claim" })
         fixture.board().updateTask("lead", { taskId: "task-2", expectedRevision: 2, action: "complete" })

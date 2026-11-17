@@ -11,7 +11,6 @@ export const ADMISSION_CLOSE_FAILURE = "admission close failure"
 export const ADMISSION_MEMBER_CLOSE_FAILURE = "Falha ao encerrar os recursos do membro."
 export const ADMISSION_DISCARD_FAILURE = "admission discard failure"
 export const ADMISSION_CLEANUP = "tenta remover storage apesar de falha ao fechar e preserva ambas as falhas"
-export const ADMISSION_CLEANUP_FAILURES: AdmissionFault[] = ["close", "discard"]
 export const ADMISSION_NOT_MOUNTED = "admission fixture not mounted"
 export const ADMISSION_ENTRY = "agent-team-admission"
 export const ADMISSION_CUSTOM = "custom"
@@ -22,6 +21,9 @@ export const ADMISSION_FAULT_QUEUE = "queue"
 export const ADMISSION_FAULT_RECORD = "record"
 export const ADMISSION_FAULT_REVISION = "revision"
 export const ADMISSION_FAULT_BLOCKER = "blocker"
+export const ADMISSION_FAULT_CLOSE = "close"
+export const ADMISSION_FAULT_DISCARD = "discard"
+export const ADMISSION_CLEANUP_FAILURES: AdmissionFault[] = [ADMISSION_FAULT_CLOSE, ADMISSION_FAULT_DISCARD]
 
 export const ADMISSION_SCRIPT: ScriptedProviderScript = {
   tracks: [
