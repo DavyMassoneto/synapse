@@ -11,7 +11,7 @@ import {
 import { TeamRuleError, teamOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { TEAM_UNKNOWN_AGENT, type TeamRoster } from "../roster"
-import { type TaskBoard, TaskRefusal } from "../task-board"
+import { type TaskBoard } from "../task-board"
 import {
   TEAM_CLOSED,
   TEAM_DELEGATION_HEADER,
@@ -21,6 +21,7 @@ import {
   TEAM_MESSAGE_FROM_END,
   TEAM_SELF_MESSAGE,
 } from "./constants"
+import { commitTaskDelegation } from "./delegation"
 import { type TeamRefreshPort } from "./types"
 
 export class TeamMessages {
@@ -77,18 +78,9 @@ export class TeamMessages {
     if (target !== TEAM_LEAD_NAME) {
       this.roster.find(target)
     }
-    try {
-      const prepared = this.board.prepareDelegation(sender, target, taskId, expectedRevision)
-      this.lead.recordTask({ ...prepared, blockedBy: [...prepared.blockedBy], writeScopes: [...prepared.writeScopes] })
-      const task = this.board.acceptAdmission(prepared)
-      this.deliverMessage(sender, target, `${TEAM_DELEGATION_HEADER}${JSON.stringify(task)}\n${message}`)
-      return { kind: TEAM_DELEGATED, task }
-    } catch (error) {
-      if (error instanceof TaskRefusal) {
-        throw new TeamRuleError(error.message)
-      }
-      throw error
-    }
+    const task = commitTaskDelegation(this.board, this.lead, sender, target, taskId, expectedRevision)
+    this.deliverMessage(sender, target, `${TEAM_DELEGATION_HEADER}${JSON.stringify(task)}\n${message}`)
+    return { kind: TEAM_DELEGATED, task }
   }
 
   interrupt(target: string): TeamInterruptOutcome {

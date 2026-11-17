@@ -42,14 +42,18 @@ export const TEAM_TOOL_SUBAGENT_PARAMETERS = Type.Object({
   ),
 })
 
+const TEAM_TOOL_MESSAGE_AGENT_SCHEMA = Type.String({
+  minLength: 1,
+  description: "Nome de outro agente da equipe, como mostrado por list_agents.",
+})
+
+const TEAM_TOOL_MESSAGE_TEXT_SCHEMA = Type.String({ description: "Mensagem a entregar ao agente." })
+
 export const TEAM_TOOL_SEND_MESSAGE_PARAMETERS = Type.Union([
   Type.Object(
     {
-      agent: Type.String({
-        minLength: 1,
-        description: "Nome de outro agente da equipe, como mostrado por list_agents.",
-      }),
-      message: Type.String({ description: "Mensagem a entregar ao agente." }),
+      agent: TEAM_TOOL_MESSAGE_AGENT_SCHEMA,
+      message: TEAM_TOOL_MESSAGE_TEXT_SCHEMA,
       mode: Type.Literal(TEAM_MESSAGE_COORDINATION, {
         description: "Comunicação livre, sem mudar a tarefa selecionada.",
       }),
@@ -58,11 +62,8 @@ export const TEAM_TOOL_SEND_MESSAGE_PARAMETERS = Type.Union([
   ),
   Type.Object(
     {
-      agent: Type.String({
-        minLength: 1,
-        description: "Nome de outro agente da equipe, como mostrado por list_agents.",
-      }),
-      message: Type.String({ description: "Mensagem a entregar ao agente." }),
+      agent: TEAM_TOOL_MESSAGE_AGENT_SCHEMA,
+      message: TEAM_TOOL_MESSAGE_TEXT_SCHEMA,
       mode: Type.Literal(TEAM_MESSAGE_DELEGATION, {
         description: "Atribui e inicia tarefa específica no agente existente.",
       }),
