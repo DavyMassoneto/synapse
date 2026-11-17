@@ -2,6 +2,7 @@ export type TaskStatus = "pending" | "in_progress" | "completed" | "deleted"
 
 export type TaskAction =
   | "claim"
+  | "resume"
   | "release"
   | "edit"
   | "set_dependencies"
@@ -62,6 +63,17 @@ export interface TaskRefused {
 }
 
 export type TaskOutcome = TaskAccepted | TaskRefused
+
+export interface SelectedTask {
+  kind: "selected"
+  task: TaskView
+}
+
+export interface NoSelectedTask {
+  kind: "unselected"
+}
+
+export type TaskSelection = SelectedTask | NoSelectedTask
 
 export interface TaskJournal {
   recordTaskCleanup(tasks: TaskSnapshot[]): void

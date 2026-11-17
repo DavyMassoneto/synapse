@@ -31,13 +31,13 @@ async function sessionReload(): Promise<void> {
     const request = memberConfigSessionRequest(fixture)
     const created = await createPiTeamMemberSession(request)
     try {
-      expect(created.session.resourceLoader.getExtensions().extensions).toHaveLength(1)
+      expect(created.session.resourceLoader.getExtensions().extensions).toHaveLength(2)
       writeFileSync(
         join(fixture.agentDirectory, MEMBER_CONFIG_SETTINGS),
         JSON.stringify({ extensions: [fixture.extension, MEMBER_CONFIG_DISABLE_PREFIX + fixture.extension] }),
       )
       await created.session.reload()
-      expect(created.session.resourceLoader.getExtensions().extensions).toHaveLength(0)
+      expect(created.session.resourceLoader.getExtensions().extensions).toHaveLength(1)
     } finally {
       await created.lifecycle.close()
     }
@@ -61,7 +61,7 @@ async function newSessionWithPersistedConfiguration(): Promise<void> {
     )
     const created = await createPiTeamMemberSession(request)
     try {
-      expect(created.session.resourceLoader.getExtensions().extensions).toHaveLength(0)
+      expect(created.session.resourceLoader.getExtensions().extensions).toHaveLength(1)
     } finally {
       await created.lifecycle.close()
     }

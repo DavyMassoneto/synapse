@@ -5,6 +5,7 @@ import {
   type TaskFilter,
   type TaskJournal,
   type TaskOutcome,
+  type TaskSelection,
   type TaskSnapshot,
   type TaskView,
   type UpdateTaskInput,
@@ -123,6 +124,7 @@ export interface AgentTeam {
   overview(): TeamOverview
   refresh(): void
   createTask(input: CreateTaskInput): TaskOutcome
+  selectedTask(caller: string): TaskSelection
   getTask(taskId: string): TaskOutcome
   listTasks(filter: TaskFilter): TaskView[]
   updateTask(caller: string, input: UpdateTaskInput): TaskOutcome

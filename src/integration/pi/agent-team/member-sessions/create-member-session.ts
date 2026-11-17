@@ -16,6 +16,7 @@ export async function createPiTeamMemberSession(request: TeamMemberSessionReques
     agentDirectory,
     settings,
     instructions: request.instructions,
+    taskContext: request.taskContext,
     tools,
     shell: request.shell,
   })

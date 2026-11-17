@@ -1,14 +1,20 @@
 import {
   type CreateTaskInput,
   TASK_ACCEPTED,
+  TASK_CLAIM,
   TASK_CLEANED,
   TASK_DELETED,
+  TASK_IN_PROGRESS,
   TASK_PENDING,
   TASK_REFUSED,
+  TASK_RESUME,
+  TASK_SELECTED,
+  TASK_UNSELECTED,
   type TaskCleanOutcome,
   type TaskFilter,
   type TaskJournal,
   type TaskOutcome,
+  type TaskSelection,
   type TaskSnapshot,
   type TaskView,
   TEAM_LEAD_NAME,
@@ -29,13 +35,18 @@ import {
   TASK_BOARD_STALE_REVISION,
   TASK_BOARD_UNKNOWN_TASK,
 } from "./constants"
-import { hasTaskBoardLimit, isTaskBoardActive, isTaskBoardFilterMatch } from "./predicates"
+import { hasTaskBoardLimit, isTaskBoardActive, isTaskBoardFilterMatch, isTaskBoardTaskReady } from "./predicates"
 import { taskBoardCopySnapshot } from "./snapshot-copy"
 import { TaskRefusal } from "./task-refusal"
 import { taskBoardRequireText } from "./task-text"
 import { taskBoardToTaskView, taskBoardViewContext } from "./task-view"
 import { taskBoardApplyAction } from "./transitions"
-import { type TaskBoardAction, type TaskBoardRestorePositions, type TeamDirectory } from "./types"
+import {
+  type TaskBoardAction,
+  type TaskBoardRestorePositions,
+  type TaskBoardSelection,
+  type TeamDirectory,
+} from "./types"
 import { taskBoardNormalizeScopes } from "./write-scope"
 
 export class TaskBoard {
@@ -45,6 +56,8 @@ export class TaskBoard {
 
   private tasks: TaskSnapshot[] = []
 
+  private readonly selection: TaskBoardSelection = new Map()
+
   private nextNumber = TASK_BOARD_FIRST_NUMBER
 
   constructor(journal: TaskJournal, directory: TeamDirectory) {
@@ -53,6 +66,7 @@ export class TaskBoard {
   }
 
   restore(snapshots: TaskSnapshot[]): void {
+    this.selection.clear()
     this.tasks = []
     this.nextNumber = TASK_BOARD_FIRST_NUMBER
     const positions: TaskBoardRestorePositions = new Map()
@@ -97,6 +111,22 @@ export class TaskBoard {
 
   update(caller: string, input: UpdateTaskInput): TaskOutcome {
     return this.execute(this.updateView.bind(this, caller, input))
+  }
+
+  selectedTask(caller: string): TaskSelection {
+    const id = this.selection.get(caller)
+    if (!id) {
+      return { kind: TASK_UNSELECTED }
+    }
+    const task = this.tasks.find((candidate) => candidate.id === id)
+    if (!task || task.owner !== caller || task.status !== TASK_IN_PROGRESS) {
+      return { kind: TASK_UNSELECTED }
+    }
+    const context = taskBoardViewContext(this.tasks)
+    if (!isTaskBoardTaskReady(context.statuses, task)) {
+      return { kind: TASK_UNSELECTED }
+    }
+    return { kind: TASK_SELECTED, task: taskBoardToTaskView(context, task) }
   }
 
   clean(caller: string): TaskCleanOutcome {
@@ -149,7 +179,11 @@ export class TaskBoard {
       throw new TaskRefusal(TASK_BOARD_DELETED_MESSAGE)
     }
     const next = taskBoardApplyAction({ current, tasks: this.tasks, input, caller, directory: this.directory })
-    return this.commit({ ...next, revision: current.revision + 1 })
+    const view = this.commit({ ...next, revision: current.revision + 1 })
+    if (input.action === TASK_CLAIM || input.action === TASK_RESUME) {
+      this.selection.set(caller, view.id)
+    }
+    return view
   }
 
   private commit(task: TaskSnapshot): TaskView {

@@ -5,19 +5,23 @@ import {
   type SessionStartEvent,
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam } from "#synapse/modules/agent-team"
+import { type AgentTeam, TEAM_LEAD_NAME } from "#synapse/modules/agent-team"
 import { TEAM_PI_LEAD_INSTRUCTIONS, TEAM_PI_PROMPT_SECTION } from "./constants"
 import { type AgentTeamContext, type PiTeamLeadSession } from "./lead-session"
 import { readTeamHistory } from "./session-history"
+import { PiTeamTaskContext } from "./task-context"
 
 export class PiTeamLifecycle {
   private readonly lead: PiTeamLeadSession
 
   private readonly team: AgentTeam
 
+  private readonly taskContext: PiTeamTaskContext
+
   constructor(lead: PiTeamLeadSession, team: AgentTeam) {
     this.lead = lead
     this.team = team
+    this.taskContext = new PiTeamTaskContext(team, TEAM_LEAD_NAME)
   }
 
   async sessionStart(_event: SessionStartEvent, context: AgentTeamContext): Promise<void> {
@@ -39,6 +43,7 @@ export class PiTeamLifecycle {
   beforeAgentStart(event: BeforeAgentStartEvent, context: AgentTeamContext): void {
     this.lead.attach(context)
     event.systemPromptOptions.sections[TEAM_PI_PROMPT_SECTION] = TEAM_PI_LEAD_INSTRUCTIONS
+    this.taskContext.beforeAgentStart(event)
   }
 
   turnStart(_event: TurnStartEvent, context: AgentTeamContext): void {

@@ -10,6 +10,7 @@ import {
   TASK_REASSIGN,
   TASK_RELEASE,
   TASK_REOPEN,
+  TASK_RESUME,
   TASK_SET_DEPENDENCIES,
 } from "#synapse/modules/agent-team"
 
@@ -86,6 +87,7 @@ export const TEAM_TOOL_UPDATE_TASK_PARAMETERS = Type.Object({
   }),
   action: Type.Union([
     Type.Literal(TASK_CLAIM),
+    Type.Literal(TASK_RESUME),
     Type.Literal(TASK_RELEASE),
     Type.Literal(TASK_EDIT),
     Type.Literal(TASK_SET_DEPENDENCIES),

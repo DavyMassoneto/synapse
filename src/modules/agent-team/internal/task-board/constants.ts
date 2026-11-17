@@ -33,6 +33,8 @@ export const TASK_BOARD_ALREADY_CLAIMED = "A tarefa já pertence ao agente "
 export const TASK_BOARD_NOT_READY =
   "A tarefa não está pronta para assumir: precisa estar pendente e com os bloqueios concluídos"
 
+export const TASK_BOARD_RESUME_OWNER_REQUIRED = "Só o responsável pode retomar sua tarefa em andamento"
+
 export const TASK_BOARD_NOT_IN_PROGRESS = "A ação exige uma tarefa em andamento"
 
 export const TASK_BOARD_NOT_COMPLETED = "Só uma tarefa concluída pode ser reaberta"

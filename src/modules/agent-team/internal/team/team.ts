@@ -46,6 +46,8 @@ export class Team implements AgentTeam {
 
   readonly interrupt: AgentTeam["interrupt"]
 
+  readonly selectedTask: AgentTeam["selectedTask"]
+
   readonly getTask: AgentTeam["getTask"]
 
   readonly listTasks: AgentTeam["listTasks"]
@@ -60,6 +62,7 @@ export class Team implements AgentTeam {
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.interrupt = this.messages.interrupt.bind(this.messages)
+    this.selectedTask = this.board.selectedTask.bind(this.board)
     this.getTask = this.board.get.bind(this.board)
     this.listTasks = this.board.list.bind(this.board)
   }
