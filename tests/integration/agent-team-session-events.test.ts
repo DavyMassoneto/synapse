@@ -6,8 +6,8 @@ import {
   TEAM_EXTENSION_FIXTURE_FAILURE,
   TEAM_EXTENSION_FIXTURE_NON_ERROR_TEST,
   TEAM_SESSION_ACTIVITY_CALL,
+  TEAM_SESSION_ACTIVITY_EXECUTION,
   TEAM_SESSION_ACTIVITY_KIND,
-  TEAM_SESSION_ACTIVITY_READ,
   TEAM_SESSION_ACTIVITY_STARTED,
   TEAM_SESSION_ACTIVITY_TOOL_END,
   TEAM_SESSION_ACTIVITY_TOOL_START,
@@ -50,7 +50,7 @@ function translatesToolStart(): void {
       executionId: 0,
       phase: TEAM_SESSION_ACTIVITY_TOOL_START,
       callId: TEAM_SESSION_ACTIVITY_CALL,
-      name: TEAM_SESSION_ACTIVITY_READ,
+      category: TEAM_SESSION_ACTIVITY_EXECUTION,
     },
     { kind: "tool_started", callId: "call", label: "read: source.ts" },
   ])
@@ -71,7 +71,7 @@ function translatesToolEnd(): void {
       executionId: 0,
       phase: TEAM_SESSION_ACTIVITY_TOOL_END,
       callId: TEAM_SESSION_ACTIVITY_CALL,
-      name: TEAM_SESSION_ACTIVITY_READ,
+      category: TEAM_SESSION_ACTIVITY_EXECUTION,
     },
     { kind: "tool_ended", callId: "call" },
   ])

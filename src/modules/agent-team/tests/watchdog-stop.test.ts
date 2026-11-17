@@ -24,7 +24,7 @@ async function rejectsReentrantConfirmation(): Promise<void> {
   const id = scenario.control.begin()
   scenario.control.expired(id)
   await setImmediate()
-  expect(scenario.control.accepts(scenario.nextId)).toBe(true)
+  expect(scenario.control.isCurrentExecution(scenario.nextId)).toBe(true)
   expect(scenario.confirmed).toBe(0)
 }
 

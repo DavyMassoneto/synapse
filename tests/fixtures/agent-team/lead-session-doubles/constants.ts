@@ -5,7 +5,7 @@ export const TEAM_SESSION_ACTIVITY_STARTED = "started"
 export const TEAM_SESSION_ACTIVITY_TOOL_START = "tool-start"
 export const TEAM_SESSION_ACTIVITY_TOOL_END = "tool-end"
 export const TEAM_SESSION_ACTIVITY_CALL = "call"
-export const TEAM_SESSION_ACTIVITY_READ = "read"
+export const TEAM_SESSION_ACTIVITY_EXECUTION = "execution"
 
 export const TEAM_SESSION_FIXTURE_TEST_PREFIX = "synapse-team-session-"
 

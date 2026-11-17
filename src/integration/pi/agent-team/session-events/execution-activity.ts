@@ -31,6 +31,7 @@ import {
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE,
   TEAM_PI_MEMBER_ASSISTANT_ROLE,
 } from "./constants"
+import { memberToolActivityCategory } from "./tool-category"
 import { type TeamMemberExecutionState, type TeamMemberMessageUpdate, type TeamMemberToolEvent } from "./types"
 
 export class PiMemberExecutionActivity {
@@ -96,7 +97,7 @@ export class PiMemberExecutionActivity {
       executionId: this.state.executionId,
       phase,
       callId: event.toolCallId,
-      name: event.toolName,
+      category: memberToolActivityCategory(event.toolName),
     })
   }
 
@@ -122,11 +123,7 @@ export class PiMemberExecutionActivity {
   private start(): void {
     if (!this.active) {
       this.active = true
-      this.listener({
-        kind: MEMBER_EXECUTION_ACTIVITY,
-        executionId: this.state.executionId,
-        phase: MEMBER_ACTIVITY_STARTED,
-      })
+      this.emit(MEMBER_ACTIVITY_STARTED)
     }
   }
 

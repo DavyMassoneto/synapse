@@ -5,9 +5,9 @@ import {
   MEMBER_ACTIVITY_TOOL_START,
   MEMBER_ACTIVITY_TOOL_UPDATE,
   MEMBER_ACTIVITY_UPDATED,
+  MEMBER_TOOL_ACTIVITY_EXECUTION,
   type MemberExecutionActivity,
 } from "#synapse/modules/agent-team/public/contracts"
-import { MEMBER_WATCHDOG_OBSERVATIONAL_TOOLS } from "./constants"
 import { type MemberTurnWatchdog } from "./watchdog"
 
 export class MemberTurnActivity {
@@ -33,7 +33,7 @@ export class MemberTurnActivity {
     } else if (event.phase === MEMBER_ACTIVITY_UPDATED) {
       this.watchdog.update(event.executionId)
     } else if (event.phase === MEMBER_ACTIVITY_TOOL_START) {
-      if (!MEMBER_WATCHDOG_OBSERVATIONAL_TOOLS.includes(event.name)) {
+      if (event.category === MEMBER_TOOL_ACTIVITY_EXECUTION) {
         this.tools.add(event.callId)
         this.watchdog.update(event.executionId)
       }

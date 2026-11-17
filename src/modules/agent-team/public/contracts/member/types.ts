@@ -104,8 +104,10 @@ interface MemberToolActivity {
   executionId: number
   phase: MemberToolActivityPhase
   callId: string
-  name: string
+  category: MemberToolActivityCategory
 }
 export type MemberExecutionActivity = MemberExecutionLifecycleActivity | MemberToolActivity
 
 export type MemberToolActivityPhase = "tool-start" | "tool-update" | "tool-end"
+
+export type MemberToolActivityCategory = "execution" | "observation" | "coordination"

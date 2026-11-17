@@ -18,3 +18,7 @@ export const MEMBER_ACTIVITY_SETTLED = "settled"
 export const MEMBER_ACTIVITY_TOOL_START = "tool-start"
 export const MEMBER_ACTIVITY_TOOL_UPDATE = "tool-update"
 export const MEMBER_ACTIVITY_TOOL_END = "tool-end"
+
+export const MEMBER_TOOL_ACTIVITY_EXECUTION = "execution"
+export const MEMBER_TOOL_ACTIVITY_OBSERVATION = "observation"
+export const MEMBER_TOOL_ACTIVITY_COORDINATION = "coordination"

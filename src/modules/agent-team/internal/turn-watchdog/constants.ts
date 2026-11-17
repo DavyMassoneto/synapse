@@ -9,12 +9,4 @@ export const MEMBER_WATCHDOG_UNCONFIRMED =
 
 export const MEMBER_WATCHDOG_NOTIFICATION_FAILED = "Falha ao entregar aviso do watchdog."
 
-export const MEMBER_WATCHDOG_OBSERVATIONAL_TOOLS = [
-  "list_agents",
-  "team_task_list",
-  "team_task_get",
-  "list_models",
-  "send_message",
-]
-
 export const MEMBER_WATCHDOG_OPERATION_FAILED = "Falha operacional ao finalizar a parada do watchdog."

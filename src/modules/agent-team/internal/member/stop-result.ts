@@ -14,13 +14,13 @@ export class TeamMemberStopResult {
   }
 
   finish(executionId: number, outcome: TeamMemberStopOutcome): void {
-    if (this.member.accepts(executionId)) {
+    if (this.member.isCurrentExecution(executionId)) {
       let message = MEMBER_WATCHDOG_UNCONFIRMED
       if (outcome === MEMBER_STOP_CONFIRMED) {
         message = MEMBER_WATCHDOG_CONFIRMED
       }
       this.notification.deliver(message)
-      if (this.member.accepts(executionId)) {
+      if (this.member.isCurrentExecution(executionId)) {
         this.member.finishStop(outcome)
       }
     }

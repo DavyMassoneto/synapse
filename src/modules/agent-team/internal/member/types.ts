@@ -60,7 +60,7 @@ type TeamMemberNotice = (message: string) => void
 export type TeamMemberStopRequest = "requested" | "failed"
 
 export interface TeamMemberStopResultPort {
-  accepts(executionId: number): boolean
+  isCurrentExecution(executionId: number): boolean
   finishStop(outcome: TeamMemberStopOutcome): void
 }
 

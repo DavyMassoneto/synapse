@@ -71,7 +71,7 @@ export class TeamMemberTurnControl {
     this.stopPending = false
   }
 
-  accepts(executionId: number): boolean {
+  isCurrentExecution(executionId: number): boolean {
     return this.active && executionId === this.executionId
   }
 

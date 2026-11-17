@@ -162,7 +162,7 @@ export class TeamMember {
   }
 
   private promptFailed(executionId: number, error: Error): void {
-    if (this.turn.accepts(executionId)) {
+    if (this.turn.isCurrentExecution(executionId)) {
       this.onFailure(error)
     }
   }

@@ -25,3 +25,11 @@ export type TeamMemberMessageUpdate = Extract<AgentSessionEvent, TeamMemberMessa
 interface TeamMemberMessageUpdateSelector {
   type: "message_update"
 }
+
+export interface TeamMemberToolCategories {
+  list_agents: "observation"
+  list_models: "observation"
+  team_task_get: "observation"
+  team_task_list: "observation"
+  send_message: "coordination"
+}
