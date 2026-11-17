@@ -17,6 +17,8 @@ export const PI_PROCESS_REMOVE_RETRIES = 10
 
 export const PI_PROCESS_MAX_BUFFER_BYTES = 8_388_608
 
+export const PI_PROCESS_ACQUISITION_CLEANUP_FAILURE = "Falha ao preparar e limpar o ambiente fictício do pi."
+
 export const PI_PROCESS_PREFIX = "synapse-pi-process-"
 
 export const PI_PROCESS_ENCODING = "utf8"

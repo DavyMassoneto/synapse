@@ -28,6 +28,11 @@ export const TeamHistoryMemberSchema = Type.Object({
   sessionFile: Type.String({ minLength: 1 }),
 })
 
+export const TeamHistoryAdmissionSchema = Type.Object({
+  record: TeamHistoryMemberSchema,
+  task: TeamHistoryTaskSchema,
+})
+
 export const TeamHistoryBoardCleanSchema = Type.Object(
   { tasks: Type.Array(TeamHistoryTaskSchema) },
   { additionalProperties: false },

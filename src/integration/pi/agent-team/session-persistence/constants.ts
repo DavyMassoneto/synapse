@@ -2,6 +2,8 @@ import { constants } from "node:buffer"
 
 export const TEAM_PI_MEMBER_DIRECTORY = "agent-team-sessions"
 
+export const TEAM_PI_MEMBER_LEGACY_CHECKPOINT = "agent-team-checkpoint"
+
 export const TEAM_PI_MEMBER_CHECKPOINT = "agent-team-member-checkpoint"
 
 export const TEAM_PI_MEMBER_SEED = "Sessão persistente de um membro da equipe. Aguarde a tarefa do lead."
