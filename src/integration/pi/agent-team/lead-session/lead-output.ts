@@ -1,4 +1,11 @@
-import { type MemberRecord, type TaskSnapshot } from "#synapse/modules/agent-team"
+import {
+  type MemberRecord,
+  type TaskSnapshot,
+  TEAM_ADMISSION_PERSISTENCE_FAILED,
+  TEAM_ADMISSION_RECORDED,
+  TEAM_ADMISSION_UNCERTAIN,
+  type TeamAdmissionResult,
+} from "#synapse/modules/agent-team"
 import {
   TEAM_HISTORY_ADMISSION_ENTRY,
   TEAM_HISTORY_BOARD_CLEAN_ENTRY,
@@ -30,8 +37,17 @@ export class PiTeamLeadOutput {
     this.pi.appendEntry(TEAM_HISTORY_TASK_ENTRY, task)
   }
 
-  recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
-    this.pi.appendEntry(TEAM_HISTORY_ADMISSION_ENTRY, { record, task })
+  recordAdmission(record: MemberRecord, task: TaskSnapshot): TeamAdmissionResult {
+    try {
+      this.pi.appendEntry(TEAM_HISTORY_ADMISSION_ENTRY, { record, task })
+      return { kind: TEAM_ADMISSION_RECORDED }
+    } catch (failure) {
+      let error = new Error(TEAM_ADMISSION_PERSISTENCE_FAILED, { cause: failure })
+      if (failure instanceof Error) {
+        error = failure
+      }
+      return { kind: TEAM_ADMISSION_UNCERTAIN, error }
+    }
   }
 
   recordMember(record: MemberRecord): void {

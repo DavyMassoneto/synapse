@@ -1,5 +1,7 @@
 export const TEAM_PI_SESSION_START = "session_start"
 
+export const TEAM_PI_SESSION_TREE = "session_tree"
+
 export const TEAM_PI_SESSION_SHUTDOWN = "session_shutdown"
 
 export const TEAM_PI_BEFORE_AGENT_START = "before_agent_start"

@@ -1,4 +1,5 @@
-export type MemberOutcomeAction = () => void | Promise<void>
+export type MemberOutcomeCallback = () => void | Promise<void>
+export type MemberOutcomeAction = MemberOutcomeCallback | Promise<void>
 export type MemberOutcome = MemberOutcomeSuccess | MemberOutcomeFailure
 interface MemberOutcomeSuccess {
   failed: false

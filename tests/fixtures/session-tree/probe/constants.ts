@@ -1,0 +1,7 @@
+export const TREE_PROBE_VARIABLE = "SYNAPSE_TREE_PROBE"
+export const TREE_PROBE_START = "session_start"
+export const TREE_PROBE_SHUTDOWN = "session_shutdown"
+export const TREE_PROBE_START_PREFIX = "start:"
+export const TREE_PROBE_SHUTDOWN_PREFIX = "shutdown:"
+export const TREE_PROBE_NEWLINE = "\n"
+export const TREE_PROBE_MISSING = "Lifecycle probe path missing"

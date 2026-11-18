@@ -31,7 +31,9 @@ import {
   SCRIPTED_PROVIDER_PROVIDER,
   type ScriptedProviderScript,
 } from "../scripted-provider"
+import { releaseSelectionSession } from "./cleanup"
 import {
+  SELECTION_ACQUISITION_FAILURE,
   SELECTION_AGENT_DIRECTORY,
   SELECTION_DIRECTORY,
   SELECTION_MEMBER_TIMEOUT,
@@ -51,6 +53,7 @@ import {
   prepareSelectionExtensions,
   prepareSelectionScript,
 } from "./preparation"
+import { type SelectionSessionCleanup } from "./types"
 
 export class TaskSelectionFixture {
   readonly directory = mkdtempSync(join(tmpdir(), SELECTION_DIRECTORY))
@@ -59,23 +62,41 @@ export class TaskSelectionFixture {
   readonly errors: ExtensionError[] = []
   private team?: AgentTeam
   private session?: AgentSession
+  private closing?: Promise<void>
   private readonly createTeam?: AgentTeamMount
 
   constructor(script?: ScriptedProviderScript, createTeam?: AgentTeamMount) {
     if (createTeam) {
       this.createTeam = createTeam
     }
-    prepareSelectionDirectories(this)
-    prepareSelectionExtensions(this)
-    prepareSelectionScript(this, script)
-    prepareSelectionEnvironment(this)
+    try {
+      prepareSelectionDirectories(this)
+      prepareSelectionExtensions(this)
+      prepareSelectionScript(this, script)
+      prepareSelectionEnvironment(this)
+    } catch (error) {
+      try {
+        this.releaseDirectory()
+      } catch (cleanup) {
+        throw new AggregateError([error, cleanup], SELECTION_ACQUISITION_FAILURE)
+      }
+      throw error
+    }
+  }
+
+  protected releaseDirectory(): void {
+    try {
+      vi.unstubAllEnvs()
+    } finally {
+      rmSync(this.directory, { recursive: true, force: true })
+    }
   }
 
   register(pi: ExtensionAPI): void {
     registerAgentTeam(pi, this.mount.bind(this), createSupervisedShell)
   }
 
-  private mount(lead: TeamLead, members: MemberSessions, clock: TeamClock): AgentTeam {
+  protected mount(lead: TeamLead, members: MemberSessions, clock: TeamClock): AgentTeam {
     if (this.createTeam) {
       this.team = this.createTeam(lead, members, clock)
     } else {
@@ -92,6 +113,19 @@ export class TaskSelectionFixture {
   }
 
   async start(): Promise<AgentSession> {
+    try {
+      return await this.acquireSession()
+    } catch (error) {
+      try {
+        await this.close()
+      } catch (cleanup) {
+        throw new AggregateError([error, cleanup], SELECTION_ACQUISITION_FAILURE)
+      }
+      throw error
+    }
+  }
+
+  private async acquireSession(): Promise<AgentSession> {
     const settings = SettingsManager.create(this.cwd, this.agentDirectory)
     const loader = new DefaultResourceLoader({
       cwd: this.cwd,
@@ -154,15 +188,17 @@ export class TaskSelectionFixture {
     }
   }
 
-  async close(): Promise<void> {
-    try {
+  close(): Promise<void> {
+    if (!this.closing) {
+      const cleanup: SelectionSessionCleanup = { releaseDirectory: this.releaseDirectory.bind(this) }
       if (this.team) {
-        await this.team.suspend()
+        cleanup.team = this.team
       }
-    } finally {
-      this.session?.dispose()
-      vi.unstubAllEnvs()
-      rmSync(this.directory, { recursive: true, force: true })
+      if (this.session) {
+        cleanup.session = this.session
+      }
+      this.closing = releaseSelectionSession(cleanup)
     }
+    return this.closing
   }
 }

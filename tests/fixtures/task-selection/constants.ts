@@ -1,3 +1,4 @@
+export const SELECTION_ACQUISITION_FAILURE = "Falha ao preparar o cenário e liberar o diretório"
 export const SELECTION_DIRECTORY = "task-selection-"
 export const SELECTION_AGENT_DIRECTORY = "agent"
 export const SELECTION_PROJECT_DIRECTORY = "project"

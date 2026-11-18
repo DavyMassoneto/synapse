@@ -2,7 +2,6 @@ import {
   type BeforeAgentStartEvent,
   type MessageEndEvent,
   type SessionShutdownEvent,
-  type SessionStartEvent,
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
 import { type AgentTeam, TEAM_LEAD_NAME } from "#synapse/modules/agent-team"
@@ -10,6 +9,7 @@ import { TEAM_PI_LEAD_INSTRUCTIONS, TEAM_PI_PROMPT_SECTION } from "./constants"
 import { type AgentTeamContext, type PiTeamLeadSession } from "./lead-session"
 import { readTeamHistory } from "./session-history"
 import { PiTeamTaskContext } from "./task-context"
+import { type AgentTeamRestoreEvent } from "./types"
 
 export class PiTeamLifecycle {
   private readonly lead: PiTeamLeadSession
@@ -18,25 +18,36 @@ export class PiTeamLifecycle {
 
   private readonly taskContext: PiTeamTaskContext
 
+  private transition = 0
+
   constructor(lead: PiTeamLeadSession, team: AgentTeam) {
     this.lead = lead
     this.team = team
     this.taskContext = new PiTeamTaskContext(team, TEAM_LEAD_NAME)
   }
 
-  async sessionStart(_event: SessionStartEvent, context: AgentTeamContext): Promise<void> {
+  async restoreSession(_event: AgentTeamRestoreEvent, context: AgentTeamContext): Promise<void> {
+    const transition = ++this.transition
     await this.team.suspend()
-    this.lead.attach(context)
-    const storage = context.sessionManager
-    const history = readTeamHistory(storage, storage.getSessionId())
-    await this.team.restore(history.members, history.tasks)
+    if (transition === this.transition) {
+      this.lead.attach(context)
+      this.lead.show(this.team.overview())
+      const storage = context.sessionManager
+      const history = readTeamHistory(storage, storage.getSessionId())
+      if (transition === this.transition) {
+        await this.team.restore(history.members, history.tasks)
+      }
+    }
   }
 
   async sessionShutdown(_event: SessionShutdownEvent): Promise<void> {
+    const transition = ++this.transition
     try {
       await this.team.suspend()
     } finally {
-      this.lead.detach()
+      if (transition === this.transition) {
+        this.lead.detach()
+      }
     }
   }
 

@@ -3,7 +3,11 @@ import { type MemberOutcome, type MemberOutcomeAction } from "./types"
 
 export async function captureMemberOutcome(action: MemberOutcomeAction): Promise<MemberOutcome> {
   try {
-    await action()
+    if (typeof action === "function") {
+      await action()
+    } else {
+      await action
+    }
     return { failed: false }
   } catch (failure) {
     if (failure instanceof Error) {

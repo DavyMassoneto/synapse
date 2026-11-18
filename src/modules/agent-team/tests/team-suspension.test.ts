@@ -6,8 +6,9 @@ async function lateOpen(): Promise<void> {
   const { team, sessions } = makeTeamSut()
   sessions.held = true
   const starting = team.start(TEAM_TEST_ALICE_REQUEST)
-  await team.suspend()
+  const stopping = team.suspend()
   sessions.releaseFirst()
+  await stopping
   expect((await starting).kind).toBe("refused")
   expect(sessions.session.disposed).toBe(true)
 }
@@ -40,7 +41,7 @@ async function suspensionJournalFailure(): Promise<void> {
   sessions.journal.failAt = 3
   const stopping = team.suspend()
   sessions.session.finishPrompt()
-  await stopping
+  await expect(stopping).rejects.toBeInstanceOf(AggregateError)
   expect(sessions.session.disposed).toBe(true)
   expect(lead.failures).toHaveLength(1)
 }

@@ -4,6 +4,7 @@ import {
   TEAM_PI_MESSAGE_END,
   TEAM_PI_SESSION_SHUTDOWN,
   TEAM_PI_SESSION_START,
+  TEAM_PI_SESSION_TREE,
   TEAM_PI_TURN_START,
 } from "./constants"
 import { createPiTeamLeadSession } from "./lead-session"
@@ -25,7 +26,8 @@ export function registerAgentTeam(pi: AgentTeamHost, mount: AgentTeamMount, shel
   for (const tool of leadTools(team)) {
     pi.registerTool(tool)
   }
-  pi.on(TEAM_PI_SESSION_START, lifecycle.sessionStart.bind(lifecycle))
+  pi.on(TEAM_PI_SESSION_START, lifecycle.restoreSession.bind(lifecycle))
+  pi.on(TEAM_PI_SESSION_TREE, lifecycle.restoreSession.bind(lifecycle))
   pi.on(TEAM_PI_SESSION_SHUTDOWN, lifecycle.sessionShutdown.bind(lifecycle))
   pi.on(TEAM_PI_BEFORE_AGENT_START, lifecycle.beforeAgentStart.bind(lifecycle))
   pi.on(TEAM_PI_TURN_START, lifecycle.turnStart.bind(lifecycle))
