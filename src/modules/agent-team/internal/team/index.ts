@@ -1,4 +1,5 @@
 export * from "./board-directory"
+export * from "./closing"
 export * from "./constants"
 export * from "./suspend-members"
 export * from "./team"

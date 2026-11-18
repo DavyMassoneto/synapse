@@ -6,6 +6,7 @@ import {
   TREE_CLOSE_MULTIPLE_SCENARIO,
   TREE_CLOSE_PAIR_SCENARIO,
   TREE_CLOSE_PRIMARY_SCENARIO,
+  TREE_DEFAULT_CLEANUP_THROW,
   TREE_SUITE,
   TREE_TIMEOUT_MS,
   TreeCleanupFault,
@@ -15,7 +16,14 @@ async function preservesSingleCleanupFailure(): Promise<void> {
   const home = homedir()
   const fixture = new SessionTreeFixture()
   const session = await fixture.start()
-  const fault = new TreeCleanupFault(fixture.board(), session, fixture.directory, false, false)
+  const fault = new TreeCleanupFault(
+    fixture.board(),
+    session,
+    fixture.directory,
+    false,
+    false,
+    TREE_DEFAULT_CLEANUP_THROW,
+  )
   try {
     const closing = fixture.close()
     expect(fixture.close()).toBe(closing)
@@ -31,7 +39,14 @@ async function preservesAllCleanupFailures(): Promise<void> {
   const home = homedir()
   const fixture = new SessionTreeFixture()
   const session = await fixture.start()
-  const fault = new TreeCleanupFault(fixture.board(), session, fixture.directory, true, true)
+  const fault = new TreeCleanupFault(
+    fixture.board(),
+    session,
+    fixture.directory,
+    true,
+    true,
+    TREE_DEFAULT_CLEANUP_THROW,
+  )
   try {
     try {
       await fixture.close()
@@ -55,7 +70,14 @@ async function preservesPairCleanupFailures(): Promise<void> {
   const home = homedir()
   const fixture = new SessionTreeFixture()
   const session = await fixture.start()
-  const fault = new TreeCleanupFault(fixture.board(), session, fixture.directory, true, false)
+  const fault = new TreeCleanupFault(
+    fixture.board(),
+    session,
+    fixture.directory,
+    true,
+    false,
+    TREE_DEFAULT_CLEANUP_THROW,
+  )
   try {
     try {
       await fixture.close()

@@ -1,7 +1,7 @@
 import { type TeamLead } from "#synapse/modules/agent-team/public/contracts"
 import { type TeamMember } from "../member"
-import { captureMemberOutcome, finishMemberOutcomes } from "../member-outcome"
-import { TEAM_SUSPENSION_FAILED } from "./constants"
+import { type MemberOutcomeAction } from "../member-outcome"
+import { finishTeamClosings } from "./closing"
 
 export async function teamSuspendMembers(
   members: TeamMember[],
@@ -9,11 +9,11 @@ export async function teamSuspendMembers(
   previous: Promise<void>,
   acquisitions: Promise<void>,
 ): Promise<void> {
-  const attempts = [captureMemberOutcome(previous), captureMemberOutcome(acquisitions)]
+  const actions: MemberOutcomeAction[] = [previous, acquisitions]
   for (const member of members) {
-    attempts.push(captureMemberOutcome(teamSuspendMember(member, lead)))
+    actions.push(teamSuspendMember.bind(null, member, lead))
   }
-  await finishMemberOutcomes(attempts, TEAM_SUSPENSION_FAILED)
+  await finishTeamClosings(actions)
 }
 
 export async function teamDisposeMembers(
@@ -21,11 +21,11 @@ export async function teamDisposeMembers(
   previous: Promise<void>,
   acquisitions: Promise<void>,
 ): Promise<void> {
-  const attempts = [captureMemberOutcome(previous), captureMemberOutcome(acquisitions)]
+  const actions: MemberOutcomeAction[] = [previous, acquisitions]
   for (const member of members) {
-    attempts.push(captureMemberOutcome(member.dispose.bind(member)))
+    actions.push(member.dispose.bind(member))
   }
-  await finishMemberOutcomes(attempts, TEAM_SUSPENSION_FAILED)
+  await finishTeamClosings(actions)
 }
 
 async function teamSuspendMember(member: TeamMember, lead: TeamLead): Promise<void> {

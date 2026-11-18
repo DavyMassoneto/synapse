@@ -2,14 +2,40 @@ import { existsSync } from "node:fs"
 import { homedir } from "node:os"
 import { expect } from "vitest"
 import { TreeCleanupFault } from "./cleanup-fault"
+import { TREE_EXPLICIT_THROW } from "./constants"
 import { SessionTreeFixture } from "./fixture"
-import { type TreeCleanupThrow } from "./types"
+import { type TreeCleanupThrow, type TreeExplicitCleanupFailure } from "./types"
+
+function expectExplicitCleanupFailure(error: TreeExplicitCleanupFailure, failure: TreeCleanupThrow): void {
+  if (failure instanceof Error || typeof failure === "string") {
+    expect(error).toBe(failure)
+  } else {
+    expect(error).toHaveProperty("cause", failure)
+  }
+}
+
+function expectAggregateCleanupFailures(
+  error: AggregateError,
+  failure: TreeCleanupThrow,
+  fault: TreeCleanupFault,
+): void {
+  if (error.errors[0] instanceof Error || typeof error.errors[0] === "string") {
+    expectExplicitCleanupFailure(error.errors[0], failure)
+  } else {
+    expect.fail()
+  }
+  expect(error.errors[1]).toBe(fault.disposeError)
+  expect(error.errors[2]).toBe(fault.removeError)
+}
 
 export async function runArbitraryTreeCleanup(failure: TreeCleanupThrow, disposalFails: boolean): Promise<void> {
   const home = homedir()
   const fixture = new SessionTreeFixture()
   const session = await fixture.start()
-  const fault = new TreeCleanupFault(fixture.board(), session, fixture.directory, disposalFails, disposalFails, failure)
+  const fault = new TreeCleanupFault(fixture.board(), session, fixture.directory, disposalFails, disposalFails, {
+    kind: TREE_EXPLICIT_THROW,
+    value: failure,
+  })
   try {
     try {
       await fixture.close()
@@ -18,17 +44,12 @@ export async function runArbitraryTreeCleanup(failure: TreeCleanupThrow, disposa
       if (disposalFails) {
         expect(error).toBeInstanceOf(AggregateError)
         if (error instanceof AggregateError) {
-          expect(error.errors[0]).toHaveProperty("cause", failure)
-          expect(error.errors[1]).toBe(fault.disposeError)
-          expect(error.errors[2]).toBe(fault.removeError)
+          expectAggregateCleanupFailures(error, failure, fault)
         }
-      } else if (typeof failure === "string") {
-        expect(error).toBe(failure)
+      } else if (error instanceof Error || typeof error === "string") {
+        expectExplicitCleanupFailure(error, failure)
       } else {
-        expect(error).toBeInstanceOf(Error)
-        if (error instanceof Error) {
-          expect(error.cause).toBe(failure)
-        }
+        expect.fail()
       }
     }
     expect(fault.disposeAttempted).toBe(true)

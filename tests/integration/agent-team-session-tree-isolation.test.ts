@@ -27,6 +27,7 @@ import {
   TREE_XDG_CONFIG_ENV,
   TREE_XDG_DATA_ENV,
   TreeAcquisitionFault,
+  type TreeAcquisitionTarget,
   TreePidFault,
 } from "../fixtures"
 
@@ -48,45 +49,9 @@ async function isolatesHome(): Promise<void> {
   expect(existsSync(fixture.directory)).toBe(false)
 }
 
-function settingsAcquisitionFailure(): void {
+function acquisitionFailure(target: TreeAcquisitionTarget, settingsWrite: number): void {
   const before = process.env[TREE_HOME_ENV]
-  const fault = new TreeAcquisitionFault(TREE_SETTINGS_TARGET, false, 3)
-  try {
-    try {
-      new SessionTreeFixture()
-      expect.fail()
-    } catch (error) {
-      expect(error).toBe(fault.primary)
-    }
-    expect(fault.directory).not.toBe("")
-    expect(existsSync(fault.directory)).toBe(false)
-    expect(process.env[TREE_HOME_ENV]).toBe(before)
-  } finally {
-    fault.close()
-  }
-}
-
-function parentAcquisitionFailure(): void {
-  const before = process.env[TREE_HOME_ENV]
-  const fault = new TreeAcquisitionFault(TREE_SETTINGS_TARGET, false, 1)
-  try {
-    try {
-      new SessionTreeFixture()
-      expect.fail()
-    } catch (error) {
-      expect(error).toBe(fault.primary)
-    }
-    expect(fault.directory).not.toBe("")
-    expect(existsSync(fault.directory)).toBe(false)
-    expect(process.env[TREE_HOME_ENV]).toBe(before)
-  } finally {
-    fault.close()
-  }
-}
-
-function scriptAcquisitionFailure(): void {
-  const before = process.env[TREE_HOME_ENV]
-  const fault = new TreeAcquisitionFault(TREE_SCRIPT_TARGET, false, 3)
+  const fault = new TreeAcquisitionFault(target, false, settingsWrite)
   try {
     try {
       new SessionTreeFixture()
@@ -164,9 +129,9 @@ function permissionPid(): void {
 function register(): void {
   test(TREE_ISOLATION_SCENARIO, isolatesHome, TREE_TIMEOUT_MS)
   test(TREE_RUNTIME_FAILURE_SCENARIO, runtimeAcquisitionFailure)
-  test(TREE_PARENT_FAILURE_SCENARIO, parentAcquisitionFailure)
-  test(TREE_SETTINGS_FAILURE_SCENARIO, settingsAcquisitionFailure)
-  test(TREE_SCRIPT_FAILURE_SCENARIO, scriptAcquisitionFailure)
+  test(TREE_PARENT_FAILURE_SCENARIO, acquisitionFailure.bind(null, TREE_SETTINGS_TARGET, 1))
+  test(TREE_SETTINGS_FAILURE_SCENARIO, acquisitionFailure.bind(null, TREE_SETTINGS_TARGET, 3))
+  test(TREE_SCRIPT_FAILURE_SCENARIO, acquisitionFailure.bind(null, TREE_SCRIPT_TARGET, 3))
   test(TREE_CLEANUP_FAILURE_SCENARIO, distinctCleanupFailure)
   test(TREE_PID_ALIVE_SCENARIO, alivePid)
   test(TREE_PID_MISSING_SCENARIO, missingPid)

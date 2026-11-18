@@ -5,10 +5,14 @@ import {
   type TreeAcquisitionKind,
   type TreeAcquisitionPhase,
   type TreeCleanupThrow,
+  type TreeDefaultCleanupThrow,
   type TreeSettings,
   type TreeTransitionAction,
 } from "./types"
 
+export const TREE_DEFAULT_THROW = "default"
+export const TREE_EXPLICIT_THROW = "explicit"
+export const TREE_DEFAULT_CLEANUP_THROW: TreeDefaultCleanupThrow = { kind: TREE_DEFAULT_THROW }
 export const TREE_MISSING_FILE_CODE = "ENOENT"
 export const TREE_REFUSED = "refused"
 export const TREE_OPEN_METHOD = "open"
@@ -29,7 +33,15 @@ export const TREE_TRANSITION_ACTIONS: TreeTransitionAction[] = [
 ]
 export const TREE_ARBITRARY_CLEANUP = "throws arbitrários preservam causa e não interrompem cleanup real"
 export const TREE_ARBITRARY_OBJECT = { failure: "fixture" }
-export const TREE_ARBITRARY_FAILURES: TreeCleanupThrow[] = [42, false, TREE_ARBITRARY_OBJECT]
+export const TREE_EXPLICIT_ERROR = new Error("Falha explícita preservada por identidade")
+export const TREE_ARBITRARY_FAILURES: TreeCleanupThrow[] = [
+  42,
+  false,
+  0,
+  "",
+  TREE_ARBITRARY_OBJECT,
+  TREE_EXPLICIT_ERROR,
+]
 export const TREE_STRING_FAILURE = "falha textual preservada"
 export const TREE_WRITE_FILE_METHOD = "writeFileSync"
 export const TREE_REMOVE_METHOD = "rmSync"

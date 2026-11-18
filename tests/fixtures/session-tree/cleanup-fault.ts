@@ -7,9 +7,10 @@ import {
   TREE_CLOSE_DISPOSE_ERROR,
   TREE_CLOSE_REMOVE_ERROR,
   TREE_CLOSE_SUSPEND_ERROR,
+  TREE_EXPLICIT_THROW,
   TREE_REMOVE_METHOD,
 } from "./constants"
-import { type TreeCleanupThrow } from "./types"
+import { type TreeCleanupThrow, type TreeCleanupThrowOption } from "./types"
 
 export class TreeCleanupFault {
   readonly suspendError = new Error(TREE_CLOSE_SUSPEND_ERROR)
@@ -40,17 +41,11 @@ export class TreeCleanupFault {
     directory: string,
     disposeFails: boolean,
     removeFails: boolean,
-    failure?: TreeCleanupThrow,
+    option: TreeCleanupThrowOption,
   ) {
     this.failure = this.suspendError
-    if (
-      typeof failure === "number" ||
-      typeof failure === "boolean" ||
-      typeof failure === "string" ||
-      failure instanceof Error ||
-      (failure && "failure" in failure)
-    ) {
-      this.failure = failure
+    if (option.kind === TREE_EXPLICIT_THROW) {
+      this.failure = option.value
     }
     this.suspendTeam = team.suspend.bind(team)
     this.disposeSession = session.dispose.bind(session)

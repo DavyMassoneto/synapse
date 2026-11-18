@@ -1,4 +1,5 @@
 export * from "./accept-task"
+export * from "./acquisition"
 export * from "./admit-restored"
 export * from "./cleanup-admission"
 export * from "./cleanup-prepared"

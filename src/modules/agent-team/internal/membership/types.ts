@@ -34,6 +34,8 @@ export type TeamAcquisitionCompletion = ReturnType<typeof Promise.withResolvers<
 
 export type TeamPendingAcquisitions = Set<TeamAcquisitionCompletion>
 
+export type TeamAcquisitionAction<T> = (attempt: TeamAdmissionAttempt) => Promise<T>
+
 export type TeamAdmissionPersistence = "recorded" | "not-recorded" | "uncertain"
 
 export interface TeamAdmissionAttempt {

@@ -10,12 +10,12 @@ import {
   type TeamStartOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
 import { TeamMember } from "../member"
-import { type MemberOutcome } from "../member-outcome"
 import { rethrowTeamOperationError, TeamRuleError, teamAsyncOperationResult } from "../operation-results"
 import { type TeamRecentEvents } from "../recent-events"
 import { type TeamRoster } from "../roster"
 import { type TaskBoard, taskBoardCopySnapshot } from "../task-board"
 import { acceptMemberTask } from "./accept-task"
+import { runTeamAcquisition } from "./acquisition"
 import { admitRestoredTeamMember } from "./admit-restored"
 import { cleanupPreparedTeamAdmission } from "./cleanup-prepared"
 import {
@@ -95,9 +95,15 @@ export class TeamMembership {
   private async startMember(request: StartMemberRequest): Promise<TeamStartOutcome> {
     const name = reserveTeamMember(request, this.roster, this.closed)
     const generation = this.generation
-    const acquisition = Promise.withResolvers<MemberOutcome>()
-    this.pending.add(acquisition)
-    const attempt: TeamAdmissionAttempt = { outcome: { failed: false } }
+    return runTeamAcquisition(this.pending, this.acquireStartedMember.bind(this, name, request, generation))
+  }
+
+  private async acquireStartedMember(
+    name: string,
+    request: StartMemberRequest,
+    generation: number,
+    attempt: TeamAdmissionAttempt,
+  ): Promise<TeamStartOutcome> {
     try {
       this.board.validateAdmission(request.taskId, request.expectedRevision)
       this.ensureGeneration(generation)
@@ -111,11 +117,6 @@ export class TeamMembership {
         rethrowTeamOperationError(error)
       }
       throw error
-    } finally {
-      acquisition.resolve(attempt.outcome)
-      if (!attempt.outcome.failed) {
-        this.pending.delete(acquisition)
-      }
     }
   }
 
@@ -178,7 +179,7 @@ export class TeamMembership {
     const generation = this.generation
     for (const record of records) {
       if (generation === this.generation) {
-        await this.restoreMember(record, generation)
+        await runTeamAcquisition(this.pending, this.acquireRestoredMember.bind(this, record, generation))
       }
     }
     if (generation === this.generation) {
@@ -186,10 +187,11 @@ export class TeamMembership {
     }
   }
 
-  private async restoreMember(record: MemberRecord, generation: number): Promise<void> {
-    const acquisition = Promise.withResolvers<MemberOutcome>()
-    this.pending.add(acquisition)
-    const attempt: TeamAdmissionAttempt = { outcome: { failed: false } }
+  private async acquireRestoredMember(
+    record: MemberRecord,
+    generation: number,
+    attempt: TeamAdmissionAttempt,
+  ): Promise<void> {
     try {
       this.roster.reserve(record.name)
       const opened = await this.sessions.reopen(record, this.team)
@@ -207,11 +209,6 @@ export class TeamMembership {
       if (generation === this.generation) {
         this.roster.failed(record, error.message)
         this.lead.reportFailure(record.name, error.message)
-      }
-    } finally {
-      acquisition.resolve(attempt.outcome)
-      if (!attempt.outcome.failed) {
-        this.pending.delete(acquisition)
       }
     }
   }
