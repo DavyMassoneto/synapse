@@ -100,6 +100,10 @@ async function failedAdmission(mode: AdmissionFault): Promise<void> {
         throw new Error(pending.message)
       }
       await fixture.board().restore([], [{ ...pending.task, owner: "lead" }])
+      expect(fixture.board().overview().agents[0]?.tasks).toEqual([{ id: "task-1", revision: 1, bound: false }])
+      expect(fixture.board().selectedTask("worker")).toEqual({ kind: "unselected" })
+      expect(admissionEntries(session)).toEqual([])
+      expect(admissionSessionFiles(fixture.agentDirectory, session.sessionId)).toEqual([])
     }
     faults.mode = mode
     await fixture.step()

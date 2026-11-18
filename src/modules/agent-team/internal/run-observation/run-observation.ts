@@ -1,7 +1,6 @@
 import {
   MEMBER_ACTIVITY_TOOL_UPDATE,
   MEMBER_ACTIVITY_UPDATED,
-  MEMBER_ASSISTANT_RESPONSE,
   MEMBER_EXECUTION_ACTIVITY,
   MEMBER_TOOL_ENDED,
   MEMBER_TOOL_STARTED,
@@ -25,6 +24,7 @@ import {
   RUN_SIGNAL_TOOL_UPDATE,
   RUN_SIGNAL_TURN,
 } from "./constants"
+import { isActiveObservedExecutionEvent } from "./predicates"
 import { type ObservedRun, type ObservedTools } from "./types"
 
 export class MemberRunObservation {
@@ -56,12 +56,7 @@ export class MemberRunObservation {
   }
 
   observe(event: MemberSessionEvent): void {
-    if (
-      this.run &&
-      !this.run.ended &&
-      event.kind !== MEMBER_ASSISTANT_RESPONSE &&
-      event.executionId === this.run.executionId
-    ) {
+    if (this.run && isActiveObservedExecutionEvent(this.run, event)) {
       switch (event.kind) {
         case MEMBER_TURN_STARTED:
           this.turn(this.run)
