@@ -1,105 +1,67 @@
-import { existsSync } from "node:fs"
-import { homedir } from "node:os"
 import { describe, expect, test } from "vitest"
 import {
-  SessionTreeFixture,
+  runTreeCleanupScenario,
   TREE_CLOSE_MULTIPLE_SCENARIO,
   TREE_CLOSE_PAIR_SCENARIO,
   TREE_CLOSE_PRIMARY_SCENARIO,
-  TREE_DEFAULT_CLEANUP_THROW,
   TREE_SUITE,
   TREE_TIMEOUT_MS,
-  TreeCleanupFault,
+  type TreeCleanupErrors,
 } from "../fixtures"
 
-async function preservesSingleCleanupFailure(): Promise<void> {
-  const home = homedir()
-  const fixture = new SessionTreeFixture()
-  const session = await fixture.start()
-  const fault = new TreeCleanupFault(
-    fixture.board(),
-    session,
-    fixture.directory,
-    false,
-    false,
-    TREE_DEFAULT_CLEANUP_THROW,
-  )
+async function preservesSingleCleanupFailure(fault: TreeCleanupErrors, closing: Promise<void>): Promise<void> {
+  await expect(closing).rejects.toBe(fault.suspendError)
+}
+
+async function preservesAllCleanupFailures(fault: TreeCleanupErrors, closing: Promise<void>): Promise<void> {
   try {
-    const closing = fixture.close()
-    expect(fixture.close()).toBe(closing)
-    await expect(closing).rejects.toBe(fault.suspendError)
-    expect(existsSync(fixture.directory)).toBe(false)
-    expect(homedir()).toBe(home)
-  } finally {
-    fault.close()
+    await closing
+    expect.fail()
+  } catch (error) {
+    expect(error).toBeInstanceOf(AggregateError)
+    if (error instanceof AggregateError) {
+      expect(error.errors).toHaveLength(3)
+      expect(error.errors[0]).toBe(fault.suspendError)
+      expect(error.errors[1]).toBe(fault.disposeError)
+      expect(error.errors[2]).toBe(fault.removeError)
+    }
   }
 }
 
-async function preservesAllCleanupFailures(): Promise<void> {
-  const home = homedir()
-  const fixture = new SessionTreeFixture()
-  const session = await fixture.start()
-  const fault = new TreeCleanupFault(
-    fixture.board(),
-    session,
-    fixture.directory,
-    true,
-    true,
-    TREE_DEFAULT_CLEANUP_THROW,
-  )
+async function preservesPairCleanupFailures(fault: TreeCleanupErrors, closing: Promise<void>): Promise<void> {
   try {
-    try {
-      await fixture.close()
-      expect.fail()
-    } catch (error) {
-      expect(error).toBeInstanceOf(AggregateError)
-      if (error instanceof AggregateError) {
-        expect(error.errors[0]).toBe(fault.suspendError)
-        expect(error.errors[1]).toBe(fault.disposeError)
-        expect(error.errors[2]).toBe(fault.removeError)
-      }
+    await closing
+    expect.fail()
+  } catch (error) {
+    expect(error).toBeInstanceOf(AggregateError)
+    if (error instanceof AggregateError) {
+      expect(error.errors).toHaveLength(2)
+      expect(error.errors[0]).toBe(fault.suspendError)
+      expect(error.errors[1]).toBe(fault.disposeError)
     }
-    expect(existsSync(fixture.directory)).toBe(false)
-    expect(homedir()).toBe(home)
-  } finally {
-    fault.close()
-  }
-}
-
-async function preservesPairCleanupFailures(): Promise<void> {
-  const home = homedir()
-  const fixture = new SessionTreeFixture()
-  const session = await fixture.start()
-  const fault = new TreeCleanupFault(
-    fixture.board(),
-    session,
-    fixture.directory,
-    true,
-    false,
-    TREE_DEFAULT_CLEANUP_THROW,
-  )
-  try {
-    try {
-      await fixture.close()
-      expect.fail()
-    } catch (error) {
-      expect(error).toBeInstanceOf(AggregateError)
-      if (error instanceof AggregateError) {
-        expect(error.errors[0]).toBe(fault.suspendError)
-        expect(error.errors[1]).toBe(fault.disposeError)
-      }
-    }
-    expect(existsSync(fixture.directory)).toBe(false)
-    expect(homedir()).toBe(home)
-  } finally {
-    fault.close()
   }
 }
 
 function register(): void {
-  test(TREE_CLOSE_PAIR_SCENARIO, preservesPairCleanupFailures, TREE_TIMEOUT_MS)
-  test(TREE_CLOSE_PRIMARY_SCENARIO, preservesSingleCleanupFailure, TREE_TIMEOUT_MS)
-  test(TREE_CLOSE_MULTIPLE_SCENARIO, preservesAllCleanupFailures, TREE_TIMEOUT_MS)
+  test(
+    TREE_CLOSE_PAIR_SCENARIO,
+    runTreeCleanupScenario.bind(null, { disposeFails: true, removeFails: false, verify: preservesPairCleanupFailures }),
+    TREE_TIMEOUT_MS,
+  )
+  test(
+    TREE_CLOSE_PRIMARY_SCENARIO,
+    runTreeCleanupScenario.bind(null, {
+      disposeFails: false,
+      removeFails: false,
+      verify: preservesSingleCleanupFailure,
+    }),
+    TREE_TIMEOUT_MS,
+  )
+  test(
+    TREE_CLOSE_MULTIPLE_SCENARIO,
+    runTreeCleanupScenario.bind(null, { disposeFails: true, removeFails: true, verify: preservesAllCleanupFailures }),
+    TREE_TIMEOUT_MS,
+  )
 }
 
 describe(TREE_SUITE, register)

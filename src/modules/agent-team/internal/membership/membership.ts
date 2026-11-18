@@ -15,16 +15,15 @@ import { type TeamRecentEvents } from "../recent-events"
 import { type TeamRoster } from "../roster"
 import { type TaskBoard, taskBoardCopySnapshot } from "../task-board"
 import { acceptMemberTask } from "./accept-task"
-import { runTeamAcquisition } from "./acquisition"
+import { finishTeamAcquisitions, runTeamAcquisition } from "./acquisition"
 import { admitRestoredTeamMember } from "./admit-restored"
-import { cleanupPreparedTeamAdmission } from "./cleanup-prepared"
+import { cleanupPreparedTeamAdmission } from "./cleanup"
 import {
   TEAM_ADMISSION_CLEANUP_FAILED,
   TEAM_ADMISSION_MESSAGE_SEPARATOR,
   TEAM_EVENT_STARTED,
   TEAM_SESSION_REPLACED,
 } from "./constants"
-import { finishTeamAcquisitions } from "./finish-acquisitions"
 import { teamOpenRequest } from "./open-request"
 import { recordTeamAdmission } from "./persist-admission"
 import { reserveTeamMember } from "./reserve-member"

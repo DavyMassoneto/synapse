@@ -1,6 +1,25 @@
 import { type AgentSession, type ExtensionError } from "@earendil-works/pi-coding-agent"
-import { type AgentTeam } from "#synapse/modules/agent-team"
+import {
+  type AgentTeam,
+  type MemberRecord,
+  type OpenedMember,
+  type OpenMemberRequest,
+} from "#synapse/modules/agent-team"
 import { type TreeTransitionBarrier } from "./transition-barrier"
+
+export interface TreeCleanupErrors {
+  suspendError: Error
+  disposeError: Error
+  removeError: Error
+}
+
+export type TreeCleanupOracle = (fault: TreeCleanupErrors, closing: Promise<void>) => Promise<void>
+
+export interface TreeCleanupScenario {
+  disposeFails: boolean
+  removeFails: boolean
+  verify: TreeCleanupOracle
+}
 
 export interface TreeArbitraryFailure {
   failure: string
@@ -20,6 +39,13 @@ export type TreeExplicitCleanupFailure = Error | string
 export type TreeCleanupThrowOption = TreeDefaultCleanupThrow | TreeExplicitCleanupThrow
 
 export type TreeCleanupThrow = Error | string | number | boolean | TreeArbitraryFailure
+
+export type TreeAcquisitionRequest = OpenMemberRequest | MemberRecord
+
+export type TreeAcquisitionAction<T extends TreeAcquisitionRequest> = (
+  request: T,
+  team: AgentTeam,
+) => Promise<OpenedMember>
 
 export type TreeAcquisitionPhase = "before" | "after"
 

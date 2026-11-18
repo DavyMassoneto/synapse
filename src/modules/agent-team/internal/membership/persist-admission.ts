@@ -29,10 +29,12 @@ function persistTeamAdmission(
   try {
     return journal.recordAdmission(record, task)
   } catch (failure) {
-    let error = new Error(TEAM_ADMISSION_PERSISTENCE_FAILED, { cause: failure })
     if (failure instanceof Error) {
-      error = failure
+      return { kind: TEAM_ADMISSION_UNCERTAIN, error: failure }
     }
-    return { kind: TEAM_ADMISSION_UNCERTAIN, error }
+    return {
+      kind: TEAM_ADMISSION_UNCERTAIN,
+      error: new Error(TEAM_ADMISSION_PERSISTENCE_FAILED, { cause: failure }),
+    }
   }
 }

@@ -42,11 +42,13 @@ export class PiTeamLeadOutput {
       this.pi.appendEntry(TEAM_HISTORY_ADMISSION_ENTRY, { record, task })
       return { kind: TEAM_ADMISSION_RECORDED }
     } catch (failure) {
-      let error = new Error(TEAM_ADMISSION_PERSISTENCE_FAILED, { cause: failure })
       if (failure instanceof Error) {
-        error = failure
+        return { kind: TEAM_ADMISSION_UNCERTAIN, error: failure }
       }
-      return { kind: TEAM_ADMISSION_UNCERTAIN, error }
+      return {
+        kind: TEAM_ADMISSION_UNCERTAIN,
+        error: new Error(TEAM_ADMISSION_PERSISTENCE_FAILED, { cause: failure }),
+      }
     }
   }
 

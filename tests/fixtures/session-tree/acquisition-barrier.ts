@@ -1,8 +1,13 @@
 import { vi } from "vitest"
 import { PiTeamMemberSessions } from "#synapse/integration/pi/agent-team"
-import { type AgentTeam, type MemberRecord, type OpenMemberRequest } from "#synapse/modules/agent-team"
+import {
+  type AgentTeam,
+  type MemberRecord,
+  type OpenedMember,
+  type OpenMemberRequest,
+} from "#synapse/modules/agent-team"
 import { TREE_ACQUISITION_AFTER, TREE_ACQUISITION_BEFORE, TREE_OPEN_METHOD, TREE_REOPEN_METHOD } from "./constants"
-import { type TreeAcquisitionPhase } from "./types"
+import { type TreeAcquisitionAction, type TreeAcquisitionPhase, type TreeAcquisitionRequest } from "./types"
 
 export class TreeAcquisitionBarrier {
   private readonly arrived = Promise.withResolvers<void>()
@@ -13,8 +18,6 @@ export class TreeAcquisitionBarrier {
 
   private readonly reopen = PiTeamMemberSessions.prototype.reopen
 
-  private readonly sessions: PiTeamMemberSessions
-
   private readonly phase: TreeAcquisitionPhase
 
   private pending = true
@@ -24,32 +27,26 @@ export class TreeAcquisitionBarrier {
   readonly release = this.released.resolve
 
   constructor(sessions: PiTeamMemberSessions, phase: TreeAcquisitionPhase) {
-    this.sessions = sessions
     this.phase = phase
-    vi.spyOn(sessions, TREE_OPEN_METHOD).mockImplementation(this.openMember.bind(this))
-    vi.spyOn(sessions, TREE_REOPEN_METHOD).mockImplementation(this.reopenMember.bind(this))
+    vi.spyOn(sessions, TREE_OPEN_METHOD).mockImplementation(
+      (this.acquire<OpenMemberRequest>).bind(this, this.open.bind(sessions)),
+    )
+    vi.spyOn(sessions, TREE_REOPEN_METHOD).mockImplementation(
+      (this.acquire<MemberRecord>).bind(this, this.reopen.bind(sessions)),
+    )
   }
 
-  private async openMember(request: OpenMemberRequest, team: AgentTeam) {
+  private async acquire<T extends TreeAcquisitionRequest>(
+    action: TreeAcquisitionAction<T>,
+    request: T,
+    team: AgentTeam,
+  ): Promise<OpenedMember> {
     const held = this.pending
     this.pending = false
     if (held && this.phase === TREE_ACQUISITION_BEFORE) {
       await this.wait()
     }
-    const opened = await this.open.call(this.sessions, request, team)
-    if (held && this.phase === TREE_ACQUISITION_AFTER) {
-      await this.wait()
-    }
-    return opened
-  }
-
-  private async reopenMember(record: MemberRecord, team: AgentTeam) {
-    const held = this.pending
-    this.pending = false
-    if (held && this.phase === TREE_ACQUISITION_BEFORE) {
-      await this.wait()
-    }
-    const opened = await this.reopen.call(this.sessions, record, team)
+    const opened = await action(request, team)
     if (held && this.phase === TREE_ACQUISITION_AFTER) {
       await this.wait()
     }

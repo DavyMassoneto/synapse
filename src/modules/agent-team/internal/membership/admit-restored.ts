@@ -1,6 +1,6 @@
 import { type OpenedMember } from "#synapse/modules/agent-team/public/contracts"
 import { TeamMember } from "../member"
-import { cleanupTeamAdmission } from "./cleanup-admission"
+import { cleanupTeamAdmission } from "./cleanup"
 import { TEAM_ACQUISITION_CLEANUP_FAILED } from "./constants"
 import { type TeamAdmissionAttempt, type TeamRestoredAdmission } from "./types"
 
