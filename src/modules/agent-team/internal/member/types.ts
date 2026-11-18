@@ -2,6 +2,7 @@ import {
   type OpenedMember,
   type TeamAgentState,
   type TeamModelReference,
+  type TeamProgress,
 } from "#synapse/modules/agent-team/public/contracts"
 
 export interface TeamMemberInterruptedOutcome {
@@ -27,11 +28,9 @@ export interface TeamMemberRowInput {
   lastState: TeamAgentState
   busy: boolean
   unconfirmed: number
-  tools: TeamActiveTools
+  progress: TeamProgress
   effectiveModel: TeamModelReference
 }
-
-export type TeamActiveTools = Map<string, string>
 
 export type TeamMemberFailureState = TeamMemberFailure | TeamMemberNoFailure
 

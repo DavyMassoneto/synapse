@@ -1,4 +1,4 @@
-import { type AssistantMessage } from "@earendil-works/pi-ai"
+import { type AgentMessage } from "@earendil-works/pi-agent-core"
 import { type AgentSessionEvent } from "@earendil-works/pi-coding-agent"
 import {
   MEMBER_ACTIVITY_SETTLED,
@@ -9,6 +9,8 @@ import {
   MEMBER_ACTIVITY_UPDATED,
   MEMBER_EXECUTION_ACTIVITY,
   type MemberActivityPhase,
+  type MemberActivitySource,
+  type MemberExecutionActivity,
   type MemberSessionListener,
   type MemberToolActivityPhase,
 } from "#synapse/modules/agent-team"
@@ -30,6 +32,10 @@ import {
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_START,
   TEAM_PI_ACTIVITY_TOOL_EXECUTION_UPDATE,
   TEAM_PI_MEMBER_ASSISTANT_ROLE,
+  TEAM_PI_OBSERVATION_COMPACTION,
+  TEAM_PI_OBSERVATION_MESSAGE,
+  TEAM_PI_OBSERVATION_RETRY,
+  TEAM_PI_OBSERVATION_STREAM,
 } from "./constants"
 import { memberToolActivityCategory } from "./tool-category"
 import { type TeamMemberExecutionState, type TeamMemberMessageUpdate, type TeamMemberToolEvent } from "./types"
@@ -56,9 +62,7 @@ export class PiMemberExecutionActivity {
         break
       case TEAM_PI_ACTIVITY_MESSAGE_START:
       case TEAM_PI_ACTIVITY_MESSAGE_END:
-        if (event.message.role === TEAM_PI_MEMBER_ASSISTANT_ROLE) {
-          this.message(event.message)
-        }
+        this.message(event.message)
         break
       case TEAM_PI_ACTIVITY_MESSAGE_UPDATE:
         this.messageUpdate(event)
@@ -74,10 +78,11 @@ export class PiMemberExecutionActivity {
         break
       case TEAM_PI_ACTIVITY_AUTO_RETRY_START:
       case TEAM_PI_ACTIVITY_AUTO_RETRY_END:
+        this.update(TEAM_PI_OBSERVATION_RETRY)
+        break
       case TEAM_PI_ACTIVITY_COMPACTION_START:
       case TEAM_PI_ACTIVITY_COMPACTION_END:
-        this.update()
-        break
+        this.update(TEAM_PI_OBSERVATION_COMPACTION)
     }
   }
 
@@ -87,7 +92,7 @@ export class PiMemberExecutionActivity {
         event.assistantMessageEvent.type === TEAM_PI_ACTIVITY_THINKING_DELTA) &&
       event.assistantMessageEvent.delta.length > 0
     ) {
-      this.update()
+      this.update(TEAM_PI_OBSERVATION_STREAM)
     }
   }
 
@@ -101,14 +106,16 @@ export class PiMemberExecutionActivity {
     })
   }
 
-  private message(message: AssistantMessage): void {
-    for (const content of message.content) {
-      if (
-        (content.type === TEAM_PI_ACTIVITY_TEXT && content.text.length > 0) ||
-        (content.type === TEAM_PI_ACTIVITY_THINKING && content.thinking.length > 0)
-      ) {
-        this.update()
-        break
+  private message(message: AgentMessage): void {
+    if (message.role === TEAM_PI_MEMBER_ASSISTANT_ROLE) {
+      for (const content of message.content) {
+        if (
+          (content.type === TEAM_PI_ACTIVITY_TEXT && content.text.length > 0) ||
+          (content.type === TEAM_PI_ACTIVITY_THINKING && content.thinking.length > 0)
+        ) {
+          this.update(TEAM_PI_OBSERVATION_MESSAGE)
+          break
+        }
       }
     }
   }
@@ -127,13 +134,21 @@ export class PiMemberExecutionActivity {
     }
   }
 
-  private update(): void {
+  private update(source: MemberActivitySource): void {
     if (this.active) {
-      this.emit(MEMBER_ACTIVITY_UPDATED)
+      this.emit(MEMBER_ACTIVITY_UPDATED, source)
     }
   }
 
-  private emit(phase: MemberActivityPhase): void {
-    this.listener({ kind: MEMBER_EXECUTION_ACTIVITY, executionId: this.state.executionId, phase })
+  private emit(phase: MemberActivityPhase, source?: MemberActivitySource): void {
+    const event: MemberExecutionActivity = {
+      kind: MEMBER_EXECUTION_ACTIVITY,
+      executionId: this.state.executionId,
+      phase,
+    }
+    if (source) {
+      event.source = source
+    }
+    this.listener(event)
   }
 }

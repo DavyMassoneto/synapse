@@ -30,16 +30,19 @@ export interface MemberExecutionStarted {
 
 export interface MemberTurnStarted {
   kind: "turn_started"
+  executionId: number
 }
 
 export interface MemberToolStarted {
   kind: "tool_started"
+  executionId: number
   callId: string
   label: string
 }
 
 export interface MemberToolEnded {
   kind: "tool_ended"
+  executionId: number
   callId: string
 }
 
@@ -100,6 +103,7 @@ interface MemberExecutionLifecycleActivity {
   kind: "execution_activity"
   executionId: number
   phase: MemberActivityPhase
+  source?: MemberActivitySource
 }
 interface MemberToolActivity {
   kind: "execution_activity"
@@ -109,6 +113,8 @@ interface MemberToolActivity {
   category: MemberToolActivityCategory
 }
 export type MemberExecutionActivity = MemberExecutionLifecycleActivity | MemberToolActivity
+
+export type MemberActivitySource = "stream" | "message" | "retry" | "compaction"
 
 export type MemberToolActivityPhase = "tool-start" | "tool-update" | "tool-end"
 

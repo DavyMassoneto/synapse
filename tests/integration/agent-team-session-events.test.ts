@@ -26,7 +26,7 @@ function translatesStart(): void {
 function translatesTurn(): void {
   const session = subscribedTeamSession()
   session.emit({ type: "turn_start" })
-  expect(session.events).toEqual([{ kind: "turn_started" }])
+  expect(session.events).toEqual([{ kind: "turn_started", executionId: 0 }])
 }
 
 function translatesSettled(): void {
@@ -52,7 +52,7 @@ function translatesToolStart(): void {
       callId: TEAM_SESSION_ACTIVITY_CALL,
       category: TEAM_SESSION_ACTIVITY_EXECUTION,
     },
-    { kind: "tool_started", callId: "call", label: "read: source.ts" },
+    { kind: "tool_started", executionId: 0, callId: "call", label: "read" },
   ])
 }
 
@@ -73,7 +73,7 @@ function translatesToolEnd(): void {
       callId: TEAM_SESSION_ACTIVITY_CALL,
       category: TEAM_SESSION_ACTIVITY_EXECUTION,
     },
-    { kind: "tool_ended", callId: "call" },
+    { kind: "tool_ended", executionId: 0, callId: "call" },
   ])
 }
 
@@ -133,7 +133,7 @@ function registerTests(): void {
   test("traduz início do turno", translatesTurn)
   test("traduz conclusão com resposta", translatesSettled)
   test("traduz cancelamento", translatesAborted)
-  test("traduz ferramenta iniciada com alvo", translatesToolStart)
+  test("traduz ferramenta iniciada sem expor argumentos", translatesToolStart)
   test("traduz ferramenta encerrada", translatesToolEnd)
   test("erro com mensagem preserva a causa", translatesAssistantFailure)
   test("mensagem de usuário não vira resposta do membro", ignoresNonAssistantMessage)

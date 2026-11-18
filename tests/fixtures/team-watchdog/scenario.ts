@@ -12,5 +12,5 @@ export function createWatchdogScenario(directory: string) {
   const clock = new WatchdogClock()
   const team = createAgentTeam(lead, sessions, piTeamClock, clock)
   const observation = new WatchdogObservation(clock, host, sessions.sessions)
-  return { team, host, sessions, clock, observation, directory }
+  return { team, lead, host, sessions, clock, observation, directory }
 }

@@ -126,9 +126,41 @@ async function messagingJournalFailure(): Promise<void> {
     const tasks = fixture.board().listTasks({})
     const worker = messagingMemberMessages(session, "worker")
     const history = session.sessionManager.getBranch().filter((entry) => entry.type === "custom")
+    const observedTasks = fixture
+      .board()
+      .overview()
+      .agents.map((agent) => ({ name: agent.name, tasks: agent.tasks }))
+    for (const agent of observedTasks) {
+      expect(Array.isArray(agent.tasks)).toBe(true)
+    }
+    const workerObservation = observedTasks.find((agent) => agent.name === "worker")
+    expect(workerObservation?.tasks).toHaveLength(1)
+    const assigned = workerObservation?.tasks?.[0]
+    expect(assigned?.id).toBe("task-1")
+    expect(assigned?.revision).toBe(2)
+    expect(assigned?.bound).toBe(true)
+    expect(typeof assigned?.updatedAt === "string" && assigned.updatedAt.length > 0).toBe(true)
     faults.failJournal = true
+    expect(fixture.board().delegate("lead", "worker", "journal failure probe", "task-1", 2).kind).toBe("failed")
     await fixture.step()
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(1)
+    for (const previous of observedTasks) {
+      const current = fixture
+        .board()
+        .overview()
+        .agents.find((agent) => agent.name === previous.name)
+      expect(Array.isArray(current?.tasks)).toBe(true)
+      expect(current?.tasks?.length).toBe(previous.tasks?.length)
+      if (previous.tasks) {
+        for (const [index, task] of previous.tasks.entries()) {
+          const observed = current?.tasks?.[index]
+          expect(observed?.id).toBe(task.id)
+          expect(observed?.revision).toBe(task.revision)
+          expect(observed?.bound).toBe(task.bound)
+          expect(observed?.updatedAt).toBe(task.updatedAt)
+        }
+      }
+    }
     expect(fixture.board().listTasks({})).toEqual(tasks)
     expect(messagingMemberMessages(session, "worker")).toEqual(worker)
     expect(session.sessionManager.getBranch().filter((entry) => entry.type === "custom")).toEqual(history)

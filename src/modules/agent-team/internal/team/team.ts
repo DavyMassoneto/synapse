@@ -20,6 +20,7 @@ import { teamLeadRow, teamOutcomePresentation } from "../presentation"
 import { TeamRecentEvents } from "../recent-events"
 import { TeamRoster } from "../roster"
 import { TaskBoard } from "../task-board"
+import { TeamTaskObservation } from "../task-observation"
 import { TeamBoardDirectory } from "./board-directory"
 import { teamSuspendMembers } from "./suspend-members"
 
@@ -31,6 +32,8 @@ export class Team implements AgentTeam {
   private readonly messages: TeamMessages
 
   private readonly board: TaskBoard
+
+  private readonly taskObservation: TeamTaskObservation
 
   private readonly admission: TeamMembership
 
@@ -57,10 +60,21 @@ export class Team implements AgentTeam {
   constructor(lead: TeamLead, sessions: MemberSessions, clock: TeamClock, runtime: MemberTurnRuntime) {
     this.lead = lead
     this.memberNotice = lead.deliver.bind(lead)
-    this.board = new TaskBoard(lead, new TeamBoardDirectory(this.roster))
+    this.taskObservation = new TeamTaskObservation(lead, clock, runtime)
+    this.board = new TaskBoard(this.taskObservation, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
-    this.messages = new TeamMessages(lead, this.roster, this.events, this, this.board)
-    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime, this.board)
+    this.messages = new TeamMessages(lead, this.roster, this.events, this, this.board, this.taskObservation)
+    this.admission = new TeamMembership(
+      this,
+      sessions,
+      lead,
+      this.roster,
+      this.events,
+      runtime,
+      this.board,
+      clock,
+      this.taskObservation,
+    )
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.delegate = this.messages.delegate.bind(this.messages)
@@ -77,6 +91,7 @@ export class Team implements AgentTeam {
     for (const member of this.roster.clear()) {
       await member.dispose()
     }
+    this.taskObservation.clear()
     this.board.restore(tasks)
     return this.admission.restore(records)
   }
@@ -87,7 +102,9 @@ export class Team implements AgentTeam {
       agents.push(member.row())
     }
     agents.push(...this.roster.failures())
-    return { agents, tasks: this.board.list({}), events: this.events.list() }
+    const tasks = this.board.list({})
+    this.taskObservation.attach(agents, tasks, this.board)
+    return { agents, tasks, events: this.events.list() }
   }
 
   refresh(): void {

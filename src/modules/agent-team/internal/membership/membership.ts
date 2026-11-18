@@ -5,6 +5,7 @@ import {
   type OpenedMember,
   type StartMemberRequest,
   TEAM_STARTED,
+  type TeamClock,
   type TeamLead,
   type TeamStartOutcome,
 } from "#synapse/modules/agent-team/public/contracts"
@@ -23,7 +24,7 @@ import {
 } from "./constants"
 import { teamOpenRequest } from "./open-request"
 import { rollbackPreparedMember } from "./rollback"
-import { type TeamAdmissionAttempt, type TeamMembershipContext } from "./types"
+import { type TeamAdmissionAttempt, type TeamAdmissionJournal, type TeamMembershipContext } from "./types"
 
 export class TeamMembership {
   private readonly team: TeamMembershipContext
@@ -40,6 +41,10 @@ export class TeamMembership {
 
   private readonly board: TaskBoard
 
+  private readonly clock: TeamClock
+
+  private readonly journal: TeamAdmissionJournal
+
   private generation = 0
 
   private closed = false
@@ -52,8 +57,12 @@ export class TeamMembership {
     events: TeamRecentEvents,
     runtime: MemberTurnRuntime,
     board: TaskBoard,
+    clock: TeamClock,
+    journal: TeamAdmissionJournal,
   ) {
     this.board = board
+    this.clock = clock
+    this.journal = journal
     this.runtime = runtime
     this.team = team
     this.sessions = sessions
@@ -113,7 +122,7 @@ export class TeamMembership {
     const attempt: TeamAdmissionAttempt = {}
     try {
       this.ensureGeneration(generation)
-      const member = new TeamMember(opened, this.team, this.runtime)
+      const member = new TeamMember(opened, this.team, this.runtime, this.clock)
       attempt.member = member
       return this.publishMember(member, opened.record, request, attempt)
     } catch (error) {
@@ -139,7 +148,7 @@ export class TeamMembership {
     const task = this.board.prepareAdmission(record.name, request.taskId, request.expectedRevision)
     acceptMemberTask(member, task)
     this.board.validateAdmission(request.taskId, request.expectedRevision)
-    this.lead.recordAdmission({ ...record }, taskBoardCopySnapshot(task))
+    this.journal.recordAdmission({ ...record }, taskBoardCopySnapshot(task))
     attempt.committed = true
     const snapshot = this.board.acceptAdmission(task)
     this.roster.add(member)
@@ -165,7 +174,7 @@ export class TeamMembership {
   private async admitRestored(opened: OpenedMember, generation: number): Promise<void> {
     try {
       this.ensureGeneration(generation)
-      this.roster.add(new TeamMember(opened, this.team, this.runtime))
+      this.roster.add(new TeamMember(opened, this.team, this.runtime, this.clock))
     } catch (error) {
       await opened.session.dispose()
       throw error

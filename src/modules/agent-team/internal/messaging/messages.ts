@@ -1,4 +1,5 @@
 import {
+  type TaskJournal,
   TEAM_DELEGATED,
   TEAM_DONE,
   TEAM_INTERRUPT_REQUESTED,
@@ -35,9 +36,19 @@ export class TeamMessages {
 
   private readonly board: TaskBoard
 
+  private readonly journal: TaskJournal
+
   private closed = false
 
-  constructor(lead: TeamLead, roster: TeamRoster, events: TeamRecentEvents, view: TeamRefreshPort, board: TaskBoard) {
+  constructor(
+    lead: TeamLead,
+    roster: TeamRoster,
+    events: TeamRecentEvents,
+    view: TeamRefreshPort,
+    board: TaskBoard,
+    journal: TaskJournal,
+  ) {
+    this.journal = journal
     this.board = board
     this.lead = lead
     this.roster = roster
@@ -78,7 +89,7 @@ export class TeamMessages {
     if (target !== TEAM_LEAD_NAME) {
       this.roster.find(target)
     }
-    const task = commitTaskDelegation(this.board, this.lead, sender, target, taskId, expectedRevision)
+    const task = commitTaskDelegation(this.board, this.journal, sender, target, taskId, expectedRevision)
     this.deliverMessage(sender, target, `${TEAM_DELEGATION_HEADER}${JSON.stringify(task)}\n${message}`)
     return { kind: TEAM_DELEGATED, task }
   }

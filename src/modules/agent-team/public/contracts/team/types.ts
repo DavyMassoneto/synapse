@@ -1,4 +1,4 @@
-import { type MemberRecord, type OpenedMember, type OpenMemberRequest } from "../member"
+import { type MemberActivitySource, type MemberRecord, type OpenedMember, type OpenMemberRequest } from "../member"
 import {
   type CreateTaskInput,
   type TaskCleanOutcome,
@@ -46,6 +46,48 @@ export type TeamAgentStatus = "running" | "inactive"
 
 export type TeamAgentState = "working" | "idle" | "finished" | "interrupted" | "failed"
 
+export interface TeamToolObservation {
+  name: string
+  elapsedMs: number
+}
+
+export type TeamObservedSignal =
+  | MemberActivitySource
+  | "start"
+  | "settled"
+  | "turn"
+  | "tool-start"
+  | "tool-update"
+  | "tool-end"
+
+export interface TeamKnownProgress {
+  kind: "observed"
+  executionId: number
+  startedAt: string
+  elapsedMs: number
+  lastSignalAt: string
+  silentMs: number
+  lastSignal: TeamObservedSignal
+  turns: number
+  completedTools: number
+  streamUpdates: number
+  tools: TeamToolObservation[]
+}
+
+export interface TeamUnknownProgress {
+  kind: "unknown"
+}
+
+export type TeamProgress = TeamKnownProgress | TeamUnknownProgress
+
+export interface TeamTaskObservation {
+  id: string
+  revision: number
+  bound: boolean
+  updatedAt?: string
+  ageMs?: number
+}
+
 export interface TeamAgentRow {
   name: string
   status: TeamAgentStatus
@@ -54,6 +96,9 @@ export interface TeamAgentRow {
   activity: string
   model: string
   effectiveModel?: string
+  progress?: TeamProgress
+  tasks?: TeamTaskObservation[]
+  restorationFailed?: boolean
 }
 
 export interface TeamOverview {
