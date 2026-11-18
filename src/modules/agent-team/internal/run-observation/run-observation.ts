@@ -13,6 +13,7 @@ import {
   type TeamObservedSignal,
   type TeamProgress,
 } from "#synapse/modules/agent-team/public/contracts"
+import { captureObservedTime } from "./capture-time"
 import {
   RUN_OBSERVATION_KNOWN,
   RUN_OBSERVATION_UNKNOWN,
@@ -24,7 +25,7 @@ import {
   RUN_SIGNAL_TOOL_UPDATE,
   RUN_SIGNAL_TURN,
 } from "./constants"
-import { type ObservedRun, type ObservedTime, type ObservedTools } from "./types"
+import { type ObservedRun, type ObservedTools } from "./types"
 
 export class MemberRunObservation {
   private run?: ObservedRun
@@ -41,7 +42,7 @@ export class MemberRunObservation {
   }
 
   start(executionId: number): void {
-    const now = this.now()
+    const now = captureObservedTime(this.clock, this.runtime)
     this.run = {
       executionId,
       started: now,
@@ -145,12 +146,8 @@ export class MemberRunObservation {
     }
   }
 
-  private now(): ObservedTime {
-    return { timestamp: this.clock(), monotonic: this.runtime.monotonic() }
-  }
-
   private record(run: ObservedRun, signal: TeamObservedSignal): void {
-    run.last = this.now()
+    run.last = captureObservedTime(this.clock, this.runtime)
     run.signal = signal
   }
 }

@@ -2,8 +2,8 @@ import {
   type AgentTeam,
   type TaskJournal,
   type TaskSelection,
-  type TeamAgentRow,
   type TeamMemberRegistry,
+  type TeamTaskObservation,
 } from "#synapse/modules/agent-team/public/contracts"
 
 import { type ObservedTime } from "../run-observation"
@@ -13,7 +13,7 @@ export type ObservedTaskJournal = TaskJournal & Pick<TeamMemberRegistry, "record
 export type ObservedTaskTimes = Map<string, ObservedTime>
 
 export interface ObservedAgentTasks {
-  row: TeamAgentRow
+  tasks: TeamTaskObservation[]
   selection: TaskSelection
 }
 

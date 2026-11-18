@@ -1,20 +1,15 @@
 import {
   type MemberRecord,
   type MemberTurnRuntime,
-  TASK_SELECTED,
-  type TeamTaskObservation as TaskObservation,
   type TaskSnapshot,
   type TaskView,
   type TeamAgentRow,
   type TeamClock,
 } from "#synapse/modules/agent-team/public/contracts"
-import { type ObservedTime } from "../run-observation"
-import {
-  type ObservedAgentRows,
-  type ObservedTaskJournal,
-  type ObservedTaskTimes,
-  type TaskSelectionReader,
-} from "./types"
+import { captureObservedTime } from "../run-observation"
+import { indexObservedAgentTasks } from "./agent-index"
+import { appendObservedTaskViews } from "./task-views"
+import { type ObservedTaskJournal, type ObservedTaskTimes, type TaskSelectionReader } from "./types"
 
 export class TeamTaskObservation implements ObservedTaskJournal {
   private readonly journal: ObservedTaskJournal
@@ -38,52 +33,26 @@ export class TeamTaskObservation implements ObservedTaskJournal {
   recordTask(task: TaskSnapshot): void {
     const taskId = task.id
     this.journal.recordTask(task)
-    this.updates.set(taskId, this.now())
+    this.updates.set(taskId, captureObservedTime(this.clock, this.runtime))
   }
 
   recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
     const taskId = task.id
     this.journal.recordAdmission(record, task)
-    this.updates.set(taskId, this.now())
+    this.updates.set(taskId, captureObservedTime(this.clock, this.runtime))
   }
 
   recordTaskCleanup(tasks: TaskSnapshot[]): void {
     this.journal.recordTaskCleanup(tasks)
-    const now = this.now()
+    const now = captureObservedTime(this.clock, this.runtime)
     for (const task of tasks) {
       this.updates.set(task.id, now)
     }
   }
 
-  private now(): ObservedTime {
-    return { timestamp: this.clock(), monotonic: this.runtime.monotonic() }
-  }
-
   attach(agents: TeamAgentRow[], tasks: TaskView[], selection: TaskSelectionReader): void {
-    const rows: ObservedAgentRows = new Map()
-    for (const agent of agents) {
-      agent.tasks = []
-      rows.set(agent.name, { row: agent, selection: selection.selectedTask(agent.name) })
-    }
+    const rows = indexObservedAgentTasks(agents, selection)
     const now = this.runtime.monotonic()
-    for (const task of tasks) {
-      if (task.owner) {
-        const agent = rows.get(task.owner)
-        if (agent?.row.tasks) {
-          const selected = agent.selection
-          const observation: TaskObservation = {
-            id: task.id,
-            revision: task.revision,
-            bound: selected.kind === TASK_SELECTED && selected.task.id === task.id,
-          }
-          const updated = this.updates.get(task.id)
-          if (updated) {
-            observation.updatedAt = updated.timestamp
-            observation.ageMs = Math.max(0, now - updated.monotonic)
-          }
-          agent.row.tasks.push(observation)
-        }
-      }
-    }
+    appendObservedTaskViews(rows, tasks, this.updates, now)
   }
 }
