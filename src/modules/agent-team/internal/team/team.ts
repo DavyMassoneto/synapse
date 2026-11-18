@@ -86,8 +86,7 @@ export class Team implements AgentTeam {
     const acquisitions = this.admission.close()
     this.closed = true
     this.messages.close()
-    this.events.clear()
-    this.taskObservation.clear()
+    this.clearObservations()
     this.board.restore([])
     this.closing = teamDisposeMembers(this.roster.clear(), this.closing, acquisitions)
     await this.closing
@@ -136,8 +135,7 @@ export class Team implements AgentTeam {
     const acquisitions = this.admission.close()
     this.messages.close()
     this.board.restore([])
-    this.events.clear()
-    this.taskObservation.clear()
+    this.clearObservations()
     this.closing = teamSuspendMembers(this.roster.clear(), this.lead, this.closing, acquisitions)
     await this.closing
   }
@@ -152,6 +150,11 @@ export class Team implements AgentTeam {
       this.events.add(presentation.event)
       this.messages.deliverLead(presentation.notice)
     }
+  }
+
+  private clearObservations(): void {
+    this.events.clear()
+    this.taskObservation.clear()
   }
 
   private refreshTaskResult(result: TaskOutcome): TaskOutcome {

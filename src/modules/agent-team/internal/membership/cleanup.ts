@@ -35,11 +35,8 @@ export async function rollbackPreparedMember(
   opened: OpenedMember,
   attempt: TeamAdmissionAttempt,
 ): Promise<void> {
-  let close = opened.session.dispose.bind(opened.session)
-  if (attempt.member) {
-    close = attempt.member.dispose.bind(attempt.member)
-  }
-  const closed = await captureMemberOutcome(close)
+  await cleanupTeamAdmission(opened, attempt)
+  const closed = attempt.outcome
   const discarded = await captureMemberOutcome(sessions.discardPrepared.bind(sessions, opened.record))
   const failures: Error[] = []
   if (closed.failed) {
