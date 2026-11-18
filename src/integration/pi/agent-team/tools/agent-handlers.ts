@@ -1,4 +1,4 @@
-import { type AgentTeam } from "#synapse/modules/agent-team"
+import { type AgentTeam, TEAM_MESSAGE_DELEGATION } from "#synapse/modules/agent-team"
 import { teamAcceptedOrRefusedOutput, teamTextOutput } from "./tool-output"
 import { type TeamInterruptInput, type TeamSendInput, type TeamSubagentInput, type TeamToolOutput } from "./types"
 
@@ -24,6 +24,11 @@ export class TeamAgentHandlers {
   }
 
   async send(_id: string, input: TeamSendInput): Promise<TeamToolOutput> {
+    if (input.mode === TEAM_MESSAGE_DELEGATION) {
+      return teamAcceptedOrRefusedOutput(
+        this.team.delegate(this.caller, input.agent, input.message, input.task_id, input.expected_revision),
+      )
+    }
     return teamAcceptedOrRefusedOutput(this.team.send(this.caller, input.agent, input.message))
   }
 

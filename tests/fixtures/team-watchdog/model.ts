@@ -102,7 +102,7 @@ export class WatchdogModel {
           type: WATCHDOG_ROLE_TOOL_CALL,
           id: WATCHDOG_TOOL_ID,
           name: this.pendingTool,
-          arguments: { agent: WATCHDOG_LEAD, message: WATCHDOG_PROMPT },
+          arguments: { agent: WATCHDOG_LEAD, message: WATCHDOG_PROMPT, mode: "coordination" },
         })
       } else {
         this.publishTool({ type: WATCHDOG_ROLE_TOOL_CALL, id: WATCHDOG_TOOL_ID, name: this.pendingTool, arguments: {} })

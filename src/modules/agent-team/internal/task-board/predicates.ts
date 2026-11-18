@@ -5,6 +5,7 @@ import {
   type TaskFilter,
   type TaskSnapshot,
   type TaskView,
+  TEAM_LEAD_NAME,
 } from "#synapse/modules/agent-team/public/contracts"
 import {
   TASK_BOARD_DRIVE_PREFIX,
@@ -13,6 +14,10 @@ import {
   TASK_BOARD_SCOPE_SEPARATOR,
 } from "./constants"
 import { type TaskBoardStatusIndex } from "./types"
+
+export function isTaskBoardDelegationAuthorized(task: TaskSnapshot, caller: string, target: string): boolean {
+  return caller === TEAM_LEAD_NAME || !task.owner || task.owner === caller || task.owner === target
+}
 
 export function isTaskBoardActive(task: TaskSnapshot): boolean {
   return task.status !== TASK_DELETED

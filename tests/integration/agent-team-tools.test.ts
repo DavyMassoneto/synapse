@@ -40,7 +40,7 @@ async function refuseStart(): Promise<void> {
 
 async function sendMember(): Promise<void> {
   const sut = makeSut()
-  const result = await sut.handlers.send("id", { agent: "lead", message: "Pronto" })
+  const result = await sut.handlers.send("id", { agent: "lead", message: "Pronto", mode: "coordination" })
   expect(result.isError).toBe(false)
   expect(sut.team.sender).toBe("worker")
 }
@@ -48,7 +48,9 @@ async function sendMember(): Promise<void> {
 async function refuseSend(): Promise<void> {
   const sut = makeSut()
   sut.team.refused = true
-  expect((await sut.handlers.send("id", { agent: "missing", message: "Mensagem" })).isError).toBe(true)
+  expect((await sut.handlers.send("id", { agent: "missing", message: "Mensagem", mode: "coordination" })).isError).toBe(
+    true,
+  )
 }
 
 async function interruptMember(): Promise<void> {

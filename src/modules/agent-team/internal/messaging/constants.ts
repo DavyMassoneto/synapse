@@ -9,3 +9,6 @@ export const TEAM_EVENT_ARROW = " → "
 export const TEAM_EVENT_DETAIL = ": "
 
 export const TEAM_CLOSED = "A equipe está suspensa"
+
+export const TEAM_DELEGATION_HEADER =
+  "Delegação vinculada; use o snapshot do quadro como contrato. Fim de turno não conclui a tarefa.\n"

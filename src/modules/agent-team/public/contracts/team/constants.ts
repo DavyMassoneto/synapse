@@ -16,6 +16,12 @@ export const TEAM_STARTED = "started"
 
 export const TEAM_DONE = "done"
 
+export const TEAM_DELEGATED = "delegated"
+
+export const TEAM_MESSAGE_COORDINATION = "coordination"
+
+export const TEAM_MESSAGE_DELEGATION = "delegation"
+
 export const TEAM_LEAD_NAME = "lead"
 
 export const TEAM_MODEL_KNOWN = "known"

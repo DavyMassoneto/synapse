@@ -106,6 +106,13 @@ export interface TeamDone {
 
 export type TeamOutcome = TeamDone | TeamRefused | TeamFailed
 
+export interface TeamDelegated {
+  kind: "delegated"
+  task: TaskView
+}
+
+export type TeamDelegationOutcome = TeamDelegated | TeamRefused | TeamFailed
+
 export interface TeamRefused {
   kind: "refused"
   message: string
@@ -124,6 +131,13 @@ export interface AgentTeam {
   start(request: StartMemberRequest): Promise<TeamStartOutcome>
   restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void>
   send(sender: string, target: string, message: string): TeamOutcome
+  delegate(
+    sender: string,
+    target: string,
+    message: string,
+    taskId: string,
+    expectedRevision: number,
+  ): TeamDelegationOutcome
   interrupt(target: string): TeamInterruptOutcome
   overview(): TeamOverview
   refresh(): void

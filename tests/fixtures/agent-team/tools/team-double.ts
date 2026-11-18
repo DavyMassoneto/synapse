@@ -9,6 +9,8 @@ import {
   type TaskSelection,
   type TaskSnapshot,
   type TaskView,
+  TEAM_DELEGATED,
+  type TeamDelegationOutcome,
   type TeamInterruptOutcome,
   type TeamOutcome,
   type TeamOverview,
@@ -50,6 +52,21 @@ export class ToolsTeamDouble implements AgentTeam {
     this.sender = sender
     this.target = target
     return this.outcome()
+  }
+
+  delegate(
+    sender: string,
+    target: string,
+    _message: string,
+    _taskId: string,
+    _expectedRevision: number,
+  ): TeamDelegationOutcome {
+    this.sender = sender
+    this.target = target
+    if (this.refused) {
+      return TEAM_FIXTURE_REFUSAL
+    }
+    return { kind: TEAM_DELEGATED, task: TEAM_FIXTURE_TASK }
   }
 
   interrupt(target: string): TeamInterruptOutcome {
