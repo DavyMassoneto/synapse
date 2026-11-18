@@ -7,7 +7,7 @@ import {
   type TeamClock,
 } from "#synapse/modules/agent-team/public/contracts"
 import { captureObservedTime } from "../run-observation"
-import { indexObservedAgentTasks } from "./agent-index"
+import { attachTaskListsAndIndexObservedAgents } from "./agent-index"
 import { appendObservedTaskViews } from "./task-views"
 import { type ObservedTaskJournal, type ObservedTaskTimes, type TaskSelectionReader } from "./types"
 
@@ -51,7 +51,7 @@ export class TeamTaskObservation implements ObservedTaskJournal {
   }
 
   attach(agents: TeamAgentRow[], tasks: TaskView[], selection: TaskSelectionReader): void {
-    const rows = indexObservedAgentTasks(agents, selection)
+    const rows = attachTaskListsAndIndexObservedAgents(agents, selection)
     const now = this.runtime.monotonic()
     appendObservedTaskViews(rows, tasks, this.updates, now)
   }

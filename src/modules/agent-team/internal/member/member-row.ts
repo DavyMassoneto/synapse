@@ -7,7 +7,7 @@ import {
   type TeamAgentState,
 } from "#synapse/modules/agent-team/public/contracts"
 import { RUN_OBSERVATION_KNOWN } from "../run-observation"
-import { TEAM_ACTIVITY_BREAK, TEAM_UNCONFIRMED } from "./constants"
+import { TEAM_ACTIVITY_BREAK, TEAM_NO_ACTIVITY, TEAM_UNCONFIRMED } from "./constants"
 import { type TeamMemberRowInput } from "./types"
 
 function memberRowState(input: TeamMemberRowInput): TeamAgentState {
@@ -24,7 +24,7 @@ function memberRowActivity(input: TeamMemberRowInput): string {
   if (input.progress.kind === RUN_OBSERVATION_KNOWN) {
     return input.progress.tools.map((tool) => tool.name).join(TEAM_ACTIVITY_BREAK)
   }
-  return ""
+  return TEAM_NO_ACTIVITY
 }
 
 export function teamMemberRow(input: TeamMemberRowInput): TeamAgentRow {

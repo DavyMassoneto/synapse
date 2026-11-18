@@ -1,4 +1,4 @@
-import { type AssistantMessage } from "@earendil-works/pi-ai"
+import { type AgentMessage } from "@earendil-works/pi-agent-core"
 import { type AgentSessionEvent } from "@earendil-works/pi-coding-agent"
 import {
   MEMBER_ACTIVITY_SETTLED,
@@ -62,9 +62,7 @@ export class PiMemberExecutionActivity {
         break
       case TEAM_PI_ACTIVITY_MESSAGE_START:
       case TEAM_PI_ACTIVITY_MESSAGE_END:
-        if (event.message.role === TEAM_PI_MEMBER_ASSISTANT_ROLE) {
-          this.message(event.message)
-        }
+        this.message(event.message)
         break
       case TEAM_PI_ACTIVITY_MESSAGE_UPDATE:
         this.messageUpdate(event)
@@ -78,13 +76,6 @@ export class PiMemberExecutionActivity {
       case TEAM_PI_ACTIVITY_TOOL_EXECUTION_END:
         this.tool(event, MEMBER_ACTIVITY_TOOL_END)
         break
-      default:
-        this.recovery(event)
-    }
-  }
-
-  private recovery(event: AgentSessionEvent): void {
-    switch (event.type) {
       case TEAM_PI_ACTIVITY_AUTO_RETRY_START:
       case TEAM_PI_ACTIVITY_AUTO_RETRY_END:
         this.update(TEAM_PI_OBSERVATION_RETRY)
@@ -92,7 +83,6 @@ export class PiMemberExecutionActivity {
       case TEAM_PI_ACTIVITY_COMPACTION_START:
       case TEAM_PI_ACTIVITY_COMPACTION_END:
         this.update(TEAM_PI_OBSERVATION_COMPACTION)
-        break
     }
   }
 
@@ -116,14 +106,16 @@ export class PiMemberExecutionActivity {
     })
   }
 
-  private message(message: AssistantMessage): void {
-    for (const content of message.content) {
-      if (
-        (content.type === TEAM_PI_ACTIVITY_TEXT && content.text.length > 0) ||
-        (content.type === TEAM_PI_ACTIVITY_THINKING && content.thinking.length > 0)
-      ) {
-        this.update(TEAM_PI_OBSERVATION_MESSAGE)
-        break
+  private message(message: AgentMessage): void {
+    if (message.role === TEAM_PI_MEMBER_ASSISTANT_ROLE) {
+      for (const content of message.content) {
+        if (
+          (content.type === TEAM_PI_ACTIVITY_TEXT && content.text.length > 0) ||
+          (content.type === TEAM_PI_ACTIVITY_THINKING && content.thinking.length > 0)
+        ) {
+          this.update(TEAM_PI_OBSERVATION_MESSAGE)
+          break
+        }
       }
     }
   }
