@@ -1,3 +1,5 @@
+import { type TeamObservedSignal } from "#synapse/modules/agent-team/public/contracts"
+
 export interface ObservedTime {
   timestamp: string
   monotonic: number
@@ -15,7 +17,7 @@ export interface ObservedRun {
   started: ObservedTime
   last: ObservedTime
   ended?: ObservedTime
-  signal: string
+  signal: TeamObservedSignal
   turns: number
   completedTools: number
   streamUpdates: number

@@ -1,5 +1,7 @@
 import { expect, test } from "vitest"
+import { TASK_ACCEPTED, TASK_CLAIM, TASK_COMPLETE, TASK_REASSIGN, TEAM_LEAD_NAME } from "#synapse/modules/agent-team"
 import {
+  failMonitorRestore,
   fixtureModel,
   hasMonitorNextTurn,
   hasMonitorSettled,
@@ -7,6 +9,7 @@ import {
   hasMonitorTool,
   hasMonitorToolUpdate,
   MONITOR_FAILURE,
+  MONITOR_MEMBER_MISSING,
   MONITOR_PRIVATE_ARGUMENT,
   MONITOR_PROGRESS,
   MONITOR_TASK_SUBJECT,
@@ -18,12 +21,11 @@ import {
   monitorMember,
   monitorProgress,
   runMonitorScenario,
+  settleMonitorExecution,
   TeamLeadContext,
-  WATCHDOG_DEFAULT_OPTIONS,
   WATCHDOG_INITIAL_NOTICE,
   WATCHDOG_MEMBER,
   WATCHDOG_TIMEOUT_MS,
-  WatchdogFixture,
   type WatchdogScenario,
   waitForWatchdogCondition,
 } from "../fixtures"
@@ -76,17 +78,17 @@ async function observesTasks(scenario: WatchdogScenario): Promise<void> {
     writeScopes: [],
   })
   expect(created.kind).toBe("accepted")
-  if (created.kind !== "accepted") {
+  if (created.kind !== TASK_ACCEPTED) {
     throw new Error(created.message)
   }
-  const assigned = scenario.team.updateTask("lead", {
+  const assigned = scenario.team.updateTask(TEAM_LEAD_NAME, {
     taskId: created.task.id,
     expectedRevision: created.task.revision,
-    action: "reassign",
+    action: TASK_REASSIGN,
     owner: WATCHDOG_MEMBER,
   })
   expect(assigned.kind).toBe("accepted")
-  if (assigned.kind !== "accepted") {
+  if (assigned.kind !== TASK_ACCEPTED) {
     throw new Error(assigned.message)
   }
   scenario.clock.advance(100)
@@ -98,7 +100,7 @@ async function observesTasks(scenario: WatchdogScenario): Promise<void> {
   const claimed = scenario.team.updateTask(WATCHDOG_MEMBER, {
     taskId: created.task.id,
     expectedRevision: assigned.task.revision,
-    action: "claim",
+    action: TASK_CLAIM,
   })
   expect(claimed.kind).toBe("accepted")
   expect(monitorMember(scenario).tasks).toEqual([
@@ -119,7 +121,7 @@ async function observesTasks(scenario: WatchdogScenario): Promise<void> {
     scenario.team.updateTask(WATCHDOG_MEMBER, {
       taskId: created.task.id,
       expectedRevision: created.task.revision,
-      action: "complete",
+      action: TASK_COMPLETE,
     }).kind,
   ).toBe("refused")
   scenario.clock.advance(WATCHDOG_TIMEOUT_MS - 100)
@@ -134,55 +136,49 @@ async function observesRuntimeFailure(scenario: WatchdogScenario): Promise<void>
   expect(monitorProgress(scenario).lastSignal).toBe("settled")
 }
 
-async function restoreHasUnknownSignals(): Promise<void> {
-  const fixture = new WatchdogFixture()
-  try {
-    const scenario = await fixture.start(WATCHDOG_DEFAULT_OPTIONS)
-    await waitForWatchdogCondition(scenario.observation.hasNewTimer.bind(scenario.observation))
-    const task = scenario.team.createTask({
-      subject: MONITOR_TASK_SUBJECT,
-      description: MONITOR_TASK_SUBJECT,
-      blockedBy: [],
-      writeScopes: [],
-    })
-    if (task.kind !== "accepted") {
-      throw new Error(task.message)
-    }
-    const claimed = scenario.team.updateTask(WATCHDOG_MEMBER, {
-      taskId: task.task.id,
-      expectedRevision: task.task.revision,
-      action: "claim",
-    })
-    if (claimed.kind !== "accepted") {
-      throw new Error(claimed.message)
-    }
-    scenario.sessions.model.finish()
-    await waitForWatchdogCondition(hasMonitorSettled.bind(undefined, scenario))
-    await scenario.team.restore(scenario.sessions.records, [claimed.task])
-    expect(monitorMember(scenario).tasks).toEqual([
-      { id: claimed.task.id, revision: claimed.task.revision, bound: false },
-    ])
-    expect(monitorMember(scenario).progress).toEqual({ kind: "unknown" })
-    expect(scenario.team.selectedTask(WATCHDOG_MEMBER).kind).toBe("unselected")
-    expect(scenario.sessions.model.streams).toBe(1)
-    const restored = await monitorList(scenario)
-    expect(restored).not.toContain("lastSignalAt")
-    const record = scenario.sessions.records[0]
-    if (!record) {
-      throw new Error(WATCHDOG_MEMBER)
-    }
-    scenario.lead.attach(new TeamLeadContext(fixtureModel("fixture", "fixture", 100000)))
-    scenario.sessions.reopen = failMonitorRestore
-    await scenario.team.restore([record], [])
-    expect(monitorMember(scenario).restorationFailed).toBe(true)
-    expect(monitorMember(scenario).progress).toEqual({ kind: "unknown" })
-  } finally {
-    await fixture.close()
+async function restoreHasUnknownSignals(scenario: WatchdogScenario): Promise<void> {
+  const task = scenario.team.createTask({
+    subject: MONITOR_TASK_SUBJECT,
+    description: MONITOR_TASK_SUBJECT,
+    blockedBy: [],
+    writeScopes: [],
+  })
+  if (task.kind !== TASK_ACCEPTED) {
+    throw new Error(task.message)
   }
+  const claimed = scenario.team.updateTask(WATCHDOG_MEMBER, {
+    taskId: task.task.id,
+    expectedRevision: task.task.revision,
+    action: TASK_CLAIM,
+  })
+  if (claimed.kind !== TASK_ACCEPTED) {
+    throw new Error(claimed.message)
+  }
+  await settleMonitorExecution(scenario)
+  await scenario.team.restore(scenario.sessions.records, [claimed.task])
+  expect(monitorMember(scenario).tasks).toEqual([
+    { id: claimed.task.id, revision: claimed.task.revision, bound: false },
+  ])
+  expect(monitorMember(scenario).progress).toEqual({ kind: "unknown" })
+  expect(scenario.team.selectedTask(WATCHDOG_MEMBER).kind).toBe("unselected")
+  expect(scenario.sessions.model.streams).toBe(1)
+  const restored = await monitorList(scenario)
+  expect(restored).not.toContain("lastSignalAt")
 }
 
-async function failMonitorRestore(): Promise<never> {
-  throw new Error(MONITOR_FAILURE)
+async function restoreReportsFailure(scenario: WatchdogScenario): Promise<void> {
+  await settleMonitorExecution(scenario)
+  const record = scenario.sessions.records[0]
+  if (!record) {
+    throw new Error(MONITOR_MEMBER_MISSING)
+  }
+  scenario.lead.attach(new TeamLeadContext(fixtureModel("fixture", "fixture", 100000)))
+  scenario.sessions.reopen = failMonitorRestore
+  await scenario.team.restore([record], [])
+  expect(monitorMember(scenario).restorationFailed).toBe(true)
+  expect(monitorMember(scenario).progress).toEqual({ kind: "unknown" })
+  expect(scenario.team.selectedTask(WATCHDOG_MEMBER).kind).toBe("unselected")
+  expect(scenario.sessions.model.streams).toBe(1)
 }
 
 test(
@@ -197,4 +193,11 @@ test(
   "falha do runtime permanece distinta de falha de restauração",
   runMonitorScenario.bind(undefined, observesRuntimeFailure),
 )
-test("restore real mantém sinais desconhecidos sem retomar execução", restoreHasUnknownSignals)
+test(
+  "restore real mantém sinais desconhecidos sem retomar execução",
+  runMonitorScenario.bind(undefined, restoreHasUnknownSignals),
+)
+test(
+  "falha de restauração não inventa sinais nem retoma execução",
+  runMonitorScenario.bind(undefined, restoreReportsFailure),
+)

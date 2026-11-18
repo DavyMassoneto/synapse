@@ -1,5 +1,7 @@
 export * from "./constants"
+export * from "./predicates"
 export * from "./probe"
+export * from "./restoration"
 export * from "./scenario"
 export * from "./schemas"
 export * from "./types"

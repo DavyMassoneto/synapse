@@ -8,6 +8,7 @@ import {
   type TeamAgentRow,
   type TeamClock,
 } from "#synapse/modules/agent-team/public/contracts"
+import { type ObservedTime } from "../run-observation"
 import {
   type ObservedAgentRows,
   type ObservedTaskJournal,
@@ -37,21 +38,25 @@ export class TeamTaskObservation implements ObservedTaskJournal {
   recordTask(task: TaskSnapshot): void {
     const taskId = task.id
     this.journal.recordTask(task)
-    this.updates.set(taskId, { timestamp: this.clock(), monotonic: this.runtime.monotonic() })
+    this.updates.set(taskId, this.now())
   }
 
   recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
     const taskId = task.id
     this.journal.recordAdmission(record, task)
-    this.updates.set(taskId, { timestamp: this.clock(), monotonic: this.runtime.monotonic() })
+    this.updates.set(taskId, this.now())
   }
 
   recordTaskCleanup(tasks: TaskSnapshot[]): void {
     this.journal.recordTaskCleanup(tasks)
-    const now = { timestamp: this.clock(), monotonic: this.runtime.monotonic() }
+    const now = this.now()
     for (const task of tasks) {
       this.updates.set(task.id, now)
     }
+  }
+
+  private now(): ObservedTime {
+    return { timestamp: this.clock(), monotonic: this.runtime.monotonic() }
   }
 
   attach(agents: TeamAgentRow[], tasks: TaskView[], selection: TaskSelectionReader): void {

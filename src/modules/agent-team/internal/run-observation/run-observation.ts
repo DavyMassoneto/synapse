@@ -10,6 +10,7 @@ import {
   type MemberSessionEvent,
   type MemberTurnRuntime,
   type TeamClock,
+  type TeamObservedSignal,
   type TeamProgress,
 } from "#synapse/modules/agent-team/public/contracts"
 import {
@@ -62,60 +63,56 @@ export class MemberRunObservation {
     ) {
       switch (event.kind) {
         case MEMBER_TURN_STARTED:
-          this.turn()
+          this.turn(this.run)
           break
         case MEMBER_TOOL_STARTED:
-          this.toolStarted(event.callId, event.label)
+          this.toolStarted(this.run, event.callId, event.label)
           break
         case MEMBER_TOOL_ENDED:
-          this.toolEnded(event.callId)
+          this.toolEnded(this.run, event.callId)
           break
         case MEMBER_EXECUTION_ACTIVITY:
-          this.activity(event)
+          this.activity(this.run, event)
           break
       }
     }
   }
 
-  private turn(): void {
-    if (this.run && !this.run.ended) {
-      this.run.turns++
-      this.record(RUN_SIGNAL_TURN)
-    }
+  private turn(run: ObservedRun): void {
+    run.turns++
+    this.record(run, RUN_SIGNAL_TURN)
   }
 
-  private toolStarted(callId: string, name: string): void {
-    if (this.run && !this.run.ended && !this.tools.has(callId)) {
+  private toolStarted(run: ObservedRun, callId: string, name: string): void {
+    if (!this.tools.has(callId)) {
       this.tools.set(callId, { name, started: this.runtime.monotonic() })
-      this.record(RUN_SIGNAL_TOOL_START)
+      this.record(run, RUN_SIGNAL_TOOL_START)
     }
   }
 
-  private toolEnded(callId: string): void {
-    if (this.run && !this.run.ended && this.tools.delete(callId)) {
-      this.run.completedTools++
-      this.record(RUN_SIGNAL_TOOL_END)
+  private toolEnded(run: ObservedRun, callId: string): void {
+    if (this.tools.delete(callId)) {
+      run.completedTools++
+      this.record(run, RUN_SIGNAL_TOOL_END)
     }
   }
 
-  private activity(event: MemberExecutionActivity): void {
-    if (this.run && !this.run.ended && event.executionId === this.run.executionId) {
-      if (event.phase === MEMBER_ACTIVITY_UPDATED) {
-        if (event.source === RUN_SIGNAL_STREAM) {
-          this.run.streamUpdates++
-        }
-        if (event.source) {
-          this.record(event.source)
-        }
-      } else if (event.phase === MEMBER_ACTIVITY_TOOL_UPDATE && this.tools.has(event.callId)) {
-        this.record(RUN_SIGNAL_TOOL_UPDATE)
+  private activity(run: ObservedRun, event: MemberExecutionActivity): void {
+    if (event.phase === MEMBER_ACTIVITY_UPDATED) {
+      if (event.source === RUN_SIGNAL_STREAM) {
+        run.streamUpdates++
       }
+      if (event.source) {
+        this.record(run, event.source)
+      }
+    } else if (event.phase === MEMBER_ACTIVITY_TOOL_UPDATE && this.tools.has(event.callId)) {
+      this.record(run, RUN_SIGNAL_TOOL_UPDATE)
     }
   }
 
   finish(): void {
     if (this.run && !this.run.ended) {
-      this.record(RUN_SIGNAL_SETTLED)
+      this.record(this.run, RUN_SIGNAL_SETTLED)
       this.run.ended = this.run.last
       this.tools.clear()
     }
@@ -152,10 +149,8 @@ export class MemberRunObservation {
     return { timestamp: this.clock(), monotonic: this.runtime.monotonic() }
   }
 
-  private record(signal: string): void {
-    if (this.run) {
-      this.run.last = this.now()
-      this.run.signal = signal
-    }
+  private record(run: ObservedRun, signal: TeamObservedSignal): void {
+    run.last = this.now()
+    run.signal = signal
   }
 }

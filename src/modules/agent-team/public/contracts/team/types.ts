@@ -1,4 +1,4 @@
-import { type MemberRecord, type OpenedMember, type OpenMemberRequest } from "../member"
+import { type MemberActivitySource, type MemberRecord, type OpenedMember, type OpenMemberRequest } from "../member"
 import {
   type CreateTaskInput,
   type TaskCleanOutcome,
@@ -51,6 +51,15 @@ export interface TeamToolObservation {
   elapsedMs: number
 }
 
+export type TeamObservedSignal =
+  | MemberActivitySource
+  | "start"
+  | "settled"
+  | "turn"
+  | "tool-start"
+  | "tool-update"
+  | "tool-end"
+
 export interface TeamKnownProgress {
   kind: "observed"
   executionId: number
@@ -58,7 +67,7 @@ export interface TeamKnownProgress {
   elapsedMs: number
   lastSignalAt: string
   silentMs: number
-  lastSignal: string
+  lastSignal: TeamObservedSignal
   turns: number
   completedTools: number
   streamUpdates: number

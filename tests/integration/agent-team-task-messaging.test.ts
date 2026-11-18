@@ -139,16 +139,16 @@ async function messagingJournalFailure(): Promise<void> {
         .board()
         .overview()
         .agents.find((agent) => agent.name === previous.name)
-      expect(current?.tasks).toEqual(
-        previous.tasks?.map((task) =>
-          expect.objectContaining({
-            id: task.id,
-            revision: task.revision,
-            bound: task.bound,
-            updatedAt: task.updatedAt,
-          }),
-        ),
-      )
+      expect(current?.tasks?.length).toBe(previous.tasks?.length)
+      if (previous.tasks) {
+        for (const [index, task] of previous.tasks.entries()) {
+          const observed = current?.tasks?.[index]
+          expect(observed?.id).toBe(task.id)
+          expect(observed?.revision).toBe(task.revision)
+          expect(observed?.bound).toBe(task.bound)
+          expect(observed?.updatedAt).toBe(task.updatedAt)
+        }
+      }
     }
     expect(fixture.board().listTasks({})).toEqual(tasks)
     expect(messagingMemberMessages(session, "worker")).toEqual(worker)

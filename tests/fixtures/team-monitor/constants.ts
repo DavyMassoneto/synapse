@@ -1,3 +1,7 @@
+export const MONITOR_OBSERVED = "observed"
+export const MONITOR_SIGNAL_TOOL_UPDATE = "tool-update"
+export const MONITOR_MEMBER_MISSING = "Monitor fixture member was not found"
+export const MONITOR_PROGRESS_MISSING = "Monitor fixture has no observed execution progress"
 export const MONITOR_TOOL = "monitor_probe"
 export const MONITOR_TOOL_CALL = "monitor-probe-call"
 export const MONITOR_PRIVATE_ARGUMENT = "fictional-private-argument-347"
