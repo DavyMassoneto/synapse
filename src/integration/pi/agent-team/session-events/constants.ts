@@ -25,9 +25,10 @@ export const TEAM_PI_MEMBER_MESSAGE_END = "message_end"
 
 export const TEAM_PI_MEMBER_SETTLED = "agent_settled"
 
-export const TEAM_PI_MEMBER_ACTIVITY_SEPARATOR = ": "
-
-export const TEAM_PI_MEMBER_DETAIL_SEPARATOR = " "
+export const TEAM_PI_OBSERVATION_STREAM = "stream"
+export const TEAM_PI_OBSERVATION_MESSAGE = "message"
+export const TEAM_PI_OBSERVATION_RETRY = "retry"
+export const TEAM_PI_OBSERVATION_COMPACTION = "compaction"
 
 export const TEAM_PI_ABORT_FAILURE = "Falha ao interromper a sessão do membro."
 

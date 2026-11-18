@@ -7,7 +7,6 @@ import {
   type MemberSessionListener,
 } from "#synapse/modules/agent-team"
 import { type TeamMemberExtensionLifetime } from "../extension-lifecycle"
-import { teamMemberActivity } from "./activity-text"
 import {
   TEAM_PI_MEMBER_AGENT_START,
   TEAM_PI_MEMBER_ASSISTANT_ROLE,
@@ -54,13 +53,13 @@ export class PiTeamEventConnection {
         this.listener({ kind: MEMBER_EXECUTION_STARTED, executionId })
         break
       case TEAM_PI_MEMBER_TURN_START:
-        this.listener({ kind: MEMBER_TURN_STARTED })
+        this.listener({ kind: MEMBER_TURN_STARTED, executionId })
         break
       case TEAM_PI_MEMBER_TOOL_START:
-        this.listener({ kind: MEMBER_TOOL_STARTED, callId: event.toolCallId, label: teamMemberActivity(event) })
+        this.listener({ kind: MEMBER_TOOL_STARTED, executionId, callId: event.toolCallId, label: event.toolName })
         break
       case TEAM_PI_MEMBER_TOOL_END:
-        this.listener({ kind: MEMBER_TOOL_ENDED, callId: event.toolCallId })
+        this.listener({ kind: MEMBER_TOOL_ENDED, executionId, callId: event.toolCallId })
         break
       case TEAM_PI_MEMBER_MESSAGE_END:
         if (event.message.role === TEAM_PI_MEMBER_ASSISTANT_ROLE) {

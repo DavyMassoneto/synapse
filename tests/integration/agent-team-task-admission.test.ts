@@ -10,6 +10,7 @@ import {
   ADMISSION_FAULT_CLOSE,
   ADMISSION_FAULT_DISCARD,
   ADMISSION_FAULT_NONE,
+  ADMISSION_FAULT_RECORD,
   ADMISSION_FAULT_REVISION,
   ADMISSION_MEMBER_CLOSE_FAILURE,
   ADMISSION_RACE,
@@ -93,9 +94,19 @@ async function failedAdmission(mode: AdmissionFault): Promise<void> {
   try {
     const session = await fixture.start()
     await fixture.step()
+    if (mode === ADMISSION_FAULT_RECORD) {
+      const pending = fixture.board().getTask("task-1")
+      if (pending.kind !== "accepted") {
+        throw new Error(pending.message)
+      }
+      await fixture.board().restore([], [{ ...pending.task, owner: "lead" }])
+    }
     faults.mode = mode
     await fixture.step()
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(1)
+    if (mode === ADMISSION_FAULT_RECORD) {
+      expect(fixture.board().overview().agents[0]?.tasks).toEqual([{ id: "task-1", revision: 1, bound: false }])
+    }
     if (mode === ADMISSION_FAULT_CLOSE || mode === ADMISSION_FAULT_DISCARD) {
       expect(JSON.stringify(session.messages.filter(isSelectionToolError))).toContain(ADMISSION_MEMBER_CLOSE_FAILURE)
       expect(JSON.stringify(session.messages.filter(isSelectionToolError))).toContain(ADMISSION_FAILURE_MESSAGE)

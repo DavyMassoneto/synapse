@@ -111,7 +111,7 @@ export class WatchdogModel {
     }
   }
 
-  private publishTool(tool: WatchdogToolCall): void {
+  publishTool(tool: WatchdogToolCall): void {
     if (this.streamResult && this.message) {
       this.message.stopReason = WATCHDOG_TOOL_USE
       this.message.content = [tool]

@@ -12,7 +12,7 @@ import {
   WATCHDOG_SHELL_CLEANUP_UNCONFIRMED,
 } from "./constants"
 import { createWatchdogScenario } from "./scenario"
-import { type WatchdogFixtureOptions } from "./types"
+import { type WatchdogExtensions, type WatchdogFixtureOptions } from "./types"
 
 export class WatchdogFixture {
   private scenario?: ReturnType<typeof createWatchdogScenario>
@@ -23,10 +23,16 @@ export class WatchdogFixture {
 
   resetFailure?: Error
 
-  async start(options: WatchdogFixtureOptions): Promise<ReturnType<typeof createWatchdogScenario>> {
+  async start(
+    options: WatchdogFixtureOptions,
+    extensions?: WatchdogExtensions,
+  ): Promise<ReturnType<typeof createWatchdogScenario>> {
     this.directory = await mkdtemp(join(tmpdir(), WATCHDOG_DIRECTORY))
     const scenario = createWatchdogScenario(this.directory)
     this.scenario = scenario
+    if (extensions) {
+      scenario.sessions.extensions = extensions
+    }
     scenario.sessions.model.shell = options.shell
     scenario.sessions.failStop = options.failStop
     scenario.team.createTask({

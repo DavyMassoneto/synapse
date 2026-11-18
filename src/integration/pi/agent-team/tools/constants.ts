@@ -25,7 +25,7 @@ export const TEAM_TOOL_SEND_MESSAGE_DESCRIPTION =
   "Envia coordenação livre (mode coordination) sem mudar a tarefa selecionada, ou delega trabalho (mode delegation + task_id + expected_revision) a agente existente, inclusive entre membros. Delegação valida revisão, prontidão e responsável, persiste e seleciona antes da entrega; lead pode transferir qualquer responsável, membro só tarefa livre, própria ou do destino. Retorna entrega e snapshot na delegação, nunca resposta. Em curso usa steer nativo; parado inicia turno. Mudanças de tarefa não cancelam execução; fim de turno não conclui tarefa."
 
 export const TEAM_TOOL_LIST_AGENTS_DESCRIPTION =
-  "Lista os agentes da equipe: nome, estado do turno (running ou inactive) e descrição. O estado não diz se a tarefa foi concluída."
+  "Lista agentes, estado, duração de execução/ferramentas (sem argumentos), timestamp/idade do último sinal observado e última atualização das tarefas separadamente. Sinais de streaming/ferramentas não comprovam progresso real; silêncio prolongado não confirma travamento. Após reload os sinais da nova execução são desconhecidos. Apenas observacional: não bloqueia, interrompe, acorda ou altera tarefas."
 
 export const TEAM_TOOL_LIST_MODELS_DESCRIPTION =
   "Lista os modelos que um subagente pode usar, no formato provider/id, com os níveis de raciocínio que cada um aceita."

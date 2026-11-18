@@ -1,6 +1,7 @@
 import * as contracts from "#synapse/modules/agent-team/public/contracts"
 import { captureMemberOutcome, finishMemberOutcomes } from "../member-outcome"
 import { TeamRuleError } from "../operation-results"
+import { MemberRunObservation } from "../run-observation"
 import { TEAM_MEMBER_CLOSE_FAILED, TEAM_MEMBER_CLOSED, TEAM_MESSAGE_BREAK } from "./constants"
 import { teamMemberOutcome } from "./member-outcome"
 import { TeamMemberQueue } from "./member-queue"
@@ -8,14 +9,12 @@ import { TeamMemberResponseState } from "./member-response-state"
 import { teamMemberRow } from "./member-row"
 import { suspendMemberSession } from "./suspend-session"
 import { TeamMemberTurnControl } from "./turn-control"
-import { type TeamActiveTools, type TeamMemberObserver, type TeamMemberOutcome } from "./types"
+import { type TeamMemberObserver, type TeamMemberOutcome } from "./types"
 
 export class TeamMember {
   readonly name: string
 
   private readonly opened: contracts.OpenedMember
-
-  private readonly session: contracts.MemberSession
 
   private readonly queue: TeamMemberQueue
 
@@ -23,7 +22,7 @@ export class TeamMember {
 
   private readonly unsubscribe: contracts.MemberUnsubscribe
 
-  private readonly tools: TeamActiveTools = new Map()
+  private readonly observation: MemberRunObservation
 
   private busy = false
 
@@ -39,7 +38,13 @@ export class TeamMember {
 
   private readonly turn: TeamMemberTurnControl
 
-  constructor(opened: contracts.OpenedMember, observer: TeamMemberObserver, runtime: contracts.MemberTurnRuntime) {
+  constructor(
+    opened: contracts.OpenedMember,
+    observer: TeamMemberObserver,
+    runtime: contracts.MemberTurnRuntime,
+    clock: contracts.TeamClock,
+  ) {
+    this.observation = new MemberRunObservation(runtime, clock)
     this.turn = new TeamMemberTurnControl(
       opened.record.name,
       opened.session,
@@ -47,9 +52,8 @@ export class TeamMember {
       runtime,
       this.confirmStopped.bind(this),
     )
-    this.opened = opened
     this.name = opened.record.name
-    this.session = opened.session
+    this.opened = opened
     this.queue = new TeamMemberQueue(opened.journal)
     this.observer = observer
     if (this.queue.interrupted) {
@@ -65,7 +69,7 @@ export class TeamMember {
       lastState: this.lastState,
       busy: this.busy,
       unconfirmed: this.queue.unconfirmedCount,
-      tools: this.tools,
+      progress: this.observation.snapshot(),
       effectiveModel: this.responseState.effectiveModel,
     })
   }
@@ -85,14 +89,14 @@ export class TeamMember {
   interrupt(): void {
     const executionId = this.turn.currentExecutionId
     this.turn.interrupt()
-    this.session.abort().catch(this.promptFailed.bind(this, executionId))
+    this.opened.session.abort().catch(this.promptFailed.bind(this, executionId))
   }
 
   async dispose(): Promise<void> {
     this.turn.invalidate()
     this.closed = true
     this.unsubscribe()
-    const closed = captureMemberOutcome(this.session.dispose.bind(this.session))
+    const closed = captureMemberOutcome(this.opened.session.dispose.bind(this.opened.session))
     const health = captureMemberOutcome(this.turn.ensureHealthy.bind(this.turn))
     await finishMemberOutcomes([closed, health], TEAM_MEMBER_CLOSE_FAILED)
   }
@@ -101,7 +105,7 @@ export class TeamMember {
     this.turn.invalidate()
     this.closed = true
     try {
-      await suspendMemberSession(this.session, this.queue, this.busy, this.run)
+      await suspendMemberSession(this.opened.session, this.queue, this.busy, this.run)
     } finally {
       await this.dispose()
     }
@@ -123,7 +127,7 @@ export class TeamMember {
     if (this.queue.pendingCount > 0) {
       if (!this.busy) {
         this.start()
-      } else if (this.session.isStreaming() && !this.turn.stopping) {
+      } else if (this.opened.session.isStreaming() && !this.turn.stopping) {
         this.steerPending()
       }
     }
@@ -132,7 +136,7 @@ export class TeamMember {
   private steerPending(): void {
     const executionId = this.turn.currentExecutionId
     for (const text of this.queue.takePending(false)) {
-      this.session.steer(text).catch(this.promptFailed.bind(this, executionId))
+      this.opened.session.steer(text).catch(this.promptFailed.bind(this, executionId))
     }
   }
 
@@ -143,7 +147,8 @@ export class TeamMember {
     this.executionStarted = false
     const text = this.queue.takePending(true).join(TEAM_MESSAGE_BREAK)
     const executionId = this.turn.begin()
-    this.run = this.session.prompt(text, executionId).catch(this.promptFailed.bind(this, executionId))
+    this.observation.start(executionId)
+    this.run = this.opened.session.prompt(text, executionId).catch(this.promptFailed.bind(this, executionId))
     this.observer.refresh()
   }
 
@@ -152,7 +157,7 @@ export class TeamMember {
   }
 
   private promptFailed(executionId: number, error: Error): void {
-    if (this.turn.isCurrentExecution(executionId) && !this.closed && this.busy && !this.session.isStreaming()) {
+    if (this.turn.isCurrentExecution(executionId) && !this.closed && this.busy && !this.opened.session.isStreaming()) {
       this.settle({ state: contracts.TEAM_FAILED, text: error.message })
     }
   }
@@ -161,11 +166,12 @@ export class TeamMember {
     if (!this.closed) {
       this.applyEvent(event)
     } else if (event.kind === contracts.MEMBER_EXECUTION_STARTED) {
-      this.session.abort().catch(this.promptFailed.bind(this, event.executionId))
+      this.opened.session.abort().catch(this.promptFailed.bind(this, event.executionId))
     }
   }
 
   private applyEvent(event: contracts.MemberSessionEvent): void {
+    this.observation.observe(event)
     switch (event.kind) {
       case contracts.MEMBER_EXECUTION_ACTIVITY:
         this.turn.activity(event)
@@ -174,7 +180,7 @@ export class TeamMember {
         if (this.turn.isCurrentExecution(event.executionId)) {
           this.executionStarted = true
           if (this.turn.interrupted) {
-            this.session.abort().catch(this.promptFailed.bind(this, event.executionId))
+            this.opened.session.abort().catch(this.promptFailed.bind(this, event.executionId))
           } else {
             this.pump()
           }
@@ -184,11 +190,7 @@ export class TeamMember {
         this.queue.checkpoint(this.busy)
         break
       case contracts.MEMBER_TOOL_STARTED:
-        this.tools.set(event.callId, event.label)
-        this.observer.refresh()
-        break
       case contracts.MEMBER_TOOL_ENDED:
-        this.tools.delete(event.callId)
         this.observer.refresh()
         break
       case contracts.MEMBER_ASSISTANT_RESPONSE:
@@ -215,7 +217,7 @@ export class TeamMember {
       }
       this.busy = false
       this.lastState = outcome.state
-      this.tools.clear()
+      this.observation.finish()
       if (outcome.state === contracts.TEAM_FINISHED && this.queue.pendingCount > 0) {
         this.start()
       } else {

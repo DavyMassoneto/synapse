@@ -126,9 +126,30 @@ async function messagingJournalFailure(): Promise<void> {
     const tasks = fixture.board().listTasks({})
     const worker = messagingMemberMessages(session, "worker")
     const history = session.sessionManager.getBranch().filter((entry) => entry.type === "custom")
+    const observedTasks = fixture
+      .board()
+      .overview()
+      .agents.map((agent) => ({ name: agent.name, tasks: agent.tasks }))
     faults.failJournal = true
+    expect(fixture.board().delegate("lead", "worker", "journal failure probe", "task-1", 2).kind).toBe("failed")
     await fixture.step()
     expect(session.messages.filter(isSelectionToolError)).toHaveLength(1)
+    for (const previous of observedTasks) {
+      const current = fixture
+        .board()
+        .overview()
+        .agents.find((agent) => agent.name === previous.name)
+      expect(current?.tasks).toEqual(
+        previous.tasks?.map((task) =>
+          expect.objectContaining({
+            id: task.id,
+            revision: task.revision,
+            bound: task.bound,
+            updatedAt: task.updatedAt,
+          }),
+        ),
+      )
+    }
     expect(fixture.board().listTasks({})).toEqual(tasks)
     expect(messagingMemberMessages(session, "worker")).toEqual(worker)
     expect(session.sessionManager.getBranch().filter((entry) => entry.type === "custom")).toEqual(history)
