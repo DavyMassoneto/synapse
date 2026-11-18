@@ -1,3 +1,5 @@
+export const TEAM_ACQUISITION_CLEANUP_FAILED = "Falha ao liberar aquisição de membro"
+
 export const TEAM_ADMISSION_MESSAGE_SEPARATOR = ": "
 
 export const TEAM_ADMISSION_CLEANUP_FAILED = "Falha ao descartar a admissão preparada"

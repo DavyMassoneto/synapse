@@ -7,6 +7,7 @@ import {
   type AgentTeamShutdownHandler,
   type AgentTeamStartHandler,
   type AgentTeamToolDefinition,
+  type AgentTeamTreeHandler,
   type AgentTeamTurnHandler,
   type TeamLeadWidgetContent,
 } from "#synapse/integration/pi/agent-team"
@@ -49,6 +50,7 @@ export type SynapseEventRegistration =
 
 export type SynapseTeamEventRegistration =
   | ["session_start", AgentTeamStartHandler]
+  | ["session_tree", AgentTeamTreeHandler]
   | ["session_shutdown", AgentTeamShutdownHandler]
   | ["session_shutdown", PiIphoneShutdownHandler]
   | ["session_shutdown", PiComputerShutdown]

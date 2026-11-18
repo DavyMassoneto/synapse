@@ -6,7 +6,7 @@ async function suspendsBeforeDetach(): Promise<void> {
   const lead = createPiTeamLeadSession(new TeamLeadHost())
   const team = new LifecycleTeamDouble(lead)
   const events = new PiTeamLifecycle(lead, team)
-  await events.sessionStart(
+  await events.restoreSession(
     { type: "session_start", reason: "startup" },
     new TeamLeadContext(fixtureModel("provider", "model", 100000)),
   )

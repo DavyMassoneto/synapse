@@ -24,6 +24,7 @@ import {
   AdmissionFaults,
   admissionEntries,
   admissionSessionFiles,
+  closeAdmissionFaultScenario,
   isSelectionToolError,
   SELECTION_TIMEOUT_MS,
   selectionRequestContexts,
@@ -138,7 +139,7 @@ async function failedAdmission(mode: AdmissionFault): Promise<void> {
     expect(admissionSessionFiles(fixture.agentDirectory, session.sessionId)).toHaveLength(1)
     expect(fixture.errors).toEqual([])
   } finally {
-    await fixture.close()
+    await closeAdmissionFaultScenario(fixture, faults, mode)
   }
 }
 

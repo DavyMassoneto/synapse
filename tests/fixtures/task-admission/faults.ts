@@ -6,6 +6,8 @@ import {
   type OpenedMember,
   type OpenMemberRequest,
   type TaskSnapshot,
+  TEAM_ADMISSION_NOT_RECORDED,
+  type TeamAdmissionResult,
   type TeamClock,
   type TeamLead,
 } from "#synapse/modules/agent-team"
@@ -28,6 +30,10 @@ import { AdmissionFailingJournal } from "./journal"
 import { type AdmissionFault } from "./types"
 
 export class AdmissionFaults implements MemberSessions {
+  readonly discardFailure = new Error(ADMISSION_DISCARD_FAILURE)
+
+  closeFailure?: Error
+
   mode: AdmissionFault = ADMISSION_FAULT_NONE
   opened = 0
   discardAttempts = 0
@@ -47,7 +53,7 @@ export class AdmissionFaults implements MemberSessions {
     this.discardAttempts += 1
     this.sessions.discardPrepared(record)
     if (this.mode === ADMISSION_FAULT_DISCARD) {
-      throw new Error(ADMISSION_DISCARD_FAILURE)
+      throw this.discardFailure
     }
   }
 
@@ -67,6 +73,7 @@ export class AdmissionFaults implements MemberSessions {
     }
     if (this.mode === ADMISSION_FAULT_CLOSE || this.mode === ADMISSION_FAULT_DISCARD) {
       const session = new AdmissionFailingSession(opened.session)
+      this.closeFailure = session.closeFailure
       const journal = new AdmissionFailingJournal(opened.journal)
       return { ...opened, session, journal }
     }
@@ -83,17 +90,17 @@ export class AdmissionFaults implements MemberSessions {
     return this.sessions.reopen(record, team)
   }
 
-  private recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
+  private recordAdmission(record: MemberRecord, task: TaskSnapshot): TeamAdmissionResult {
     if (this.mode === ADMISSION_FAULT_RECORD) {
       record.name = ADMISSION_MUTATED
       task.subject = ADMISSION_MUTATED
       task.blockedBy.push(ADMISSION_MUTATED)
       task.writeScopes.push(ADMISSION_MUTATED)
-      throw new Error(ADMISSION_FAILURE_MESSAGE)
+      return { kind: TEAM_ADMISSION_NOT_RECORDED, error: new Error(ADMISSION_FAILURE_MESSAGE) }
     }
     if (!this.lead) {
       throw new Error(ADMISSION_NOT_MOUNTED)
     }
-    this.lead.recordAdmission(record, task)
+    return this.lead.recordAdmission(record, task)
   }
 }

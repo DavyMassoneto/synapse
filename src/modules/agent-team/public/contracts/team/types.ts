@@ -122,7 +122,7 @@ export interface TeamLeadState {
 
 export interface TeamMemberRegistry {
   recordMember(record: MemberRecord): void
-  recordAdmission(record: MemberRecord, task: TaskSnapshot): void
+  recordAdmission(record: MemberRecord, task: TaskSnapshot): TeamAdmissionResult
 }
 
 export interface TeamRestorationDiagnostics {
@@ -198,3 +198,19 @@ export interface TeamFailed {
   kind: "failed"
   message: string
 }
+
+export interface TeamAdmissionRecorded {
+  kind: "recorded"
+}
+
+export interface TeamAdmissionNotRecorded {
+  kind: "not-recorded"
+  error: Error
+}
+
+export interface TeamAdmissionUncertain {
+  kind: "uncertain"
+  error: Error
+}
+
+export type TeamAdmissionResult = TeamAdmissionRecorded | TeamAdmissionNotRecorded | TeamAdmissionUncertain

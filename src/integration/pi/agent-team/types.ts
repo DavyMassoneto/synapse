@@ -4,6 +4,7 @@ import {
   type MessageEndEvent,
   type SessionShutdownEvent,
   type SessionStartEvent,
+  type SessionTreeEvent,
   type TurnStartEvent,
 } from "@earendil-works/pi-coding-agent"
 import {
@@ -21,6 +22,7 @@ export type AgentTeamHost = AgentTeamEventsHost & Pick<ExtensionAPI, "sendMessag
 
 export interface AgentTeamEventsHost {
   on(event: "session_start", handler: AgentTeamStartHandler): AgentTeamUnsubscribe
+  on(event: "session_tree", handler: AgentTeamTreeHandler): AgentTeamUnsubscribe
   on(event: "session_shutdown", handler: AgentTeamShutdownHandler): AgentTeamUnsubscribe
   on(event: "before_agent_start", handler: AgentTeamBeforeStartHandler): AgentTeamUnsubscribe
   on(event: "turn_start", handler: AgentTeamTurnHandler): AgentTeamUnsubscribe
@@ -30,7 +32,11 @@ export interface AgentTeamEventsHost {
 
 export type AgentTeamUnsubscribe = () => void
 
+export type AgentTeamRestoreEvent = SessionStartEvent | SessionTreeEvent
+
 export type AgentTeamStartHandler = (event: SessionStartEvent, context: AgentTeamContext) => Promise<void>
+
+export type AgentTeamTreeHandler = (event: SessionTreeEvent, context: AgentTeamContext) => Promise<void>
 
 export type AgentTeamShutdownHandler = (event: SessionShutdownEvent) => Promise<void>
 

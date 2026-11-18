@@ -1,11 +1,15 @@
 import {
   type MemberRecord,
   type TaskSnapshot,
+  TEAM_ADMISSION_NOT_RECORDED,
+  TEAM_ADMISSION_RECORDED,
   TEAM_MODEL_KNOWN,
+  type TeamAdmissionResult,
   type TeamLead,
   type TeamModelUse,
   type TeamOverview,
 } from "#synapse/modules/agent-team"
+import { TEAM_TEST_RECORD_UNAVAILABLE } from "./constants"
 
 export class TeamTestLead implements TeamLead {
   deliveries: string[] = []
@@ -51,14 +55,18 @@ export class TeamTestLead implements TeamLead {
     this.tasks.push(task)
   }
 
-  recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
+  recordAdmission(record: MemberRecord, task: TaskSnapshot): TeamAdmissionResult {
+    if (this.failRecord) {
+      return { kind: TEAM_ADMISSION_NOT_RECORDED, error: new Error(TEAM_TEST_RECORD_UNAVAILABLE) }
+    }
     this.recordMember(record)
     this.tasks.push(task)
+    return { kind: TEAM_ADMISSION_RECORDED }
   }
 
   recordMember(record: MemberRecord): void {
     if (this.failRecord) {
-      throw new Error("registro indisponível")
+      throw new Error(TEAM_TEST_RECORD_UNAVAILABLE)
     }
     this.records.push(record)
   }

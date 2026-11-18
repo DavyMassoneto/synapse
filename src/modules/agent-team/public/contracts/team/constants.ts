@@ -22,6 +22,14 @@ export const TEAM_MESSAGE_COORDINATION = "coordination"
 
 export const TEAM_MESSAGE_DELEGATION = "delegation"
 
+export const TEAM_ADMISSION_RECORDED = "recorded"
+
+export const TEAM_ADMISSION_NOT_RECORDED = "not-recorded"
+
+export const TEAM_ADMISSION_UNCERTAIN = "uncertain"
+
+export const TEAM_ADMISSION_PERSISTENCE_FAILED = "Não foi possível confirmar a persistência da admissão"
+
 export const TEAM_LEAD_NAME = "lead"
 
 export const TEAM_MODEL_KNOWN = "known"

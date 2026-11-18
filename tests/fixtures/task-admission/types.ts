@@ -17,3 +17,11 @@ export interface AdmissionRefusalScenario {
 }
 
 export type AdmissionFault = "none" | "open" | "queue" | "record" | "revision" | "blocker" | "close" | "discard"
+
+export type AdmissionNativeAction = "navigate" | "reload" | "suspend"
+
+export type AdmissionObservationFault = "clock" | "monotonic" | "callback" | "port-throw"
+
+export type AdmissionObservationAction = "none" | "suspend" | "restore"
+
+export type AdmissionObservationOperation = "admission" | "task" | "cleanup"

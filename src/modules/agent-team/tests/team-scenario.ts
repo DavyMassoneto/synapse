@@ -46,10 +46,11 @@ export async function replacedAliceGeneration(): Promise<TeamGenerationSut> {
   const sut = makeTeamSut()
   sut.sessions.held = true
   const previous = sut.team.start({ ...TEAM_TEST_ALICE_REQUEST, description: "antiga" })
-  await sut.team.suspend()
+  const stopping = sut.team.suspend()
+  sut.sessions.releaseFirst()
+  await stopping
   await sut.team.restore([], sut.lead.tasks)
   const current = sut.team.start({ ...TEAM_TEST_ALICE_REQUEST, description: "nova" })
-  sut.sessions.releaseFirst()
   const previousResult = await previous
   return { ...sut, current, previousResult }
 }

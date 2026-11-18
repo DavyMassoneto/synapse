@@ -1,12 +1,11 @@
 import {
-  type MemberRecord,
   type MemberTurnRuntime,
   type TaskSnapshot,
   type TaskView,
   type TeamAgentRow,
   type TeamClock,
 } from "#synapse/modules/agent-team/public/contracts"
-import { captureObservedTime } from "../run-observation"
+import { type ObservedTime } from "../run-observation"
 import { attachTaskListsAndIndexObservedAgents } from "./agent-index"
 import { appendObservedTaskViews } from "./task-views"
 import { type ObservedTaskJournal, type ObservedTaskTimes, type TaskSelectionReader } from "./types"
@@ -20,6 +19,12 @@ export class TeamTaskObservation implements ObservedTaskJournal {
 
   private readonly runtime: MemberTurnRuntime
 
+  private epoch = 0
+
+  get generation(): number {
+    return this.epoch
+  }
+
   constructor(journal: ObservedTaskJournal, clock: TeamClock, runtime: MemberTurnRuntime) {
     this.journal = journal
     this.clock = clock
@@ -27,26 +32,43 @@ export class TeamTaskObservation implements ObservedTaskJournal {
   }
 
   clear(): void {
+    this.epoch += 1
     this.updates.clear()
   }
 
   recordTask(task: TaskSnapshot): void {
+    const generation = this.generation
     const taskId = task.id
     this.journal.recordTask(task)
-    this.updates.set(taskId, captureObservedTime(this.clock, this.runtime))
+    this.recordUpdates([taskId], generation)
   }
 
-  recordAdmission(record: MemberRecord, task: TaskSnapshot): void {
-    const taskId = task.id
-    this.journal.recordAdmission(record, task)
-    this.updates.set(taskId, captureObservedTime(this.clock, this.runtime))
+  observeAdmission(task: TaskSnapshot, generation: number): void {
+    this.recordUpdates([task.id], generation)
   }
 
   recordTaskCleanup(tasks: TaskSnapshot[]): void {
-    this.journal.recordTaskCleanup(tasks)
-    const now = captureObservedTime(this.clock, this.runtime)
+    const generation = this.generation
+    const ids: string[] = []
     for (const task of tasks) {
-      this.updates.set(task.id, now)
+      ids.push(task.id)
+    }
+    this.journal.recordTaskCleanup(tasks)
+    this.recordUpdates(ids, generation)
+  }
+
+  private recordUpdates(ids: string[], generation: number): void {
+    if (generation === this.generation) {
+      const timestamp = this.clock()
+      if (generation === this.generation) {
+        const monotonic = this.runtime.monotonic()
+        if (generation === this.generation) {
+          const now: ObservedTime = { timestamp, monotonic }
+          for (const id of ids) {
+            this.updates.set(id, now)
+          }
+        }
+      }
     }
   }
 

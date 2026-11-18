@@ -22,7 +22,7 @@ import { TeamRoster } from "../roster"
 import { TaskBoard } from "../task-board"
 import { TeamTaskObservation } from "../task-observation"
 import { TeamBoardDirectory } from "./board-directory"
-import { teamSuspendMembers } from "./suspend-members"
+import { teamDisposeMembers, teamSuspendMembers } from "./suspend-members"
 
 export class Team implements AgentTeam {
   private readonly lead: TeamLead
@@ -40,6 +40,10 @@ export class Team implements AgentTeam {
   private readonly events: TeamRecentEvents
 
   private closed = false
+
+  private restoration = 0
+
+  private closing = Promise.resolve()
 
   readonly memberNotice: TeamLead["deliver"]
 
@@ -64,17 +68,10 @@ export class Team implements AgentTeam {
     this.board = new TaskBoard(this.taskObservation, new TeamBoardDirectory(this.roster))
     this.events = new TeamRecentEvents(clock)
     this.messages = new TeamMessages(lead, this.roster, this.events, this, this.board, this.taskObservation)
-    this.admission = new TeamMembership(
-      this,
-      sessions,
-      lead,
-      this.roster,
-      this.events,
-      runtime,
-      this.board,
-      clock,
-      this.taskObservation,
-    )
+    this.admission = new TeamMembership(this, sessions, lead, this.roster, this.events, runtime, this.board, clock, {
+      journal: lead,
+      observation: this.taskObservation,
+    })
     this.start = this.admission.start.bind(this.admission)
     this.send = this.messages.send.bind(this.messages)
     this.delegate = this.messages.delegate.bind(this.messages)
@@ -85,15 +82,20 @@ export class Team implements AgentTeam {
   }
 
   async restore(records: MemberRecord[], tasks: TaskSnapshot[]): Promise<void> {
-    this.closed = false
-    this.messages.reopen()
-    this.events.clear()
-    for (const member of this.roster.clear()) {
-      await member.dispose()
+    const restoration = ++this.restoration
+    const acquisitions = this.admission.close()
+    this.closed = true
+    this.messages.close()
+    this.clearObservations()
+    this.board.restore([])
+    this.closing = teamDisposeMembers(this.roster.clear(), this.closing, acquisitions)
+    await this.closing
+    if (restoration === this.restoration) {
+      this.board.restore(tasks)
+      this.closed = false
+      this.messages.reopen()
+      await this.admission.restore(records)
     }
-    this.taskObservation.clear()
-    this.board.restore(tasks)
-    return this.admission.restore(records)
   }
 
   overview(): TeamOverview {
@@ -128,10 +130,14 @@ export class Team implements AgentTeam {
   }
 
   async suspend(): Promise<void> {
+    this.restoration += 1
     this.closed = true
-    this.admission.close()
+    const acquisitions = this.admission.close()
     this.messages.close()
-    await teamSuspendMembers(this.roster.clear(), this.lead)
+    this.board.restore([])
+    this.clearObservations()
+    this.closing = teamSuspendMembers(this.roster.clear(), this.lead, this.closing, acquisitions)
+    await this.closing
   }
 
   memberStartFailed(name: string, message: string): void {
@@ -144,6 +150,11 @@ export class Team implements AgentTeam {
       this.events.add(presentation.event)
       this.messages.deliverLead(presentation.notice)
     }
+  }
+
+  private clearObservations(): void {
+    this.events.clear()
+    this.taskObservation.clear()
   }
 
   private refreshTaskResult(result: TaskOutcome): TaskOutcome {

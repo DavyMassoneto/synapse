@@ -14,6 +14,7 @@ import {
   type AgentTeamSettledHandler,
   type AgentTeamShutdownHandler,
   type AgentTeamStartHandler,
+  type AgentTeamTreeHandler,
   type AgentTeamTurnHandler,
 } from "#synapse/integration/pi/agent-team"
 import { type CooldownMessageEndHandler } from "#synapse/integration/pi/cooldown-retry"
@@ -79,6 +80,7 @@ export class SynapseHostCollector implements SynapseHost {
   on(event: "message_end", handler: CooldownMessageEndHandler): Unsubscribe
   on(event: "context", handler: ResponseRulesContextHandler): Unsubscribe
   on(event: "session_start", handler: AgentTeamStartHandler): Unsubscribe
+  on(event: "session_tree", handler: AgentTeamTreeHandler): Unsubscribe
   on(event: "session_shutdown", handler: AgentTeamShutdownHandler): Unsubscribe
   on(event: "before_agent_start", handler: AgentTeamBeforeStartHandler): Unsubscribe
   on(event: "turn_start", handler: AgentTeamTurnHandler): Unsubscribe
