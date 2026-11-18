@@ -1,6 +1,6 @@
 import { type TaskJournal, type TaskView } from "#synapse/modules/agent-team/public/contracts"
-import { TeamRuleError } from "../operation-results"
-import { type TaskBoard, TaskRefusal, taskBoardCopySnapshot } from "../task-board"
+import { rethrowTeamOperationError } from "../operation-results"
+import { type TaskBoard, taskBoardCopySnapshot } from "../task-board"
 
 export function commitTaskDelegation(
   board: TaskBoard,
@@ -15,8 +15,8 @@ export function commitTaskDelegation(
     journal.recordTask(taskBoardCopySnapshot(prepared))
     return board.acceptAdmission(prepared)
   } catch (error) {
-    if (error instanceof TaskRefusal) {
-      throw new TeamRuleError(error.message)
+    if (error instanceof Error) {
+      rethrowTeamOperationError(error)
     }
     throw error
   }
