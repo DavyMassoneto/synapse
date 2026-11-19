@@ -6,7 +6,7 @@ export const ROUTER_UNKNOWN_FAILURE = "Falha técnica desconhecida na seleção 
 
 export const ROUTER_REQUIRED_PROVIDER = "omniroute"
 
-export const ROUTER_RESERVE_MODEL = "cx/gpt-6.1-sol"
+export const ROUTER_RESERVE_MODEL = "cx/gpt-6.2-sol"
 
 export const ROUTER_RESERVE_EFFORT = "high"
 

@@ -75,7 +75,7 @@ async function classificationFallback(): Promise<void> {
   const sut = makeSut()
   sut.context.modelRegistry.classifierFails = true
   const result = await sut.host.requireModel().route(sut.request, sut.context)
-  expect(result.model.id).toBe("cx/gpt-6.1-sol")
+  expect(result.model.id).toBe("cx/gpt-6.2-sol")
   expect(result.thinkingLevel).toBe("high")
   expect(result.state?.reason).toBe("Fallback técnico: Resposta de classificação Jev inválida.")
 }

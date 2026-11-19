@@ -54,7 +54,7 @@ export const ROUTER_TEST_FIRST = "first"
 
 export const ROUTER_TEST_SECOND = "second"
 
-export const ROUTER_TEST_FALLBACK = "cx/gpt-6.1-sol"
+export const ROUTER_TEST_FALLBACK = "cx/gpt-6.2-sol"
 
 export const ROUTER_TEST_CLASSIFIER_PROVIDER = "typesafe"
 
